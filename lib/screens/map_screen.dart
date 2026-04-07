@@ -1,3 +1,5 @@
+import 'map/map_voice_assistant_ui.dart';
+import 'map/map_voice_controller.dart';
 import 'dart:async';
 import 'dart:math' as math;
 import 'dart:convert';
@@ -48,6 +50,8 @@ import 'package:nabour_app/services/local_address_database.dart';
 import 'package:nabour_app/models/saved_address_model.dart';
 import 'package:nabour_app/l10n/app_localizations.dart';
 import 'package:nabour_app/widgets/assistant_status_overlay.dart';
+import 'map/map_voice_assistant_ui.dart';
+import 'map/map_voice_controller.dart';
 import 'package:nabour_app/services/connectivity_service.dart';
 import 'package:nabour_app/providers/assistant_status_provider.dart';
 import 'package:nabour_app/widgets/map/map_voice_overlay.dart';
@@ -372,7 +376,8 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
   final RoutingService _routingService = RoutingService();
   final ContactsService _contactsService = ContactsService();
   NeighborhoodRequestsManager? _requestsManager;
-
+  late MapVoiceController _voiceController;
+    
   // Map & Basic UI
   MapboxMap? _mapboxMap;
   bool? _lastKnownDarkMode;
@@ -608,7 +613,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
   bool _isProcessingDecline = false;
   bool _shouldResetRoute = false;
   final GlobalKey<RideRequestPanelState> _rideRequestPanelKey = GlobalKey<RideRequestPanelState>();
-  
+  late MapVoiceController _voiceController;
   final Map<String, PointAnnotation> _rideBroadcastAnnotations = {};
   final Map<String, RideBroadcastRequest> _rideBroadcastData = {};
   StreamSubscription? _rideBroadcastsSubscription;
@@ -803,26 +808,28 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
   Timer? _pinAutoHideTimer;
 
   // Afișare automată traseu când avem pickup + destinație (+ opriri)
-  Future<void> _checkAndShowRouteAutomatically() async {
-    if (_pickupLatitude != null && _pickupLongitude != null && _destinationLatitude != null && _destinationLongitude != null) {
-      try {
+    _smartSuggestionsFuture = SmartSuggestionsService().getSuggestions();
+    PassengerRideServiceBus.pending.addListener(_onPassengerRideBus);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
         final List<Point> waypoints = [];
         waypoints.add(Point(coordinates: Position(_pickupLongitude!, _pickupLatitude!)));
         for (final stop in _intermediateStops) {
-          final coords = await _getCoordinatesForDestination(stop);
+    WidgetsBinding.instance.addObserver(this);
           if (coords != null) waypoints.add(coords);
         }
         waypoints.add(Point(coordinates: Position(_destinationLongitude!, _destinationLatitude!)));
         final routeData = await _routingService.getRoute(waypoints);
         if (routeData != null && mounted) await _onRouteCalculated(routeData);
-      } catch (e) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
         Logger.error('Auto route calculation error: $e', error: e);
       }
     }
   }
   @override
+  @override
   void initState() {
     super.initState();
+import 'map/map_voice_assistant_ui.dart';
     _smartSuggestionsFuture = SmartSuggestionsService().getSuggestions();
     PassengerRideServiceBus.pending.addListener(_onPassengerRideBus);
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -13659,7 +13666,7 @@ class _MapUniversalSearchOverlayState extends State<MapUniversalSearchOverlay> {
     });
   }
 
-  String _placeInitials(String name) {
+import 'map/map_voice_controller.dart';
     final t = name.trim();
     if (t.isEmpty) return '?';
     final parts =
@@ -14170,12 +14177,12 @@ class _ParkingReservationSheetState extends State<_ParkingReservationSheet> {
             'LOC DE AUR DETECTAT',
             style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold, letterSpacing: 1.5),
           ),
-          const SizedBox(height: 8),
-          const Text(
-            'Un vecin eliberează acest loc acum.',
-            style: TextStyle(color: Colors.white70, fontSize: 14),
-          ),
-          const SizedBox(height: 24),
+  Future<void> _reserve() async {
+    setState(() => _isReserving = true);
+    final success = await ParkingSwapService().reserveSpot(widget.spotId);
+    if (mounted) {
+      setState(() => _isReserving = false);
+      if (success) {
           SizedBox(
             width: double.infinity,
             height: 54,
