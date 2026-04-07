@@ -830,15 +830,21 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
         if (!mounted) return;
         Navigator.of(context).push(
           MaterialPageRoute<void>(
-            builder: (_) => const NeighborhoodChatScreen(),
+            builder: (_) => NeighborhoodChatScreen(initialMessage: msg),
           ),
         );
       },
       onAddToFavorites: () {
         if (!mounted) return;
+        final pos = _currentPositionObject;
         Navigator.of(context).push(
           MaterialPageRoute<void>(
-            builder: (_) => const FavoriteAddressesScreen(),
+            builder: (_) => AddAddressScreen(
+              prefilledCoordinates: pos != null
+                  ? GeoPoint(pos.latitude, pos.longitude)
+                  : null,
+              initialLabel: 'Favorite',
+            ),
           ),
         );
       },

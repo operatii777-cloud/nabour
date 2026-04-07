@@ -41,6 +41,7 @@ class _MapVoiceOverlayState extends State<MapVoiceOverlay>
   late AnimationController _rotateController;
   late Animation<double> _rotateAnimation;
   bool _showLastMessage = true;
+  bool _showControllerFeedback = true;
 
   @override
   void initState() {
@@ -74,7 +75,13 @@ class _MapVoiceOverlayState extends State<MapVoiceOverlay>
   }
 
   void _onControllerStateChanged() {
-    if (mounted) setState(() {});
+    if (!mounted) return;
+    setState(() {
+      // Show the feedback bubble again when a new command starts.
+      if (widget.controller?.state == VoiceAssistantState.listening) {
+        _showControllerFeedback = true;
+      }
+    });
   }
 
   @override
@@ -211,10 +218,11 @@ class _MapVoiceOverlayState extends State<MapVoiceOverlay>
         crossAxisAlignment: CrossAxisAlignment.end,
         mainAxisSize: MainAxisSize.min,
         children: [
-          if (ctrl.feedbackMessage.isNotEmpty &&
+          if (_showControllerFeedback &&
+              ctrl.feedbackMessage.isNotEmpty &&
               ctrlState != VoiceAssistantState.idle)
             GestureDetector(
-              onTap: () => setState(() {}),
+              onTap: () => setState(() => _showControllerFeedback = false),
               child: Container(
                 constraints: const BoxConstraints(maxWidth: 220),
                 margin: const EdgeInsets.only(bottom: 8, right: 4),

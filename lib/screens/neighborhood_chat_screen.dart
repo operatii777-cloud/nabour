@@ -16,7 +16,10 @@ import 'package:nabour_app/services/walkie_talkie_service.dart';
 import 'package:shimmer/shimmer.dart';
 
 class NeighborhoodChatScreen extends StatefulWidget {
-  const NeighborhoodChatScreen({super.key});
+  /// Mesaj pre-completat în câmpul de text (de ex. trimis prin comandă vocală).
+  final String? initialMessage;
+
+  const NeighborhoodChatScreen({super.key, this.initialMessage});
 
   @override
   State<NeighborhoodChatScreen> createState() =>
@@ -46,6 +49,9 @@ class _NeighborhoodChatScreenState extends State<NeighborhoodChatScreen> {
   @override
   void initState() {
     super.initState();
+    if (widget.initialMessage != null && widget.initialMessage!.isNotEmpty) {
+      _textController.text = widget.initialMessage!;
+    }
     _init();
   }
 
