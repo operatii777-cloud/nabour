@@ -1383,7 +1383,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
       if (mounted) {
         setState(() {
           _garageAssetPathForPassengerSlot =
-              (pAv.isDefault || !pAv.allowsPassengerMapSlot) ? null : pAv.assetPath;
+              pAv.isDefault ? null : pAv.assetPath;
           _garageAssetPathForDriverSlot = dAv.isDefault ? null : dAv.assetPath;
           _markerIconCache.clear();
         });
@@ -4562,16 +4562,12 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
   bool _isUpdatingNeighbors = false;
 
   /// Cale asset din bundle pentru avatarul cumpărat (același ID la toți utilizatorii).
-  /// [forPassengerSlot] — când true, vehiculele de tip transport sunt excluse
-  /// (nu trebuie afișate ca marker pasiv pe hartă).
-  String? _garageBundlePathForNeighbor(String? carAvatarId,
-      {bool forPassengerSlot = false}) {
+  String? _garageBundlePathForNeighbor(String? carAvatarId) {
     if (carAvatarId == null || carAvatarId.isEmpty || carAvatarId == 'default_car') {
       return null;
     }
     final av = CarAvatarService().getAvatarById(carAvatarId);
     if (av.isDefault) return null;
-    if (forPassengerSlot && !av.allowsPassengerMapSlot) return null;
     return av.assetPath;
   }
 
@@ -4724,10 +4720,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
 
       final bool isDriving = neighbor.isDriver || neighbor.activityStatus == 'driving';
       final bool hasPhoto = neighbor.photoURL != null && neighbor.photoURL!.isNotEmpty;
-      final String? garagePath = _garageBundlePathForNeighbor(
-        neighbor.carAvatarId,
-        forPassengerSlot: !isDriving,
-      );
+      final String? garagePath = _garageBundlePathForNeighbor(neighbor.carAvatarId);
       // Prioritate setări utilizator: garaj (non-default) → poză profil → fallback standard (emoji / mașină).
 
       if (isDriving) {
