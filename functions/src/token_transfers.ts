@@ -17,6 +17,9 @@ import * as admin from "firebase-admin";
 import { randomUUID } from "node:crypto";
 import { HttpsError, onCall } from "firebase-functions/v2/https";
 import { onSchedule } from "firebase-functions/v2/scheduler";
+import { setGlobalOptions } from "firebase-functions/v2";
+
+setGlobalOptions({ region: "europe-west1" });
 
 const db = () => admin.firestore();
 
