@@ -131,7 +131,8 @@ class _MicrophoneTestState extends State<MicrophoneTest> {
         listenFor: const Duration(seconds: 10),
         pauseFor: const Duration(seconds: 3),
         listenOptions: SpeechListenOptions(
-          
+          listenMode: ListenMode.dictation,
+          partialResults: true,
         ),
         localeId: 'ro_RO',
       );

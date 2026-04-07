@@ -131,15 +131,14 @@ class RideFlowManager {
   Future<void> _speakThenListen(
     String text, {
     VoiceEmotion emotion = VoiceEmotion.calm,
-    int timeoutSeconds = 30,
-    int pauseForSeconds = 10,
+    int? timeoutSeconds,
+    int? pauseForSeconds,
   }) async {
     try {
       _lastSpokenMessage = text;
       final languageCode = await _getCurrentLanguageCode();
       final localeId = languageCode == 'en' ? 'en_US' : 'ro_RO';
       
-      // ✅ Use orchestrator's atomic speak-and-listen for seamless flow
       await _voiceOrchestrator.speakThenListen(
         text,
         emotion: emotion,

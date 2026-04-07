@@ -1,8 +1,13 @@
+import 'dart:async';
+
+import 'package:speech_to_text/speech_recognition_result.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 import '../tts/natural_voice_synthesizer.dart' as synthesizer;
 import '../states/voice_interaction_states.dart';
 import '../../services/audio_beep_service.dart';
 import 'package:nabour_app/utils/logger.dart';
+import 'voice_barge_in_monitor.dart';
+import 'voice_turn_taking.dart';
 
 /// 🎤 Voice Orchestrator - Funcționează EXACT ca Gemini Voice
 /// 
@@ -42,10 +47,32 @@ class VoiceOrchestrator {
   /// Buffer după TTS înainte de a porni STT (evită ecou / captare ultimă silabă).
   static const int postTtsBufferMs = 400;
 
+  /// După salut: timp pentru adresă + pauze de respirație (nu tăiem fraza după 1–2 s liniște).
+  static const int initialAddressListenSeconds = 24;
+
+  /// Tăcere fără cuvinte noi înainte de finalizare; valori ~6–8 s permit respirație între idei.
+  /// Pe Android există uneori o limită sistem (~1–3 s) sub care nu coboară — documentat în speech_to_text.
+  static const int initialAddressPauseForSeconds = 7;
+
+  /// Conversație normală (după primul turn): propoziții lungi, pauze naturale.
+  static const int defaultListenMaxSeconds = 45;
+  static const int defaultPauseForSeconds = 7;
+
+  /// Întrebări cu răspuns scurt (da/nu): mod „confirmation” + pauză mai mică.
+  static const int confirmationListenMaxSeconds = 18;
+  static const int confirmationPauseForSeconds = 4;
+
   // 🔢 Failure tracking for consecutive STT errors / empty results
   int _consecutiveFailures = 0;
   static const int _failureThreshold = 2;
   Function(int)? _onFailureThreshold;
+
+  /// Fragmente concatenate când utilizatorul face pauză la mijlocul propoziției (mod dictation).
+  String _utteranceCarryOver = '';
+  int _incompleteListenChain = 0;
+  static const int _maxIncompleteListenChain = 5;
+
+  final VoiceBargeInMonitor _bargeInMonitor = VoiceBargeInMonitor();
   
   // 🎤 Callback-uri pentru UI
   Function(String)? _onSpeechResult;
@@ -147,13 +174,100 @@ class VoiceOrchestrator {
     }
   }
   
-  /// 🎧 Ascultă input-ul vocal EXACT ca Gemini Voice
+  stt.SpeechListenOptions _buildListenOptions({
+    required stt.ListenMode listenMode,
+    required bool partialResults,
+  }) {
+    return stt.SpeechListenOptions(
+      listenMode: listenMode,
+      partialResults: partialResults,
+      cancelOnError: false,
+    );
+  }
+
+  void _handleSpeechListenResult(
+    SpeechRecognitionResult result, {
+    required int effectiveTimeout,
+    required int effectivePause,
+    required String localeId,
+    required bool partialResults,
+    required stt.ListenMode listenMode,
+  }) {
+    if (!result.finalResult) {
+      if (partialResults) {
+        Logger.debug('Partial: "${result.recognizedWords}"', tag: 'VOICE_ORCHESTRATOR');
+      }
+      return;
+    }
+
+    Logger.debug('Final result: "${result.recognizedWords}"', tag: 'VOICE_ORCHESTRATOR');
+
+    final trimmed = result.recognizedWords.trim();
+    if (trimmed.isEmpty) {
+      _utteranceCarryOver = '';
+      _incompleteListenChain = 0;
+      _incrementFailure();
+      return;
+    }
+
+    final merged = _utteranceCarryOver.isEmpty
+        ? trimmed
+        : '$_utteranceCarryOver $trimmed';
+
+    final dictationIncomplete = listenMode == stt.ListenMode.dictation &&
+        VoiceTurnTaking.looksGrammaticallyIncomplete(merged);
+
+    if (dictationIncomplete && _incompleteListenChain < _maxIncompleteListenChain) {
+      _incompleteListenChain++;
+      _utteranceCarryOver = merged;
+      Logger.debug(
+        'Utterance looks incomplete, continuing listen (chain=$_incompleteListenChain): "$merged"',
+        tag: 'VOICE_ORCHESTRATOR',
+      );
+      Future.microtask(() async {
+        try {
+          await stopListening();
+          await Future.delayed(const Duration(milliseconds: 80));
+          await listen(
+            timeoutSeconds: effectiveTimeout,
+            pauseForSeconds: effectivePause,
+            localeId: localeId,
+            partialResults: partialResults,
+            listenMode: listenMode,
+            playStartBeep: false,
+          );
+        } catch (e, st) {
+          Logger.error(
+            'Carry-over listen restart failed: $e',
+            tag: 'VOICE_ORCHESTRATOR',
+            error: e,
+            stackTrace: st,
+          );
+        }
+      });
+      return;
+    }
+
+    _utteranceCarryOver = '';
+    _incompleteListenChain = 0;
+    _consecutiveFailures = 0;
+
+    beepService.playProcessingStartBeeps();
+    _onSpeechResult?.call(merged);
+  }
+
+  /// Ascultare vocală. Implicit: [ListenMode.dictation] + [defaultPauseForSeconds] pentru pauze lungi (respirație).
+  /// Pentru confirmări scurte folosește [listenMode]: [stt.ListenMode.confirmation] și pauză mai mică.
   Future<String?> listen({
-    int timeoutSeconds = 15,
-    int pauseForSeconds = 5,
+    int? timeoutSeconds,
+    int? pauseForSeconds,
     String localeId = 'ro_RO',
     bool partialResults = true,
+    stt.ListenMode listenMode = stt.ListenMode.dictation,
+    bool playStartBeep = true,
   }) async {
+    final effectiveTimeout = timeoutSeconds ?? defaultListenMaxSeconds;
+    final effectivePause = pauseForSeconds ?? defaultPauseForSeconds;
     if (!_isInitialized) {
       Logger.warning('Not initialized, initializing now...', tag: 'VOICE_ORCHESTRATOR');
       await initialize();
@@ -178,44 +292,37 @@ class VoiceOrchestrator {
         await Future.delayed(const Duration(milliseconds: 100));
       }
       // Extra buffer so mic doesn't capture tail-end TTS audio as user speech.
-      await Future.delayed(const Duration(milliseconds: 300));
+      await Future.delayed(const Duration(milliseconds: 180));
     }
     
     try {
       _isListening = true;
       _updateState(VoiceProcessingState.listening);
       
-      Logger.warning('Starting to listen with timeout: ${timeoutSeconds}s', tag: 'VOICE_ORCHESTRATOR');
+      Logger.warning(
+        'Starting to listen: max=${effectiveTimeout}s pause=${effectivePause}s mode=$listenMode',
+        tag: 'VOICE_ORCHESTRATOR',
+      );
       
       // 🔔 BEEP de "acum te ascult" - utilizatorul știe când să vorbească
       await beepService.playListeningStartBeep();
       
-      // 🎤 Încep să ascult cu parametrii optimizați
       await speechToText.listen(
         localeId: localeId,
-        listenFor: Duration(seconds: timeoutSeconds),
-        pauseFor: Duration(seconds: pauseForSeconds),
-        // partialResults: partialResults, // ❌ Deprecated
-        onResult: (result) {
-          if (result.finalResult) {
-            Logger.debug('Final result: "${result.recognizedWords}"', tag: 'VOICE_ORCHESTRATOR');
-
-            // Reset failure counter on successful recognition with actual words.
-            if (result.recognizedWords.trim().isNotEmpty) {
-              _consecutiveFailures = 0;
-            } else {
-              // Empty final result counts as a failure (e.g. timeout / silence).
-              _incrementFailure();
-            }
-            
-            // 🔔🔔 Beep-uri duble când AI procesează informația
-            beepService.playProcessingStartBeeps();
-            
-            _onSpeechResult?.call(result.recognizedWords);
-          } else if (partialResults) {
-            Logger.debug('Partial: "${result.recognizedWords}"', tag: 'VOICE_ORCHESTRATOR');
-          }
-        },
+        listenFor: Duration(seconds: effectiveTimeout),
+        pauseFor: Duration(seconds: effectivePause),
+        listenOptions: _buildListenOptions(
+          listenMode: listenMode,
+          partialResults: partialResults,
+        ),
+        onResult: (result) => _handleSpeechListenResult(
+          result,
+          effectiveTimeout: effectiveTimeout,
+          effectivePause: effectivePause,
+          localeId: localeId,
+          partialResults: partialResults,
+          listenMode: listenMode,
+        ),
       );
       
       // 🎯 Aștept să se termine sesiunea
@@ -260,14 +367,20 @@ class VoiceOrchestrator {
       
       Logger.debug('Speaking: "$text"', tag: 'VOICE_ORCHESTRATOR');
       
-      // 🗣️ Vorbește cu emoția specificată
+      unawaited(_bargeInMonitor.start(() {
+        Logger.info('Barge-in: stopping TTS', tag: 'VOICE_ORCHESTRATOR');
+        naturalTts.stop();
+        _isSpeaking = false;
+        _isTtsSpeaking = false;
+        _updateState(VoiceProcessingState.idle);
+      }));
+
       await naturalTts.speakWithEmotion(text, emotion);
       
       _isSpeaking = false;
       _isTtsSpeaking = false;
       _updateState(VoiceProcessingState.idle);
       
-      // 🎯 NOU: Notifică că TTS-ul s-a terminat
       _onTtsCompleted?.call();
       
       Logger.info('Speech completed', tag: 'VOICE_ORCHESTRATOR');
@@ -278,6 +391,8 @@ class VoiceOrchestrator {
       _isTtsSpeaking = false;
       _updateState(VoiceProcessingState.error);
       _onSpeechError?.call(e.toString());
+    } finally {
+      await _bargeInMonitor.stop();
     }
   }
   
@@ -307,6 +422,14 @@ class VoiceOrchestrator {
       
       Logger.debug('Speaking: "$text"', tag: 'VOICE_ORCHESTRATOR');
       
+      unawaited(_bargeInMonitor.start(() {
+        Logger.info('Barge-in: stopping TTS (natural pauses)', tag: 'VOICE_ORCHESTRATOR');
+        naturalTts.stop();
+        _isSpeaking = false;
+        _isTtsSpeaking = false;
+        _updateState(VoiceProcessingState.idle);
+      }));
+
       await naturalTts.speakWithNaturalPauses(text);
       
       _isSpeaking = false;
@@ -315,13 +438,10 @@ class VoiceOrchestrator {
       
       Logger.info('Speech completed, transitioning to listening...', tag: 'VOICE_ORCHESTRATOR');
       
-      // 🎯 NOU: Notifică că TTS-ul s-a terminat
       _onTtsCompleted?.call();
       
-      // 🔔 Beep după conversația AI - utilizatorul știe că trebuie să răspundă
       beepService.playConversationEndBeep();
       
-      // 🎯 AUTOMAT: Pornește ascultarea imediat după ce AI termină de vorbit
       await _startAutomaticListening();
       
     } catch (e) {
@@ -329,6 +449,8 @@ class VoiceOrchestrator {
       _isSpeaking = false;
       _isTtsSpeaking = false;
       _updateState(VoiceProcessingState.error);
+    } finally {
+      await _bargeInMonitor.stop();
     }
   }
   
@@ -336,9 +458,10 @@ class VoiceOrchestrator {
   Future<void> speakThenListen(
     String text, {
     VoiceEmotion emotion = VoiceEmotion.calm,
-    int timeoutSeconds = 30,
-    int pauseForSeconds = 10,
+    int? timeoutSeconds,
+    int? pauseForSeconds,
     String localeId = 'ro_RO',
+    stt.ListenMode listenMode = stt.ListenMode.dictation,
   }) async {
     await speak(text, emotion: emotion);
     await Future.delayed(const Duration(milliseconds: postTtsBufferMs));
@@ -346,6 +469,7 @@ class VoiceOrchestrator {
       timeoutSeconds: timeoutSeconds,
       pauseForSeconds: pauseForSeconds,
       localeId: localeId,
+      listenMode: listenMode,
     );
   }
 
@@ -366,6 +490,7 @@ class VoiceOrchestrator {
   /// 🛑 Oprește vorbirea
   Future<void> stopSpeaking() async {
     try {
+      await _bargeInMonitor.stop();
       if (_isSpeaking) {
         await naturalTts.stop();
         _isSpeaking = false;
@@ -398,23 +523,34 @@ class VoiceOrchestrator {
   }
   
   /// ▶️ Reia listening-ul după pauză
-  Future<void> resumeListening({String localeId = 'ro_RO', int timeoutSeconds = 30, int pauseForSeconds = 10}) async {
+  Future<void> resumeListening({
+    String localeId = 'ro_RO',
+    int? timeoutSeconds,
+    int? pauseForSeconds,
+    stt.ListenMode listenMode = stt.ListenMode.dictation,
+  }) async {
     try {
       if (!_isListening) {
         _isListening = true;
         _updateState(VoiceProcessingState.listening);
-        
+        final t = timeoutSeconds ?? defaultListenMaxSeconds;
+        final p = pauseForSeconds ?? defaultPauseForSeconds;
         await speechToText.listen(
           localeId: localeId,
-          listenFor: Duration(seconds: timeoutSeconds),
-          pauseFor: Duration(seconds: pauseForSeconds),
-          onResult: (result) {
-            if (result.finalResult) {
-              Logger.debug('Final result: "${result.recognizedWords}"', tag: 'VOICE_ORCHESTRATOR');
-              beepService.playProcessingStartBeeps();
-              _onSpeechResult?.call(result.recognizedWords);
-            }
-          },
+          listenFor: Duration(seconds: t),
+          pauseFor: Duration(seconds: p),
+          listenOptions: _buildListenOptions(
+            listenMode: listenMode,
+            partialResults: true,
+          ),
+          onResult: (result) => _handleSpeechListenResult(
+            result,
+            effectiveTimeout: t,
+            effectivePause: p,
+            localeId: localeId,
+            partialResults: true,
+            listenMode: listenMode,
+          ),
         );
         
         Logger.info('Listening resumed', tag: 'VOICE_ORCHESTRATOR');
@@ -487,10 +623,7 @@ class VoiceOrchestrator {
       
       // Verifică dacă nu sunt deja în proces de ascultare
       if (!_isListening && !_isSpeaking) {
-        await listen(
-          timeoutSeconds: 30,
-          pauseForSeconds: 3, // Pauză scurtă pentru detectarea tăcerii
-        );
+        await listen();
       }
     } catch (e) {
       Logger.error('Auto-listen error: $e', tag: 'VOICE_ORCHESTRATOR', error: e);
@@ -499,7 +632,7 @@ class VoiceOrchestrator {
 
   /// 🎯 NOU: Pornește automat ascultarea pentru confirmare
   Future<void> startListeningForConfirmation({
-    int timeoutSeconds = 30,
+    int? timeoutSeconds,
     String localeId = 'ro_RO',
   }) async {
     if (_conversationManager?.currentState == VoiceConversationState.waitingForConfirmation) {
@@ -508,11 +641,11 @@ class VoiceOrchestrator {
       // Așteaptă puțin înainte de a porni ascultarea
       await Future.delayed(const Duration(milliseconds: 500));
       
-      // Pornește ascultarea
       await listen(
-        timeoutSeconds: timeoutSeconds,
+        timeoutSeconds: timeoutSeconds ?? confirmationListenMaxSeconds,
         localeId: localeId,
-        pauseForSeconds: 10,
+        pauseForSeconds: confirmationPauseForSeconds,
+        listenMode: stt.ListenMode.confirmation,
       );
     } else {
       Logger.debug('Not in confirmation state, skipping auto-listen', tag: 'VOICE_ORCHESTRATOR');
@@ -543,6 +676,7 @@ class VoiceOrchestrator {
   
   /// 🧹 Dispune complet singleton-ul (doar la închiderea aplicației)
   void disposeCompletely() {
+    unawaited(_bargeInMonitor.stop());
     stop();
     _naturalTts?.dispose();
     _beepService?.dispose();

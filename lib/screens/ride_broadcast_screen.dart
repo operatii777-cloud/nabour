@@ -559,6 +559,44 @@ class _BroadcastCardState extends State<_BroadcastCard> {
   bool _isOffering = false;
   bool _isReplying = false;
   final _replyController = TextEditingController();
+  /// Profilul utilizatorului curent (o singură citire Firestore per card, nu la fiecare răspuns/ofertă).
+  Map<String, dynamic>? _myProfileCache;
+
+  @override
+  void initState() {
+    super.initState();
+    _prefetchMyProfile();
+  }
+
+  Future<void> _prefetchMyProfile() async {
+    final uid = widget.currentUid;
+    if (uid == null || uid.isEmpty) return;
+    try {
+      final doc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(uid)
+          .get();
+      if (!mounted) return;
+      setState(() => _myProfileCache = doc.data());
+    } catch (e) {
+      Logger.error('prefetch profile for broadcast card: $e', error: e);
+    }
+  }
+
+  Future<Map<String, dynamic>> _resolveMyProfile() async {
+    if (_myProfileCache != null) return _myProfileCache!;
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) return {};
+    try {
+      final userDoc =
+          await FirebaseFirestore.instance.collection('users').doc(uid).get();
+      final data = userDoc.data() ?? {};
+      if (mounted) setState(() => _myProfileCache = data);
+      return data;
+    } catch (_) {
+      return {};
+    }
+  }
 
   @override
   void dispose() {
@@ -617,12 +655,7 @@ class _BroadcastCardState extends State<_BroadcastCard> {
       final uid = FirebaseAuth.instance.currentUser?.uid;
       if (uid == null) return;
 
-      // Preia detaliile șoferului
-      final userDoc = await FirebaseFirestore.instance
-          .collection('users')
-          .doc(uid)
-          .get();
-      final data = userDoc.data() ?? {};
+      final data = await _resolveMyProfile();
       final name = data['displayName'] as String? ?? 'Vecin';
       final avatar = data['avatar'] as String? ?? '🚗';
       final brand = data['carBrand'] as String? ?? '';
@@ -673,11 +706,7 @@ class _BroadcastCardState extends State<_BroadcastCard> {
       final uid = FirebaseAuth.instance.currentUser?.uid;
       if (uid == null) return;
 
-      final userDoc = await FirebaseFirestore.instance
-          .collection('users')
-          .doc(uid)
-          .get();
-      final data = userDoc.data() ?? {};
+      final data = await _resolveMyProfile();
       final name = data['displayName'] as String? ?? 'Vecin';
       final avatar = data['avatar'] as String? ?? '🙂';
 
@@ -1333,9 +1362,12 @@ class _HistoryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final date = '${request.createdAt.day.toString().padLeft(2,'0')}.'
-        '${request.createdAt.month.toString().padLeft(2,'0')}.'
-        '${request.createdAt.year}';
+    final local = request.createdAt.toLocal();
+    final date = '${local.day.toString().padLeft(2, '0')}.'
+        '${local.month.toString().padLeft(2, '0')}.'
+        '${local.year}, '
+        '${local.hour.toString().padLeft(2, '0')}:'
+        '${local.minute.toString().padLeft(2, '0')}';
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(14),
@@ -1482,8 +1514,8 @@ class _NewRideBroadcastScreenState
 
       final now = DateTime.now();
 
-      // Preia locația, profilul și contactele în paralel (cache-ul din ContactsService
-      // face ca postarea să fie instant, fără să mai „înghețe” butonul).
+      // Preia locația, profilul și contactele în paralel. Contactele din cache
+      // (fără forceRefresh) evită o rescanare completă a agendei la fiecare postare.
       Future<geo.Position?> safeGetPosition() async {
         try {
           return await geo.Geolocator.getCurrentPosition(
@@ -1510,7 +1542,7 @@ class _NewRideBroadcastScreenState
       final futures = await Future.wait([
         safeGetPosition(),
         safeGetUserData(),
-        ContactsService().loadContactUids(forceRefresh: true),
+        ContactsService().loadContactUids(forceRefresh: false),
       ]);
 
       final geo.Position? pos = futures[0] as geo.Position?;

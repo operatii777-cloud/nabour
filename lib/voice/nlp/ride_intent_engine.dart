@@ -210,8 +210,21 @@ class RideIntentEngine {
       }
     }
 
+    // 3b. Adresă / loc spus direct, fără „vreau cursă la…” (ex. „Șoseaua Vergului 22”)
+    // Evită clasificarea greșită ca smallTalk doar pentru că fraza are puține cuvinte.
+    if (bestType == RideIntentType.unknown &&
+        _looksLikeFreeformAddress(normalized)) {
+      bestType = RideIntentType.rideRequest;
+      bestConfidence = 0.88;
+      destination = raw.trim();
+    }
+
     // 4. Conversație fluidă: orice frază scurtă nerecunoscută → smallTalk (răspundem mereu, redirecționăm la cursă)
-    final rideKeywords = ['cursa', 'merg', 'taxi', 'ride', 'destinatie', 'destination', 'adresa', 'address'];
+    final rideKeywords = [
+      'cursa', 'merg', 'taxi', 'ride', 'destinatie', 'destination', 'adresa', 'address',
+      'soseaua', 'strada', 'bulevard', 'calea ', 'aleea ', 'splai', 'piata ', 'drumul ',
+      'intrarea', 'fundatura', 'blocul ', 'scara ', 'sectorul ', 'cartierul ',
+    ];
     final looksLikeRide = rideKeywords.any((k) => normalized.contains(k));
     if (bestType == RideIntentType.unknown && normalized.isNotEmpty && !looksLikeRide) {
       if (words.length <= 6) {
@@ -229,6 +242,51 @@ class RideIntentEngine {
       confidence: bestConfidence.clamp(0.0, 1.0),
       requiresConfirmation: bestType == RideIntentType.rideRequest || bestType == RideIntentType.changeDestination,
     );
+  }
+
+  /// Rute precum „Șoseaua X 22”, „Str. Y”, „Bd. Z”, „nr. 10” (text deja normalizat fără diacritice).
+  bool _looksLikeFreeformAddress(String normalized) {
+    if (normalized.length < 6) return false;
+
+    const hints = [
+      'soseaua ',
+      'soseaua.',
+      'sos ',
+      'sos.',
+      'strada ',
+      'strada.',
+      'str ',
+      'str.',
+      'bulevard',
+      'calea ',
+      'calea.',
+      'aleea ',
+      'aleea.',
+      'alee ',
+      'splai',
+      'piata ',
+      'piata.',
+      'drumul ',
+      'intrarea ',
+      'fundatura',
+      'complexul ',
+      'cartierul ',
+      'sectorul ',
+      'sector ',
+      'blocul ',
+      'bl ',
+      'bl.',
+      'scara ',
+      'sc.',
+    ];
+    for (final h in hints) {
+      if (normalized.contains(h)) return true;
+    }
+    if (RegExp(r'\b(nr|numar|numarul)\b').hasMatch(normalized) &&
+        normalized.length >= 10) {
+      return true;
+    }
+    return false;
   }
 
   /// 🗺️ Extrage destinația din text

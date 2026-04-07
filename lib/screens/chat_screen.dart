@@ -63,6 +63,8 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
   int _lastMessageCount = 0;
   bool _didMarkReadOnOpen = false;
   bool _uploadingMedia = false;
+  /// Mesaje text trimise, afișate imediat până vine snapshot-ul Firestore.
+  final List<ChatMessage> _pendingOutgoing = [];
 
   bool get _supportsRichAttachments =>
       widget.collectionName == 'ride_requests' ||
@@ -225,11 +227,6 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
     _textController.clear();
     _isTyping = false;
     _setTyping(false);
-    setState(() {
-      _showQuickReplies = true;
-      _replyingTo = null;
-    });
-
     final msg = ChatMessage(
       senderId: _myUid!,
       text: trimmed,
@@ -247,8 +244,11 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
       replyToSenderId: replyRef?.senderId,
     );
 
-    // Optimistic local insert is disabled for now as StreamBuilder handles it fast enough
-    // setState(() => _messages.add(msg));
+    setState(() {
+      _showQuickReplies = true;
+      _replyingTo = null;
+      _pendingOutgoing.add(msg);
+    });
     _scrollToBottom();
 
     try {
@@ -270,11 +270,51 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
       ));
     } catch (e) {
       if (mounted) {
+        setState(() {
+          _pendingOutgoing.removeWhere(
+            (m) =>
+                m.senderId == _myUid &&
+                m.text == trimmed &&
+                m.type == MessageType.text &&
+                m.replyToText == msg.replyToText,
+          );
+        });
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Mesajul nu a putut fi trimis.')),
         );
       }
     }
+  }
+
+  bool _messageMatchesPending(ChatMessage server, ChatMessage pending) {
+    if (server.senderId != pending.senderId ||
+        server.text != pending.text ||
+        server.type != pending.type) {
+      return false;
+    }
+    if (server.replyToText != pending.replyToText) return false;
+    return true;
+  }
+
+  List<ChatMessage> _messagesForUi(List<ChatMessage> server) {
+    final stillPending = _pendingOutgoing
+        .where(
+          (p) => !server.any((s) => _messageMatchesPending(s, p)),
+        )
+        .toList();
+    if (stillPending.length != _pendingOutgoing.length) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        setState(() {
+          _pendingOutgoing
+            ..clear()
+            ..addAll(stillPending);
+        });
+      });
+    }
+    final merged = [...server, ...stillPending]
+      ..sort((a, b) => a.timestamp.compareTo(b.timestamp));
+    return merged;
   }
 
   String? _chatMediaStoragePrefix() {
@@ -570,7 +610,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
       body: StreamBuilder<List<ChatMessage>>(
         stream: _getMessagesStream(),
         builder: (context, snapshot) {
-          final msgs = snapshot.data ?? [];
+          final msgs = _messagesForUi(snapshot.data ?? []);
           
           // markAllRead o singura data la deschidere, nu la fiecare mesaj nou
           if (snapshot.hasData && !_didMarkReadOnOpen) {

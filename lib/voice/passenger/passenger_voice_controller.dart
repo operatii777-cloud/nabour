@@ -334,16 +334,23 @@ class PassengerVoiceController extends ChangeNotifier {
       final localeId = _languageCodeToLocaleId(languageCode);
       await _tts.setLanguage(languageCode);
       
-      // Continuous listening imediat după salut
-      await _voiceOrchestrator.listen(timeoutSeconds: 30, pauseForSeconds: 10, localeId: localeId);
+      // După salut: beep + ascultare scurtă (apoi procesare), fără așteptare 30s
+      await _voiceOrchestrator.listen(
+        timeoutSeconds: VoiceOrchestrator.initialAddressListenSeconds,
+        pauseForSeconds: VoiceOrchestrator.initialAddressPauseForSeconds,
+        localeId: localeId,
+      );
     } catch (_) {}
   }
 
   /// Start a single listening session (used by integration loop)
-  Future<void> listenOnce({int timeoutSeconds = 30, int pauseForSeconds = 3, String? localeId}) async {
-    // ✅ NOU: Obțin limba curentă dacă nu este specificată
+  Future<void> listenOnce({int? timeoutSeconds, int? pauseForSeconds, String? localeId}) async {
     final finalLocaleId = localeId ?? _languageCodeToLocaleId(await _getCurrentLanguageCode());
-    await _voiceOrchestrator.listen(timeoutSeconds: timeoutSeconds, pauseForSeconds: pauseForSeconds, localeId: finalLocaleId);
+    await _voiceOrchestrator.listen(
+      timeoutSeconds: timeoutSeconds,
+      pauseForSeconds: pauseForSeconds,
+      localeId: finalLocaleId,
+    );
   }
 
   Future<void> enableWakeWordDetection() async {
@@ -441,11 +448,7 @@ class PassengerVoiceController extends ChangeNotifier {
     final localeId = _languageCodeToLocaleId(languageCode);
     await _tts.setLanguage(languageCode);
     
-    await _voiceOrchestrator.listen(
-      timeoutSeconds: 25,
-      pauseForSeconds: 6,
-      localeId: localeId,
-    );
+    await _voiceOrchestrator.listen(localeId: localeId);
     if (_continuousListeningEnabled) {
       await Future.delayed(const Duration(milliseconds: 400));
       await _startContinuousListeningLoop();

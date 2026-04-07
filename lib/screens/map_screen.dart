@@ -65,6 +65,7 @@ import 'package:nabour_app/models/neighbor_location_model.dart';
 import 'package:nabour_app/services/neighbor_location_service.dart';
 import 'package:nabour_app/features/map_neighbor_markers/neighbor_activity_feed_panel.dart';
 import 'package:nabour_app/features/map_neighbor_markers/neighbor_friend_marker_icons.dart';
+import 'package:nabour_app/features/map_neighbor_markers/neighbor_marker_display_layout.dart';
 import 'package:nabour_app/features/map_neighbor_markers/neighbor_map_feed_controller.dart';
 import 'package:nabour_app/features/map_neighbor_markers/neighbor_map_visibility_publish.dart';
 import 'package:nabour_app/features/map_neighbor_markers/neighbor_saved_places_cache.dart';
@@ -1644,6 +1645,30 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
     }());
   }
 
+  void _showMapOrientationPlacementSnackBar(String message) {
+    if (!mounted) return;
+    final messenger = ScaffoldMessenger.of(context);
+    messenger.hideCurrentSnackBar();
+    messenger.showSnackBar(
+      SnackBar(
+        content: Text(message),
+        duration: const Duration(seconds: 5),
+        behavior: SnackBarBehavior.floating,
+        margin: const EdgeInsets.fromLTRB(12, 0, 12, 96),
+        action: SnackBarAction(
+          label: 'Închide',
+          textColor: const Color(0xFF7DD3FC),
+          onPressed: () {
+            messenger.hideCurrentSnackBar();
+            if (mounted) {
+              setState(() => _awaitingMapOrientationPinPlacement = false);
+            }
+          },
+        ),
+      ),
+    );
+  }
+
   Future<void> _finishMapOrientationPinPlacement(Point point) async {
     final lat = point.coordinates.lat.toDouble();
     final lng = point.coordinates.lng.toDouble();
@@ -1662,6 +1687,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
       return;
     }
     if (!mounted) return;
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
     setState(() {
       _awaitingMapOrientationPinPlacement = false;
       _showSavedHomePinOnMap = false;
@@ -1747,11 +1773,8 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
                 onTap: () {
                   Navigator.pop(ctx);
                   setState(() => _awaitingMapOrientationPinPlacement = true);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Ține apăsat pe hartă pentru noul reper.'),
-                      duration: Duration(seconds: 3),
-                    ),
+                  _showMapOrientationPlacementSnackBar(
+                    'Ține apăsat pe hartă pentru noul reper.',
                   );
                 },
               ),
@@ -5013,6 +5036,11 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
       _maybeFriendsTogetherHint(filteredNeighbors);
     }
 
+    final layoutPeers = filteredNeighbors
+        .where((n) => !_nearbyDriverAnnotations.containsKey(n.uid))
+        .toList();
+    final displayByUid = NeighborMarkerDisplayLayout.compute(layoutPeers);
+
     // ── Adaugă / actualizează vecini noi (cu density-based sizing) ────
     for (final neighbor in filteredNeighbors) {
       // ✅ FIX: Dacă userul este deja afișat ca Mașină (strat Șoferi), eliminăm
@@ -5127,7 +5155,11 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
       final int tColor = isDriving ? 0xFF1A237E : 0xFF7C3AED;
       final double tSize = isDriving ? 11.5 : 12.5;
 
-        final geom = MapboxUtils.createPoint(neighbor.lat, neighbor.lng);
+        final disp = displayByUid[neighbor.uid];
+        final geom = MapboxUtils.createPoint(
+          disp?.lat ?? neighbor.lat,
+          disp?.lng ?? neighbor.lng,
+        );
 
         if (_neighborAnnotations.containsKey(neighbor.uid)) {
           final existing = _neighborAnnotations[neighbor.uid]!;
@@ -8839,11 +8871,8 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
         },
         onPlaceMapOrientationPin: () {
           setState(() => _awaitingMapOrientationPinPlacement = true);
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Ține apăsat pe hartă la locul reperului tău (ex. zona „acasă”).'),
-              duration: Duration(seconds: 4),
-            ),
+          _showMapOrientationPlacementSnackBar(
+            'Ține apăsat pe hartă la locul reperului tău (ex. zona „acasă”).',
           );
         },
         onEnableSavedHomePinOnMap: () => unawaited(_enableSavedHomePinFromDrawer()),
@@ -8876,21 +8905,25 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
                             ? MapboxStyles.DARK
                             : MapboxStyles.MAPBOX_STREETS),
                   ),
-                  if (_awaitingMapOrientationPinPlacement)
+                  if (_awaitingMapOrientationPinPlacement) ...[
                     Positioned(
                       top: 68,
                       left: 12,
                       right: 12,
                       child: Material(
-                        color: Colors.black.withValues(alpha: 0.88),
-                        elevation: 4,
+                        color: Colors.black.withValues(alpha: 0.92),
+                        elevation: 6,
                         borderRadius: BorderRadius.circular(14),
                         child: Padding(
-                          padding: const EdgeInsets.only(left: 10, top: 4, bottom: 4, right: 4),
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
                           child: Row(
                             children: [
-                              const Icon(Icons.touch_app_rounded, color: Color(0xFF38BDF8), size: 22),
-                              const SizedBox(width: 10),
+                              const Icon(Icons.add_location_alt_rounded,
+                                  color: Color(0xFF38BDF8), size: 24),
+                              const SizedBox(width: 8),
+                              const Icon(Icons.touch_app_rounded,
+                                  color: Colors.white70, size: 20),
+                              const SizedBox(width: 8),
                               const Expanded(
                                 child: Text(
                                   'Ține apăsat pe hartă pentru a fixa reperul.',
@@ -8901,17 +8934,68 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
                                   ),
                                 ),
                               ),
+                              TextButton(
+                                onPressed: () {
+                                  ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                                  setState(() => _awaitingMapOrientationPinPlacement = false);
+                                },
+                                style: TextButton.styleFrom(
+                                  foregroundColor: const Color(0xFF38BDF8),
+                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                                  minimumSize: const ui.Size(0, 40),
+                                ),
+                                child: const Text('Renunță', style: TextStyle(fontWeight: FontWeight.w800)),
+                              ),
                               IconButton(
-                                icon: const Icon(Icons.close_rounded, color: Colors.white70, size: 22),
-                                tooltip: 'Anulează',
-                                onPressed: () =>
-                                    setState(() => _awaitingMapOrientationPinPlacement = false),
+                                icon: const Icon(Icons.close_rounded, color: Colors.white, size: 26),
+                                tooltip: 'Închide (anulează plasarea)',
+                                constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
+                                padding: EdgeInsets.zero,
+                                onPressed: () {
+                                  ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                                  setState(() => _awaitingMapOrientationPinPlacement = false);
+                                },
                               ),
                             ],
                           ),
                         ),
                       ),
                     ),
+                    // Simbol reper pe hartă în timpul plasării (indicator de mod, nu poziție exactă).
+                    Positioned(
+                      left: 0,
+                      right: 0,
+                      bottom: 120,
+                      child: IgnorePointer(
+                        child: Center(
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+                            decoration: BoxDecoration(
+                              color: Colors.black.withValues(alpha: 0.72),
+                              borderRadius: BorderRadius.circular(24),
+                              border: Border.all(color: const Color(0xFF38BDF8).withValues(alpha: 0.65), width: 1.2),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(Icons.place_rounded,
+                                    color: Colors.orange.shade300, size: 28),
+                                const SizedBox(width: 10),
+                                const Text(
+                                  'Reper orientare',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w800,
+                                    fontSize: 14,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                   for (final s in _magicEventAuraSlots)
                     Positioned(
                       left: s.screenCenter.dx - s.widgetExtent / 2,
@@ -10796,7 +10880,6 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
                   sheetContext: sheetCtx,
                   mapScreenContext: mapScreenContext,
                   onOpenFavorite: _openAddFavoriteFlow,
-                  onStartInAppNav: _startInAppNavigation,
                 ),
               ],
             ),
@@ -13304,7 +13387,6 @@ class _MapTapGeocodeSheetBody extends StatefulWidget {
     required this.sheetContext,
     required this.mapScreenContext,
     required this.onOpenFavorite,
-    required this.onStartInAppNav,
   });
 
   final double lat;
@@ -13312,7 +13394,6 @@ class _MapTapGeocodeSheetBody extends StatefulWidget {
   final BuildContext sheetContext;
   final BuildContext mapScreenContext;
   final Future<void> Function(double lat, double lng, String address) onOpenFavorite;
-  final Future<void> Function(double destLat, double destLng, String label) onStartInAppNav;
 
   @override
   State<_MapTapGeocodeSheetBody> createState() => _MapTapGeocodeSheetBodyState();
@@ -13360,17 +13441,8 @@ class _MapTapGeocodeSheetBodyState extends State<_MapTapGeocodeSheetBody> {
               },
             ),
             ListTile(
-              leading: const Icon(Icons.explore_rounded, color: Color(0xFF7C3AED)),
-              title: const Text('Navigare cu Nabour'),
-              subtitle: const Text('Traseu pe harta Nabour + instrucțiuni voce'),
-              onTap: () {
-                Navigator.pop(sheetCtx);
-                unawaited(widget.onStartInAppNav(lat, lng, address));
-              },
-            ),
-            ListTile(
               leading: const Icon(Icons.navigation_outlined, color: Colors.green),
-              title: const Text('Alte aplicații (Google Maps / Waze)'),
+              title: const Text('Navighează cu Google Maps / Waze'),
               onTap: () {
                 Navigator.pop(sheetCtx);
                 WidgetsBinding.instance.addPostFrameCallback((_) {

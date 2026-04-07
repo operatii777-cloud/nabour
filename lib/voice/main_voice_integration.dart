@@ -282,9 +282,11 @@ class MainVoiceIntegration extends ChangeNotifier {
         lastInteractionTime: DateTime.now(),
       );
       
-      // 🎧 Încep să ascult cu limba corectă
+      // 🎧 După salut: fereastră scurtă pentru adresă + beep de „ascult”
       await _voiceOrchestrator.listen(
-        localeId: localeId, // ✅ NOU: Folosește limba detectată
+        localeId: localeId,
+        timeoutSeconds: VoiceOrchestrator.initialAddressListenSeconds,
+        pauseForSeconds: VoiceOrchestrator.initialAddressPauseForSeconds,
       );
       
       notifyListeners();
