@@ -4,21 +4,31 @@
 // Inlocuieste cardul mare care se suprapunea peste panelul de adrese.
 
 import 'package:flutter/material.dart';
+import 'package:nabour_app/screens/map/map_voice_controller.dart';
 import 'package:nabour_app/voice/integration/friendsride_voice_integration.dart';
 import 'package:nabour_app/voice/states/voice_interaction_states.dart';
 
 /// Buton pulsatoriu flotant pentru controlul asistentului vocal.
 /// Afisat in dreapta hartii, deasupra panelului de adrese.
 /// Nu se suprapune niciodata peste UI-ul de introducere adrese.
+///
+/// Accepta fie [voiceIntegration] (FriendsRide AI), fie [controller]
+/// (MapVoiceController pentru comenzi de cartier). Cel putin unul
+/// dintre acestia trebuie furnizat.
 class MapVoiceOverlay extends StatefulWidget {
-  final FriendsRideVoiceIntegration voiceIntegration;
+  final FriendsRideVoiceIntegration? voiceIntegration;
+  final MapVoiceController? controller;
   final Future<void> Function()? onStartVoice;
 
   const MapVoiceOverlay({
     super.key,
-    required this.voiceIntegration,
+    this.voiceIntegration,
+    this.controller,
     this.onStartVoice,
-  });
+  }) : assert(
+          voiceIntegration != null || controller != null,
+          'Either voiceIntegration or controller must be provided',
+        );
 
   @override
   State<MapVoiceOverlay> createState() => _MapVoiceOverlayState();
@@ -47,12 +57,13 @@ class _MapVoiceOverlayState extends State<MapVoiceOverlay>
       duration: const Duration(milliseconds: 1200),
     )..repeat();
     _rotateAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(_rotateController);
-    widget.voiceIntegration.addListener(_onVoiceStateChanged);
+    widget.voiceIntegration?.addListener(_onVoiceStateChanged);
+    widget.controller?.addListener(_onControllerStateChanged);
   }
 
   void _onVoiceStateChanged() {
     if (!mounted) return;
-    final rideState = widget.voiceIntegration.currentContext.rideState;
+    final rideState = widget.voiceIntegration!.currentContext.rideState;
     // Hide the greeting bubble once the AI has processed a destination and placed a pin
     final pinVisible = rideState != RideFlowState.idle &&
         rideState != RideFlowState.listeningForInitialCommand &&
@@ -62,18 +73,27 @@ class _MapVoiceOverlayState extends State<MapVoiceOverlay>
     });
   }
 
+  void _onControllerStateChanged() {
+    if (mounted) setState(() {});
+  }
+
   @override
   void didUpdateWidget(MapVoiceOverlay oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.voiceIntegration != widget.voiceIntegration) {
-      oldWidget.voiceIntegration.removeListener(_onVoiceStateChanged);
-      widget.voiceIntegration.addListener(_onVoiceStateChanged);
+      oldWidget.voiceIntegration?.removeListener(_onVoiceStateChanged);
+      widget.voiceIntegration?.addListener(_onVoiceStateChanged);
+    }
+    if (oldWidget.controller != widget.controller) {
+      oldWidget.controller?.removeListener(_onControllerStateChanged);
+      widget.controller?.addListener(_onControllerStateChanged);
     }
   }
 
   @override
   void dispose() {
-    widget.voiceIntegration.removeListener(_onVoiceStateChanged);
+    widget.voiceIntegration?.removeListener(_onVoiceStateChanged);
+    widget.controller?.removeListener(_onControllerStateChanged);
     _pulseController.dispose();
     _rotateController.dispose();
     super.dispose();
@@ -133,10 +153,138 @@ class _MapVoiceOverlayState extends State<MapVoiceOverlay>
     return 'Unde doriți să mergeți?';
   }
 
+  // ── Helpers for MapVoiceController state ────────────────────────────
+
+  Color _controllerStateColor(VoiceAssistantState state) {
+    switch (state) {
+      case VoiceAssistantState.listening:
+        return Colors.red.shade600;
+      case VoiceAssistantState.processing:
+        return Colors.orange.shade600;
+      case VoiceAssistantState.success:
+        return Colors.green.shade600;
+      case VoiceAssistantState.error:
+        return Colors.grey.shade700;
+      default:
+        return const Color(0xFF4F46E5);
+    }
+  }
+
+  IconData _controllerStateIcon(VoiceAssistantState state) {
+    switch (state) {
+      case VoiceAssistantState.listening:
+        return Icons.hearing_rounded;
+      case VoiceAssistantState.processing:
+        return Icons.settings_rounded;
+      case VoiceAssistantState.success:
+        return Icons.check_rounded;
+      case VoiceAssistantState.error:
+        return Icons.close_rounded;
+      default:
+        return Icons.mic_none_rounded;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    final state = widget.voiceIntegration.currentContext.processingState;
-    final history = widget.voiceIntegration.currentContext.conversationHistory;
+    // When a MapVoiceController is provided, render a simplified mic button
+    // driven by the controller's state.
+    if (widget.controller != null) {
+      return _buildControllerOverlay(context);
+    }
+    return _buildVoiceIntegrationOverlay(context);
+  }
+
+  Widget _buildControllerOverlay(BuildContext context) {
+    final ctrl = widget.controller!;
+    final ctrlState = ctrl.state;
+    final color = _controllerStateColor(ctrlState);
+    final icon = _controllerStateIcon(ctrlState);
+    final pulsing = ctrlState == VoiceAssistantState.listening;
+    final rotating = ctrlState == VoiceAssistantState.processing;
+    final bottomInset = MediaQuery.of(context).padding.bottom;
+
+    return Positioned(
+      right: 12,
+      bottom: bottomInset + 390,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.end,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (ctrl.feedbackMessage.isNotEmpty &&
+              ctrlState != VoiceAssistantState.idle)
+            GestureDetector(
+              onTap: () => setState(() {}),
+              child: Container(
+                constraints: const BoxConstraints(maxWidth: 220),
+                margin: const EdgeInsets.only(bottom: 8, right: 4),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                decoration: BoxDecoration(
+                  color: Colors.black.withAlpha(200),
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: Text(
+                  ctrl.feedbackMessage,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                    height: 1.4,
+                  ),
+                  maxLines: 3,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ),
+          AnimatedBuilder(
+            animation: _pulseAnimation,
+            builder: (context, child) {
+              final scale = pulsing ? _pulseAnimation.value : 1.0;
+              return Transform.scale(scale: scale, child: child);
+            },
+            child: GestureDetector(
+              onTap: () {
+                if (ctrlState == VoiceAssistantState.idle) {
+                  ctrl.startListening();
+                } else {
+                  ctrl.stopListening();
+                }
+              },
+              child: Container(
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                  color: color,
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: color.withAlpha(120),
+                      blurRadius: pulsing ? 18 : 8,
+                      spreadRadius: pulsing ? 4 : 1,
+                    ),
+                  ],
+                ),
+                child: rotating
+                    ? AnimatedBuilder(
+                        animation: _rotateAnimation,
+                        builder: (_, __) => Transform.rotate(
+                          angle: _rotateAnimation.value * 6.2832,
+                          child: Icon(icon, color: Colors.white, size: 24),
+                        ),
+                      )
+                    : Icon(icon, color: Colors.white, size: 24),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildVoiceIntegrationOverlay(BuildContext context) {
+    final state = widget.voiceIntegration!.currentContext.processingState;
+    final history = widget.voiceIntegration!.currentContext.conversationHistory;
     final color = _stateColor(state);
     final icon = _stateIcon(state);
     final pulsing = _shouldPulse(state);
@@ -185,7 +333,7 @@ class _MapVoiceOverlayState extends State<MapVoiceOverlay>
               GestureDetector(
                 onTap: () async {
                   try {
-                    await widget.voiceIntegration.stopVoiceInteraction();
+                    await widget.voiceIntegration!.stopVoiceInteraction();
                   } catch (_) {}
                 },
                 child: Container(

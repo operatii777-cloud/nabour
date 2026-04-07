@@ -50,8 +50,6 @@ import 'package:nabour_app/services/local_address_database.dart';
 import 'package:nabour_app/models/saved_address_model.dart';
 import 'package:nabour_app/l10n/app_localizations.dart';
 import 'package:nabour_app/widgets/assistant_status_overlay.dart';
-import 'map/map_voice_assistant_ui.dart';
-import 'map/map_voice_controller.dart';
 import 'package:nabour_app/services/connectivity_service.dart';
 import 'package:nabour_app/providers/assistant_status_provider.dart';
 import 'package:nabour_app/widgets/map/map_voice_overlay.dart';
@@ -613,7 +611,6 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
   bool _isProcessingDecline = false;
   bool _shouldResetRoute = false;
   final GlobalKey<RideRequestPanelState> _rideRequestPanelKey = GlobalKey<RideRequestPanelState>();
-  late MapVoiceController _voiceController;
   final Map<String, PointAnnotation> _rideBroadcastAnnotations = {};
   final Map<String, RideBroadcastRequest> _rideBroadcastData = {};
   StreamSubscription? _rideBroadcastsSubscription;
@@ -826,10 +823,27 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
     }
   }
   @override
-  @override
   void initState() {
     super.initState();
-import 'map/map_voice_assistant_ui.dart';
+    _voiceController = MapVoiceController(
+      onPostToChat: (msg) {
+        if (!mounted) return;
+        Navigator.of(context).push(
+          MaterialPageRoute<void>(
+            builder: (_) => const NeighborhoodChatScreen(),
+          ),
+        );
+      },
+      onAddToFavorites: () {
+        if (!mounted) return;
+        Navigator.of(context).push(
+          MaterialPageRoute<void>(
+            builder: (_) => const FavoriteAddressesScreen(),
+          ),
+        );
+      },
+      onScanFeatures: _showPoiCategorySheet,
+    );
     _smartSuggestionsFuture = SmartSuggestionsService().getSuggestions();
     PassengerRideServiceBus.pending.addListener(_onPassengerRideBus);
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -10413,6 +10427,8 @@ import 'map/map_voice_assistant_ui.dart';
                 onAddFriend: _sendFriendRequestFromSearch,
               ),
             ),
+
+          MapVoiceOverlay(controller: _voiceController),
 
           ],
         ),
