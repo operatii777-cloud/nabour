@@ -6,6 +6,8 @@ Document complet de referință (fișier unic în repo): produs, Firestore, Clou
 
 ## 1. Rezumat executiv
 
+*Implementare Backend:* `functions/src/token_transfers.ts`
+
 | Flux | Nume tehnic | Acceptare de la celălalt? | Când se mută soldul |
 |------|-------------|---------------------------|---------------------|
 | Trimitere tokeni către alt user | **transfer direct** — colecție `token_direct_transfers` | **Nu** | Imediat după confirmarea expeditorului (tranzacție atomică) |
@@ -200,7 +202,7 @@ Ajustați sintaxa exactă la versiunea rules. Toate mutările financiare prin Ca
 
 ## 12. Coduri eroare API (contract stabil)
 
-`UNAUTHENTICATED`, `INVALID_AMOUNT`, `SELF_TRANSFER`, `SELF_REQUEST`, `COUNTERPARTY_NOT_FOUND`, `REQUEST_NOT_FOUND`, `REQUEST_NOT_PENDING`, `REQUEST_EXPIRED`, `FORBIDDEN`, `INSUFFICIENT_BALANCE`, `WALLET_FROZEN`, `RATE_LIMITED`, `ALREADY_RESOLVED`, `DUPLICATE_CLIENT_REQUEST` (sau mapare la răspuns idempotent).
+`UNAUTHENTICATED`, `INVALID_AMOUNT`, `SELF_TRANSFER`, `SELF_REQUEST`, `COUNTERPARTY_NOT_FOUND`, `REQUEST_NOT_FOUND`, `REQUEST_NOT_PENDING`, `REQUEST_EXPIRED`, `FORBIDDEN`, `INSUFFICIENT_BALANCE`, `WALLET_FROZEN`, `WALLET_CLOSED`, `RATE_LIMITED`, `ALREADY_RESOLVED`, `DUPLICATE_CLIENT_REQUEST` (sau mapare la răspuns idempotent).
 
 ---
 
