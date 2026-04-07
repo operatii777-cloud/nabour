@@ -1383,7 +1383,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
       if (mounted) {
         setState(() {
           _garageAssetPathForPassengerSlot =
-              pAv.isDefault ? null : pAv.assetPath;
+              (pAv.isDefault || !pAv.allowsPassengerMapSlot) ? null : pAv.assetPath;
           _garageAssetPathForDriverSlot = dAv.isDefault ? null : dAv.assetPath;
           _markerIconCache.clear();
         });
@@ -4103,7 +4103,8 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
               ),
               onPressed: () {
-                Navigator.pop(ctx);
+                if (ctx.mounted) Navigator.pop(ctx);
+                if (!mounted) return;
                 Navigator.push(context, MaterialPageRoute(builder: (_) => const RideBroadcastFeedScreen()));
               },
               child: const Text('VEZI CEREREA ȘI OFERĂ CURSĂ', style: TextStyle(fontWeight: FontWeight.bold)),
@@ -4409,7 +4410,8 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
               ),
               onPressed: () {
-                Navigator.pop(ctx);
+                if (ctx.mounted) Navigator.pop(ctx);
+                if (!mounted) return;
                 setState(() => _isRadarMode = false);
                 // Broadcast flow
                 ScaffoldMessenger.of(context).showSnackBar(
@@ -4420,7 +4422,8 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
             ),
             TextButton(
               onPressed: () {
-                Navigator.pop(ctx);
+                if (ctx.mounted) Navigator.pop(ctx);
+                if (!mounted) return;
                 setState(() => _isRadarMode = false);
               },
               child: const Text('Anulează', style: TextStyle(color: Colors.grey)),
@@ -4559,12 +4562,16 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
   bool _isUpdatingNeighbors = false;
 
   /// Cale asset din bundle pentru avatarul cumpărat (același ID la toți utilizatorii).
-  String? _garageBundlePathForNeighbor(String? carAvatarId) {
+  /// [forPassengerSlot] — când true, vehiculele de tip transport sunt excluse
+  /// (nu trebuie afișate ca marker pasiv pe hartă).
+  String? _garageBundlePathForNeighbor(String? carAvatarId,
+      {bool forPassengerSlot = false}) {
     if (carAvatarId == null || carAvatarId.isEmpty || carAvatarId == 'default_car') {
       return null;
     }
     final av = CarAvatarService().getAvatarById(carAvatarId);
     if (av.isDefault) return null;
+    if (forPassengerSlot && !av.allowsPassengerMapSlot) return null;
     return av.assetPath;
   }
 
@@ -4679,6 +4686,10 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
       _maybeFriendsTogetherHint(filteredNeighbors);
     }
 
+    // ── Spiderify: offset pentru markeri cu coordonate identice ──────────
+    final Map<String, (double lat, double lng)> spiderOffsets =
+        _applySpiderOffset(filteredNeighbors);
+
     // ── Adaugă / actualizează vecini noi (cu density-based sizing) ────
     for (final neighbor in filteredNeighbors) {
       // ✅ FIX: Dacă userul este deja afișat ca Mașină (strat Șoferi), eliminăm
@@ -4713,7 +4724,10 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
 
       final bool isDriving = neighbor.isDriver || neighbor.activityStatus == 'driving';
       final bool hasPhoto = neighbor.photoURL != null && neighbor.photoURL!.isNotEmpty;
-      final String? garagePath = _garageBundlePathForNeighbor(neighbor.carAvatarId);
+      final String? garagePath = _garageBundlePathForNeighbor(
+        neighbor.carAvatarId,
+        forPassengerSlot: !isDriving,
+      );
       // Prioritate setări utilizator: garaj (non-default) → poză profil → fallback standard (emoji / mașină).
 
       if (isDriving) {
@@ -4793,7 +4807,10 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
       final int tColor = isDriving ? 0xFF1A237E : 0xFF7C3AED;
       final double tSize = isDriving ? 11.5 : 12.5;
 
-        final geom = MapboxUtils.createPoint(neighbor.lat, neighbor.lng);
+        // Folosim coordonatele ajustate (spider offset) dacă există, altfel cele originale.
+        final (double displayLat, double displayLng) =
+            spiderOffsets[neighbor.uid] ?? (neighbor.lat, neighbor.lng);
+        final geom = MapboxUtils.createPoint(displayLat, displayLng);
 
         if (_neighborAnnotations.containsKey(neighbor.uid)) {
           final existing = _neighborAnnotations[neighbor.uid]!;
@@ -4844,6 +4861,59 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
     } finally {
       _isUpdatingNeighbors = false;
     }
+  }
+
+  /// Detectează vecini cu coordonate identice (rotunjite la 4 zecimale) și aplică
+  /// un offset geometric mic (~0.0001 grade latitudine, ~11 m la ecuator, ~5–6 m
+  /// la 60° latitudine) astfel încât markerii să formeze un cerc în jurul punctului
+  /// original (spiderify), evitând suprapunerea completă.
+  ///
+  /// Returnează un Map de [uid → (lat, lng)] cu coordonatele ajustate.
+  /// Vecinii fără coliziune nu apar în map (se folosesc coordonatele originale).
+  Map<String, (double lat, double lng)> _applySpiderOffset(
+      List<NeighborLocation> neighbors) {
+    // Raza de deplasare în grade latitudine (~0.0001° ≈ 11 m la ecuator,
+    // ~5-6 m la 60° latitudine datorită corecției cosinus de mai jos).
+    const double kRadius = 0.0001;
+    // Multiplicator pentru rotunjirea coordonatelor la 4 zecimale
+    // (0.0001 grad ≈ 11 m precizie de grupare).
+    const int kCoordinatePrecisionMultiplier = 10000;
+    // Valoarea minimă a cosinus latitudine: previne raza longitudinală
+    // infinită la latitudini polare (|lat| ≈ 90°).
+    const double kMinCosLatitude = 1e-4;
+
+    // Grupăm prin chei întregi (evită problemele de precizie float ale
+    // formatelor de string): lat * 10000 și lng * 10000 rotunjite la int.
+    final Map<(int, int), List<NeighborLocation>> groups = {};
+    for (final n in neighbors) {
+      final key = (
+        (n.lat * kCoordinatePrecisionMultiplier).round(),
+        (n.lng * kCoordinatePrecisionMultiplier).round(),
+      );
+      groups.putIfAbsent(key, () => []).add(n);
+    }
+
+    final Map<String, (double, double)> offsets = {};
+    for (final group in groups.values) {
+      if (group.length < 2) continue;
+      final int total = group.length;
+      final double originLat = group.first.lat;
+      final double originLng = group.first.lng;
+      // Ajustăm raza longitudinală în funcție de latitudine. La latitudini
+      // polare (|lat| ≈ 90°) cos → 0, ceea ce ar produce raze infinite;
+      // limitele la kMinCosLatitude garantează un offset finit și rezonabil.
+      final double cosLat =
+          math.cos(originLat * math.pi / 180.0).abs().clamp(kMinCosLatitude, 1.0);
+      final double lngRadius = kRadius / cosLat;
+      for (int i = 0; i < total; i++) {
+        final double angle = (2 * math.pi * i) / total;
+        offsets[group[i].uid] = (
+          originLat + kRadius * math.cos(angle),
+          originLng + lngRadius * math.sin(angle),
+        );
+      }
+    }
+    return offsets;
   }
 
   /// Două contacte vizibile foarte aproape între ei — indiciu social (throttled).
@@ -4964,7 +5034,8 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
         timeLabel: timeLabel,
         phoneNumber: phoneNumber,
         onMessage: () {
-          Navigator.pop(ctx);
+          if (ctx.mounted) Navigator.pop(ctx);
+          if (!mounted) return;
           final sorted = [myUid, uid]..sort();
           final roomId = sorted.join('_');
           Navigator.push(
@@ -5035,7 +5106,8 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
            _showSafeSnackBar('ETA trimis lui ${neighbor.displayName}', Colors.green);
         },
         onNeighborhoodRequest: () {
-          Navigator.pop(ctx);
+          if (ctx.mounted) Navigator.pop(ctx);
+          if (!mounted) return;
           NeighborhoodRequestsManager.showCreateRequestSheet(
             context,
             neighbor.lat,
