@@ -72,7 +72,7 @@ async function getWallet(
     throw new HttpsError("failed-precondition", "WALLET_FROZEN");
   }
   if (status === "closed") {
-    throw new HttpsError("failed-precondition", "WALLET_FROZEN");
+    throw new HttpsError("failed-precondition", "WALLET_CLOSED");
   }
   return {
     ref,

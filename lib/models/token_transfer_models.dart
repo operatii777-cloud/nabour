@@ -251,7 +251,7 @@ class TokenPaymentRequest {
       };
 
   bool get isPending => status == PaymentRequestStatus.pending;
-  bool get isExpired => status == PaymentRequestStatus.expired || DateTime.now().isAfter(expiresAt);
+  bool get isExpired => status == PaymentRequestStatus.expired;
   Duration get timeRemaining => expiresAt.difference(DateTime.now());
 }
 
