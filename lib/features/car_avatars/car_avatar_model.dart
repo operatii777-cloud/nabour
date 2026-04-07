@@ -46,10 +46,17 @@ class CarAvatar {
     return category == CarCategory.transport;
   }
 
-  /// Pe hartă ca **pasager**: salupa e doar pentru șofer (ambarcațiune la volan), nu ca icon pasager.
+  /// Pe hartă ca **pasager**: strict caractere, animale și fallback.
+  /// NU permitem vehicule (transport) în slotul de pasager.
   bool get allowsPassengerMapSlot {
     if (isDefault) return true;
-    if (id == 'salupa') return false;
+    
+    // Regula de Business: Transportul (mașini, salupe, van) este DOAR pentru șofer.
+    if (category == CarCategory.transport) {
+      return false;
+    }
+    
+    // Permitem personajele și animăluțele.
     return true;
   }
 
