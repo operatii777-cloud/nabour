@@ -1,0 +1,3457 @@
+{
+  "streets": [
+    {
+      "name": "Aleea Biruinței",
+      "lat": 44.384526,
+      "lon": 26.005931
+    },
+    {
+      "name": "Aleea Codrului",
+      "lat": 44.379357,
+      "lon": 25.993015
+    },
+    {
+      "name": "Aleea Crinului",
+      "lat": 44.372307,
+      "lon": 25.971654
+    },
+    {
+      "name": "Aleea Epigonilor",
+      "lat": 44.379609,
+      "lon": 25.994221
+    },
+    {
+      "name": "Aleea Ficusului",
+      "lat": 44.368228,
+      "lon": 25.97256
+    },
+    {
+      "name": "Aleea Muzelor",
+      "lat": 44.384889,
+      "lon": 26.003459
+    },
+    {
+      "name": "Aleea Panselelor",
+      "lat": 44.370142,
+      "lon": 25.969774
+    },
+    {
+      "name": "Aleea Rozelor",
+      "lat": 44.380458,
+      "lon": 25.975159
+    },
+    {
+      "name": "Aleea Simbolului",
+      "lat": 44.380224,
+      "lon": 26.007115
+    },
+    {
+      "name": "Aleea Voinței",
+      "lat": 44.382765,
+      "lon": 26.008266
+    },
+    {
+      "name": "Autostrada Centura București",
+      "lat": 44.357427,
+      "lon": 25.964997
+    },
+    {
+      "name": "DN6D",
+      "lat": 44.407447,
+      "lon": 25.982054
+    },
+    {
+      "name": "Drum de acces la Cartierul Verde",
+      "lat": 44.386814,
+      "lon": 26.024111
+    },
+    {
+      "name": "Drumul Cooperativei",
+      "lat": 44.401595,
+      "lon": 26.01901
+    },
+    {
+      "name": "Drumul de Sonde",
+      "lat": 44.364686,
+      "lon": 25.965155
+    },
+    {
+      "name": "Drumul Ghindari",
+      "lat": 44.404412,
+      "lon": 25.998703
+    },
+    {
+      "name": "Drumul Movila",
+      "lat": 44.389941,
+      "lon": 26.037814
+    },
+    {
+      "name": "Drumul Prospetimii",
+      "lat": 43.761879,
+      "lon": 25.509062
+    },
+    {
+      "name": "Intrarea Diamantului",
+      "lat": 44.387882,
+      "lon": 26.004183
+    },
+    {
+      "name": "Intrarea Drăganul",
+      "lat": 44.390062,
+      "lon": 26.028009
+    },
+    {
+      "name": "Intrarea Izvorul Rece",
+      "lat": 44.384715,
+      "lon": 26.028081
+    },
+    {
+      "name": "Intrarea Leordeni",
+      "lat": 44.389535,
+      "lon": 26.02351
+    },
+    {
+      "name": "Intrarea Mărăcineni",
+      "lat": 44.404406,
+      "lon": 25.995619
+    },
+    {
+      "name": "Intrarea Povernei",
+      "lat": 44.367384,
+      "lon": 25.974277
+    },
+    {
+      "name": "Intrarea Rozelor",
+      "lat": 44.364152,
+      "lon": 25.973269
+    },
+    {
+      "name": "Intrarea Unirii",
+      "lat": 44.364835,
+      "lon": 25.974418
+    },
+    {
+      "name": "Intrarea Viorelelor",
+      "lat": 44.363492,
+      "lon": 25.977895
+    },
+    {
+      "name": "Pasajul Domnești",
+      "lat": 44.406057,
+      "lon": 25.976207
+    },
+    {
+      "name": "Podulet",
+      "lat": 44.360747,
+      "lon": 25.98304
+    },
+    {
+      "name": "Prelungirea Ghencea",
+      "lat": 44.404883,
+      "lon": 25.990595
+    },
+    {
+      "name": "Strada 13 Decembrie",
+      "lat": 44.374049,
+      "lon": 25.982047
+    },
+    {
+      "name": "Strada Aeroportului",
+      "lat": 44.357253,
+      "lon": 25.945794
+    },
+    {
+      "name": "Strada Alunului",
+      "lat": 44.405373,
+      "lon": 25.989016
+    },
+    {
+      "name": "Strada Ametistului",
+      "lat": 44.396611,
+      "lon": 26.019018
+    },
+    {
+      "name": "Strada Anemonelor",
+      "lat": 44.37056,
+      "lon": 25.977041
+    },
+    {
+      "name": "Strada Anotimpului",
+      "lat": 44.403092,
+      "lon": 25.994002
+    },
+    {
+      "name": "Strada Argeș",
+      "lat": 44.363351,
+      "lon": 25.971277
+    },
+    {
+      "name": "Strada Armistițiului",
+      "lat": 44.385718,
+      "lon": 26.009054
+    },
+    {
+      "name": "Strada Arțarului",
+      "lat": 44.362914,
+      "lon": 25.968022
+    },
+    {
+      "name": "Strada Aviatiei",
+      "lat": 44.358754,
+      "lon": 25.946349
+    },
+    {
+      "name": "Strada Bălănică",
+      "lat": 43.77071,
+      "lon": 25.508048
+    },
+    {
+      "name": "Strada Băniei",
+      "lat": 44.36559,
+      "lon": 25.973429
+    },
+    {
+      "name": "Strada Bega",
+      "lat": 44.384799,
+      "lon": 26.019843
+    },
+    {
+      "name": "Strada Biruinței",
+      "lat": 44.384375,
+      "lon": 26.0069
+    },
+    {
+      "name": "Strada Biserica Veche",
+      "lat": 43.770977,
+      "lon": 25.512815
+    },
+    {
+      "name": "Strada Bisericii",
+      "lat": 43.766545,
+      "lon": 25.513666
+    },
+    {
+      "name": "Strada Botorca",
+      "lat": 44.390873,
+      "lon": 26.035424
+    },
+    {
+      "name": "Strada Bradului",
+      "lat": 44.361885,
+      "lon": 25.96662
+    },
+    {
+      "name": "Strada Bragadiru",
+      "lat": 44.386184,
+      "lon": 26.039075
+    },
+    {
+      "name": "Strada București",
+      "lat": 44.365701,
+      "lon": 26.003868
+    },
+    {
+      "name": "Strada Bujorului",
+      "lat": 44.371978,
+      "lon": 25.972339
+    },
+    {
+      "name": "Strada Busuiocului",
+      "lat": 44.370843,
+      "lon": 25.965711
+    },
+    {
+      "name": "Strada Cactusului",
+      "lat": 44.401144,
+      "lon": 25.9985
+    },
+    {
+      "name": "Strada Cactusului 18D",
+      "lat": 44.401136,
+      "lon": 26.001423
+    },
+    {
+      "name": "Strada Caișilor",
+      "lat": 43.754483,
+      "lon": 25.523629
+    },
+    {
+      "name": "Strada Canalului",
+      "lat": 43.748932,
+      "lon": 25.520685
+    },
+    {
+      "name": "Strada Caporalului",
+      "lat": 44.38127,
+      "lon": 26.008513
+    },
+    {
+      "name": "Strada Cazanelor",
+      "lat": 43.773125,
+      "lon": 25.50382
+    },
+    {
+      "name": "Strada Câmpia Libertății",
+      "lat": 44.384811,
+      "lon": 26.007412
+    },
+    {
+      "name": "Strada CEC-ului",
+      "lat": 43.765917,
+      "lon": 25.508377
+    },
+    {
+      "name": "Strada Celofibrei",
+      "lat": 44.386042,
+      "lon": 26.022869
+    },
+    {
+      "name": "Strada Cetatea Deva",
+      "lat": 44.389652,
+      "lon": 26.024026
+    },
+    {
+      "name": "Strada Cimitirul Nou",
+      "lat": 43.763351,
+      "lon": 25.517906
+    },
+    {
+      "name": "Strada Cimitirul Vechi",
+      "lat": 43.772683,
+      "lon": 25.50609
+    },
+    {
+      "name": "Strada Ciocârliei",
+      "lat": 44.378505,
+      "lon": 25.993636
+    },
+    {
+      "name": "Strada Ciorogârlei",
+      "lat": 44.373669,
+      "lon": 25.977409
+    },
+    {
+      "name": "Strada Cireșar",
+      "lat": 44.403563,
+      "lon": 25.984696
+    },
+    {
+      "name": "Strada Citrinului",
+      "lat": 44.398309,
+      "lon": 26.011578
+    },
+    {
+      "name": "Strada Codrului",
+      "lat": 44.3792,
+      "lon": 25.993649
+    },
+    {
+      "name": "Strada Colinei",
+      "lat": 44.385713,
+      "lon": 26.006244
+    },
+    {
+      "name": "Strada Columnelor",
+      "lat": 44.385269,
+      "lon": 26.006612
+    },
+    {
+      "name": "Strada Compozitor Gheorghe Bazavan",
+      "lat": 43.766358,
+      "lon": 25.515942
+    },
+    {
+      "name": "Strada Coralului",
+      "lat": 44.39174,
+      "lon": 26.006267
+    },
+    {
+      "name": "Strada Corcodușilor",
+      "lat": 43.753715,
+      "lon": 25.522226
+    },
+    {
+      "name": "Strada Cramei",
+      "lat": 44.40266,
+      "lon": 26.007226
+    },
+    {
+      "name": "Strada Cristalului",
+      "lat": 44.389386,
+      "lon": 26.009528
+    },
+    {
+      "name": "Strada Crișul Negru",
+      "lat": 44.387334,
+      "lon": 26.037789
+    },
+    {
+      "name": "Strada Crișul Repede",
+      "lat": 44.378089,
+      "lon": 26.013672
+    },
+    {
+      "name": "Strada Croitorului",
+      "lat": 43.766978,
+      "lon": 25.507591
+    },
+    {
+      "name": "Strada Cugetării",
+      "lat": 44.385745,
+      "lon": 26.017542
+    },
+    {
+      "name": "Strada Curcubeului",
+      "lat": 44.382144,
+      "lon": 25.986982
+    },
+    {
+      "name": "Strada Dantelei",
+      "lat": 44.400774,
+      "lon": 26.008482
+    },
+    {
+      "name": "Strada Dealului",
+      "lat": 44.379467,
+      "lon": 26.004103
+    },
+    {
+      "name": "Strada Demnității",
+      "lat": 44.385152,
+      "lon": 26.008337
+    },
+    {
+      "name": "Strada Dezrobirii",
+      "lat": 44.384713,
+      "lon": 26.008696
+    },
+    {
+      "name": "Strada Diamantului",
+      "lat": 44.393966,
+      "lon": 26.020691
+    },
+    {
+      "name": "Strada Dode Crăciunescu",
+      "lat": 43.767813,
+      "lon": 25.514872
+    },
+    {
+      "name": "Strada Dorului",
+      "lat": 44.381036,
+      "lon": 25.99294
+    },
+    {
+      "name": "Strada Drăganului",
+      "lat": 44.391612,
+      "lon": 26.026125
+    },
+    {
+      "name": "Strada Dreptății",
+      "lat": 44.385935,
+      "lon": 26.010741
+    },
+    {
+      "name": "Strada Drumul Craitelor 258",
+      "lat": 44.404829,
+      "lon": 26.013175
+    },
+    {
+      "name": "Strada Dumbravei",
+      "lat": 44.376491,
+      "lon": 25.98068
+    },
+    {
+      "name": "Strada Dunării",
+      "lat": 44.374534,
+      "lon": 26.018536
+    },
+    {
+      "name": "Strada Eliberării",
+      "lat": 44.38282,
+      "lon": 26.012935
+    },
+    {
+      "name": "Strada Epigonilor",
+      "lat": 44.380987,
+      "lon": 25.995247
+    },
+    {
+      "name": "Strada Epocii",
+      "lat": 44.383605,
+      "lon": 26.010787
+    },
+    {
+      "name": "Strada Eroilor",
+      "lat": 44.386231,
+      "lon": 26.014108
+    },
+    {
+      "name": "Strada Fabrica de Lapte",
+      "lat": 43.748492,
+      "lon": 25.529071
+    },
+    {
+      "name": "Strada Fane Nistorescu",
+      "lat": 43.764933,
+      "lon": 25.516974
+    },
+    {
+      "name": "Strada Făcliei",
+      "lat": 44.383142,
+      "lon": 26.01148
+    },
+    {
+      "name": "Strada Ficusului",
+      "lat": 44.369472,
+      "lon": 25.972687
+    },
+    {
+      "name": "Strada Florea Vânt",
+      "lat": 43.750591,
+      "lon": 25.527856
+    },
+    {
+      "name": "Strada Florilor",
+      "lat": 44.369698,
+      "lon": 25.972396
+    },
+    {
+      "name": "Strada Freamătului",
+      "lat": 44.37878,
+      "lon": 26.006183
+    },
+    {
+      "name": "Strada Fulger",
+      "lat": 44.362902,
+      "lon": 25.99141
+    },
+    {
+      "name": "Strada Garofiței",
+      "lat": 44.358473,
+      "lon": 25.975794
+    },
+    {
+      "name": "Strada Gârlei",
+      "lat": 43.768526,
+      "lon": 25.505814
+    },
+    {
+      "name": "Strada Ghidigeni",
+      "lat": 44.405457,
+      "lon": 26.011052
+    },
+    {
+      "name": "Strada Ghioceilor",
+      "lat": 44.399963,
+      "lon": 25.993741
+    },
+    {
+      "name": "Strada Gicu Mogoși",
+      "lat": 43.757455,
+      "lon": 25.520678
+    },
+    {
+      "name": "Strada Gigi Pisălău",
+      "lat": 43.757958,
+      "lon": 25.516343
+    },
+    {
+      "name": "Strada Gladiolelor",
+      "lat": 44.397347,
+      "lon": 26.020171
+    },
+    {
+      "name": "Strada Gliei",
+      "lat": 44.377447,
+      "lon": 26.004466
+    },
+    {
+      "name": "Strada Gloriei",
+      "lat": 44.38327,
+      "lon": 26.013256
+    },
+    {
+      "name": "Strada Gogu Cerveneanu",
+      "lat": 43.767708,
+      "lon": 25.506665
+    },
+    {
+      "name": "Strada Gogu Coșat",
+      "lat": 43.747324,
+      "lon": 25.525159
+    },
+    {
+      "name": "Strada Granitului",
+      "lat": 44.395836,
+      "lon": 26.010123
+    },
+    {
+      "name": "Strada Griviței",
+      "lat": 44.375071,
+      "lon": 25.97212
+    },
+    {
+      "name": "Strada Hala Veche",
+      "lat": 43.7742,
+      "lon": 25.51204
+    },
+    {
+      "name": "Strada Iederei",
+      "lat": 44.375735,
+      "lon": 25.977433
+    },
+    {
+      "name": "Strada Iernii",
+      "lat": 44.402169,
+      "lon": 25.98479
+    },
+    {
+      "name": "Strada Ion Constandin",
+      "lat": 43.748242,
+      "lon": 25.521848
+    },
+    {
+      "name": "Strada Ion Maciu",
+      "lat": 43.74818,
+      "lon": 25.527998
+    },
+    {
+      "name": "Strada Izvor",
+      "lat": 44.383187,
+      "lon": 25.988248
+    },
+    {
+      "name": "Strada Izvorul Rece",
+      "lat": 44.384628,
+      "lon": 26.028661
+    },
+    {
+      "name": "Strada Înclinată",
+      "lat": 44.362873,
+      "lon": 25.976176
+    },
+    {
+      "name": "Strada Învățător Trandafirescu",
+      "lat": 43.757166,
+      "lon": 25.519498
+    },
+    {
+      "name": "Strada Învingătorilor",
+      "lat": 44.383271,
+      "lon": 26.016282
+    },
+    {
+      "name": "Strada Jadului",
+      "lat": 44.391318,
+      "lon": 25.988361
+    },
+    {
+      "name": "Strada Jiului",
+      "lat": 44.383437,
+      "lon": 26.020079
+    },
+    {
+      "name": "Strada Lacului",
+      "lat": 44.382076,
+      "lon": 25.991141
+    },
+    {
+      "name": "Strada Lalelelor",
+      "lat": 44.370605,
+      "lon": 25.969235
+    },
+    {
+      "name": "Strada Laurului",
+      "lat": 44.377339,
+      "lon": 25.986313
+    },
+    {
+      "name": "Strada Lăcrămioarelor",
+      "lat": 44.370614,
+      "lon": 25.967672
+    },
+    {
+      "name": "Strada Legendei",
+      "lat": 44.387879,
+      "lon": 26.040666
+    },
+    {
+      "name": "Strada Leordeni",
+      "lat": 44.390259,
+      "lon": 26.021528
+    },
+    {
+      "name": "Strada Libertății",
+      "lat": 44.382711,
+      "lon": 26.00703
+    },
+    {
+      "name": "Strada Librăriei",
+      "lat": 43.76159,
+      "lon": 25.51858
+    },
+    {
+      "name": "Strada Livezi",
+      "lat": 44.380767,
+      "lon": 26.03673
+    },
+    {
+      "name": "Strada Luceafărului",
+      "lat": 44.380465,
+      "lon": 25.990977
+    },
+    {
+      "name": "Strada Lungă",
+      "lat": 43.766363,
+      "lon": 25.518154
+    },
+    {
+      "name": "Strada Luptătorilor",
+      "lat": 44.383498,
+      "lon": 26.016826
+    },
+    {
+      "name": "Strada Magnoliei",
+      "lat": 44.406264,
+      "lon": 25.99507
+    },
+    {
+      "name": "Strada Marin Buzică",
+      "lat": 43.746229,
+      "lon": 25.522833
+    },
+    {
+      "name": "Strada Măcrișului",
+      "lat": 44.391031,
+      "lon": 26.023019
+    },
+    {
+      "name": "Strada Mărăcineni",
+      "lat": 44.405789,
+      "lon": 25.996436
+    },
+    {
+      "name": "Strada Mărășești",
+      "lat": 44.389024,
+      "lon": 26.020907
+    },
+    {
+      "name": "Strada Mărăști",
+      "lat": 44.361558,
+      "lon": 25.971921
+    },
+    {
+      "name": "Strada Mărgelelor",
+      "lat": 44.395788,
+      "lon": 26.005634
+    },
+    {
+      "name": "Strada Mărginașilor",
+      "lat": 43.766684,
+      "lon": 25.520982
+    },
+    {
+      "name": "Strada Mărțișor",
+      "lat": 44.396676,
+      "lon": 25.993345
+    },
+    {
+      "name": "Strada Mica Boboc",
+      "lat": 43.74578,
+      "lon": 25.528429
+    },
+    {
+      "name": "Strada Minel Ciocănel",
+      "lat": 43.747225,
+      "lon": 25.522409
+    },
+    {
+      "name": "Strada Monumentului",
+      "lat": 44.382565,
+      "lon": 26.001147
+    },
+    {
+      "name": "Strada Morii",
+      "lat": 43.770503,
+      "lon": 25.504082
+    },
+    {
+      "name": "Strada Mototonea",
+      "lat": 43.75203,
+      "lon": 25.524349
+    },
+    {
+      "name": "Strada Mugurelui",
+      "lat": 44.403469,
+      "lon": 26.009831
+    },
+    {
+      "name": "Strada Muniției",
+      "lat": 44.381757,
+      "lon": 26.003129
+    },
+    {
+      "name": "Strada Muzelor",
+      "lat": 44.384161,
+      "lon": 26.005186
+    },
+    {
+      "name": "Strada Narciselor",
+      "lat": 44.372541,
+      "lon": 25.974984
+    },
+    {
+      "name": "Strada Năzuinței",
+      "lat": 44.383953,
+      "lon": 26.004878
+    },
+    {
+      "name": "Strada Neamului",
+      "lat": 44.382952,
+      "lon": 26.002377
+    },
+    {
+      "name": "Strada Nelu Băjean",
+      "lat": 43.760502,
+      "lon": 25.513199
+    },
+    {
+      "name": "Strada Nelu Brutaru",
+      "lat": 43.747768,
+      "lon": 25.526586
+    },
+    {
+      "name": "Strada Nicolae Rață",
+      "lat": 43.772316,
+      "lon": 25.511066
+    },
+    {
+      "name": "Strada Nicu Ancu",
+      "lat": 43.769576,
+      "lon": 25.511027
+    },
+    {
+      "name": "Strada Norilor",
+      "lat": 44.365998,
+      "lon": 25.992384
+    },
+    {
+      "name": "Strada Odei",
+      "lat": 44.380723,
+      "lon": 25.992376
+    },
+    {
+      "name": "Strada Oituz",
+      "lat": 44.385678,
+      "lon": 26.009964
+    },
+    {
+      "name": "Strada Oltețului",
+      "lat": 44.385625,
+      "lon": 26.021668
+    },
+    {
+      "name": "Strada Onixului",
+      "lat": 44.397203,
+      "lon": 26.013369
+    },
+    {
+      "name": "Strada Opalului",
+      "lat": 44.395651,
+      "lon": 26.008143
+    },
+    {
+      "name": "Strada Ordonanței",
+      "lat": 44.383914,
+      "lon": 26.016009
+    },
+    {
+      "name": "Strada Orhideelor",
+      "lat": 44.365711,
+      "lon": 25.971032
+    },
+    {
+      "name": "Strada Orizontului",
+      "lat": 44.381936,
+      "lon": 26.011068
+    },
+    {
+      "name": "Strada Ortacului",
+      "lat": 44.380434,
+      "lon": 26.004858
+    },
+    {
+      "name": "Strada Ortansei",
+      "lat": 44.401473,
+      "lon": 25.977136
+    },
+    {
+      "name": "Strada Osiris",
+      "lat": 44.390337,
+      "lon": 26.034488
+    },
+    {
+      "name": "Strada Parfumului",
+      "lat": 44.400637,
+      "lon": 26.009589
+    },
+    {
+      "name": "Strada Păcii",
+      "lat": 44.386814,
+      "lon": 26.013721
+    },
+    {
+      "name": "Strada Perlelor",
+      "lat": 44.39714,
+      "lon": 26.010833
+    },
+    {
+      "name": "Strada Plevnei",
+      "lat": 44.384569,
+      "lon": 26.016375
+    },
+    {
+      "name": "Strada Plopului",
+      "lat": 44.364504,
+      "lon": 25.96833
+    },
+    {
+      "name": "Strada Podișor",
+      "lat": 44.35709,
+      "lon": 25.952553
+    },
+    {
+      "name": "Strada Poligonului",
+      "lat": 44.368096,
+      "lon": 25.993475
+    },
+    {
+      "name": "Strada Posada",
+      "lat": 44.385872,
+      "lon": 26.016479
+    },
+    {
+      "name": "Strada Potcovari",
+      "lat": 43.75723,
+      "lon": 25.520011
+    },
+    {
+      "name": "Strada Povernei",
+      "lat": 44.371321,
+      "lon": 25.971495
+    },
+    {
+      "name": "Strada Prelungirea Aliman",
+      "lat": 44.387732,
+      "lon": 26.03238
+    },
+    {
+      "name": "Strada Primăriei",
+      "lat": 43.760071,
+      "lon": 25.519279
+    },
+    {
+      "name": "Strada Primăverii",
+      "lat": 44.401072,
+      "lon": 25.995242
+    },
+    {
+      "name": "Strada Prof. Gogu Popescu",
+      "lat": 43.769309,
+      "lon": 25.51385
+    },
+    {
+      "name": "Strada Profesor Mihalache",
+      "lat": 43.769587,
+      "lon": 25.505024
+    },
+    {
+      "name": "Strada Pușcașului",
+      "lat": 44.382482,
+      "lon": 26.002148
+    },
+    {
+      "name": "Strada Rahovei",
+      "lat": 44.386861,
+      "lon": 26.0109
+    },
+    {
+      "name": "Strada Răsăritului",
+      "lat": 44.385309,
+      "lon": 26.016463
+    },
+    {
+      "name": "Strada Râul Doamnei",
+      "lat": 44.374022,
+      "lon": 26.008144
+    },
+    {
+      "name": "Strada Râul Vedea",
+      "lat": 44.389428,
+      "lon": 26.02752
+    },
+    {
+      "name": "Strada Redutei",
+      "lat": 44.387192,
+      "lon": 26.014419
+    },
+    {
+      "name": "Strada Renașterii",
+      "lat": 44.385527,
+      "lon": 26.016994
+    },
+    {
+      "name": "Strada Rovine",
+      "lat": 44.386413,
+      "lon": 26.012197
+    },
+    {
+      "name": "Strada Rubinului",
+      "lat": 44.398597,
+      "lon": 26.010804
+    },
+    {
+      "name": "Strada Sabarului",
+      "lat": 44.359915,
+      "lon": 25.962598
+    },
+    {
+      "name": "Strada Safirului",
+      "lat": 44.392174,
+      "lon": 26.002253
+    },
+    {
+      "name": "Strada Salciei",
+      "lat": 44.377158,
+      "lon": 25.976806
+    },
+    {
+      "name": "Strada Sarmis",
+      "lat": 44.380495,
+      "lon": 25.991744
+    },
+    {
+      "name": "Strada Sidefului",
+      "lat": 44.398164,
+      "lon": 26.000327
+    },
+    {
+      "name": "Strada Simbolului",
+      "lat": 44.380231,
+      "lon": 26.006079
+    },
+    {
+      "name": "Strada Sipetului",
+      "lat": 44.386359,
+      "lon": 26.01131
+    },
+    {
+      "name": "Strada Sma-ului",
+      "lat": 43.74866,
+      "lon": 25.529477
+    },
+    {
+      "name": "Strada Smaraldului",
+      "lat": 44.391156,
+      "lon": 26.004417
+    },
+    {
+      "name": "Strada Smârdan",
+      "lat": 44.386882,
+      "lon": 26.012744
+    },
+    {
+      "name": "Strada Solidarității",
+      "lat": 44.385131,
+      "lon": 26.017345
+    },
+    {
+      "name": "Strada Spătarului",
+      "lat": 44.385981,
+      "lon": 26.011627
+    },
+    {
+      "name": "Strada Speranței",
+      "lat": 44.386697,
+      "lon": 26.00778
+    },
+    {
+      "name": "Strada Stancu Bididiu",
+      "lat": 43.75578,
+      "lon": 25.521444
+    },
+    {
+      "name": "Strada Stația din Vale",
+      "lat": 43.753812,
+      "lon": 25.522254
+    },
+    {
+      "name": "Strada Strugurilor",
+      "lat": 44.403647,
+      "lon": 26.009111
+    },
+    {
+      "name": "Strada Școlii",
+      "lat": 43.759143,
+      "lon": 25.519986
+    },
+    {
+      "name": "Strada Ștefan Luchian",
+      "lat": 44.370666,
+      "lon": 25.977711
+    },
+    {
+      "name": "Strada Taninului",
+      "lat": 44.390032,
+      "lon": 26.024346
+    },
+    {
+      "name": "Strada Târgului",
+      "lat": 44.362924,
+      "lon": 25.971991
+    },
+    {
+      "name": "Strada Teiului",
+      "lat": 44.363498,
+      "lon": 25.966824
+    },
+    {
+      "name": "Strada Toamnei",
+      "lat": 44.403272,
+      "lon": 25.986019
+    },
+    {
+      "name": "Strada Topaz",
+      "lat": 44.394073,
+      "lon": 25.992803
+    },
+    {
+      "name": "Strada Toporași",
+      "lat": 44.400491,
+      "lon": 25.991188
+    },
+    {
+      "name": "Strada Torței",
+      "lat": 44.380532,
+      "lon": 26.004382
+    },
+    {
+      "name": "Strada Trandafirilor",
+      "lat": 44.377213,
+      "lon": 25.985995
+    },
+    {
+      "name": "Strada Troiței",
+      "lat": 44.386961,
+      "lon": 26.014612
+    },
+    {
+      "name": "Strada Unirii",
+      "lat": 44.356164,
+      "lon": 25.984177
+    },
+    {
+      "name": "Strada Vasile Onoi",
+      "lat": 43.743678,
+      "lon": 25.529505
+    },
+    {
+      "name": "Strada Vatican",
+      "lat": 43.750064,
+      "lon": 25.52094
+    },
+    {
+      "name": "Strada Văilor",
+      "lat": 44.379617,
+      "lon": 26.005827
+    },
+    {
+      "name": "Strada Verii",
+      "lat": 44.397429,
+      "lon": 25.99268
+    },
+    {
+      "name": "Strada Veseliei",
+      "lat": 44.402308,
+      "lon": 26.006562
+    },
+    {
+      "name": "Strada Veterinar",
+      "lat": 43.759242,
+      "lon": 25.514412
+    },
+    {
+      "name": "Strada Vidin",
+      "lat": 44.380531,
+      "lon": 26.008356
+    },
+    {
+      "name": "Strada Vitejiei",
+      "lat": 44.382557,
+      "lon": 26.011528
+    },
+    {
+      "name": "Strada Viței",
+      "lat": 44.403431,
+      "lon": 26.008693
+    },
+    {
+      "name": "Strada Voinței",
+      "lat": 44.381758,
+      "lon": 26.009637
+    },
+    {
+      "name": "Strada Vrabiei",
+      "lat": 44.362458,
+      "lon": 25.972716
+    },
+    {
+      "name": "Șoseaua Alexandriei",
+      "lat": 44.369673,
+      "lon": 25.975259
+    },
+    {
+      "name": "Șoseaua Clinceni",
+      "lat": 44.367401,
+      "lon": 25.966384
+    },
+    {
+      "name": "Șoseaua de Centură",
+      "lat": 44.381014,
+      "lon": 25.996848
+    },
+    {
+      "name": "Zimnicea-Bragadiru",
+      "lat": 43.762873,
+      "lon": 25.505721
+    }
+  ],
+  "addresses": [
+    {
+      "street": "Strada Rubinului",
+      "number": "1G-1B",
+      "numericValue": 1,
+      "lat": 44.396496,
+      "lon": 26.00657
+    },
+    {
+      "street": "Strada Mugurelui",
+      "number": "1",
+      "numericValue": 1,
+      "lat": 44.404568,
+      "lon": 26.011451
+    },
+    {
+      "street": "Aleea Crinului",
+      "number": "1",
+      "numericValue": 1,
+      "lat": 44.37213,
+      "lon": 25.971259
+    },
+    {
+      "street": "Strada Florilor",
+      "number": "1",
+      "numericValue": 1,
+      "lat": 44.36938,
+      "lon": 25.971782
+    },
+    {
+      "street": "Strada Florilor",
+      "number": "1",
+      "numericValue": 1,
+      "lat": 44.36949,
+      "lon": 25.971947
+    },
+    {
+      "street": "Strada Dunării",
+      "number": "1",
+      "numericValue": 1,
+      "lat": 43.772686,
+      "lon": 25.501199
+    },
+    {
+      "street": "Strada Speranței",
+      "number": "2",
+      "numericValue": 2,
+      "lat": 44.38785,
+      "lon": 26.011431
+    },
+    {
+      "street": "Strada Smârdan",
+      "number": "2",
+      "numericValue": 2,
+      "lat": 44.388108,
+      "lon": 26.011655
+    },
+    {
+      "street": "Strada Mărgelelor",
+      "number": "2A-2G",
+      "numericValue": 2,
+      "lat": 44.400365,
+      "lon": 26.001052
+    },
+    {
+      "street": "Strada Magnoliei",
+      "number": "2",
+      "numericValue": 2,
+      "lat": 44.408296,
+      "lon": 25.994057
+    },
+    {
+      "street": "Strada Toporași",
+      "number": "2-8",
+      "numericValue": 2,
+      "lat": 44.400529,
+      "lon": 25.99112
+    },
+    {
+      "street": "Strada Mărgelelor",
+      "number": "2",
+      "numericValue": 2,
+      "lat": 44.400204,
+      "lon": 26.001843
+    },
+    {
+      "street": "Șoseaua de Centură",
+      "number": "2-8",
+      "numericValue": 2,
+      "lat": 44.387818,
+      "lon": 25.988306
+    },
+    {
+      "street": "Strada Speranței",
+      "number": "3",
+      "numericValue": 3,
+      "lat": 44.387616,
+      "lon": 26.011413
+    },
+    {
+      "street": "Strada Alunului",
+      "number": "3-5",
+      "numericValue": 3,
+      "lat": 44.407096,
+      "lon": 25.988554
+    },
+    {
+      "street": "Strada Diamantului",
+      "number": "3A-3G",
+      "numericValue": 3,
+      "lat": 44.394282,
+      "lon": 26.022112
+    },
+    {
+      "street": "Strada Topaz",
+      "number": "3-5",
+      "numericValue": 3,
+      "lat": 44.395631,
+      "lon": 25.994141
+    },
+    {
+      "street": "Strada Mugurelui",
+      "number": "3",
+      "numericValue": 3,
+      "lat": 44.404246,
+      "lon": 26.011161
+    },
+    {
+      "street": "Strada Speranței",
+      "number": "4",
+      "numericValue": 4,
+      "lat": 44.387796,
+      "lon": 26.011242
+    },
+    {
+      "street": "Strada Râul Vedea",
+      "number": "4",
+      "numericValue": 4,
+      "lat": 44.386845,
+      "lon": 26.026211
+    },
+    {
+      "street": "Strada Cactusului",
+      "number": "4-6",
+      "numericValue": 4,
+      "lat": 44.402308,
+      "lon": 25.997859
+    },
+    {
+      "street": "Strada Mărgelelor",
+      "number": "4-6",
+      "numericValue": 4,
+      "lat": 44.399545,
+      "lon": 26.002284
+    },
+    {
+      "street": "Strada Diamantului",
+      "number": "4A-4J",
+      "numericValue": 4,
+      "lat": 44.394332,
+      "lon": 26.021705
+    },
+    {
+      "street": "Strada Florilor",
+      "number": "4",
+      "numericValue": 4,
+      "lat": 44.371026,
+      "lon": 25.974528
+    },
+    {
+      "street": "Strada Florilor",
+      "number": "4",
+      "numericValue": 4,
+      "lat": 44.371206,
+      "lon": 25.974767
+    },
+    {
+      "street": "Strada Florilor",
+      "number": "4",
+      "numericValue": 4,
+      "lat": 44.371164,
+      "lon": 25.975113
+    },
+    {
+      "street": "Strada Mugurelui",
+      "number": "5B",
+      "numericValue": 5,
+      "lat": 44.403505,
+      "lon": 26.011422
+    },
+    {
+      "street": "Strada Speranței",
+      "number": "5",
+      "numericValue": 5,
+      "lat": 44.38756,
+      "lon": 26.011204
+    },
+    {
+      "street": "Strada Râul Vedea",
+      "number": "5",
+      "numericValue": 5,
+      "lat": 44.386759,
+      "lon": 26.026066
+    },
+    {
+      "street": "Strada Primăverii",
+      "number": "5A-F",
+      "numericValue": 5,
+      "lat": 44.40102,
+      "lon": 25.995154
+    },
+    {
+      "street": "Strada Diamantului",
+      "number": "5A-5F",
+      "numericValue": 5,
+      "lat": 44.394171,
+      "lon": 26.021727
+    },
+    {
+      "street": "Strada Mugurelui",
+      "number": "5",
+      "numericValue": 5,
+      "lat": 44.403854,
+      "lon": 26.010902
+    },
+    {
+      "street": "Strada Oituz",
+      "number": "5",
+      "numericValue": 5,
+      "lat": 44.386361,
+      "lon": 26.009586
+    },
+    {
+      "street": "Strada Florilor",
+      "number": "5",
+      "numericValue": 5,
+      "lat": 44.370066,
+      "lon": 25.972789
+    },
+    {
+      "street": "Strada Speranței",
+      "number": "6",
+      "numericValue": 6,
+      "lat": 44.387736,
+      "lon": 26.010979
+    },
+    {
+      "street": "Strada Râul Vedea",
+      "number": "6",
+      "numericValue": 6,
+      "lat": 44.387735,
+      "lon": 26.027627
+    },
+    {
+      "street": "Strada Râul Vedea",
+      "number": "6",
+      "numericValue": 6,
+      "lat": 44.386675,
+      "lon": 26.02593
+    },
+    {
+      "street": "Strada Florilor",
+      "number": "6",
+      "numericValue": 6,
+      "lat": 44.371432,
+      "lon": 25.975121
+    },
+    {
+      "street": "Strada Florilor",
+      "number": "6",
+      "numericValue": 6,
+      "lat": 44.371612,
+      "lon": 25.975359
+    },
+    {
+      "street": "Strada Florilor",
+      "number": "6",
+      "numericValue": 6,
+      "lat": 44.371572,
+      "lon": 25.975703
+    },
+    {
+      "street": "Strada Speranței",
+      "number": "7",
+      "numericValue": 7,
+      "lat": 44.387493,
+      "lon": 26.010969
+    },
+    {
+      "street": "Strada Alunului",
+      "number": "7-9",
+      "numericValue": 7,
+      "lat": 44.406809,
+      "lon": 25.987893
+    },
+    {
+      "street": "Strada Mugurelui",
+      "number": "7",
+      "numericValue": 7,
+      "lat": 44.403707,
+      "lon": 26.010791
+    },
+    {
+      "street": "Strada Florilor",
+      "number": "7",
+      "numericValue": 7,
+      "lat": 44.370369,
+      "lon": 25.973223
+    },
+    {
+      "street": "Strada Florilor",
+      "number": "7",
+      "numericValue": 7,
+      "lat": 44.370519,
+      "lon": 25.973422
+    },
+    {
+      "street": "Strada Speranței",
+      "number": "8",
+      "numericValue": 8,
+      "lat": 44.387686,
+      "lon": 26.01081
+    },
+    {
+      "street": "Strada Topaz",
+      "number": "8A-8D",
+      "numericValue": 8,
+      "lat": 44.394807,
+      "lon": 25.994694
+    },
+    {
+      "street": "Strada Mărgelelor",
+      "number": "8",
+      "numericValue": 8,
+      "lat": 44.399448,
+      "lon": 26.001981
+    },
+    {
+      "street": "Coralului",
+      "number": "8",
+      "numericValue": 8,
+      "lat": 44.391772,
+      "lon": 26.006483
+    },
+    {
+      "street": "Strada Monumentului",
+      "number": "8-10",
+      "numericValue": 8,
+      "lat": 44.381937,
+      "lon": 26.001555
+    },
+    {
+      "street": "Strada Florilor",
+      "number": "8",
+      "numericValue": 8,
+      "lat": 44.372017,
+      "lon": 25.975973
+    },
+    {
+      "street": "Strada Florilor",
+      "number": "8",
+      "numericValue": 8,
+      "lat": 44.371841,
+      "lon": 25.975741
+    },
+    {
+      "street": "Strada Florilor",
+      "number": "8",
+      "numericValue": 8,
+      "lat": 44.371984,
+      "lon": 25.976319
+    },
+    {
+      "street": "Strada Mărginașilor",
+      "number": "8",
+      "numericValue": 8,
+      "lat": 43.770625,
+      "lon": 25.52025
+    },
+    {
+      "street": "Strada Speranței",
+      "number": "9",
+      "numericValue": 9,
+      "lat": 44.387436,
+      "lon": 26.010744
+    },
+    {
+      "street": "Strada Rubinului",
+      "number": "9H",
+      "numericValue": 9,
+      "lat": 44.398101,
+      "lon": 26.009667
+    },
+    {
+      "street": "Strada Topaz",
+      "number": "9A-9E",
+      "numericValue": 9,
+      "lat": 44.394902,
+      "lon": 25.994779
+    },
+    {
+      "street": "Șoseaua Alexandriei",
+      "number": "km 9",
+      "numericValue": 9,
+      "lat": 44.387205,
+      "lon": 26.008972
+    },
+    {
+      "street": "Strada Florilor",
+      "number": "9",
+      "numericValue": 9,
+      "lat": 44.370888,
+      "lon": 25.973955
+    },
+    {
+      "street": "Strada Florilor",
+      "number": "9",
+      "numericValue": 9,
+      "lat": 44.370737,
+      "lon": 25.973756
+    },
+    {
+      "street": "Strada Speranței",
+      "number": "10",
+      "numericValue": 10,
+      "lat": 44.387619,
+      "lon": 26.010602
+    },
+    {
+      "street": "Strada Rubinului",
+      "number": "10",
+      "numericValue": 10,
+      "lat": 44.397444,
+      "lon": 26.00856
+    },
+    {
+      "street": "Strada Cactusului",
+      "number": "10",
+      "numericValue": 10,
+      "lat": 44.400639,
+      "lon": 25.999896
+    },
+    {
+      "street": "Strada Monumentului",
+      "number": "10A",
+      "numericValue": 10,
+      "lat": 44.381761,
+      "lon": 26.001192
+    },
+    {
+      "street": "Strada Monumentului",
+      "number": "10B",
+      "numericValue": 10,
+      "lat": 44.381709,
+      "lon": 26.001068
+    },
+    {
+      "street": "Strada Monumentului",
+      "number": "10P",
+      "numericValue": 10,
+      "lat": 44.381583,
+      "lon": 26.001063
+    },
+    {
+      "street": "Strada Florilor",
+      "number": "10",
+      "numericValue": 10,
+      "lat": 44.372268,
+      "lon": 25.976349
+    },
+    {
+      "street": "Strada Florilor",
+      "number": "10",
+      "numericValue": 10,
+      "lat": 44.372266,
+      "lon": 25.976752
+    },
+    {
+      "street": "Strada Speranței",
+      "number": "11",
+      "numericValue": 11,
+      "lat": 44.387397,
+      "lon": 26.010522
+    },
+    {
+      "street": "Strada Alunului",
+      "number": "11-13",
+      "numericValue": 11,
+      "lat": 44.406565,
+      "lon": 25.987338
+    },
+    {
+      "street": "Strada Cireșar",
+      "number": "11",
+      "numericValue": 11,
+      "lat": 44.403545,
+      "lon": 25.984679
+    },
+    {
+      "street": "Strada Iernii",
+      "number": "11C",
+      "numericValue": 11,
+      "lat": 44.402024,
+      "lon": 25.984851
+    },
+    {
+      "street": "Strada Diamantului",
+      "number": "11A-11D",
+      "numericValue": 11,
+      "lat": 44.393702,
+      "lon": 26.020073
+    },
+    {
+      "street": "Strada Mugurelui",
+      "number": "11",
+      "numericValue": 11,
+      "lat": 44.403047,
+      "lon": 26.010169
+    },
+    {
+      "street": "Strada Trandafirilor",
+      "number": "11",
+      "numericValue": 11,
+      "lat": 44.37748,
+      "lon": 25.985904
+    },
+    {
+      "street": "Strada Florilor",
+      "number": "11",
+      "numericValue": 11,
+      "lat": 44.371108,
+      "lon": 25.974284
+    },
+    {
+      "street": "Strada Florilor",
+      "number": "11",
+      "numericValue": 11,
+      "lat": 44.371263,
+      "lon": 25.97449
+    },
+    {
+      "street": "Strada Mărgelelor",
+      "number": "12A-12H",
+      "numericValue": 12,
+      "lat": 44.398464,
+      "lon": 26.003219
+    },
+    {
+      "street": "Strada Rubinului",
+      "number": "12",
+      "numericValue": 12,
+      "lat": 44.397551,
+      "lon": 26.008769
+    },
+    {
+      "street": "Strada Cireșar",
+      "number": "12",
+      "numericValue": 12,
+      "lat": 44.403756,
+      "lon": 25.984809
+    },
+    {
+      "street": "Strada Monumentului",
+      "number": "12",
+      "numericValue": 12,
+      "lat": 44.381609,
+      "lon": 26.001858
+    },
+    {
+      "street": "Strada Monumentului",
+      "number": "12A",
+      "numericValue": 12,
+      "lat": 44.381535,
+      "lon": 26.001916
+    },
+    {
+      "street": "Strada Monumentului",
+      "number": "12B",
+      "numericValue": 12,
+      "lat": 44.381447,
+      "lon": 26.00199
+    },
+    {
+      "street": "Strada Speranței",
+      "number": "13",
+      "numericValue": 13,
+      "lat": 44.387355,
+      "lon": 26.010346
+    },
+    {
+      "street": "Strada Topaz",
+      "number": "13-15",
+      "numericValue": 13,
+      "lat": 44.39409,
+      "lon": 25.995477
+    },
+    {
+      "street": "Strada Mugurelui",
+      "number": "13",
+      "numericValue": 13,
+      "lat": 44.402768,
+      "lon": 26.009579
+    },
+    {
+      "street": "Strada Florilor",
+      "number": "13",
+      "numericValue": 13,
+      "lat": 44.371588,
+      "lon": 25.975008
+    },
+    {
+      "street": "Strada Florilor",
+      "number": "13",
+      "numericValue": 13,
+      "lat": 44.371717,
+      "lon": 25.975203
+    },
+    {
+      "street": "Strada Florilor",
+      "number": "13",
+      "numericValue": 13,
+      "lat": 44.371873,
+      "lon": 25.97541
+    },
+    {
+      "street": "Strada Toamnei",
+      "number": "14A-E",
+      "numericValue": 14,
+      "lat": 44.399013,
+      "lon": 25.98901
+    },
+    {
+      "street": "Strada Diamantului",
+      "number": "14-12",
+      "numericValue": 14,
+      "lat": 44.393994,
+      "lon": 26.020464
+    },
+    {
+      "street": "Strada Rubinului",
+      "number": "14",
+      "numericValue": 14,
+      "lat": 44.397624,
+      "lon": 26.008925
+    },
+    {
+      "street": "Strada Mugurelui",
+      "number": "14",
+      "numericValue": 14,
+      "lat": 44.403488,
+      "lon": 26.010464
+    },
+    {
+      "street": "Strada Florilor",
+      "number": "14",
+      "numericValue": 14,
+      "lat": 44.373045,
+      "lon": 25.977652
+    },
+    {
+      "street": "Strada Florilor",
+      "number": "14",
+      "numericValue": 14,
+      "lat": 44.372857,
+      "lon": 25.977418
+    },
+    {
+      "street": "Strada Salciei",
+      "number": "14",
+      "numericValue": 14,
+      "lat": 44.375088,
+      "lon": 25.979055
+    },
+    {
+      "street": "Strada Speranței",
+      "number": "15",
+      "numericValue": 15,
+      "lat": 44.387299,
+      "lon": 26.01011
+    },
+    {
+      "street": "Strada Cireșar",
+      "number": "15",
+      "numericValue": 15,
+      "lat": 44.40325,
+      "lon": 25.983943
+    },
+    {
+      "street": "Strada Toamnei",
+      "number": "15A-F",
+      "numericValue": 15,
+      "lat": 44.399908,
+      "lon": 25.988588
+    },
+    {
+      "street": "Strada Rubinului",
+      "number": "15A-15D",
+      "numericValue": 15,
+      "lat": 44.399345,
+      "lon": 26.012331
+    },
+    {
+      "street": "Strada Mugurelui",
+      "number": "15",
+      "numericValue": 15,
+      "lat": 44.402541,
+      "lon": 26.009134
+    },
+    {
+      "street": "Strada Florilor",
+      "number": "15",
+      "numericValue": 15,
+      "lat": 44.37246,
+      "lon": 25.976272
+    },
+    {
+      "street": "Strada Florilor",
+      "number": "15",
+      "numericValue": 15,
+      "lat": 44.37232,
+      "lon": 25.976089
+    },
+    {
+      "street": "Strada Florilor",
+      "number": "15",
+      "numericValue": 15,
+      "lat": 44.372175,
+      "lon": 25.975871
+    },
+    {
+      "street": "Strada Mărgelelor",
+      "number": "16A-16U",
+      "numericValue": 16,
+      "lat": 44.397942,
+      "lon": 26.003643
+    },
+    {
+      "street": "Strada Safirului",
+      "number": "16-18",
+      "numericValue": 16,
+      "lat": 44.394892,
+      "lon": 26.009904
+    },
+    {
+      "street": "Strada Rubinului",
+      "number": "16",
+      "numericValue": 16,
+      "lat": 44.397704,
+      "lon": 26.009118
+    },
+    {
+      "street": "Strada Topaz",
+      "number": "16A-16H",
+      "numericValue": 16,
+      "lat": 44.393929,
+      "lon": 25.995396
+    },
+    {
+      "street": "Strada Mugurelui",
+      "number": "16",
+      "numericValue": 16,
+      "lat": 44.403234,
+      "lon": 26.010185
+    },
+    {
+      "street": "Strada Florilor",
+      "number": "16",
+      "numericValue": 16,
+      "lat": 44.373405,
+      "lon": 25.978209
+    },
+    {
+      "street": "Strada Florilor",
+      "number": "16",
+      "numericValue": 16,
+      "lat": 44.373216,
+      "lon": 25.977974
+    },
+    {
+      "street": "Strada Toamnei",
+      "number": "17A-S",
+      "numericValue": 17,
+      "lat": 44.400257,
+      "lon": 25.988476
+    },
+    {
+      "street": "Strada Rubinului",
+      "number": "17A-17D",
+      "numericValue": 17,
+      "lat": 44.399713,
+      "lon": 26.012782
+    },
+    {
+      "street": "Strada Topaz",
+      "number": "17A-17M",
+      "numericValue": 17,
+      "lat": 44.393692,
+      "lon": 25.995804
+    },
+    {
+      "street": "Strada Florilor",
+      "number": "17",
+      "numericValue": 17,
+      "lat": 44.372938,
+      "lon": 25.977241
+    },
+    {
+      "street": "Strada Florilor",
+      "number": "17",
+      "numericValue": 17,
+      "lat": 44.373127,
+      "lon": 25.977476
+    },
+    {
+      "street": "Strada Mugurelui",
+      "number": "18",
+      "numericValue": 18,
+      "lat": 44.403101,
+      "lon": 26.010024
+    },
+    {
+      "street": "Strada Cactusului",
+      "number": "18B",
+      "numericValue": 18,
+      "lat": 44.401774,
+      "lon": 26.001051
+    },
+    {
+      "street": "Strada Cactusului",
+      "number": "18D",
+      "numericValue": 18,
+      "lat": 44.401056,
+      "lon": 26.001461
+    },
+    {
+      "street": "Strada Monumentului",
+      "number": "18",
+      "numericValue": 18,
+      "lat": 44.380865,
+      "lon": 26.002485
+    },
+    {
+      "street": "Strada Florilor",
+      "number": "18",
+      "numericValue": 18,
+      "lat": 44.373789,
+      "lon": 25.978738
+    },
+    {
+      "street": "Strada Florilor",
+      "number": "18",
+      "numericValue": 18,
+      "lat": 44.3736,
+      "lon": 25.978503
+    },
+    {
+      "street": "Strada Iernii",
+      "number": "19-19I",
+      "numericValue": 19,
+      "lat": 44.401225,
+      "lon": 25.98512
+    },
+    {
+      "street": "Strada Mărgelelor",
+      "number": "19A-19L",
+      "numericValue": 19,
+      "lat": 44.395572,
+      "lon": 26.005929
+    },
+    {
+      "street": "Strada Florilor",
+      "number": "19",
+      "numericValue": 19,
+      "lat": 44.373353,
+      "lon": 25.977832
+    },
+    {
+      "street": "Strada Florilor",
+      "number": "19",
+      "numericValue": 19,
+      "lat": 44.373496,
+      "lon": 25.97802
+    },
+    {
+      "street": "Strada Eroilor",
+      "number": "20",
+      "numericValue": 20,
+      "lat": 44.3865,
+      "lon": 26.014722
+    },
+    {
+      "street": "Strada Mărgelelor",
+      "number": "20-22",
+      "numericValue": 20,
+      "lat": 44.39745,
+      "lon": 26.004052
+    },
+    {
+      "street": "Strada Dunării",
+      "number": "20",
+      "numericValue": 20,
+      "lat": 43.771869,
+      "lon": 25.503059
+    },
+    {
+      "street": "Strada Iernii",
+      "number": "21",
+      "numericValue": 21,
+      "lat": 44.400868,
+      "lon": 25.985242
+    },
+    {
+      "street": "Strada Alunului",
+      "number": "21E",
+      "numericValue": 21,
+      "lat": 44.40558,
+      "lon": 25.986446
+    },
+    {
+      "street": "Strada Alunului",
+      "number": "21D",
+      "numericValue": 21,
+      "lat": 44.405684,
+      "lon": 25.986417
+    },
+    {
+      "street": "Strada Alunului",
+      "number": "21C",
+      "numericValue": 21,
+      "lat": 44.405778,
+      "lon": 25.986391
+    },
+    {
+      "street": "Strada Alunului",
+      "number": "21F",
+      "numericValue": 21,
+      "lat": 44.405479,
+      "lon": 25.986474
+    },
+    {
+      "street": "Strada Alunului",
+      "number": "21A-M",
+      "numericValue": 21,
+      "lat": 44.406161,
+      "lon": 25.9863
+    },
+    {
+      "street": "Strada Alunului",
+      "number": "21",
+      "numericValue": 21,
+      "lat": 44.406052,
+      "lon": 25.986314
+    },
+    {
+      "street": "Strada Alunului",
+      "number": "21A",
+      "numericValue": 21,
+      "lat": 44.405976,
+      "lon": 25.986335
+    },
+    {
+      "street": "Strada Alunului",
+      "number": "21B",
+      "numericValue": 21,
+      "lat": 44.405876,
+      "lon": 25.986363
+    },
+    {
+      "street": "Strada Alunului",
+      "number": "21G",
+      "numericValue": 21,
+      "lat": 44.405386,
+      "lon": 25.9865
+    },
+    {
+      "street": "Strada Alunului",
+      "number": "21H",
+      "numericValue": 21,
+      "lat": 44.405292,
+      "lon": 25.986527
+    },
+    {
+      "street": "Strada Alunului",
+      "number": "21I",
+      "numericValue": 21,
+      "lat": 44.405191,
+      "lon": 25.986555
+    },
+    {
+      "street": "Strada Alunului",
+      "number": "21K",
+      "numericValue": 21,
+      "lat": 44.405008,
+      "lon": 25.986606
+    },
+    {
+      "street": "Strada Alunului",
+      "number": "21J",
+      "numericValue": 21,
+      "lat": 44.405099,
+      "lon": 25.986581
+    },
+    {
+      "street": "Strada Alunului",
+      "number": "21L",
+      "numericValue": 21,
+      "lat": 44.404903,
+      "lon": 25.986636
+    },
+    {
+      "street": "Strada Alunului",
+      "number": "21M",
+      "numericValue": 21,
+      "lat": 44.404809,
+      "lon": 25.986662
+    },
+    {
+      "street": "Strada Topaz",
+      "number": "21A-21M",
+      "numericValue": 21,
+      "lat": 44.393339,
+      "lon": 25.99612
+    },
+    {
+      "street": "Strada Mugurelui",
+      "number": "21",
+      "numericValue": 21,
+      "lat": 44.401909,
+      "lon": 26.008071
+    },
+    {
+      "street": "Strada Ghioceilor",
+      "number": "22",
+      "numericValue": 22,
+      "lat": 44.39968,
+      "lon": 25.992574
+    },
+    {
+      "street": "Strada Iernii",
+      "number": "23",
+      "numericValue": 23,
+      "lat": 44.400684,
+      "lon": 25.985281
+    },
+    {
+      "street": "Strada Mugurelui",
+      "number": "23",
+      "numericValue": 23,
+      "lat": 44.401821,
+      "lon": 26.007862
+    },
+    {
+      "street": "Strada Speranței",
+      "number": "24-26",
+      "numericValue": 24,
+      "lat": 44.387287,
+      "lon": 26.008761
+    },
+    {
+      "street": "Strada Mărăcineni",
+      "number": "24",
+      "numericValue": 24,
+      "lat": 44.40504,
+      "lon": 25.99649
+    },
+    {
+      "street": "Strada Mărgelelor",
+      "number": "24A-24R",
+      "numericValue": 24,
+      "lat": 44.396858,
+      "lon": 26.004635
+    },
+    {
+      "street": "Strada Ametistului",
+      "number": "24-28",
+      "numericValue": 24,
+      "lat": 44.396057,
+      "lon": 26.019436
+    },
+    {
+      "street": "Strada Alunului",
+      "number": "25A-K",
+      "numericValue": 25,
+      "lat": 44.405849,
+      "lon": 25.985514
+    },
+    {
+      "street": "Strada Iernii",
+      "number": "25A-F",
+      "numericValue": 25,
+      "lat": 44.400455,
+      "lon": 25.98538
+    },
+    {
+      "street": "Strada Mugurelui",
+      "number": "25",
+      "numericValue": 25,
+      "lat": 44.401752,
+      "lon": 26.007691
+    },
+    {
+      "street": "Intrarea Mărăcineni",
+      "number": "26-30",
+      "numericValue": 26,
+      "lat": 44.4046,
+      "lon": 25.996619
+    },
+    {
+      "street": "Strada Rubinului",
+      "number": "26",
+      "numericValue": 26,
+      "lat": 44.398147,
+      "lon": 26.009948
+    },
+    {
+      "street": "Strada Alunului",
+      "number": "27A-F",
+      "numericValue": 27,
+      "lat": 44.405643,
+      "lon": 25.98495
+    },
+    {
+      "street": "Strada Topaz",
+      "number": "27A-27K",
+      "numericValue": 27,
+      "lat": 44.393011,
+      "lon": 25.996411
+    },
+    {
+      "street": "Strada Monumentului",
+      "number": "27",
+      "numericValue": 27,
+      "lat": 44.381621,
+      "lon": 26.001998
+    },
+    {
+      "street": "Strada Mărgelelor",
+      "number": "28-30",
+      "numericValue": 28,
+      "lat": 44.396271,
+      "lon": 26.005178
+    },
+    {
+      "street": "Strada Rubinului",
+      "number": "28",
+      "numericValue": 28,
+      "lat": 44.39822,
+      "lon": 26.010084
+    },
+    {
+      "street": "Strada Topaz",
+      "number": "29A-29D",
+      "numericValue": 29,
+      "lat": 44.392687,
+      "lon": 25.996721
+    },
+    {
+      "street": "Strada Mărășești",
+      "number": "29",
+      "numericValue": 29,
+      "lat": 44.388719,
+      "lon": 26.021165
+    },
+    {
+      "street": "Strada Monumentului",
+      "number": "29",
+      "numericValue": 29,
+      "lat": 44.381501,
+      "lon": 26.002102
+    },
+    {
+      "street": "Strada Rubinului",
+      "number": "30",
+      "numericValue": 30,
+      "lat": 44.398306,
+      "lon": 26.010275
+    },
+    {
+      "street": "Strada Topaz",
+      "number": "31-33",
+      "numericValue": 31,
+      "lat": 44.39253,
+      "lon": 25.996866
+    },
+    {
+      "street": "Strada Topaz",
+      "number": "31C-31F",
+      "numericValue": 31,
+      "lat": 44.393895,
+      "lon": 26.0006
+    },
+    {
+      "street": "Strada Mugurelui",
+      "number": "31",
+      "numericValue": 31,
+      "lat": 44.401349,
+      "lon": 26.006886
+    },
+    {
+      "street": "Strada Alunului",
+      "number": "33B-E",
+      "numericValue": 33,
+      "lat": 44.405245,
+      "lon": 25.983784
+    },
+    {
+      "street": "Strada Mărgelelor",
+      "number": "34B-34N",
+      "numericValue": 34,
+      "lat": 44.395966,
+      "lon": 26.005422
+    },
+    {
+      "street": "Strada Alunului",
+      "number": "35A-F",
+      "numericValue": 35,
+      "lat": 44.404996,
+      "lon": 25.983197
+    },
+    {
+      "street": "Strada Mugurelui",
+      "number": "35",
+      "numericValue": 35,
+      "lat": 44.400932,
+      "lon": 26.006167
+    },
+    {
+      "street": "Strada Mărgelelor",
+      "number": "36-38",
+      "numericValue": 36,
+      "lat": 44.395428,
+      "lon": 26.00588
+    },
+    {
+      "street": "Prelungirea Ghencea",
+      "number": "37",
+      "numericValue": 37,
+      "lat": 44.408056,
+      "lon": 25.991423
+    },
+    {
+      "street": "Strada Safirului",
+      "number": "38A",
+      "numericValue": 38,
+      "lat": 44.392297,
+      "lon": 26.002399
+    },
+    {
+      "street": "Strada Rubinului",
+      "number": "38",
+      "numericValue": 38,
+      "lat": 44.398706,
+      "lon": 26.011006
+    },
+    {
+      "street": "Strada Alunului",
+      "number": "39A-H",
+      "numericValue": 39,
+      "lat": 44.404682,
+      "lon": 25.982373
+    },
+    {
+      "street": "Strada Cireșar",
+      "number": "39F",
+      "numericValue": 39,
+      "lat": 44.402948,
+      "lon": 25.98288
+    },
+    {
+      "street": "Strada Toamnei",
+      "number": "39",
+      "numericValue": 39,
+      "lat": 44.403448,
+      "lon": 25.987514
+    },
+    {
+      "street": "Strada Mugurelui",
+      "number": "39",
+      "numericValue": 39,
+      "lat": 44.400679,
+      "lon": 26.00569
+    },
+    {
+      "street": "Intrarea Povernei",
+      "number": "P39",
+      "numericValue": 39,
+      "lat": 44.365423,
+      "lon": 25.972668
+    },
+    {
+      "street": "Strada Mărăcineni",
+      "number": "40-42",
+      "numericValue": 40,
+      "lat": 44.402827,
+      "lon": 25.99712
+    },
+    {
+      "street": "Strada Mărgelelor",
+      "number": "40B-40H",
+      "numericValue": 40,
+      "lat": 44.395031,
+      "lon": 26.006224
+    },
+    {
+      "street": "Strada Toamnei",
+      "number": "41A-D",
+      "numericValue": 41,
+      "lat": 44.403722,
+      "lon": 25.987426
+    },
+    {
+      "street": "Strada Botorca",
+      "number": "41B",
+      "numericValue": 41,
+      "lat": 44.390665,
+      "lon": 26.035317
+    },
+    {
+      "street": "Strada Verii",
+      "number": "41",
+      "numericValue": 41,
+      "lat": 44.40405,
+      "lon": 25.990085
+    },
+    {
+      "street": "Strada Mugurelui",
+      "number": "42",
+      "numericValue": 42,
+      "lat": 44.40005,
+      "lon": 26.004254
+    },
+    {
+      "street": "Strada Mărgelelor",
+      "number": "42A-42M",
+      "numericValue": 42,
+      "lat": 44.394683,
+      "lon": 26.006528
+    },
+    {
+      "street": "Strada Safirului",
+      "number": "42D",
+      "numericValue": 42,
+      "lat": 44.390042,
+      "lon": 25.996004
+    },
+    {
+      "street": "Strada Safirului",
+      "number": "42C",
+      "numericValue": 42,
+      "lat": 44.390135,
+      "lon": 25.996251
+    },
+    {
+      "street": "Șoseaua Alexandriei",
+      "number": "42",
+      "numericValue": 42,
+      "lat": 44.39076,
+      "lon": 26.019628
+    },
+    {
+      "street": "Strada Toamnei",
+      "number": "43",
+      "numericValue": 43,
+      "lat": 44.403693,
+      "lon": 25.987134
+    },
+    {
+      "street": "Strada Mugurelui",
+      "number": "43",
+      "numericValue": 43,
+      "lat": 44.40038,
+      "lon": 26.005143
+    },
+    {
+      "street": "Strada Topaz",
+      "number": "44A-44E",
+      "numericValue": 44,
+      "lat": 44.391357,
+      "lon": 25.997628
+    },
+    {
+      "street": "Strada Celofibrei",
+      "number": "44A",
+      "numericValue": 44,
+      "lat": 44.384941,
+      "lon": 26.023892
+    },
+    {
+      "street": "Prelungirea Ghencea",
+      "number": "45-53 bis",
+      "numericValue": 45,
+      "lat": 44.405967,
+      "lon": 25.990234
+    },
+    {
+      "street": "Prelungirea Ghencea",
+      "number": "45",
+      "numericValue": 45,
+      "lat": 44.407505,
+      "lon": 25.989735
+    },
+    {
+      "street": "Strada Orizontului",
+      "number": "45",
+      "numericValue": 45,
+      "lat": 44.381948,
+      "lon": 26.011399
+    },
+    {
+      "street": "Strada Alunului",
+      "number": "46-50",
+      "numericValue": 46,
+      "lat": 44.404511,
+      "lon": 25.981673
+    },
+    {
+      "street": "Strada Diamantului",
+      "number": "46D-46BIS",
+      "numericValue": 46,
+      "lat": 44.393174,
+      "lon": 26.017623
+    },
+    {
+      "street": "Strada Alunului",
+      "number": "47-49",
+      "numericValue": 47,
+      "lat": 44.403894,
+      "lon": 25.980224
+    },
+    {
+      "street": "Strada Alunului",
+      "number": "47D-47E",
+      "numericValue": 47,
+      "lat": 44.402927,
+      "lon": 25.980583
+    },
+    {
+      "street": "Strada Ametistului",
+      "number": "48A-48J",
+      "numericValue": 48,
+      "lat": 44.395416,
+      "lon": 26.017128
+    },
+    {
+      "street": "Strada Topaz",
+      "number": "48-50L",
+      "numericValue": 48,
+      "lat": 44.389794,
+      "lon": 25.994361
+    },
+    {
+      "street": "Strada Topaz",
+      "number": "48-50",
+      "numericValue": 48,
+      "lat": 44.39107,
+      "lon": 25.99793
+    },
+    {
+      "street": "Strada Celofibrei",
+      "number": "48B",
+      "numericValue": 48,
+      "lat": 44.382998,
+      "lon": 26.026085
+    },
+    {
+      "street": "Prelungirea Ghencea",
+      "number": "53 bis",
+      "numericValue": 53,
+      "lat": 44.407225,
+      "lon": 25.989499
+    },
+    {
+      "street": "Strada Ghidigeni",
+      "number": "55",
+      "numericValue": 55,
+      "lat": 44.401341,
+      "lon": 26.003087
+    },
+    {
+      "street": "Prelungirea Ghencea",
+      "number": "59a",
+      "numericValue": 59,
+      "lat": 44.40727,
+      "lon": 25.987718
+    },
+    {
+      "street": "Șoseaua Alexandriei",
+      "number": "60",
+      "numericValue": 60,
+      "lat": 44.390384,
+      "lon": 26.017598
+    },
+    {
+      "street": "Șoseaua Alexandriei",
+      "number": "66-68",
+      "numericValue": 66,
+      "lat": 44.389953,
+      "lon": 26.016255
+    },
+    {
+      "street": "Strada Safirului",
+      "number": "69-69P",
+      "numericValue": 69,
+      "lat": 44.395555,
+      "lon": 26.012134
+    },
+    {
+      "street": "Prelungirea Ghencea",
+      "number": "71",
+      "numericValue": 71,
+      "lat": 44.40733,
+      "lon": 25.984757
+    },
+    {
+      "street": "Șoseaua Alexandriei",
+      "number": "72-74",
+      "numericValue": 72,
+      "lat": 44.389748,
+      "lon": 26.015408
+    },
+    {
+      "street": "Strada Diamantului",
+      "number": "76A-76K",
+      "numericValue": 76,
+      "lat": 44.39212,
+      "lon": 26.013684
+    },
+    {
+      "street": "Șoseaua Alexandriei",
+      "number": "76-78",
+      "numericValue": 76,
+      "lat": 44.389507,
+      "lon": 26.014977
+    },
+    {
+      "street": "Prelungirea Ghencea",
+      "number": "81A-E",
+      "numericValue": 81,
+      "lat": 44.407348,
+      "lon": 25.983528
+    },
+    {
+      "street": "Strada Safirului",
+      "number": "81-81J",
+      "numericValue": 81,
+      "lat": 44.394819,
+      "lon": 26.010166
+    },
+    {
+      "street": "Șoseaua Alexandriei",
+      "number": "82",
+      "numericValue": 82,
+      "lat": 44.389334,
+      "lon": 26.014419
+    },
+    {
+      "street": "Prelungirea Ghencea",
+      "number": "83-85",
+      "numericValue": 83,
+      "lat": 44.407367,
+      "lon": 25.982677
+    },
+    {
+      "street": "Strada Mărăcineni",
+      "number": "84",
+      "numericValue": 84,
+      "lat": 44.399348,
+      "lon": 25.994432
+    },
+    {
+      "street": "Strada Safirului",
+      "number": "85A-85D",
+      "numericValue": 85,
+      "lat": 44.394652,
+      "lon": 26.009659
+    },
+    {
+      "street": "Strada Mărăcineni",
+      "number": "86",
+      "numericValue": 86,
+      "lat": 44.399199,
+      "lon": 25.994212
+    },
+    {
+      "street": "Strada Dunării",
+      "number": "87",
+      "numericValue": 87,
+      "lat": 43.766513,
+      "lon": 25.50906
+    },
+    {
+      "street": "Strada Dunării",
+      "number": "87",
+      "numericValue": 87,
+      "lat": 43.766579,
+      "lon": 25.508991
+    },
+    {
+      "street": "Strada Diamantului",
+      "number": "88",
+      "numericValue": 88,
+      "lat": 44.392365,
+      "lon": 26.011609
+    },
+    {
+      "street": "Strada Mărăcineni",
+      "number": "88E",
+      "numericValue": 88,
+      "lat": 44.398324,
+      "lon": 25.993727
+    },
+    {
+      "street": "Strada Mărăcineni",
+      "number": "88D",
+      "numericValue": 88,
+      "lat": 44.39811,
+      "lon": 25.993844
+    },
+    {
+      "street": "Strada Mărăcineni",
+      "number": "88F",
+      "numericValue": 88,
+      "lat": 44.398807,
+      "lon": 25.993614
+    },
+    {
+      "street": "Strada Dunării",
+      "number": "89",
+      "numericValue": 89,
+      "lat": 43.766381,
+      "lon": 25.50905
+    },
+    {
+      "street": "Strada Diamantului",
+      "number": "90A-90G",
+      "numericValue": 90,
+      "lat": 44.39166,
+      "lon": 26.011979
+    },
+    {
+      "street": "Strada Dunării",
+      "number": "91",
+      "numericValue": 91,
+      "lat": 43.766356,
+      "lon": 25.509171
+    },
+    {
+      "street": "Șoseaua Alexandriei",
+      "number": "96",
+      "numericValue": 96,
+      "lat": 44.3889,
+      "lon": 26.012645
+    },
+    {
+      "street": "Strada Dunării",
+      "number": "96",
+      "numericValue": 96,
+      "lat": 43.765529,
+      "lon": 25.510367
+    },
+    {
+      "street": "Strada Safirului",
+      "number": "97A-97F",
+      "numericValue": 97,
+      "lat": 44.391472,
+      "lon": 26.000552
+    },
+    {
+      "street": "Strada Dunării",
+      "number": "97",
+      "numericValue": 97,
+      "lat": 43.765689,
+      "lon": 25.509751
+    },
+    {
+      "street": "Strada Dunării",
+      "number": "97",
+      "numericValue": 97,
+      "lat": 43.76581,
+      "lon": 25.509575
+    },
+    {
+      "street": "Șoseaua Alexandriei",
+      "number": "98",
+      "numericValue": 98,
+      "lat": 44.388845,
+      "lon": 26.012484
+    },
+    {
+      "street": "Șoseaua Alexandriei",
+      "number": "99D",
+      "numericValue": 99,
+      "lat": 44.388419,
+      "lon": 26.012428
+    },
+    {
+      "street": "Șoseaua Alexandriei",
+      "number": "100",
+      "numericValue": 100,
+      "lat": 44.388814,
+      "lon": 26.01235
+    },
+    {
+      "street": "Șoseaua Alexandriei",
+      "number": "101E",
+      "numericValue": 101,
+      "lat": 44.383638,
+      "lon": 25.998334
+    },
+    {
+      "street": "Șoseaua Alexandriei",
+      "number": "102",
+      "numericValue": 102,
+      "lat": 44.388768,
+      "lon": 26.012189
+    },
+    {
+      "street": "Șoseaua Alexandriei",
+      "number": "103",
+      "numericValue": 103,
+      "lat": 44.3887,
+      "lon": 26.012085
+    },
+    {
+      "street": "Șoseaua Alexandriei",
+      "number": "104",
+      "numericValue": 104,
+      "lat": 44.38872,
+      "lon": 26.012063
+    },
+    {
+      "street": "Șoseaua Alexandriei",
+      "number": "106",
+      "numericValue": 106,
+      "lat": 44.388694,
+      "lon": 26.011728
+    },
+    {
+      "street": "Șoseaua Alexandriei",
+      "number": "108",
+      "numericValue": 108,
+      "lat": 44.388545,
+      "lon": 26.011285
+    },
+    {
+      "street": "Strada Diamantului",
+      "number": "108-112",
+      "numericValue": 108,
+      "lat": 44.391258,
+      "lon": 26.01051
+    },
+    {
+      "street": "Șoseaua Alexandriei",
+      "number": "112",
+      "numericValue": 112,
+      "lat": 44.388298,
+      "lon": 26.010714
+    },
+    {
+      "street": "Strada Mărăcineni",
+      "number": "114-116",
+      "numericValue": 114,
+      "lat": 44.396591,
+      "lon": 25.989785
+    },
+    {
+      "street": "Șoseaua Alexandriei",
+      "number": "116-118",
+      "numericValue": 116,
+      "lat": 44.388492,
+      "lon": 26.009765
+    },
+    {
+      "street": "Șoseaua Alexandriei",
+      "number": "116-118",
+      "numericValue": 116,
+      "lat": 44.388777,
+      "lon": 26.009604
+    },
+    {
+      "street": "Strada Gladiolelor",
+      "number": "117B",
+      "numericValue": 117,
+      "lat": 44.403165,
+      "lon": 26.01406
+    },
+    {
+      "street": "Strada Dunării",
+      "number": "117",
+      "numericValue": 117,
+      "lat": 43.764422,
+      "lon": 25.511051
+    },
+    {
+      "street": "Strada Mărăcineni",
+      "number": "118A-118L",
+      "numericValue": 118,
+      "lat": 44.395325,
+      "lon": 25.989632
+    },
+    {
+      "street": "Strada Mărăcineni",
+      "number": "120A-120H",
+      "numericValue": 120,
+      "lat": 44.394876,
+      "lon": 25.989482
+    },
+    {
+      "street": "Șoseaua Alexandriei",
+      "number": "120",
+      "numericValue": 120,
+      "lat": 44.388335,
+      "lon": 26.009858
+    },
+    {
+      "street": "Strada Dunării",
+      "number": "123",
+      "numericValue": 123,
+      "lat": 43.763959,
+      "lon": 25.511596
+    },
+    {
+      "street": "Strada Mărăcineni",
+      "number": "126A-126D",
+      "numericValue": 126,
+      "lat": 44.39447,
+      "lon": 25.988795
+    },
+    {
+      "street": "Strada Crișul Repede",
+      "number": "133B",
+      "numericValue": 133,
+      "lat": 44.379141,
+      "lon": 26.017193
+    },
+    {
+      "street": "Strada Dunării",
+      "number": "142",
+      "numericValue": 142,
+      "lat": 43.762508,
+      "lon": 25.513604
+    },
+    {
+      "street": "Strada Dunării",
+      "number": "142",
+      "numericValue": 142,
+      "lat": 43.76245,
+      "lon": 25.513672
+    },
+    {
+      "street": "Șoseaua Alexandriei",
+      "number": "145A",
+      "numericValue": 145,
+      "lat": 44.37922,
+      "lon": 25.986064
+    },
+    {
+      "street": "Șoseaua Alexandriei",
+      "number": "145",
+      "numericValue": 145,
+      "lat": 44.379693,
+      "lon": 25.986649
+    },
+    {
+      "street": "Strada Dunării",
+      "number": "146-148",
+      "numericValue": 146,
+      "lat": 44.375139,
+      "lon": 26.009175
+    },
+    {
+      "street": "Strada Dunării",
+      "number": "166",
+      "numericValue": 166,
+      "lat": 43.760255,
+      "lon": 25.515713
+    },
+    {
+      "street": "Strada Dunării",
+      "number": "179",
+      "numericValue": 179,
+      "lat": 43.759495,
+      "lon": 25.515749
+    },
+    {
+      "street": "Strada Dunării",
+      "number": "179",
+      "numericValue": 179,
+      "lat": 43.759323,
+      "lon": 25.515911
+    },
+    {
+      "street": "Strada Dunării",
+      "number": "187",
+      "numericValue": 187,
+      "lat": 43.758627,
+      "lon": 25.516608
+    },
+    {
+      "street": "Strada Diamantului",
+      "number": "188A-188H",
+      "numericValue": 188,
+      "lat": 44.389195,
+      "lon": 26.003062
+    },
+    {
+      "street": "Strada Safirului",
+      "number": "189A-189H",
+      "numericValue": 189,
+      "lat": 44.391695,
+      "lon": 26.001138
+    },
+    {
+      "street": "Strada Diamantului",
+      "number": "190A-190C",
+      "numericValue": 190,
+      "lat": 44.389164,
+      "lon": 26.002978
+    },
+    {
+      "street": "Strada Safirului",
+      "number": "191A-191K",
+      "numericValue": 191,
+      "lat": 44.391668,
+      "lon": 26.001078
+    },
+    {
+      "street": "Strada Diamantului",
+      "number": "200A-200D",
+      "numericValue": 200,
+      "lat": 44.388827,
+      "lon": 26.001852
+    },
+    {
+      "street": "Strada Diamantului",
+      "number": "200",
+      "numericValue": 200,
+      "lat": 44.388766,
+      "lon": 26.001919
+    },
+    {
+      "street": "Strada Safirului",
+      "number": "201A-201D",
+      "numericValue": 201,
+      "lat": 44.391281,
+      "lon": 25.999994
+    },
+    {
+      "street": "Strada Dunării",
+      "number": "202",
+      "numericValue": 202,
+      "lat": 43.75732,
+      "lon": 25.518186
+    },
+    {
+      "street": "Șoseaua Alexandriei",
+      "number": "209",
+      "numericValue": 209,
+      "lat": 44.37489,
+      "lon": 25.981502
+    },
+    {
+      "street": "Șoseaua Alexandriei",
+      "number": "211",
+      "numericValue": 211,
+      "lat": 44.374821,
+      "lon": 25.981411
+    },
+    {
+      "street": "Șoseaua Alexandriei",
+      "number": "213",
+      "numericValue": 213,
+      "lat": 44.37472,
+      "lon": 25.981321
+    },
+    {
+      "street": "Șoseaua Alexandriei",
+      "number": "215",
+      "numericValue": 215,
+      "lat": 44.374626,
+      "lon": 25.981183
+    },
+    {
+      "street": "Șoseaua Alexandriei",
+      "number": "217",
+      "numericValue": 217,
+      "lat": 44.37449,
+      "lon": 25.981022
+    },
+    {
+      "street": "Șoseaua Alexandriei",
+      "number": "219",
+      "numericValue": 219,
+      "lat": 44.373816,
+      "lon": 25.980244
+    },
+    {
+      "street": "Șoseaua Alexandriei",
+      "number": "221",
+      "numericValue": 221,
+      "lat": 44.373632,
+      "lon": 25.980531
+    },
+    {
+      "street": "Șoseaua Alexandriei",
+      "number": "223-225",
+      "numericValue": 223,
+      "lat": 44.373537,
+      "lon": 25.980757
+    },
+    {
+      "street": "Strada Dunării",
+      "number": "226",
+      "numericValue": 226,
+      "lat": 43.754951,
+      "lon": 25.519537
+    },
+    {
+      "street": "Șoseaua Alexandriei",
+      "number": "227",
+      "numericValue": 227,
+      "lat": 44.373462,
+      "lon": 25.979905
+    },
+    {
+      "street": "Șoseaua Alexandriei",
+      "number": "230",
+      "numericValue": 230,
+      "lat": 44.384708,
+      "lon": 25.99736
+    },
+    {
+      "street": "Șoseaua Alexandriei",
+      "number": "249",
+      "numericValue": 249,
+      "lat": 44.369064,
+      "lon": 25.975015
+    },
+    {
+      "street": "Șoseaua Alexandriei",
+      "number": "249",
+      "numericValue": 249,
+      "lat": 44.369548,
+      "lon": 25.975216
+    },
+    {
+      "street": "Șoseaua Alexandriei",
+      "number": "249",
+      "numericValue": 249,
+      "lat": 44.369365,
+      "lon": 25.974918
+    },
+    {
+      "street": "Șoseaua Alexandriei",
+      "number": "269",
+      "numericValue": 269,
+      "lat": 44.367588,
+      "lon": 25.973333
+    },
+    {
+      "street": "Șoseaua Alexandriei",
+      "number": "271",
+      "numericValue": 271,
+      "lat": 44.367017,
+      "lon": 25.972841
+    },
+    {
+      "street": "Șoseaua Alexandriei",
+      "number": "271",
+      "numericValue": 271,
+      "lat": 44.366982,
+      "lon": 25.972755
+    },
+    {
+      "street": "Șoseaua Alexandriei",
+      "number": "277",
+      "numericValue": 277,
+      "lat": 44.36587,
+      "lon": 25.972032
+    },
+    {
+      "street": "Șoseaua Alexandriei",
+      "number": "279",
+      "numericValue": 279,
+      "lat": 44.365682,
+      "lon": 25.971916
+    },
+    {
+      "street": "Șoseaua Alexandriei",
+      "number": "281",
+      "numericValue": 281,
+      "lat": 44.365577,
+      "lon": 25.971841
+    },
+    {
+      "street": "Șoseaua Alexandriei",
+      "number": "283",
+      "numericValue": 283,
+      "lat": 44.365473,
+      "lon": 25.971766
+    },
+    {
+      "street": "Șoseaua Alexandriei",
+      "number": "304",
+      "numericValue": 304,
+      "lat": 44.381758,
+      "lon": 25.988412
+    },
+    {
+      "street": "Strada Dunării",
+      "number": "318",
+      "numericValue": 318,
+      "lat": 43.745161,
+      "lon": 25.524877
+    },
+    {
+      "street": "Strada Dunării",
+      "number": "328",
+      "numericValue": 328,
+      "lat": 43.743368,
+      "lon": 25.525812
+    },
+    {
+      "street": "Șoseaua Alexandriei",
+      "number": "335",
+      "numericValue": 335,
+      "lat": 44.361212,
+      "lon": 25.968925
+    },
+    {
+      "street": "Șoseaua Alexandriei",
+      "number": "430",
+      "numericValue": 430,
+      "lat": 44.375124,
+      "lon": 25.981462
+    },
+    {
+      "street": "Șoseaua Alexandriei",
+      "number": "432",
+      "numericValue": 432,
+      "lat": 44.375051,
+      "lon": 25.981371
+    },
+    {
+      "street": "Șoseaua Alexandriei",
+      "number": "434",
+      "numericValue": 434,
+      "lat": 44.374965,
+      "lon": 25.981277
+    },
+    {
+      "street": "Șoseaua Alexandriei",
+      "number": "436",
+      "numericValue": 436,
+      "lat": 44.374902,
+      "lon": 25.981202
+    },
+    {
+      "street": "Șoseaua Alexandriei",
+      "number": "438",
+      "numericValue": 438,
+      "lat": 44.374825,
+      "lon": 25.981113
+    },
+    {
+      "street": "Șoseaua Alexandriei",
+      "number": "440",
+      "numericValue": 440,
+      "lat": 44.37475,
+      "lon": 25.981019
+    },
+    {
+      "street": "Șoseaua Alexandriei",
+      "number": "442",
+      "numericValue": 442,
+      "lat": 44.37461,
+      "lon": 25.980861
+    },
+    {
+      "street": "Șoseaua Alexandriei",
+      "number": "448",
+      "numericValue": 448,
+      "lat": 44.373876,
+      "lon": 25.980024
+    },
+    {
+      "street": "Șoseaua Alexandriei",
+      "number": "450",
+      "numericValue": 450,
+      "lat": 44.373799,
+      "lon": 25.979912
+    },
+    {
+      "street": "Șoseaua Alexandriei",
+      "number": "452",
+      "numericValue": 452,
+      "lat": 44.373684,
+      "lon": 25.979772
+    },
+    {
+      "street": "Șoseaua Alexandriei",
+      "number": "454",
+      "numericValue": 454,
+      "lat": 44.373573,
+      "lon": 25.979657
+    },
+    {
+      "street": "Șoseaua Alexandriei",
+      "number": "456",
+      "numericValue": 456,
+      "lat": 44.373508,
+      "lon": 25.979568
+    },
+    {
+      "street": "Șoseaua Alexandriei",
+      "number": "466",
+      "numericValue": 466,
+      "lat": 44.371918,
+      "lon": 25.97717
+    },
+    {
+      "street": "Șoseaua Alexandriei",
+      "number": "542",
+      "numericValue": 542,
+      "lat": 44.360449,
+      "lon": 25.968032
+    }
+  ]
+}

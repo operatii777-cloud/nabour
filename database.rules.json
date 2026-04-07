@@ -1,0 +1,46 @@
+{
+  "rules": {
+    "telemetry": {
+      "locations": {
+        "$h3_room": {
+          ".read": "auth != null && auth.token.nb_room === $h3_room",
+          "$uid": {
+            ".write": "auth != null && auth.uid === $uid && auth.token.nb_room === $h3_room",
+            ".validate": "newData.hasChildren(['lat', 'lng', 'updatedAt']) && newData.child('lat').isNumber() && newData.child('lng').isNumber() && newData.child('updatedAt').isNumber()"
+          }
+        }
+      },
+      "active_rides": {
+        "$rideId": {
+          "_meta": {
+            ".read": "auth != null && (data.child('driverId').val() === auth.uid || data.child('passengerId').val() === auth.uid)",
+            ".write": "auth != null && ((!data.exists() && newData.hasChildren(['driverId', 'passengerId']) && newData.child('driverId').val() === auth.uid) || (data.exists() && !newData.exists() && (data.child('driverId').val() === auth.uid || data.child('passengerId').val() === auth.uid)) || (data.exists() && newData.exists() && data.child('driverId').val() === auth.uid && newData.child('driverId').val() === data.child('driverId').val() && newData.child('passengerId').val() === data.child('passengerId').val()))",
+            "driverId": {
+              ".validate": "newData.isString()"
+            },
+            "passengerId": {
+              ".validate": "newData.isString()"
+            },
+            "createdAt": {
+              ".validate": "!newData.exists() || newData.isNumber()"
+            }
+          },
+          "driver_location": {
+            ".read": "auth != null && (root.child('telemetry/active_rides/' + $rideId + '/_meta/driverId').val() === auth.uid || root.child('telemetry/active_rides/' + $rideId + '/_meta/passengerId').val() === auth.uid)",
+            ".write": "auth != null && (newData.exists() && root.child('telemetry/active_rides/' + $rideId + '/_meta/driverId').val() === auth.uid || !newData.exists() && (root.child('telemetry/active_rides/' + $rideId + '/_meta/driverId').val() === auth.uid || root.child('telemetry/active_rides/' + $rideId + '/_meta/passengerId').val() === auth.uid))",
+            ".validate": "newData.hasChildren(['lat', 'lng', 'updatedAt']) && newData.child('lat').isNumber() && newData.child('lng').isNumber() && newData.child('updatedAt').isNumber() && (!newData.hasChild('heading') || newData.child('heading').isNumber()) && (!newData.hasChild('speed') || newData.child('speed').isNumber())"
+          }
+        }
+      },
+      "honks": {
+        "$targetUid": {
+          ".read": "auth != null && auth.uid == $targetUid",
+          ".write": "auth != null",
+          "$honkId": {
+            ".validate": "!newData.exists() || (newData.hasChildren(['senderUid', 'timestamp', 'type']) && newData.child('senderUid').val() === auth.uid && newData.child('type').isString())"
+          }
+        }
+      }
+    }
+  }
+}

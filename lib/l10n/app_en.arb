@@ -1,0 +1,1969 @@
+{
+  "@@locale": "en",
+  
+  "appTitle": "Nabour",
+  "driverMode": "Driver Mode",
+  "passengerMode": "Passenger Mode",
+  
+  "requestRide": "Request Ride",
+  "acceptRide": "Accept",
+  "declineRide": "Decline",
+  "cancelRide": "Cancel",
+  
+  "myLocation": "My Location",
+  "offline": "Offline",
+  "online": "Online",
+  "available": "Available",
+  "unavailable": "Unavailable",
+  
+  "activeRide": "Active Ride",
+  "rideHistory": "Ride History",
+  "profile": "Profile",
+  "settings": "Settings",
+  
+  "startNavigation": "Navigation started",
+  "navigationEnded": "Navigation ended",
+  "arrived": "You have arrived at your destination",
+  "routeDeviation": "Recalculating route",
+  "preparingRoute": "Preparing route",
+  
+  "turnLeft": "Turn left in {distance}",
+  "@turnLeft": {
+    "placeholders": {
+      "distance": {
+        "type": "String"
+      }
+    }
+  },
+  
+  "turnRight": "Turn right in {distance}",
+  "@turnRight": {
+    "placeholders": {
+      "distance": {
+        "type": "String"
+      }
+    }
+  },
+  
+  "turnSlightLeft": "Turn slightly left in {distance}",
+  "@turnSlightLeft": {
+    "placeholders": {
+      "distance": {
+        "type": "String"
+      }
+    }
+  },
+  
+  "turnSlightRight": "Turn slightly right in {distance}",
+  "@turnSlightRight": {
+    "placeholders": {
+      "distance": {
+        "type": "String"
+      }
+    }
+  },
+  
+  "continueForward": "Continue straight for {distance}",
+  "@continueForward": {
+    "placeholders": {
+      "distance": {
+        "type": "String"
+      }
+    }
+  },
+  
+  "makeUturn": "Make a U-turn in {distance}",
+  "@makeUturn": {
+    "placeholders": {
+      "distance": {
+        "type": "String"
+      }
+    }
+  },
+  
+  "meters": "meters",
+  "kilometers": "kilometers",
+  "meter": "meter",
+  "kilometer": "kilometer",
+  
+  "driverHeadingToYou": "Driver is heading to you...",
+  "driverArrived": "Driver has arrived!",
+  "rideInProgress": "Enjoy your ride!",
+  "confirmDriver": "Confirm driver",
+  "confirmButton": "Confirm",
+  "declineButton": "Decline",
+  
+  "iArrived": "I've arrived",
+  "startRide": "Start Ride",
+  "endRide": "End Ride",
+  "waitingForPassenger": "Waiting for passenger.",
+  "headingToPassenger": "Heading to passenger.",
+  
+  "communicateWithDriver": "Communicate with driver:",
+  "call": "Call",
+  "message": "Message",
+  "chat": "Chat",
+  "writeMessage": "Write a message...",
+  "send": "Send",
+  
+  "emergency": "Emergency",
+  "navigationTo": "Navigate to",
+  "navigation": "Navigation",
+  "chooseNavigationApp": "Choose navigation app",
+  "googleMaps": "Google Maps",
+  "waze": "Waze",
+  "locationNotAvailable": "Location is not available yet for sharing.",
+  "shareLocation": "Share location",
+  "navigateToPassenger": "Navigate to passenger",
+  "navigateToDestination": "Navigate to destination",
+  
+  "rideCompleted": "Ride completed",
+  "rideCancelled": "Ride cancelled",
+  "rideExpired": "Ride expired",
+  
+  "offlineDriverMessage": "You're unavailable as a driver. Turn on the switch to receive rides or request a ride as a passenger.",
+  "noPendingRides": "No ride requests available at the moment.",
+  "rideToDestination": "Ride to: {destination}",
+  "@rideToDestination": {
+    "placeholders": {
+      "destination": {
+        "type": "String"
+      }
+    }
+  },
+  
+  "cost": "Cost",
+  "distance": "Distance",
+  "ron": "RON",
+  "km": "km",
+  
+  "language": "Language",
+  "romanian": "Romanian",
+  "english": "English",
+  
+  "errorInitializingRide": "Error initializing ride",
+  "errorMonitoringRide": "Error monitoring ride",
+  "cannotOpenNavigation": "Could not open any navigation app.",
+  "cannotMakeCall": "Could not initiate call.",
+  
+  "joinTeamTitle": "Join the Nabour team!",
+  "joinTeamDescription": "Become a partner driver. Learn more here.",
+  
+  "youHaveActiveRide": "You have an active ride. Tap to see details.",
+  
+  "categoryStandardSubtitle": "The most affordable option for your trips.",
+  "categoryFamilySubtitle": "More space for passengers and luggage.",
+  "categoryEnergySubtitle": "Travel eco-friendly with electric or hybrid vehicles.",
+  "categoryBestSubtitle": "Premium experience with luxury vehicles and top drivers.",
+  
+  "aiAssistant": "AI Assistant",
+  "voiceSettings": "Voice Settings",
+  "voiceDemo": "Voice AI Demo",
+  "microphoneTest": "Microphone Test",
+  "aiLibraryTest": "AI Library Test",
+  "receipts": "Receipts",
+  "driverDashboard": "Nabour Driver Partner Dashboard",
+  "subscriptions": "Subscriptions",
+  "safety": "Safety",
+  "help": "Help",
+  "aiVoiceSettings": "🎤 AI Voice Settings",
+  "voiceAIDemo": "🗣️ Voice AI Demo",
+  "microphoneTestTool": "🔧 Microphone Test",
+  "aiLibraryTestTool": "🧠 AI Library Test",
+  "about": "About",
+  "legal": "Legal",
+  "logout": "LOGOUT",
+  
+  "aboutNabour": "About Nabour",
+  "evaluateApp": "Evaluate App",
+  "howManyStars": "How many stars do you give the Nabour app?",
+  "starSelected": "star selected",
+  "starsSelected": "stars selected",
+  "cancel": "Cancel",
+  "send": "Send",
+  "select": "Select",
+  "ratingSentSuccessfully": "✅ Rating of {rating} stars sent successfully!",
+  "@ratingSentSuccessfully": {
+    "placeholders": {
+      "rating": {
+        "type": "String"
+      }
+    }
+  },
+  "career": "Career",
+  "joinOurTeam": "Join our team",
+  "evaluateApplication": "Evaluate application",
+  "giveStarRating": "⭐ Give a star rating",
+  "followUs": "Follow us",
+  
+  "legalInformation": "Legal Information",
+  "termsConditions": "Terms & Conditions",
+  "privacy": "Privacy",
+  "termsConditionsTitle": "Terms and Conditions",
+  "generalProvisions": "General Provisions",
+  "generalProvisionsText": "Canceling a ride after assigning a partner driver may incur a cancellation fee to compensate for the time and distance traveled by the driver. Cancellation is free anytime before assigning a partner driver.",
+  "standardWaitTime": "Standard Wait Time",
+  "standardWaitTimeText": "After arriving at the pickup location, the partner driver will wait for free for 5 minutes. After this period expires, additional waiting fees may apply or the ride may be canceled, applying the corresponding cancellation fee.",
+  "specificCategoryPolicies": "Category-Specific Policies",
+  "cancellationFee": "Cancellation Fee:",
+  "freeCancellation": "Free Cancellation (Booked Rides):",
+  "minimumBookingTime": "Minimum Booking Time:",
+  "friendsRideStandard": "Nabour Standard",
+  "friendsRideEnergy": "Nabour Energy",
+  "friendsRideBest": "Nabour Best",
+  "friendsRideFamily": "Nabour Family",
+  "standardCancellationFee": "30 RON",
+  "energyCancellationFee": "30 RON",
+  "bestCancellationFee": "30 RON",
+  "familyCancellationFee": "30 RON",
+  "standardFreeCancellation": "At least 1 hour and 30 minutes before the scheduled time.",
+  "standardMinBooking": "At least 2 hours in advance from the ride reservation time.",
+  "energyMinBooking": "At least 2 hours in advance from the ride reservation time.",
+  "bestMinBooking": "At least 2 hours in advance from the ride reservation time.",
+  "familyMinBooking": "At least 2 hours in advance from the ride reservation time.",
+  "privacyPolicyContent": "Here will be displayed the detailed content of the Privacy Policy, in accordance with GDPR regulations. The document will explain what types of personal data are collected (name, email, location, payment data, etc.), the purpose of collection (service operation, marketing, security), how data is stored and protected, retention period, and what are the users' rights (right to access, rectification, deletion, etc.).\n\nThe complete text will be provided by a legal consultant to ensure compliance with current legislation.",
+  
+  "wallet": "Wallet",
+  "currentBalance": "Current Balance",
+  "paymentMethods": "Payment Methods",
+  "addOrManageCards": "Add or manage cards",
+  "cash": "Cash",
+  "selectPaymentMethod": "Select Payment Method",
+  "vouchers": "Vouchers",
+  "addPromoCode": "Add a promotional code",
+  "transactionHistory": "Transaction History",
+  "viewAllPayments": "View all payments and receipts",
+  "canSendToContact": "You can send to a contact person",
+  "addPaymentMethod": "Add a payment method",
+  "rideProfiles": "Ride Profiles",
+  "startUsing": "Start using",
+  "friendsRideForBusiness": "Nabour for Business",
+  "activateBusinessFeatures": "Activate features for business trips",
+  "manageBusinessTrips": "Manage business trips on...",
+  "requestBusinessProfileAccess": "Request access to Business profile",
+  "addVoucherCode": "Add voucher code",
+  "promotions": "Promotions",
+  "recommendations": "Recommendations",
+  "addReferralCode": "Add referral code",
+  "inStoreOffers": "In-Store Offers",
+  "offers": "Offers",
+  "walletDetails": "Wallet Details",
+  "walletDetailsInfo": "Nabour Cash is your digital balance. You can add funds for faster payments.",
+  "addFunds": "Add Funds",
+  "addFundsComingSoon": "The add funds functionality will be available soon.",
+  "paymentMethodDetails": "Payment Method Details",
+  "brand": "Brand",
+  "last4Digits": "Last 4 digits",
+  "cardholder": "Cardholder",
+  "expiryDate": "Expiry date",
+  "cashPaymentMethod": "Payment is made directly to the driver in cash.",
+  "delete": "Delete",
+  "deletePaymentMethodComingSoon": "The delete payment method functionality will be available soon.",
+  "businessProfile": "Business Profile",
+  "businessProfileInfo": "Activate Business profile to manage business trips.",
+  "businessProfileBenefits": "Benefits:",
+  "businessProfileBenefit1": "Detailed expense reports",
+  "businessProfileBenefit2": "Automatic billing to company",
+  "businessProfileBenefit3": "Manage multiple users",
+  "requestAccess": "Request Access",
+  "businessProfileRequestSent": "Business profile request has been sent. You will receive a response soon.",
+  "referralCodeInfo": "Enter referral code to receive benefits.",
+  "enterReferralCode": "Enter code",
+  "referralCodeApplied": "Referral code applied successfully!",
+  "personalProfileActive": "Personal profile is active.",
+  "inStoreOffersComingSoon": "In-store offers will be available soon.",
+  "close": "Close",
+  "paymentMethodDeleted": "Payment method deleted successfully.",
+  "errorDeletingPaymentMethod": "Error deleting payment method.",
+  "errorRequestingBusinessProfile": "Error requesting business profile.",
+  "errorApplyingReferralCode": "Error applying referral code.",
+  "vouchersHelpTitle": "Vouchers",
+  "addingVoucher": "Adding a voucher:",
+  "tapVouchersSection": "• Tap on \"Vouchers\" section in Wallet",
+  "tapAddVoucherCode": "• Tap \"Add voucher code\"",
+  "enterVoucherCode": "• Enter the voucher code",
+  "applyVoucher": "• Tap \"Apply\" to activate the voucher",
+  "usingVouchers": "Using vouchers:",
+  "vouchersAppliedAutomatically": "• Vouchers are automatically applied to the next ride",
+  "checkVoucherStatus": "• Check voucher status in Vouchers section",
+  "voucherExpiryInfo": "• Vouchers have an expiry date",
+  "voucherTypes": "Voucher types:",
+  "percentageDiscount": "• Percentage discount (e.g., 10% off)",
+  "fixedAmountDiscount": "• Fixed amount discount (e.g., 5 RON off)",
+  "freeRideVoucher": "• Free ride",
+  "voucherTip": "💡 Useful tip:",
+  "oneVoucherPerRide": "You can use only one voucher per ride.",
+  "walletHelpTitle": "Wallet",
+  "walletOverview": "Overview:",
+  "walletOverviewInfo": "The Wallet section allows you to manage payment methods, vouchers, and Nabour Cash balance.",
+  "friendsRideCash": "Nabour Cash:",
+  "friendsRideCashInfo": "• Digital balance for fast payments",
+  "addFundsToWallet": "• You can add funds to wallet",
+  "useWalletForPayments": "• You can use balance for automatic payments",
+  "walletSections": "Available sections:",
+  "paymentMethodsSection": "• Payment Methods - manage cards and cash",
+  "vouchersSection": "• Vouchers - add and manage promotional codes",
+  "rideProfilesSection": "• Ride Profiles - Personal and Business",
+  "promotionsSection": "• Promotions - promotional codes and referrals",
+  "walletTip": "💡 Useful tip:",
+  "walletBalanceNeverExpires": "Nabour Cash balance never expires.",
+  "paymentMethodsHelpTitle": "Payment Methods",
+  "addingPaymentMethod": "Adding a payment method:",
+  "goToWalletSection": "• Go to the \"Wallet\" section in the main menu",
+  "tapAddPaymentMethod": "• Tap the \"Add a payment method\" button",
+  "selectCardOrCash": "• Select the type of method (card or cash)",
+  "enterCardDetails": "• Enter card details (number, expiry date, CVV)",
+  "savePaymentMethod": "• Save the payment method",
+  "managingPaymentMethods": "Managing payment methods:",
+  "viewAllMethodsInWallet": "• View all saved methods in the \"Wallet\" section",
+  "editOrDeleteMethods": "• Edit or delete existing methods",
+  "setDefaultPaymentMethod": "• Set a method as default for automatic payments",
+  "paymentMethodsTypes": "Payment method types:",
+  "creditDebitCards": "• Credit/debit cards (Visa, Mastercard)",
+  "cashPayment": "• Cash (payment is made directly to the driver)",
+  "walletBalance": "• Nabour Cash (wallet balance)",
+  "paymentSecurity": "Payment security:",
+  "allPaymentsSecure": "• All payments are processed securely",
+  "cardDetailsEncrypted": "• Card details are encrypted and stored securely",
+  "pciCompliant": "• The app complies with PCI DSS security standards",
+  "paymentMethodTip": "💡 Useful tip:",
+  "youCanSendToContact": "You can send money to contacts using saved payment methods.",
+  
+  "driverDashboard": "Driver Dashboard",
+  "earningsToday": "Earnings Today",
+  "ridesToday": "Rides Today",
+  "averageRating": "Average Rating",
+  "lastCompletedRides": "Last Completed Rides",
+  "allRides": "All Rides",
+  "todayRides": "Today's Rides",
+  "generateDailyReport": "Generate Daily Report",
+  "noRidesYet": "No rides completed yet",
+  "viewDetails": "View Details",
+  
+  "safety": "Safety",
+  "addTrustedContact": "Add Trusted Contact",
+  "name": "Name",
+  "phoneNumber": "Phone Number",
+  "phoneNumberExample": "ex: 0712 345 678",
+  "save": "Save",
+  "contactSaved": "Contact {name} has been saved.",
+  "@contactSaved": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "trustedContacts": "Trusted Contacts",
+  "noContacts": "No trusted contacts added yet",
+  "emergencyCall": "Emergency Call",
+  "shareLocation": "Share Location",
+  "safetyFeatures": "Safety Features",
+  "emergencyAssistance": "Emergency Assistance",
+  "shareTrip": "Share Trip",
+  "reportIncident": "Report Incident",
+  
+  "help": "Help",
+  "helpCenter": "Help Center",
+  "frequentlyAskedQuestions": "Frequently Asked Questions",
+  "contactSupport": "Contact Support",
+  "reportProblem": "Report a Problem",
+  "career": "Career",
+  "cannotRequestRide": "Cannot request a ride",
+  "cannotRequestRideContent": "If you are having trouble requesting a ride, try the following solutions:",
+  "checkInternetConnection": "• Check your internet connection",
+  "ensureGpsEnabled": "• Make sure GPS location is enabled",
+  "restartApp": "• Restart the application",
+  "checkValidPayment": "• Check if you have a valid payment method",
+  "contactSupportIfPersists": "• Contact the support team if the problem persists",
+  "pickupTimeLonger": "Pickup time is longer than estimated",
+  "pickupTimeLongerContent": "Estimated time may vary for the following reasons:",
+  "unexpectedHeavyTraffic": "• Unexpected heavy traffic",
+  "unfavorableWeather": "• Unfavorable weather conditions",
+  "driverFindingAddress": "• Driver may have difficulty finding the address",
+  "specialEvents": "• Special events in your area",
+  "contactDriverDirectly": "You can contact the driver directly through the app to clarify the situation.",
+  "rideDidNotHappen": "Ride did not happen",
+  "rideDidNotHappenContent": "If the ride did not happen, check:",
+  "rideStatusInApp": "• Ride status in the app",
+  "messagesFromDriver": "• Messages from driver",
+  "correctLocation": "• If you were at the correct location",
+  "contactSupportForRefund": "For refunds, contact support with ride details.",
+  "lostItems": "Lost Items",
+  "lostItemsContent": "If you forgot something in the driver's car:",
+  "contactDriverImmediately": "1. Contact the driver immediately through the app",
+  "describeLostItem": "2. Describe the lost item",
+  "arrangePickup": "3. Arrange a meeting for recovery",
+  "reportToSupport": "4. If you cannot contact the driver, report through support",
+  "returnFeeNote": "Note: A small fee may apply for returning items.",
+  "driverDeviatedRoute": "Driver deviated from route",
+  "driverDeviatedContent": "If the driver took a different route:",
+  "askDriverReason": "• Ask the driver about the reason for the change",
+  "checkTrafficWorks": "• Check if there is traffic or works on the initial route",
+  "reportIfUnjustified": "• If you consider the deviation unjustified, report it",
+  "driversCanChooseAlternatives": "Drivers can choose alternative routes to avoid traffic.",
+  "driverDashboardWeeklyActivityTitle": "Community activity",
+  "driverDashboardWeeklyKudosHeader": "Kudos",
+  "driverDashboardWeeklyTotalHelpsWeek": "Helps this week:",
+  "emergencyAssistanceUsage": "Using Emergency Assistance",
+  "emergencyAssistanceContent": "The emergency function allows you to:",
+  "quickCall112": "• Quickly call 112",
+  "sendLocationToContact": "• Send your location to an emergency contact",
+  "reportIncidentToSafety": "• Report an incident to the safety team",
+  
+  "voiceSettings": "Voice Settings",
+  "voiceSettingsSaved": "Voice settings have been saved",
+  "availableVoiceCommands": "Available Voice Commands",
+  "basicCommands": "Basic commands:",
+  "wantRideToDestination": "\"I want a ride to [destination]\"",
+  "economyRideToDestination": "\"Economy ride to [destination]\"",
+  "urgentRideToDestination": "\"Urgent ride to [destination]\"",
+  "premiumRideToDestination": "\"Premium ride to [destination]\"",
+  "commandsDuringRide": "Commands during ride:",
+  "sendMessageToDriver": "\"Send message to driver\"",
+  "whereIsDriver": "\"Where is the driver?\"",
+  "cancelRide": "\"Cancel ride\"",
+  "wantToPayCash": "\"I want to pay cash\"",
+  "controlCommands": "Control commands:",
+  "heyNabour": "\"Hey Nabour\" (activation)",
+  "helpCommand": "\"Help\" (help)",
+  "cancelCommand": "\"Cancel\" (cancel)",
+  "stopCommand": "\"Stop\" (stop)",
+  "close": "Close",
+  "advancedHelp": "Advanced Help",
+  "advancedFeaturesAvailable": "Advanced features available:",
+  "automaticVoiceActivation": "   - Automatic voice activation",
+  "customActivationWord": "   - Custom activation word",
+  "realtimeDetection": "   - Real-time detection",
+  "continuousListening": "Continuous Listening",
+  "continuousListeningForCommands": "   - Continuous listening for commands",
+  "realtimeProcessing": "   - Real-time processing",
+  "smartBatterySaving": "   - Smart battery saving",
+  "multiLanguageSupport": "Multi-language Support",
+  "supportFor6Languages": "   - Support for 6 languages",
+  "voiceSwitchBetweenLanguages": "   - Voice switch between languages",
+  "localAccentAdaptation": "   - Local accent adaptation",
+  "privacySecurity": "Privacy & Security",
+  "localProcessing": "   - Local processing",
+  "endToEndEncryption": "   - End-to-end encryption",
+  "fullDataControl": "   - Full control over data",
+  "contactSupportForTechnical": "For technical assistance, contact support.",
+  
+  "listening": "Listening",
+  "sayYourAnswer": "Say your answer:",
+  "acceptOrDecline": "\"ACCEPT\" or \"DECLINE\"",
+  
+  "greeting": "Hello! Where would you like to go?",
+  
+  "account": "Account",
+  "personalInformation": "Personal Information",
+  "changePassword": "Change Password",
+  "security": "Security",
+  "notifications": "Notifications",
+  "language": "Language",
+  "logout": "Logout",
+  
+  "reportGenerated": "Report Generated",
+  "dailyReportGeneratedSuccess": "Daily report has been generated successfully. Do you want to return to the main map?",
+  "stayHere": "Stay Here",
+  "goToMap": "Go to Map",
+  "driverOptions": "Driver Options",
+  "generatingReport": "Generating report...",
+  "showAll": "Show All",
+  "viewDetails": "View Details",
+  "noRidesMatchFilter": "No rides match the filter.",
+  "to": "To:",
+  "destination": "Destination:",
+  "activeRide": "Active Ride",
+  "driverModeDeactivated": "Driver Mode Deactivated",
+  "goToMapAndActivate": "Go to Map and activate the switch to receive rides.",
+  "youAreAvailable": "You Are Available for Rides",
+  "newRidesWillAppear": "New rides will appear on the map as interactive notifications.",
+  "waitingForPassengerConfirmation": "Waiting for passenger confirmation",
+  "confirmedGoToPassenger": "Confirmed - Go to passenger",
+  "rideInProgress": "Ride in progress",
+  "earningsTodayShort": "Earnings Today",
+  "completedRidesToday": "Completed rides today",
+  "ridesTodayShort": "Rides Today",
+  "averageRatingShort": "Average Rating",
+  "errorGeneratingReport": "Error generating report: {error}",
+  "@errorGeneratingReport": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "noRidesTodayForReport": "No completed rides today for report.",
+  
+  "safetyCenter": "Safety Center",
+  "addContact": "Add contact",
+  "emergencyAssistanceButton": "Emergency Assistance Button",
+  "emergencyAssistanceButtonDesc": "During any ride, you have the 112 button in the corner of the screen to quickly contact emergency services.",
+  "tripSharing": "Trip Sharing",
+  "tripSharingDesc": "You can share ride details and route in real-time with friends or family for added safety.",
+  "verifiedDrivers": "Verified Drivers",
+  "verifiedDriversDesc": "All partner drivers go through a rigorous document and history verification process to ensure your safety.",
+  "reportIncidentTitle": "Reporting an Incident",
+  "reportIncidentDesc": "If you encounter any safety issues, you can report them directly from the app, in the Help section, and our team will investigate promptly.",
+  "trustedContacts": "Trusted Contacts",
+  "noTrustedContactsYet": "You haven't added trusted contacts yet.",
+  "addFamilyFriends": "Quickly add family or friends who will receive notifications when you share a ride.",
+  "sendTestMessage": "Send test message",
+  "delete": "Delete",
+  "contactRemoved": "Contact {name} has been removed.",
+  "@contactRemoved": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "couldNotOpenMessages": "Could not open messaging app for this contact.",
+  "testMessageBody": "I've set you as a trusted contact in Nabour. I will share active trips when I need help.",
+  
+  "voiceSettings": "Voice Settings",
+  "voiceSettingsSaved": "Voice settings have been saved",
+  "voiceSystemActive": "Voice system is active",
+  "voiceSystemNotActive": "Voice system is not active",
+  "canUseVoiceCommands": "You can use voice commands to book rides",
+  "checkMicrophonePermissions": "Check microphone permissions",
+  "activate": "Activate",
+  "basicMode": "Basic Mode",
+  "continuous": "Continuous",
+  "privacy": "Privacy",
+  "on": "ON",
+  "off": "OFF",
+  "generalSettings": "General Settings",
+  "continuousListening": "Continuous listening",
+  "continuousListeningSubtitle": "Continuously listen for voice commands",
+  "voicePreferences": "Voice Preferences",
+  "speechRate": "Speech rate",
+  "percentOfNormalSpeed": "{percent}% of normal speed",
+  "@percentOfNormalSpeed": {
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "volume": "Volume",
+  "percentOfMaxVolume": "{percent}% of maximum volume",
+  "@percentOfMaxVolume": {
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "pitch": "Pitch",
+  "lowerPitch": "Lower pitch",
+  "normalPitch": "Normal pitch",
+  "higherPitch": "Higher pitch",
+  "language": "Language",
+  "romanian": "Romanian",
+  "english": "English",
+  "german": "German",
+  "french": "French",
+  "spanish": "Spanish",
+  "italian": "Italian",
+  "advancedVoiceFeatures": "Advanced Voice Features",
+  "voiceCommandTraining": "Voice command training",
+  "voiceCommandTrainingSubtitle": "Improve command recognition",
+  "customVoiceProfile": "Custom voice profile",
+  "customVoiceProfileSubtitle": "Adapt the system to your voice",
+  "multiLanguageSupport": "Multi-language support",
+  "multiLanguageSupportSubtitle": "Switch between languages during conversation",
+  "advancedSettings": "Advanced Settings",
+  "testMicrophone": "Test microphone",
+  "testMicrophoneSubtitle": "Check if microphone works correctly",
+  "testSound": "Test sound",
+  "testSoundSubtitle": "Check if sound works correctly",
+  "testRecognition": "Test recognition",
+  "testRecognitionSubtitle": "Check voice recognition",
+  "voiceCommandsHelp": "Voice commands help",
+  "voiceCommandsHelpSubtitle": "Complete list of available commands",
+  "privacySettings": "Privacy",
+  "privacySettingsSubtitle": "Manage voice data and privacy",
+  "analyticsAndImprovements": "Analytics and improvements",
+  "analyticsAndImprovementsSubtitle": "Manage voice analytics for improvements",
+  "saveSettings": "Save Settings",
+  "voiceSystemActivatedSuccessfully": "Voice system has been activated successfully!",
+  "errorActivatingVoiceSystem": "Error activating voice system: {error}",
+  "@errorActivatingVoiceSystem": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "activateVoiceSystemFirst": "Activate voice system first.",
+  "errorTestingMicrophone": "Error testing microphone: {error}",
+  "@errorTestingMicrophone": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "errorTestingSound": "Error testing sound: {error}",
+  "@errorTestingSound": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "errorTestingRecognition": "Error testing recognition: {error}",
+  "@errorTestingRecognition": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "voiceCommandTrainingTitle": "Voice Command Training",
+  "voiceCommandTrainingContent": "Training will improve voice command recognition. You will be asked to repeat commands multiple times to create a personalized voice profile.",
+  "later": "Later",
+  "startTraining": "Start Training",
+  "trainingStepsTitle": "Training Steps",
+  "repeatCommand1": "1. Repeat the command \"I want a ride\" 3 times",
+  "repeatCommand2": "2. Repeat the command \"Economy ride\" 3 times",
+  "repeatCommand3": "3. Repeat the command \"Cancel ride\" 3 times",
+  "repeatCommand4": "4. Repeat the command \"Help\" 3 times",
+  "trainingWillTakeApprox": "Training will take approximately 5 minutes.",
+  "customVoiceProfileTitle": "Custom Voice Profile",
+  "customVoiceProfileContent": "Create a custom voice profile to improve recognition. The system will learn to recognize your voice and adapt to your accent.",
+  "createProfile": "Create Profile",
+  "multiLanguageSettingsTitle": "Multi-language Support",
+  "primaryLanguage": "Primary language: Romanian",
+  "secondaryLanguages": "Secondary languages:",
+  "switchBetweenLanguages": "You can switch between languages by saying \"Switch to English\" or \"Change to Romanian\"",
+  "availableVoiceCommandsTitle": "Available Voice Commands",
+  "basicCommands": "Basic commands:",
+  "commandsDuringRide": "Commands during ride:",
+  "controlCommands": "Control commands:",
+  "privacySettingsTitle": "Voice Privacy",
+  "privacySettingsLabel": "Privacy settings:",
+  "saveVoiceHistory": "Save voice history",
+  "saveVoiceHistorySubtitle": "Store voice commands for service improvement",
+  "anonymousAnalysis": "Anonymous analysis",
+  "anonymousAnalysisSubtitle": "Allow anonymous analysis for recognition improvement",
+  "cloudSync": "Cloud sync",
+  "cloudSyncSubtitle": "Sync voice preferences between devices",
+  "voiceDataProcessedLocally": "Voice data is processed locally on your device for maximum privacy.",
+  "analyticsSettingsTitle": "Analytics and Improvements",
+  "analyticsSettingsLabel": "Analytics settings:",
+  "improveRecognition": "Improve recognition",
+  "improveRecognitionSubtitle": "Allow analysis for voice recognition improvement",
+  "usageStatistics": "Usage statistics",
+  "usageStatisticsSubtitle": "Collect statistics about voice feature usage",
+  "errorReporting": "Error reporting",
+  "errorReportingSubtitle": "Automatically report voice errors for resolution",
+  "allDataAnonymized": "All data is anonymized and contains no personal information.",
+  "advancedHelpTitle": "Advanced Help",
+  "advancedFeaturesAvailable": "Advanced features available:",
+  "automaticVoiceActivation": "   - Automatic voice activation",
+  "customActivationWord": "   - Custom activation word",
+  "realtimeDetection": "   - Real-time detection",
+  "continuousListeningForCommands": "   - Continuous listening for commands",
+  "realtimeProcessing": "   - Real-time processing",
+  "smartBatterySaving": "   - Smart battery saving",
+  "supportFor6Languages": "   - Support for 6 languages",
+  "voiceSwitchBetweenLanguages": "   - Voice switch between languages",
+  "localAccentAdaptation": "   - Local accent adaptation",
+  "localProcessing": "   - Local processing",
+  "endToEndEncryption": "   - End-to-end encryption",
+  "fullDataControl": "   - Full data control",
+  "contactSupportForTechnical": "For technical assistance, contact support.",
+  "advancedHelp": "Advanced Help",
+  
+  "aiSpeaking": "AI SPEAKING",
+  "aiListening": "AI LISTENING",
+  "aiProcessing": "AI PROCESSING",
+  "waitingForResponse": "WAITING FOR RESPONSE",
+  "voiceAssistant": "VOICE ASSISTANT",
+  "pleaseListenToResponse": "Please listen to the response...",
+  "speakNow": "SPEAK NOW!",
+  "processingInformation": "Processing information...",
+  "pleaseWait": "Please wait...",
+  "pressButtonToStart": "Press the button to start",
+  "newRideAudioUnavailable": "🚨 NEW RIDE! (Audio unavailable)",
+  
+  "emergencyAssistanceUsage": "Using emergency assistance",
+  "emergencyAssistanceUsageContent": "The emergency function allows you to:",
+  "call112Quickly": "• Call 112 quickly",
+  "sendLocationToEmergencyContact": "• Send your location to an emergency contact",
+  "reportIncidentToSafetyTeam": "• Report an incident to the safety team",
+  "useOnlyRealEmergencies": "Use this function only in real emergency situations.",
+  "reportAccidentOrUnpleasantEvent": "Report accident or unpleasant event",
+  "toReportIncident": "To report an incident:",
+  "ensureYourSafety": "1. Ensure your safety",
+  "useEmergencyFunctionInApp": "2. Use the emergency function in the app",
+  "describeInDetail": "3. Describe in detail what happened",
+  "addPhotosIfPossible": "4. Add photos if possible",
+  "cooperateWithInvestigationTeam": "5. Cooperate with the investigation team",
+  "falseReportsCanLead": "False reports can lead to account suspension.",
+  "cleaningOrDamageFee": "Cleaning or damage fee",
+  "cleaningFeeTitle": "🧹 Cleaning and damage fees in Nabour app",
+  "cleaningFeeIntro": "At Nabour, we want all trips to be pleasant and comfortable for all our users. For this reason, we have a clear policy regarding vehicle cleanliness and responsibility for any damage.",
+  "whenFeeApplied": "🚨 When is the cleaning or damage fee applied?",
+  "spillingLiquids": "1. Spilling liquids in the vehicle (water, coffee, juices, alcohol, etc.)",
+  "soilingSeatsOrFloor": "2. Soiling seats or floor with mud, food or other substances",
+  "vomitingInVehicle": "3. Vomiting in the vehicle",
+  "smokingInVehicle": "4. Smoking in the vehicle (including e-cigarettes)",
+  "damagingVehicleElements": "5. Damaging vehicle elements (seats, belts, etc.)",
+  "leavingFoodOrTrash": "6. Leaving food scraps or trash in the vehicle",
+  "persistentOdors": "7. Persistent odors requiring professional deodorization",
+  "howFeeProcessWorks": "⚙️ How does the fee application process work?",
+  "driverDocumentsDamage": "1. Driver documents the damage with photos immediately after the ride",
+  "driverReportsIncident": "2. Driver reports the incident through Nabour app within 24 hours",
+  "teamAnalyzesReport": "3. Our team analyzes the report and photos",
+  "ifFeeJustified": "4. If the fee is justified, the passenger will be notified",
+  "feeChargedAutomatically": "5. The fee will be charged automatically from the payment method associated with the account",
+  "passengerCanContest": "6. Passenger can contest the fee within 48 hours of notification",
+  "feeAmounts": "💰 Fee amounts",
+  "lightCleaning": "🧽 Light cleaning: 50-100 RON",
+  "wipingAndVacuuming": "• Wiping and vacuuming light traces of dirt",
+  "removingSmallStains": "• Removing small stains from seats",
+  "intensiveCleaning": "🧼 Intensive cleaning: 150-300 RON",
+  "professionalCleaning": "• Professional cleaning for large stains or odors",
+  "deodorizationAndSpecialTreatments": "• Deodorization and special treatments",
+  "repairsAndReplacements": "🔧 Repairs and replacements: 200-2000+ RON",
+  "replacingDamagedSeatCovers": "• Replacing damaged seat covers",
+  "repairingDamagedComponents": "• Repairing damaged components",
+  "costsDependOnSeverity": "• Costs depend on the severity of the damage",
+  "yourRightsAsPassenger": "⚖️ Your rights as a passenger",
+  "rightToReceivePhotos": "✅ You have the right to receive photos and complete details of the damage",
+  "canContestFee": "✅ You can contest the fee within 48 hours through the app",
+  "rightToObjectiveInvestigation": "✅ You have the right to an objective investigation of your case",
+  "ifContestationJustified": "✅ In case of justified contestations, the fee will be fully refunded",
+  "howToAvoidFee": "🛡️ How to avoid cleaning or damage fees",
+  "doNotConsumeFood": "• Do not consume food or drinks in the vehicle",
+  "checkShoesNotDirty": "• Check that shoes are not dirty before getting in",
+  "notifyDriverIfFeelingUnwell": "• Notify the driver if you feel unwell and need a break",
+  "doNotSmokeInVehicle": "• Do not smoke in the vehicle",
+  "treatVehicleWithRespect": "• Treat the vehicle with the same respect as if it were yours",
+  "takeTrashWithYou": "• Take trash with you at the end of the trip",
+  "contestationProcess": "📝 Contestation process",
+  "accessRideHistory": "1. Access the \"Ride History\" section in the app",
+  "selectRideForContestation": "2. Select the ride for which you are contesting the fee",
+  "pressContestFee": "3. Press \"Contest fee\" and fill out the form",
+  "addRelevantEvidence": "4. Add any relevant evidence (photos, explanations)",
+  "teamWillReanalyze": "5. Our team will reanalyze the case within 72 hours",
+  "receiveDetailedResponse": "6. You will receive a detailed response via email and in the app",
+  "haveQuestionsOrNeedAssistance": "📞 Have questions or need assistance?",
+  "emailSupport": "📧 Email: suport@nabour.ro",
+  "phoneSupport": "📱 Phone: +40 700 NABOUR",
+  "chatInApp": "💬 Chat in app: Help section",
+  "scheduleSupport": "🕒 Schedule: Monday-Sunday, 24/7",
+  "importantToRemember": "⚠️ Important to remember",
+  "feeOnlyAppliedWithClearEvidence": "The cleaning and damage fee is only applied in cases where there is clear evidence of vehicle damage or soiling. The Nabour team analyzes each case individually and ensures that all fees are justified and correct.",
+  "howToActivateDriverMode": "How to activate driver partner mode",
+  "toBecomeDriverPartner": "To become a Nabour driver partner, follow these steps:",
+  "checkConditions": "1. Check conditions",
+  "validLicenseRequired": "You must have a valid driver's license, at least 2 years of experience and be at least 21 years old.",
+  "prepareDocuments": "2. Prepare documents",
+  "documentsNeeded": "You need: driver's license, ID card, vehicle registration certificate, valid ITP and RCA insurance.",
+  "completeApplication": "3. Complete application",
+  "accessCareerSection": "Access the \"Career\" section from the main menu and fill out the online form with your data.",
+  "submitDocuments": "4. Submit documents",
+  "uploadClearPhotos": "Upload clear photos of all required documents through the online platform.",
+  "applicationVerification": "5. Application verification",
+  "teamWillVerify": "Our team will verify the documents within 48 business hours.",
+  "receiveActivationCode": "6. Receive activation code",
+  "afterApproval": "After approval, you will receive a unique code via email/SMS to activate your driver account.",
+  "activateAccount": "7. Activate account",
+  "enterCodeInApp": "Enter the code in the app and start earning money by driving!",
+  "usefulTip": "💡 Useful tip:",
+  "ensureDocumentsValid": "Make sure all documents are valid and photos are clear for quick processing.",
+  "ratesAndPayments": "Rates and payments",
+  "ratesAndPaymentsInfo": "Information about Rates and Payments",
+  "ratesCalculatedAutomatically": "• Rates are calculated automatically based on distance and time",
+  "paymentMadeAutomatically": "• Payment is made automatically through the saved method in the account",
+  "canSeeRateDetails": "• You can see the rate details before confirming the ride",
+  "inCaseOfPaymentProblems": "• In case of payment problems, contact support",
+  "forCurrentRatesDetails": "For details about current rates, check in the app.",
+  "deliveryOrderRequest": "Delivery order request",
+  "deliveryServices": "Delivery Services",
+  "currentlyFocusedOnTransport": "Currently, we are focused on passenger transport services.",
+  "deliveryServicesAvailableSoon": "Delivery services will be available in the near future.",
+  "weWillNotifyYou": "We will notify you when this feature becomes active!",
+  "appFunctioningProblems": "App functioning problems",
+  "ifAppNotWorkingCorrectly": "If the app is not working correctly:",
+  "restartApp": "1. Restart the app",
+  "checkInternetConnection": "2. Check internet connection",
+  "updateAppToLatest": "3. Update the app to the latest version",
+  "restartPhone": "4. Restart the phone",
+  "reinstallAppIfPersists": "5. Reinstall the app if the problem persists",
+  "ifProblemContinues": "If the problem continues, send us a report through support.",
+  "forgotPassword": "Forgot password",
+  "enterEmailAssociated": "Enter the email address associated with your account.",
+  "enterValidEmail": "Enter a valid email address.",
+  "sendingResetEmail": "Sending reset email...",
+  "resetEmailSent": "A password reset email has been sent. Check your inbox (including Spam folder)!",
+  "errorSendingResetEmail": "An error occurred while sending the reset email.",
+  "noAccountWithEmail": "No account exists with this email address.",
+  "unexpectedError": "An unexpected error occurred.",
+  "resetPassword": "Reset Password",
+  "applyNow": "Apply now",
+  "close": "Close",
+  "contentComingSoon": "Content for this topic will be available soon.",
+  
+  "joinTeam": "Join Nabour team",
+  "applyForDriver": "Apply for Nabour Driver Partner",
+  "neighborhoodRequests": "Neighborhood Requests",
+  "neighborhoodChat": "Neighborhood Chat",
+  "activateDriverCode": "Activate Driver Mode Code",
+  "activateDriverCodeTitle": "Activate Driver Code",
+  "activateDriverCodeDescription": "Enter the activation code you received to become a Nabour driver partner.",
+  "enterActivationCode": "Please enter the activation code.",
+  "codeTooShort": "The entered code is too short. Please check again.",
+  "validatingCode": "Validating code...",
+  "codeActivatedSuccess": "Code activated successfully! You are now a driver.",
+  "codeInvalidOrUsed": "Invalid or already used code. Please check.",
+  "errorValidatingCode": "Error validating code: {error}",
+  "@errorValidatingCode": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "activate": "Activate",
+  "lowDataMode": "Low data mode",
+  "highContrastUI": "High-contrast UI",
+  "assistantStatusOverlay": "Assistant status overlay",
+  "performanceOverlay": "Performance overlay",
+  
+  "aiGreeting": "Hello, where would you like to go?",
+  "aiSearchingDrivers": "Searching for available drivers...",
+  "aiSearchingDriversInArea": "Searching for available drivers in your area...",
+  "aiDriverFound": "Found an available driver {minutes} minutes away.",
+  "@aiDriverFound": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "aiBestDriverSelected": "Selected the best driver for you. Sending ride request...",
+  "aiNoDriversAvailable": "Sorry, but I couldn't find any available drivers in your area. Please try again later.",
+  "aiEverythingResolved": "Perfect! I've resolved everything automatically. Your ride request has been sent!",
+  
+  "subscriptionsTitle": "Nabour Subscriptions",
+  "recommended": "RECOMMENDED",
+  "ronPerMonth": "RON / month",
+  "planSelected": "You selected the {plan} plan! (simulation)",
+  "@planSelected": {
+    "placeholders": {
+      "plan": {
+        "type": "String"
+      }
+    }
+  },
+  "choosePlan": "Choose Plan",
+  "subscriptionBasicDescription": "For occasional trips.",
+  "subscriptionPlusDescription": "The most popular plan.",
+  "subscriptionPremiumDescription": "Exclusive benefits.",
+  "subscriptionBasicBenefit1": "5% discount on 10 rides/month",
+  "subscriptionBasicBenefit2": "Free cancellation within 2 minutes",
+  "subscriptionPlusBenefit1": "10% discount on all rides",
+  "subscriptionPlusBenefit2": "Free cancellation within 5 minutes",
+  "subscriptionPlusBenefit3": "Priority support 24/7",
+  "subscriptionPremiumBenefit1": "15% discount on all rides",
+  "subscriptionPremiumBenefit2": "Free cancellation anytime",
+  "subscriptionPremiumBenefit3": "Priority support 24/7",
+  "subscriptionPremiumBenefit4": "Access to premium vehicles",
+  
+  "rideHistory": "Ride History",
+  "deleteConfirmation": "Delete Confirmation",
+  "deleteRideConfirmation": "Are you sure you want to permanently delete the ride to \"{destination}\" from your history? This action is irreversible.",
+  "@deleteRideConfirmation": {
+    "placeholders": {
+      "destination": {
+        "type": "String"
+      }
+    }
+  },
+  "delete": "Delete",
+  "rideDeletedSuccess": "Ride deleted successfully!",
+  "errorLoadingRole": "Error loading role: {error}",
+  "@errorLoadingRole": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "errorGeneric": "Error",
+  "errorLoadingData": "Error loading data",
+  "errorDetails": "Details: {error}",
+  "@errorDetails": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "retry": "Retry",
+  "noRidesInPeriod": "You have no rides in the selected period.",
+  "filterAll": "All",
+  "filterLastMonth": "Last Month",
+  "filterLast3Months": "Last 3 Months",
+  "filterThisYear": "This Year",
+  "rideToDestination": "To: {destination}",
+  "@rideToDestination": {
+    "placeholders": {
+      "destination": {
+        "type": "String"
+      }
+    }
+  },
+  "rideDate": "Date: {date}",
+  "@rideDate": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "deleteRide": "Delete ride",
+  "asDriver": "As Driver",
+  "asPassenger": "As Passenger",
+  "errorLoadingUserRole": "Error loading user role.",
+  
+  "receiptsTitle": "Your Receipts",
+  "receiptsTitlePassenger": "Receipts (Passenger)",
+  "errorLoadingReceipts": "Error loading receipts",
+  "noReceiptsInPeriod": "You have no receipts in this category for the selected period.",
+  "deleteSelectedReceipts": "Delete {count} selected receipts?",
+  "@deleteSelectedReceipts": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "deleteSelectedReceiptsWarning": "This action will permanently delete the selected receipts. This action cannot be undone.",
+  "receiptsDeletedSuccess": "Successfully deleted {count} receipts.",
+  "@receiptsDeletedSuccess": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "receiptsDeletedPartial": "Deleted {deleted} receipts. {error} could not be deleted.",
+  "@receiptsDeletedPartial": {
+    "placeholders": {
+      "deleted": {
+        "type": "int"
+      },
+      "error": {
+        "type": "int"
+      }
+    }
+  },
+  "deleteAllReceipts": "Delete all receipts ({count})?",
+  "@deleteAllReceipts": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "deleteAllReceiptsWarning": "This action will permanently delete ALL receipts from the selected period. This action cannot be undone.",
+  "allReceiptsDeleted": "Deleted {count} receipts.",
+  "@allReceiptsDeleted": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "filterAllReceipts": "All",
+  "generating": "Generating...",
+  "monthlyReportPDF": "Monthly Report PDF",
+  "select": "Select",
+  "selectedCount": "{count} selected",
+  "@selectedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "selectAll": "Select all",
+  "deselectAll": "Deselect all",
+  "deleteSelected": "Delete selected",
+  "deleteAll": "Delete all",
+  "noRidesForReport": "No rides in the last month to generate report.",
+  "reportGenerated": "Report Generated",
+  "returnToMapQuestion": "Do you want to return to the main map?",
+  "stayHere": "Stay Here",
+  "goToMap": "Go to Map",
+  "errorGeneratingReport": "Error generating report: {error}",
+  "@errorGeneratingReport": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "rideTo": "Ride to: {destination}",
+  "@rideTo": {
+    "placeholders": {
+      "destination": {
+        "type": "String"
+      }
+    }
+  },
+  
+  "rideFrom": "Ride from {date}",
+  "@rideFrom": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "from": "From:",
+  "earningsSummary": "Earnings Summary",
+  "totalRide": "Total Ride:",
+  "appCommission": "App Commission:",
+  "yourEarnings": "Your Earnings:",
+  "reportProblem": "Report a Problem",
+  
+  "activeRideDetected": "Active ride detected",
+  "cancelPreviousRide": "Cancel previous ride",
+  
+  "rideAcceptedWaiting": "Ride accepted! Waiting for passenger confirmation...",
+  "driverProfileLoading": "Driver profile is loading, please try again...",
+  "searching": "Searching…",
+  "searchInThisArea": "Search in this area",
+  "declining": "Declining...",
+  "decline": "Decline",
+  "accepting": "Accepting...",
+  "accept": "Accept",
+  "destination": "Destination",
+  "addAsStop": "Add as stop",
+  "pickupPointDeleted": "Pickup point has been deleted",
+  "destinationDeleted": "Destination has been deleted",
+  "selectPickupAndDestination": "Select pickup point and destination",
+  
+  "rideSummary": "Ride Summary",
+  "couldNotLoadRideDetails": "Could not load ride details",
+  "back": "Back",
+  "noTip": "No tip",
+  
+  "routeNotLoaded": "🗺️ Could not load route automatically",
+  "rideCancelledSuccess": "Ride has been cancelled successfully.",
+  "forceCancelRide": "Force Cancel Ride",
+  "passengerAddedStop": "Passenger has added a new stop. Route has been recalculated.",
+  "stopAdded": "Stop added! Route and cost have been updated.",
+  "errorAddingStop": "Error adding stop: {error}",
+  "@errorAddingStop": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "navigationWithGoogleMaps": "Navigation with Google Maps",
+  "navigationWithWaze": "Navigation with Waze",
+  "safetyTeamNotified": "We have notified the safety team. We are with you.",
+  "sendViaApps": "Send via apps",
+  "noTrustedContacts": "You have no trusted contacts",
+  "manageContacts": "Manage contacts",
+  "iAmSafe": "I am safe",
+  "falseAlarm": "False alarm",
+  "shareRoute": "Share route",
+  "rideCancelledSuccessShort": "Ride has been cancelled successfully",
+  "recenterMap": "Recenter map",
+  "mapMovedTapToRecenter": "Map moved. Tap to recenter",
+  "entrySelected": "Entry selected.",
+  "addStop": "Add Stop",
+  "navigationBanner": "Navigation banner. {type} {modifier}. Distance {distance} meters.",
+  "@navigationBanner": {
+    "placeholders": {
+      "type": {
+        "type": "String"
+      },
+      "modifier": {
+        "type": "String"
+      },
+      "distance": {
+        "type": "String"
+      }
+    }
+  },
+  "entrySelectedWithLabel": "Entry selected: {label}",
+  "@entrySelectedWithLabel": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "editMessage": "Edit message",
+  "save": "Save",
+  
+  "passengerNotifiedArrived": "✅ Passenger has been notified that you have arrived!",
+  "cannotOpenPhoneApp": "Cannot open phone app",
+  "errorLoadingRoute": "Error loading route: {error}",
+  "@errorLoadingRoute": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "rideCancelledReason": "Ride cancelled: {reason}",
+  "@rideCancelledReason": {
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "cancelRide": "Cancel ride",
+  "selectCancellationReason": "Select cancellation reason:",
+  "backButton": "Back",
+  "passengerNotResponding": "Passenger not responding",
+  "technicalProblem": "Technical problem",
+  "emergency": "Emergency",
+  "pickupRide": "Pickup Ride",
+  "loadingPassengerInfo": "Loading passenger information...",
+  "call": "Call",
+  
+  "pleaseValidateAddress": "Please validate the address or select it from the map.",
+  "editAddress": "Edit Address",
+  "addNewAddress": "Add New Address",
+  "errorVoiceRecognition": "Error in voice recognition: {error}",
+  "@errorVoiceRecognition": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "updateAddress": "Update Address",
+  "saveAddress": "Save Address",
+  
+  "resetPassword": "Reset Password",
+  "enterEmailAssociated": "Enter the email address associated with your account.",
+  "resetEmailSent": "A password reset email has been sent. Check your inbox (including Spam folder)!",
+  "unexpectedError": "An unexpected error occurred.",
+  "resetPasswordButton": "Reset Password",
+  
+  "howToActivateDriverMode": "How to activate Nabour partner driver mode",
+  "close": "Close",
+  "applyNow": "Apply Now",
+  "pleaseFillAllFields": "Please fill in all fields correctly.",
+  "welcomeBack": "👋 Welcome back!",
+  "welcomeToNabour": "Welcome to Nabour!",
+  "pleaseEnterValidEmail": "Please enter a valid email address in the Email field for reset.",
+  "errorResettingPassword": "An unexpected error occurred while resetting password.",
+  "enterValidPhoneNumber": "Enter a valid phone number.",
+  "autoAuthCompleted": "Automatic authentication completed",
+  "errorAutoAuth": "Auto authentication error: {error}",
+  "@errorAutoAuth": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "enterSmsCode": "Enter the received SMS code.",
+  "verifyAndAuthenticate": "Verify and Authenticate",
+  
+  "max5Stops": "You can add a maximum of 5 stops",
+  "addressNotFound": "Could not find address: {address}",
+  "@addressNotFound": {
+    "placeholders": {
+      "address": {
+        "type": "String"
+      }
+    }
+  },
+  "noCoordinatesForDestination": "No coordinates found for destination: {error}",
+  "@noCoordinatesForDestination": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "fillBothAddresses": "Fill in both addresses to continue",
+  "addStop": "Add stop",
+  "intermediateStopAdded": "Intermediate stop added",
+  "home": "Home",
+  "work": "Work",
+  "edit": "Edit",
+  "recentDestinations": "Recent Destinations",
+  "noFavoriteAddressAdded": "No favorite address added.",
+  
+  "addressUpdated": "Address has been updated!",
+  "addressSaved": "Address has been saved!",
+  
+  "pleaseSelectRating": "Please select a rating before submitting.",
+  "ratingSentSuccess": "Rating sent successfully!",
+  "errorSendingRating": "Error sending rating: {error}",
+  "@errorSendingRating": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "rideDetailsCompleted": "Completed Ride Details",
+  "saveRating": "Save Rating",
+  
+  "errorConfirmingDriver": "Error confirming driver: {error}",
+  "@errorConfirmingDriver": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "errorDecliningDriver": "Error declining driver: {error}",
+  "@errorDecliningDriver": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "confirmDriver": "Confirm Driver",
+  "backToMap": "Back to Map",
+  
+  "currentLocation": "Current location",
+  "finalDestination": "Final destination",
+  "accordingToSelection": "According to selection",
+  
+  "aiSpeaking": "🗣️ AI SPEAKING\n\nPlease listen...",
+  "aiListening": "🎤 AI LISTENING\n\nSPEAK NOW!",
+  "aiProcessing": "🧠 AI PROCESSING\n\nPlease wait...",
+  "waitingResponse": "⏳ WAITING FOR RESPONSE...",
+  "waitingConfirmation": "❓ WAITING FOR CONFIRMATION\n\nSay YES or NO",
+  
+  "driverMode": "Driver Mode",
+  
+  "arrivedNotifyPassenger": "Arrived - Notify passenger",
+  "passengerBoarding": "Passenger boarding",
+  "startRide": "Start ride",
+  "route": "Route",
+  
+  "preferencesSaved": "Preferences have been saved",
+  
+  "pleaseSelectRatingBeforeSubmit": "Please select a rating before submitting.",
+  "errorSubmittingRating": "Error submitting rating. Please try again.",
+  "thankYouForRide": "Thank you for the ride!",
+  "howWasExperience": "How was your experience?",
+  "leaveCommentOptional": "Leave a comment (optional)",
+  "noTip": "No tip",
+  
+  "thanksForRating": "Thanks for rating!",
+  "ratePassenger": "Rate Passenger",
+  "shortCharacterization": "Brief characterization (e.g., clean, made a mess)",
+  "addPrivateNoteAboutPassenger": "Add a private note about passenger...",
+  
+  "routeUpdated": "Route Updated",
+  "passengerAddedNewStop": "Passenger has added a new stop. Route has been recalculated.",
+  "ok": "OK",
+  
+  "rideManagement": "Ride Management",
+  "modifyDestination": "Modify Destination",
+  "cannotModifyCompletedRide": "You cannot modify the destination for a completed or cancelled ride.",
+  "destinationUpdatedSuccessfully": "Destination updated successfully!",
+  "errorUpdatingDestination": "Error updating destination: {error}",
+  "@errorUpdatingDestination": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "changeFinalLocation": "Change final location",
+  "addStop": "Add Stop",
+  "intermediateStop": "Intermediate stop",
+  "cancelRide": "Cancel Ride",
+  "mayIncludeCancellationFee": "May include cancellation fee",
+  "viewReceipt": "View Receipt",
+  "completeRideDetails": "Complete ride details",
+  "rateRide": "Rate Ride",
+  "provideDriverFeedback": "Provide feedback to driver",
+  
+  "communication": "Communication",
+  "callDriver": "Call Driver",
+  "chat": "Chat",
+  
+  "chatWith": "Chat with {name}",
+  "@chatWith": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "chatAvailableSoon": "Chat will be available soon",
+  
+  "costSummary": "Cost Summary",
+  "baseFare": "Base fare:",
+  "distance": "Distance ({km} km):",
+  "@distance": {
+    "placeholders": {
+      "km": {
+        "type": "String"
+      }
+    }
+  },
+  "time": "Time ({min} min):",
+  "@time": {
+    "placeholders": {
+      "min": {
+        "type": "String"
+      }
+    }
+  },
+  "totalPaid": "Total Paid:",
+  "ratingGiven": "Rating given:",
+  "noRatingGiven": "No rating given",
+  
+  "optionalComments": "Optional comments...",
+  "howWasYourExperience": "How was your experience?",
+  "routeNotLoadedAuto": "🗺️ Could not load route automatically",
+  "rideCancelledSuccessfully": "Ride has been cancelled successfully.",
+  "forceCancelRide": "Force Cancel Ride",
+  "stopAddedRouteUpdated": "Stop added! Route and cost have been updated.",
+  "errorAddingStop": "Error adding stop: {error}",
+  "@errorAddingStop": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "navigationWithGoogleMaps": "Navigation with Google Maps",
+  "navigationWithWaze": "Navigation with Waze",
+  "safetyTeamNotified": "We have notified the safety team. We are with you.",
+  "sendViaApps": "Send via apps",
+  "noTrustedContacts": "You have no trusted contacts",
+  "manageContacts": "Manage contacts",
+  "iAmSafe": "I am safe",
+  "falseAlarm": "False alarm",
+  "shareRoute": "Share route",
+  "rideCancelledSuccess": "Ride has been cancelled successfully",
+  "mapMovedTapToRecenter": "Map moved. Tap to recenter",
+  "entrySelected": "Entry selected.",
+  "entrySelectedWithLabel": "Entry selected: {label}",
+  "@entrySelectedWithLabel": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "editMessage": "Edit message",
+  "save": "Save",
+  "writeNewText": "Write new text...",
+  "messageEditedSuccess": "Message has been edited successfully!",
+  "errorEditingMessage": "Error editing message: {error}",
+  "@errorEditingMessage": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "errorCancelling": "Error cancelling: {error}",
+  "@errorCancelling": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "splitPayment": "Split Payment",
+  "splitPaymentDescription": "Split the ride cost with other passengers",
+  "createSplitPayment": "Create Split",
+  "splitPaymentCreated": "Split payment created",
+  "shareLinkWithParticipants": "Share the link with participants:",
+  "share": "Share",
+  "splitWithHowMany": "Split with how many?",
+  "selectNumberOfPeople": "Select number of people",
+  "confirm": "Confirm",
+  "acceptSplitPayment": "Accept Split",
+  "markAsPaid": "Mark as Paid",
+  "totalAmount": "Total",
+  "perPerson": "Per Person",
+  "participants": "Participants",
+  "participant": "Participant",
+  "paid": "Paid",
+  "pending": "Pending",
+  "accepted": "Accepted",
+  "completed": "Completed",
+  "rejected": "Rejected",
+  "cancelled": "Cancelled",
+  "errorCreatingSplitPayment": "Error creating split payment: {error}",
+  "@errorCreatingSplitPayment": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "errorAcceptingSplitPayment": "Error accepting split payment: {error}",
+  "@errorAcceptingSplitPayment": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "errorCompletingPayment": "Error completing payment: {error}",
+  "@errorCompletingPayment": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "paymentCompleted": "Payment completed",
+  "promotionCode": "Promotion Code",
+  "enterPromotionCode": "Enter promotion code",
+  "apply": "Apply",
+  "promotionAppliedSuccessfully": "Promotion code applied successfully",
+  
+  "subscriptionsHelpTitle": "Subscriptions and Promotions",
+  "subscriptionsHelpOverview": "Nabour subscriptions offer exclusive benefits and discounts on rides.",
+  "subscriptionsHelpPlans": "Available Plans:",
+  "subscriptionsHelpBasic": "• Nabour Basic - 5% discount on 10 rides/month",
+  "subscriptionsHelpPlus": "• Nabour Plus - 10% discount on all rides (Recommended)",
+  "subscriptionsHelpPremium": "• Nabour Premium - 15% discount + exclusive benefits",
+  "subscriptionsHelpHowToSubscribe": "How to subscribe:",
+  "subscriptionsHelpGoToMenu": "1. Go to hamburger menu",
+  "subscriptionsHelpTapSubscriptions": "2. Tap 'Subscriptions and Promotions'",
+  "subscriptionsHelpSelectPlan": "3. Select desired plan",
+  "subscriptionsHelpCompletePayment": "4. Complete payment",
+  "subscriptionsHelpPromotions": "Active Promotions:",
+  "subscriptionsHelpPromotionsInfo": "Check the 'Promotions' section for special offers and available promotional codes.",
+  "subscriptionsHelpReferral": "Referral Program:",
+  "subscriptionsHelpReferralInfo": "Share your referral code and receive benefits for each friend who signs up.",
+  
+  "splitPaymentHelpTitle": "Split Payment - Cost Sharing",
+  "splitPaymentHelpOverview": "Split Payment allows you to share the ride cost with other passengers.",
+  "splitPaymentHelpHowToCreate": "How to create Split Payment:",
+  "splitPaymentHelpAfterRide": "1. After completing the ride, tap 'Split Payment'",
+  "splitPaymentHelpSelectPeople": "2. Select the number of people to split with",
+  "splitPaymentHelpShareLink": "3. Share the generated link with participants",
+  "splitPaymentHelpParticipantsAccept": "4. Participants accept and pay their share",
+  "splitPaymentHelpHowToAccept": "How to accept Split Payment:",
+  "splitPaymentHelpReceiveLink": "1. Receive the sharing link",
+  "splitPaymentHelpTapAccept": "2. Tap 'Accept Split'",
+  "splitPaymentHelpSelectPayment": "3. Select payment method",
+  "splitPaymentHelpCompletePayment": "4. Complete payment",
+  "splitPaymentHelpNote": "Note: Split Payment is only available for completed rides.",
+  
+  "rideSharingHelpTitle": "Ride Sharing - Shared Rides",
+  "rideSharingHelpOverview": "Ride Sharing allows you to share your ride with other passengers going in the same direction.",
+  "rideSharingHelpHowToEnable": "How to enable Ride Sharing:",
+  "rideSharingHelpDuringRequest": "1. During ride request, enable 'Ride Sharing' option",
+  "rideSharingHelpSystemMatches": "2. System will automatically search for compatible passengers",
+  "rideSharingHelpIfMatchFound": "3. If a match is found, you will be notified",
+  "rideSharingHelpBenefits": "Benefits:",
+  "rideSharingHelpCostReduction": "• Significant cost reduction for the ride",
+  "rideSharingHelpEcoFriendly": "• Environmentally friendly option",
+  "rideSharingHelpSocial": "• Opportunity to meet new people",
+  "rideSharingHelpNote": "Note: Ride Sharing is only available for certain routes and in certain areas.",
+  
+  "modifyDestinationHelpTitle": "Modify Destination",
+  "modifyDestinationHelpOverview": "You can modify the ride destination during an active ride.",
+  "modifyDestinationHelpHowToModify": "How to modify destination:",
+  "modifyDestinationHelpDuringRide": "1. During active ride, tap 'Ride Management'",
+  "modifyDestinationHelpTapModify": "2. Tap 'Modify Destination'",
+  "modifyDestinationHelpSelectNew": "3. Select new destination",
+  "modifyDestinationHelpConfirm": "4. Confirm modification",
+  "modifyDestinationHelpRouteRecalculated": "5. Route and price will be recalculated automatically",
+  "modifyDestinationHelpLimitations": "Limitations:",
+  "modifyDestinationHelpCannotModifyCompleted": "• You cannot modify destination for completed or cancelled rides",
+  "modifyDestinationHelpPriceMayChange": "• Price may vary depending on new destination",
+  "modifyDestinationHelpDriverNotified": "• Driver will be automatically notified about the change",
+  
+  "lowDataModeHelpTitle": "Low Data Mode",
+  "lowDataModeHelpOverview": "Low Data Mode reduces mobile data consumption by optimizing app functionalities.",
+  "lowDataModeHelpHowToEnable": "How to enable Low Data Mode:",
+  "lowDataModeHelpGoToMenu": "1. Go to hamburger menu",
+  "lowDataModeHelpTapToggle": "2. Find the 'Low data mode' option",
+  "lowDataModeHelpActivate": "3. Activate the toggle",
+  "lowDataModeHelpWhatItDoes": "What Low Data Mode does:",
+  "lowDataModeHelpReducesImages": "• Reduces image quality and caching",
+  "lowDataModeHelpLimitsAnimations": "• Limits animations and visual effects",
+  "lowDataModeHelpOptimizesMaps": "• Optimizes map loading",
+  "lowDataModeHelpReducesSync": "• Reduces real-time synchronization",
+  "lowDataModeHelpBenefits": "Benefits:",
+  "lowDataModeHelpSavesData": "• Saves mobile data",
+  "lowDataModeHelpFasterLoading": "• Faster loading on weak connections",
+  "lowDataModeHelpBatteryLife": "• Improves battery life",
+  "lowDataModeHelpNote": "Note: Low Data Mode may affect the quality of some features, but the app remains fully functional.",
+  
+  "highContrastUIHelpTitle": "High-Contrast UI",
+  "highContrastUIHelpOverview": "High-Contrast UI improves visibility for users with visual impairments or in low-light conditions.",
+  "highContrastUIHelpHowToEnable": "How to enable High-Contrast UI:",
+  "highContrastUIHelpGoToMenu": "1. Go to hamburger menu",
+  "highContrastUIHelpTapToggle": "2. Find the 'High-contrast UI' option",
+  "highContrastUIHelpActivate": "3. Activate the toggle",
+  "highContrastUIHelpWhatItDoes": "What High-Contrast UI does:",
+  "highContrastUIHelpIncreasesContrast": "• Increases contrast between text and background",
+  "highContrastUIHelpBolderText": "• Makes text bolder and easier to read",
+  "highContrastUIHelpClearerIcons": "• Makes icons and buttons more visible",
+  "highContrastUIHelpBetterVisibility": "• Improves visibility in low-light conditions",
+  "highContrastUIHelpBenefits": "Benefits:",
+  "highContrastUIHelpAccessibility": "• Improves accessibility for users with visual impairments",
+  "highContrastUIHelpReadability": "• Easier to read text",
+  "highContrastUIHelpOutdoorUse": "• Better use in bright light conditions",
+  "highContrastUIHelpNote": "Note: High-Contrast UI is available for both light and dark themes.",
+  
+  "assistantStatusOverlayHelpTitle": "Assistant Status Overlay",
+  "assistantStatusOverlayHelpOverview": "Assistant Status Overlay displays a small indicator in the corner of the screen showing when the AI assistant is processing commands.",
+  "assistantStatusOverlayHelpHowToEnable": "How to enable Assistant Status Overlay:",
+  "assistantStatusOverlayHelpGoToMenu": "1. Go to hamburger menu",
+  "assistantStatusOverlayHelpTapToggle": "2. Find the 'Assistant status overlay' option",
+  "assistantStatusOverlayHelpActivate": "3. Activate the toggle",
+  "assistantStatusOverlayHelpWhatItShows": "What the indicator shows:",
+  "assistantStatusOverlayHelpWorking": "• 'Working' - when the AI assistant is processing commands or interacting with the user",
+  "assistantStatusOverlayHelpWaiting": "• 'Waiting for commands' - when the AI assistant is inactive and waiting for commands",
+  "assistantStatusOverlayHelpLocation": "Where the indicator appears:",
+  "assistantStatusOverlayHelpTopRight": "• The indicator appears in the top-right corner of the screen",
+  "assistantStatusOverlayHelpNonIntrusive": "• It is non-intrusive and does not interfere with app usage",
+  "assistantStatusOverlayHelpBenefits": "Benefits:",
+  "assistantStatusOverlayHelpVisualFeedback": "• Quick visual feedback about the AI assistant's status",
+  "assistantStatusOverlayHelpDebugging": "• Useful for debugging and understanding when AI is working",
+  "assistantStatusOverlayHelpTransparency": "• Transparency about assistant activity",
+  "assistantStatusOverlayHelpNote": "Note: The indicator updates automatically when you start or stop voice interaction with AI.",
+
+    "securityAndSafety": "Security & Safety",
+    "changePasswordSubtitle": "Change your account password",
+    "sessions": "Sessions",
+    "logoutAllDevices": "Log out from all devices",
+    "logoutAllDevicesSubtitle": "Sign out from all connected devices",
+    "dangerZone": "Danger zone",
+    "deleteAccount": "Delete account",
+    "deleteAccountSubtitle": "Permanently delete account and all associated data",
+    "confirmLogoutAllDevicesTitle": "Log out from all devices",
+    "confirmLogoutAllDevicesContent": "You will be logged out from all devices, including the current one. You will need to sign in again.",
+    "disconnect": "Disconnect",
+    "permanentDeleteAccount": "Permanently delete account",
+    "attention": "Warning! This action is irreversible.",
+    "willBeDeletedTitle": "The following will be permanently deleted:",
+    "willBeDeletedProfile": "• Your profile",
+    "willBeDeletedRideHistory": "• Ride history",
+    "willBeDeletedData": "• All associated account data",
+    "accountPassword": "Account password",
+    "enterPasswordConfirm": "Enter your password to confirm.",
+    "deleteAccountButton": "Delete account",
+    "errorPrefix": "Error: {error}",
+    "notificationPreferences": "Notification Preferences",
+    "notifRideSection": "Rides",
+    "notifRideNotifications": "Ride notifications",
+    "notifRideNotificationsSubtitle": "New requests, ride accepted, driver nearby, etc.",
+    "notifCommunicationSection": "Communication",
+    "notifChatMessages": "Chat messages",
+    "notifChatMessagesSubtitle": "Notifications for new messages in conversations",
+    "notifMarketingSection": "Marketing and updates",
+    "notifPromoOffers": "Promotions and offers",
+    "notifPromoOffersSubtitle": "Discounts, promo codes and special offers",
+    "notifAppUpdates": "App updates",
+    "notifAppUpdatesSubtitle": "News and improvements to the app",
+    "notifSafetySection": "Safety",
+    "notifSafetyAlerts": "Safety alerts",
+    "notifSafetyAlertsSubtitle": "Important notifications related to your safety during a ride",
+    "notifSavedSuccess": "Preferences saved successfully.",
+    "notifLoadError": "Error loading preferences: {error}",
+    "notifSaveError": "Error saving: {error}",
+    "privacyLocationSection": "Location",
+    "privacyLocationSharing": "Real-time location sharing",
+    "privacyLocationSharingSubtitle": "Allow sharing your location with the driver during a ride",
+    "privacyProfileSection": "Profile",
+    "privacyProfileVisibility": "Profile visibility for drivers",
+    "privacyProfileVisibilitySubtitle": "Drivers can see your profile (name, photo, rating)",
+    "privacyRideHistoryVisible": "Ride history visible",
+    "privacyRideHistoryVisibleSubtitle": "Allow displaying ride history in your public profile",
+    "privacyDataSection": "Data and analytics",
+    "privacyAnalyticsConsent": "Data for service improvement",
+    "privacyAnalyticsConsentSubtitle": "Help us improve the app by sharing anonymous usage data",
+    "privacyGdprNote": "Your data is processed in accordance with GDPR. You can request data export or deletion from the Security & Safety section.",
+    "privacySavedSuccess": "Privacy settings saved.",
+    "privacyLoadError": "Error loading settings: {error}",
+    "privacySaveError": "Error saving: {error}",
+    "adminDocumentReview": "Driver Document Review",
+    "noPendingApplications": "No pending applications.",
+    "unknownApplicant": "Unknown applicant",
+    "statusLabel": "Status: {status}",
+    "missingRequired": "Missing (required)",
+    "missing": "Missing",
+    "rejectDocumentTitle": "Reject: {name}",
+    "rejectReason": "Rejection reason",
+    "rejectionHint": "e.g. Blurry image, expired document",
+    "documentApproved": "✅ {name} approved",
+    "documentRejected": "❌ {name} rejected",
+    "activateDriver": "Activate Driver",
+    "driverActivatedTitle": "Driver Activated ✅",
+    "driverActivatedContent": "{name} has been activated successfully.",
+    "accessCodeLabel": "Access code:",
+    "accessCodeGenerated": "Generated access code:",
+    "sendCodeToDriver": "Please send this code to the driver.",
+    "activationError": "Activation error: {error}",
+    "approveTooltip": "Approve",
+    "rejectTooltip": "Reject",
+    "rejectionReasonLabel": "Reason: {reason}",
+    "statusSubmitted": "Submitted",
+    "statusUnderReview": "Under Review",
+    "statusApproved": "Approved",
+    "statusActivated": "Activated",
+    "statusRejected": "Rejected",
+    "docStatusApproved": "Approved",
+    "docStatusRejected": "Rejected",
+    "docStatusPending": "Pending",
+    "docExpiresOn": "Expires: {date}",
+    "docExpiredLabel": "EXPIRED ({date})",
+    "docExpiringSoonLabel": "Expiring soon ({date})",
+    "bePartnerDriver": "Become a Partner Driver",
+    "applicationProgress": "Application progress",
+    "applicationComplete": "Application is complete and can be submitted!",
+    "applicationIncomplete": "Complete the information and documents to continue",
+    "accountActivated": "Account Activated 🎉",
+    "accessCodeGeneratedAt": "Generated at: {date}",
+    "personalInfoStep": "Personal Information",
+    "vehicleInfoStep": "Vehicle Information",
+    "finalDocumentsStep": "Final Documents",
+    "fullNameLabel": "Full Name *",
+    "ageLabel": "Age *",
+    "carBrandLabel": "Make *",
+    "carModelLabel": "Model *",
+    "carColorLabel": "Color *",
+    "carYearLabel": "Year *",
+    "licensePlateLabel": "License Plate *",
+    "bankAccountLabel": "Bank Account (IBAN)",
+    "importantInfoTitle": "Important information",
+    "applicationConfirmationText": "By submitting the application, you confirm that:\n• All provided information is accurate\n• You agree to the Terms and Conditions\n• You accept document verification\n• You are at least 21 years old",
+    "applicationIncompleteWarning": "Please complete all required fields and upload the necessary documents before submitting the application.",
+    "applicationSubmitSuccess": "Application submitted successfully for review!",
+    "applicationLoadError": "Error loading data: {error}",
+    "applicationSaveError": "Error saving data: {error}",
+    "applicationSubmitError": "Error submitting application: {error}",
+    "documentUploadSuccess": "{name} uploaded successfully!",
+    "documentDeleteSuccess": "{name} deleted successfully!",
+    "documentUploadError": "Error uploading document: {error}",
+    "documentDeleteError": "Error deleting document: {error}",
+    "selectSourceTitle": "Select source",
+    "selectSourceContent": "Where would you like to select the image from?",
+    "cameraOption": "Camera",
+    "galleryOption": "Gallery",
+    "selectFileTypeTitle": "Select file type",
+    "selectFileTypeContent": "Would you like to upload an image or a PDF document?",
+    "imageOption": "Image",
+    "pdfOption": "PDF",
+    "requiredBadge": "Required",
+    "documentUploadedText": "Document uploaded successfully",
+    "tapToUploadText": "Tap to upload the document",
+    "continueBtn": "Continue",
+    "submitApplication": "Submit Application",
+    "backBtn": "Back",
+    "expiryDateTitle": "Expiry date",
+    "expiryDateQuestion": "Would you like to set an expiry date for \"{name}\"?",
+    "skipExpiry": "No, skip",
+    "photographOption": "Take photo",
+    "selectFromGallery": "Select from gallery",
+    "viewDocumentOption": "View",
+    "deleteDocumentOption": "Delete",
+    "pdfDocument": "PDF Document",
+    "tapToOpen": "Tap to open",
+    "errorLoadingImage": "Error loading image",
+    "fileTooLarge": "File is too large (max 10MB)",
+    "serviceUnavailable": "Service temporarily unavailable",
+    "connectionError": "Connection problem. Please check your internet",
+    "unexpectedError": "Unexpected error. Please try again",
+  "uploadedAt": "Uploaded: {date}",
+  "selectExpiryDate": "Select expiry date",
+  "yes": "Yes",
+  "inviteFriendsDescription": "Invite neighbors to join the Nabour community",
+
+  "drawerSectionActivityAccount": "Activity & account",
+  "drawerSectionYourCommunity": "Your community",
+  "drawerSectionMyBusiness": "My business",
+  "drawerSectionGetInvolved": "Get involved",
+  "drawerSectionAiPerformance": "AI & performance",
+  "drawerSectionSupportInfo": "Support & info",
+  "drawerSectionAddresses": "Addresses",
+  "drawerFavoriteAddresses": "Favorite addresses",
+  "drawerBusinessOffersTitle": "Local offers",
+  "drawerSocialMapTitle": "Social map",
+  "drawerSocialVisible": "Visible",
+  "drawerSocialHidden": "Hidden",
+  "drawerVoiceAiSettingsTitle": "AI voice settings",
+  "drawerBusinessDashboardTitle": "My dashboard: {businessName}",
+  "@drawerBusinessDashboardTitle": {
+    "placeholders": {
+      "businessName": { "type": "String" }
+    }
+  },
+  "drawerBusinessRegisterTitle": "Register your business",
+  "businessIntroTitle": "My business",
+  "businessIntroBody": "You need to register your business first. After that you can manage it: edit your card shown in Local offers and manage announcements (add, edit, or remove) from your business dashboard.",
+  "businessIntroContinueButton": "Continue to registration",
+  "drawerTeamNabour": "The Nabour team",
+
+  "drawerRolePassenger": "Passenger",
+  "drawerRoleDriver": "Driver",
+  "drawerThemeDarkLabel": "Theme: Dark",
+  "drawerThemeLightLabel": "Theme: Light",
+  "drawerMenuWeekReview": "Week in Review",
+  "drawerMenuMysteryBoxActivity": "Mystery box activity",
+  "drawerMenuMyGarage": "My garage",
+  "drawerMenuPlaces": "Places",
+  "drawerMenuExplorations": "Explorations",
+  "drawerMenuSyncContacts": "Sync contacts",
+  "drawerSyncContactsDialogTitle": "Why sync contacts?",
+  "drawerSyncContactsDialogBody": "The map only shows people who are in your phone contacts and also use Nabour.\n\nIf you added a new contact or a friend just joined, tap Sync to refresh who can appear on the social map.",
+  "drawerSyncContactsDialogOk": "Got it",
+
+  "warmupCloseTooltip": "Close",
+  "warmupHeadline": "Travel with\nyour neighbors",
+  "warmupShortcutsTitle": "Shortcuts",
+  "warmupShortcutRideTitle": "Ride",
+  "warmupShortcutRideSubtitle": "Request now",
+  "warmupShortcutMapTitle": "Map",
+  "warmupShortcutMapSubtitle": "Who's around",
+  "warmupShortcutChatTitle": "Chat",
+  "warmupShortcutChatSubtitle": "Your area",
+  "warmupScheduleTitle": "Plan ahead",
+  "warmupScheduleSubtitle": "Post early — neighbors confirm when they're free.",
+  "warmupWhyTitle": "Why Nabour?",
+  "warmupCtaOpenMap": "Open map",
+  "warmupSwipeDownHint": "Or swipe down to close",
+
+  "warmupHeroNeighborsTitle": "Rides with neighbors",
+  "warmupHeroNeighborsSubtitle": "Request a ride on the map; available drivers in the community can pick you up.",
+  "warmupHeroBusinessTitle": "Local offers",
+  "warmupHeroBusinessSubtitle": "Promote your business with notices visible nearby, right in the app.",
+  "warmupHeroSafetyTitle": "Safety on the go",
+  "warmupHeroSafetySubtitle": "Live route sharing, in-ride chat, and clear pickup checks.",
+  "warmupHeroChatTitle": "Neighborhood chat",
+  "warmupHeroChatSubtitle": "Talk in your area; you can also filter to people in your contacts.",
+
+  "warmupFeatureCommunityTitle": "One ecosystem",
+  "warmupFeatureCommunitySubtitle": "Rides, chat, and offers in one app — simpler than juggling group chats.",
+  "warmupFeatureContactsTitle": "Trust, your way",
+  "warmupFeatureContactsSubtitle": "Choose who sees you: your area or only people from your contacts.",
+  "warmupFeatureLiveTitle": "Live on the map",
+  "warmupFeatureLiveSubtitle": "Availability and status update so you quickly see who can help.",
+  "warmupFeatureSecureTitle": "Clear and predictable",
+  "warmupFeatureSecureSubtitle": "History, simple tokens for actions, and support when you need it.",
+
+  "drawerDefaultUserName": "User",
+  "drawerTrialPrivilegedTitle": "Privileged account",
+  "drawerTrialPrivilegedSubtitle": "Unlimited access to all features.",
+  "drawerTrialSevenDayTitle": "7-day trial",
+  "drawerTrialPricingSubtitle": "Then 10 RON/month (individual) or 15 RON/month (business).",
+  "drawerTrialDuringSubtitle": "Then 10 RON/month (individual) / 15 RON/month (business).",
+  "drawerTrialDaysLeftTitle": "{count, plural, =1{1 day left in trial} other{{count} days left in trial}}",
+  "@drawerTrialDaysLeftTitle": {
+    "placeholders": {
+      "count": { "type": "num" }
+    }
+  },
+  "drawerTrialExpiredTitle": "Trial ended",
+  "drawerTrialExpiredSubtitle": "Subscribe (10/15 RON) to continue.",
+
+  "activateDriverCodeLabel": "Activation code",
+  "activateDriverCodeHint": "e.g. DRV-TEST-102",
+
+  "tokenShopTitle": "Tokens & plans",
+  "tokenShopTabPlans": "Plans",
+  "tokenShopTabTopup": "Top-up",
+  "tokenShopTabHistory": "History",
+  "tokenShopChoosePlanTitle": "Choose your plan",
+  "tokenShopChoosePlanSubtitle": "Tokens reset on the first day of each month",
+  "tokenShopAlreadyOnPlan": "You're already on this plan.",
+  "tokenShopDowngradeContactSupport": "Contact support to downgrade.",
+  "tokenShopUpgradeSuccess": "Upgraded to {planName}!",
+  "@tokenShopUpgradeSuccess": {
+    "placeholders": {
+      "planName": { "type": "String" }
+    }
+  },
+  "tokenShopErrorPaymentsNotReady": "Payments aren't enabled on the server yet. Configure Cloud Functions (see functions/).",
+  "tokenShopErrorWithMessage": "Error: {message}",
+  "@tokenShopErrorWithMessage": {
+    "placeholders": {
+      "message": { "type": "String" }
+    }
+  },
+  "tokenShopUpgradeError": "Upgrade error: {error}",
+  "@tokenShopUpgradeError": {
+    "placeholders": {
+      "error": { "type": "String" }
+    }
+  },
+  "tokenShopMostPopular": "MOST POPULAR",
+  "tokenShopPopularBadge": "POPULAR",
+  "tokenShopActive": "Active",
+  "tokenShopSelect": "Select",
+  "tokenShopBuyExtraTitle": "Buy extra tokens",
+  "tokenShopBuyExtraSubtitle": "Purchased tokens never expire",
+  "tokenShopTokensWord": "tokens",
+  "tokenShopTokensAdded": "+{count} tokens added to your wallet!",
+  "@tokenShopTokensAdded": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "tokenShopTopupRequiresBackend": "Top-up requires backend (ALLOW_UNVERIFIED_WALLET_CREDIT or real payment).",
+  "tokenShopNoTransactions": "No transactions yet.",
+  "tokenShopPaymentMethodsTitle": "Accepted payment methods",
+  "tokenShopPaymentSecureFooter": "Payments are processed securely. We never store card details.",
+  "tokenShopPaymentMethodTitle": "Payment method",
+  "tokenShopPay": "Pay",
+  "tokenShopTestModeDisclaimer": "Real payments are not wired yet. Pay simulates checkout: your plan and balance update via Firebase Functions. If you get an error, deploy functions or set ALLOW_UNVERIFIED_WALLET_CREDIT=true in the Firebase console.",
+  "tokenShopMethodNetopia": "Netopia (RO card)",
+  "tokenShopMethodStripe": "Stripe",
+  "tokenShopMethodRevolut": "Revolut Pay",
+  "tokenShopPackageStarter": "Starter",
+  "tokenShopPackagePopular": "Popular",
+  "tokenShopPackageAdvanced": "Advanced",
+  "tokenShopPackageBusiness": "Business",
+  "tokenPlanFreeName": "Free",
+  "tokenPlanBasicName": "Basic",
+  "tokenPlanProName": "Pro",
+  "tokenPlanUnlimitedName": "Unlimited",
+  "tokenPlanPriceFree": "Free",
+  "tokenPlanPriceBasic": "9 RON / month",
+  "tokenPlanPricePro": "29 RON / month",
+  "tokenPlanPriceUnlimited": "49 RON / month",
+  "tokenShopPlanAllowanceMonthly": "{allowance} tokens / month",
+  "@tokenShopPlanAllowanceMonthly": {
+    "placeholders": {
+      "allowance": { "type": "String" }
+    }
+  },
+  "tokenShopEconomyApproxLine": "≈ {ai} AI · {routes} routes · {geo} geocoding · {br} posts",
+  "@tokenShopEconomyApproxLine": {
+    "placeholders": {
+      "ai": { "type": "int" },
+      "routes": { "type": "int" },
+      "geo": { "type": "int" },
+      "br": { "type": "int" }
+    }
+  },
+  "tokenShopEconomyBusinessLine": "≈ {biz} business ads ({tokens} tokens each)",
+  "@tokenShopEconomyBusinessLine": {
+    "placeholders": {
+      "biz": { "type": "int" },
+      "tokens": { "type": "int" }
+    }
+  },
+  "tokenShopEconomyUnlimited": "Unlimited: AI, routes, geocoding and posts without using your monthly quota.",
+  "tokenShopStaffMenuTooltip": "Apply staff subscription",
+  "tokenShopStaffDialogTitle": "Staff subscription (authorized account)",
+  "tokenShopStaffApplied": "Subscription applied.",
+  "tokenShopTxPurchasePackage": "Package {label} · {count} tokens",
+  "@tokenShopTxPurchasePackage": {
+    "placeholders": {
+      "label": { "type": "String" },
+      "count": { "type": "int" }
+    }
+  },
+
+  "appMissionTagline": "Neighbors, rides, and block chat — one app on your map.",
+  "settingsSectionUpdates": "Updates",
+  "settingsSectionInterfaceData": "Interface & data",
+  "settingsSectionPrivacyLanguage": "Privacy & language",
+  "settingsVisibilityExclusionsTitle": "Visibility exclusions",
+  "settingsVisibilityExclusionsSubtitle": "Choose who cannot see you on the social map",
+  "driverMenuViewDailyReport": "View daily report",
+
+  "accountScreenTitle": "Nabour account",
+  "accountDefaultNeighbor": "Neighbor",
+  "accountDriverPartnerBadge": "Nabour partner driver",
+  "accountMenuDriverVehicleDetails": "Driver & vehicle details",
+  "accountMenuPersonalDetails": "Personal details",
+  "accountMenuSecurity": "Safety & account",
+  "accountMenuSavedAddresses": "Saved addresses",
+  "accountMenuRidePreferences": "Ride preferences",
+  "accountMenuRideHistory": "Ride history",
+  "accountMenuBusinessProfile": "Business profile",
+  "accountMenuSelfieVerification": "Identity check (selfie)",
+  "accountMenuNotifications": "Notifications",
+  "accountMenuPrivacy": "Privacy",
+  "accountDeleteTitle": "Delete account permanently",
+  "accountDeleteBody": "This cannot be undone. Enter your password to confirm.",
+  "accountDeletePasswordLabel": "Password",
+  "accountDeletePasswordError": "Please enter your password.",
+  "accountDeleteConfirm": "Delete account",
+
+  "tokenWalletBalanceShort": "{balance} tokens",
+  "@tokenWalletBalanceShort": {
+    "placeholders": { "balance": { "type": "String" } }
+  },
+  "tokenWalletDrawerSubline": "{spent} / {allowance} used · resets {when}",
+  "@tokenWalletDrawerSubline": {
+    "placeholders": {
+      "spent": { "type": "String" },
+      "allowance": { "type": "String" },
+      "when": { "type": "String" }
+    }
+  },
+  "tokenWalletAvailableLong": "{balance} tokens available",
+  "@tokenWalletAvailableLong": {
+    "placeholders": { "balance": { "type": "String" } }
+  },
+  "tokenWalletPlanLine": "{planName} plan",
+  "@tokenWalletPlanLine": {
+    "placeholders": { "planName": { "type": "String" } }
+  },
+  "tokenWalletUsedThisMonth": "Used this month",
+  "tokenWalletPercentUsage": "{pct}% ({spent} / {allowance})",
+  "@tokenWalletPercentUsage": {
+    "placeholders": {
+      "pct": { "type": "String" },
+      "spent": { "type": "String" },
+      "allowance": { "type": "String" }
+    }
+  },
+  "tokenWalletAutoReset": "Auto reset: {when}",
+  "@tokenWalletAutoReset": {
+    "placeholders": { "when": { "type": "String" } }
+  },
+  "tokenWalletStatTotalSpent": "Total spent",
+  "tokenWalletStatTotalEarned": "Total received",
+  "tokenWalletOpenShopCta": "Tokens & plans",
+  "tokenWalletResetInDays": "in {days} days",
+  "@tokenWalletResetInDays": {
+    "placeholders": { "days": { "type": "int" } }
+  },
+  "tokenWalletResetInHours": "in {hours} h",
+  "@tokenWalletResetInHours": {
+    "placeholders": { "hours": { "type": "int" } }
+  },
+  "tokenWalletResetTomorrow": "tomorrow",
+  "helpWeekReviewTitle": "Week in Review and location history",
+  "helpWeekReviewHeader": "How Week in Review works",
+  "helpWeekReviewIntro": "Week in Review builds a visual recap of your movement over a selected period (usually the last week), with animated route playback, hotspots, and stats (km / active hours).",
+  "helpWeekReviewDataSourceTitle": "Where the data comes from",
+  "helpWeekReviewDataSourceBody": "The app uses raw location points from the backend only as input to generate the recap.",
+  "helpWeekReviewStorageTitle": "Where recap is stored",
+  "helpWeekReviewStorageBody": "Processed history, timeline, hotspots, and Week in Review exports are stored locally on your device.",
+  "helpWeekReviewDeleteTitle": "How to delete",
+  "helpWeekReviewDeleteBody": "Go to Settings -> Location history (Timeline) -> Clear local history. You can also set local retention (for example 30/60/90 days).",
+  "helpWeekReviewPrivacyNote": "Privacy-first: recap data and exported files stay local on your phone. You control retention and deletion.",
+  "businessOffersNoOffersInSelectedCategory": "No offers in the selected category",
+  "businessOffersNoOffersInArea": "No offers in your area",
+  "businessOffersTryAnotherCategory": "Try another category.",
+  "businessOffersNoNearbyOffers": "Come back later for nearby offers.",
+  "businessOffersManageFilters": "Manage filters",
+  "businessOffersResetCategory": "Reset category",
+  "businessOffersAllCategories": "All categories"
+}

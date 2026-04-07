@@ -1,0 +1,27 @@
+# Flutter/Dart build and tool files
+.dart_tool/
+build/
+android/.gradle/
+*.dill
+*.lock
+.idea/
+*.log
+*.tmp
+*.bak
+*.swp
+.env
+# OS files
+.DS_Store
+Thumbs.db
+# Test files
+/test/
+# Exclude ephemeral and plugin symlinks
+linux/flutter/ephemeral/
+macos/
+windows/flutter/ephemeral/.plugin_symlinks/
+# Exclude node_modules if present
+node_modules/
+# Exclude coverage
+coverage/
+# Exclude any large files
+*.bin

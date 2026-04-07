@@ -1,0 +1,1967 @@
+{
+  "@@locale": "ro",
+  
+  "appTitle": "Nabour",
+  "driverMode": "Mod Șofer",
+  "passengerMode": "Mod Pasager",
+  
+  "requestRide": "Solicită Cursă",
+  "acceptRide": "Acceptă",
+  "declineRide": "Refuză",
+  "cancelRide": "Anulează",
+  
+  "myLocation": "Locația mea",
+  "offline": "Offline",
+  "online": "Online",
+  "available": "Disponibil",
+  "unavailable": "Indisponibil",
+  
+  "activeRide": "Cursă Activă",
+  "rideHistory": "Istoricul Curselor",
+  "profile": "Profil",
+  "settings": "Setări",
+  
+  "startNavigation": "Navigarea a început",
+  "navigationEnded": "Navigarea s-a încheiat",
+  "arrived": "Ați ajuns la destinație",
+  "routeDeviation": "Recalculez traseul",
+  "preparingRoute": "Pregătesc traseul",
+  
+  "turnLeft": "Virați la stânga peste {distance}",
+  "@turnLeft": {
+    "placeholders": {
+      "distance": {
+        "type": "String"
+      }
+    }
+  },
+  
+  "turnRight": "Virați la dreapta peste {distance}",
+  "@turnRight": {
+    "placeholders": {
+      "distance": {
+        "type": "String"
+      }
+    }
+  },
+  
+  "turnSlightLeft": "Virați ușor la stânga peste {distance}",
+  "@turnSlightLeft": {
+    "placeholders": {
+      "distance": {
+        "type": "String"
+      }
+    }
+  },
+  
+  "turnSlightRight": "Virați ușor la dreapta peste {distance}",
+  "@turnSlightRight": {
+    "placeholders": {
+      "distance": {
+        "type": "String"
+      }
+    }
+  },
+  
+  "continueForward": "Continuați înainte pentru {distance}",
+  "@continueForward": {
+    "placeholders": {
+      "distance": {
+        "type": "String"
+      }
+    }
+  },
+  
+  "makeUturn": "Faceți întoarcere peste {distance}",
+  "@makeUturn": {
+    "placeholders": {
+      "distance": {
+        "type": "String"
+      }
+    }
+  },
+  
+  "meters": "metri",
+  "kilometers": "kilometri",
+  "meter": "metru",
+  "kilometer": "kilometru",
+  
+  "driverHeadingToYou": "Șoferul este pe drum...",
+  "driverArrived": "Șoferul a sosit!",
+  "rideInProgress": "Călătorie plăcută!",
+  "confirmDriver": "Confirmă șoferul",
+  "confirmButton": "Confirmă",
+  "declineButton": "Refuză",
+  
+  "iArrived": "Am ajuns",
+  "startRide": "Începe Cursa",
+  "endRide": "Termină Cursa",
+  "waitingForPassenger": "Așteaptă pasagerul.",
+  "headingToPassenger": "Mergi spre pasager.",
+  
+  "communicateWithDriver": "Comunică cu șoferul:",
+  "call": "Sună",
+  "message": "Mesaj",
+  "chat": "Chat",
+  "writeMessage": "Scrie un mesaj...",
+  "send": "Trimite",
+  
+  "emergency": "Urgență",
+  "navigationTo": "Navighează spre",
+  "navigation": "Navigație",
+  "chooseNavigationApp": "Alege aplicația de navigație",
+  "googleMaps": "Google Maps",
+  "waze": "Waze",
+  "locationNotAvailable": "Locația nu este încă disponibilă pentru partajare.",
+  "shareLocation": "Partajează locația",
+  "navigateToPassenger": "Navighează spre pasager",
+  "navigateToDestination": "Navighează spre destinație",
+  
+  "rideCompleted": "Cursă finalizată",
+  "rideCancelled": "Cursă anulată",
+  "rideExpired": "Cursă expirată",
+  
+  "offlineDriverMessage": "Ești indisponibil ca șofer. Activează comutatorul pentru a primi curse sau solicită o cursă ca pasager.",
+  "noPendingRides": "Nicio cerere de cursă disponibilă momentan.",
+  "rideToDestination": "Cursă către: {destination}",
+  "@rideToDestination": {
+    "placeholders": {
+      "destination": {
+        "type": "String"
+      }
+    }
+  },
+  
+  "cost": "Serviciu",
+  "distance": "Distanță",
+  "ron": "Puncte",
+  "km": "km",
+  
+  "language": "Limba",
+  "romanian": "Română",
+  "english": "Engleză",
+  
+  "errorInitializingRide": "Eroare la inițializarea cursei",
+  "errorMonitoringRide": "Eroare la monitorizarea cursei",
+  "cannotOpenNavigation": "Nu s-a putut deschide nicio aplicație de navigație.",
+  "cannotMakeCall": "Nu s-a putut iniția apelul.",
+  
+  "joinTeamTitle": "Alătură-te echipei Nabour!",
+  "joinTeamDescription": "Devino șofer partener. Află mai multe aici.",
+  
+  "youHaveActiveRide": "Ai o cursă activă. Atinge pentru a vedea detaliile.",
+  
+  "categoryStandardSubtitle": "Cea mai accesibilă opțiune pentru călătoriile tale.",
+  "categoryFamilySubtitle": "Mai mult spațiu pentru pasageri și bagaje.",
+  "categoryEnergySubtitle": "Călătorește eco-friendly cu vehicule electrice sau hibride.",
+  "categoryBestSubtitle": "Experiență premium cu vehicule de lux și șoferi de top.",
+  
+  "aiAssistant": "Asistent AI",
+  "voiceSettings": "Setări Vocale",
+  "voiceDemo": "Demo Voce AI",
+  "microphoneTest": "Test Microfon",
+  "aiLibraryTest": "Test Biblioteca AI",
+  "receipts": "Activitate",
+  "driverDashboard": "Panou de Bord Vecin Binevoitor",
+  "subscriptions": "Abonamente",
+  "safety": "Siguranță",
+  "help": "Ajutor",
+  "aiVoiceSettings": "🎤 Setări Vocale AI",
+  "voiceAIDemo": "🗣️ Demo Voice AI",
+  "microphoneTestTool": "🔧 Test Microfon",
+  "aiLibraryTestTool": "🧠 Test Biblioteca AI",
+  "about": "Despre",
+  "legal": "Juridic",
+  "logout": "DECONECTARE",
+  
+  "aboutNabour": "Despre Nabour",
+  "evaluateApp": "Evaluează Aplicația",
+  "howManyStars": "Câte stele dai aplicației Nabour?",
+  "starSelected": "stea selectată",
+  "starsSelected": "stele selectate",
+  "cancel": "Anulează",
+  "send": "Trimite",
+  "select": "Selectează",
+  "ratingSentSuccessfully": "✅ Rating de {rating} stele trimis cu succes!",
+  "@ratingSentSuccessfully": {
+    "placeholders": {
+      "rating": {
+        "type": "String"
+      }
+    }
+  },
+  "career": "Carieră",
+  "joinOurTeam": "Alătură-te echipei noastre",
+  "evaluateApplication": "Evaluează aplicația",
+  "giveStarRating": "⭐ Dă un rating cu stele",
+  "followUs": "Urmărește-ne",
+  
+  "legalInformation": "Informații Juridice",
+  "termsConditions": "Termeni & Condiții",
+  "privacy": "Confidențialitate",
+  "termsConditionsTitle": "Termeni și Condiții",
+  "generalProvisions": "Prevederi Generale",
+  "generalProvisionsText": "Anularea unei curse după alocarea unui șofer partener poate atrage o taxă de anulare pentru a compensa timpul și distanța parcursă de către șofer. Anularea este gratuită oricând înainte de alocarea unui șofer partener.",
+  "standardWaitTime": "Timp de Așteptare Standard",
+  "standardWaitTimeText": "După sosirea la locația de preluare, șoferul partener va aștepta gratuit timp de 5 minute. După expirarea acestui interval, se pot aplica taxe suplimentare de așteptare sau cursa poate fi anulată, aplicându-se taxa de anulare corespunzătoare.",
+  "specificCategoryPolicies": "Politici Specifice pe Categorii",
+  "cancellationFee": "Taxă de Anulare:",
+  "freeCancellation": "Anulare Gratuită (Curse Rezervate):",
+  "minimumBookingTime": "Timp Minim de Rezervare:",
+  "friendsRideStandard": "Nabour Standard",
+  "friendsRideEnergy": "Nabour Energy", 
+  "friendsRideBest": "Nabour Best",
+  "friendsRideFamily": "Nabour Family",
+  "standardCancellationFee": "30 RON",
+  "energyCancellationFee": "30 RON",
+  "bestCancellationFee": "30 RON",
+  "familyCancellationFee": "30 RON",
+  "standardFreeCancellation": "Cu cel puțin 1 oră și 30 de minute înainte de ora programată.",
+  "standardMinBooking": "Cu cel puțin 2 ore în avans față de ora rezervării cursei.",
+  "energyMinBooking": "Cu cel puțin 2 ore în avans față de ora rezervării cursei.",
+  "bestMinBooking": "Cu cel puțin 2 ore în avans față de ora rezervării cursei.",
+  "familyMinBooking": "Cu cel puțin 2 ore în avans față de ora rezervării cursei.",
+  "privacyPolicyContent": "Aici va fi afișat conținutul detaliat al Politicii de Confidențialitate, conform normelor GDPR. Documentul va explica ce tipuri de date personale sunt colectate (nume, email, locație, date de plată, etc.), scopul colectării (funcționarea serviciului, marketing, siguranță), cum sunt stocate și protejate datele, perioada de retenție, și care sunt drepturile utilizatorilor (dreptul la acces, rectificare, ștergere, etc.).\n\nTextul complet va fi furnizat de un consultant juridic pentru a asigura conformitatea cu legislația în vigoare.",
+  
+  "wallet": "Portofel",
+  "currentBalance": "Balanță Curentă",
+  "paymentMethods": "Metode de Plată",
+  "addOrManageCards": "Adaugă sau gestionează cardurile",
+  "cash": "Numerar",
+  "selectPaymentMethod": "Selectează Metoda de Plată",
+  "vouchers": "Vouchere",
+  "addPromoCode": "Adaugă un cod promoțional",
+  "transactionHistory": "Istoric Tranzacții",
+  "viewAllPayments": "Vezi toate plățile și încasările",
+  "canSendToContact": "Poți trimite unei persoane de contact",
+  "addPaymentMethod": "Adaugă o metodă de plată",
+  "rideProfiles": "Profilurile curselor",
+  "startUsing": "Începe să folosești",
+  "friendsRideForBusiness": "Nabour for Business",
+  "activateBusinessFeatures": "Activează funcțiile pentru călătorii în interes de serviciu",
+  "manageBusinessTrips": "Gestionează curse în interes de serviciu pe...",
+  "requestBusinessProfileAccess": "Solicită accesul la profilul Business",
+  "addVoucherCode": "Adaugă codul voucherului",
+  "promotions": "Promoţii",
+  "recommendations": "Recomandări",
+  "addReferralCode": "Adaugă codul de recomandare",
+  "inStoreOffers": "Oferte în magazin",
+  "offers": "Oferte",
+  "walletDetails": "Detalii Portofel",
+  "walletDetailsInfo": "Nabour Cash este balanța ta digitală. Poți adăuga fonduri pentru plăți mai rapide.",
+  "addFunds": "Adaugă Fonduri",
+  "addFundsComingSoon": "Funcționalitatea de adăugare fonduri va fi disponibilă în curând.",
+  "paymentMethodDetails": "Detalii Metodă de Plată",
+  "brand": "Brand",
+  "last4Digits": "Ultimele 4 cifre",
+  "cardholder": "Titular card",
+  "expiryDate": "Data expirării",
+  "cashPaymentMethod": "Plata se face direct șoferului în numerar.",
+  "delete": "Șterge",
+  "deletePaymentMethodComingSoon": "Funcționalitatea de ștergere metodă de plată va fi disponibilă în curând.",
+  "businessProfile": "Profil Business",
+  "businessProfileInfo": "Activează profilul Business pentru a gestiona curse în interes de serviciu.",
+  "businessProfileBenefits": "Beneficii:",
+  "businessProfileBenefit1": "Rapoarte detaliate pentru cheltuieli",
+  "businessProfileBenefit2": "Facturare automată către companie",
+  "businessProfileBenefit3": "Gestionare multiple utilizatori",
+  "requestAccess": "Solicită Acces",
+  "businessProfileRequestSent": "Cererea pentru profil Business a fost trimisă. Vei primi un răspuns în curând.",
+  "referralCodeInfo": "Introdu codul de recomandare pentru a primi beneficii.",
+  "enterReferralCode": "Introdu codul",
+  "referralCodeApplied": "Codul de recomandare a fost aplicat cu succes!",
+  "personalProfileActive": "Profilul Personal este activ.",
+  "inStoreOffersComingSoon": "Ofertele în magazin vor fi disponibile în curând.",
+  "close": "Închide",
+  "paymentMethodDeleted": "Metoda de plată a fost ștearsă cu succes.",
+  "errorDeletingPaymentMethod": "Eroare la ștergerea metodei de plată.",
+  "errorRequestingBusinessProfile": "Eroare la trimiterea cererii pentru profil business.",
+  "errorApplyingReferralCode": "Eroare la aplicarea codului de recomandare.",
+  "paymentMethodsHelpTitle": "Metode de Plată",
+  "addingPaymentMethod": "Adăugarea unei metode de plată:",
+  "goToWalletSection": "• Accesează secțiunea \"Portofel\" din meniul principal",
+  "tapAddPaymentMethod": "• Apasă pe butonul \"Adaugă o metodă de plată\"",
+  "selectCardOrCash": "• Selectează tipul de metodă (card sau numerar)",
+  "enterCardDetails": "• Completează detaliile cardului (număr, dată expirare, CVV)",
+  "savePaymentMethod": "• Salvează metoda de plată",
+  "managingPaymentMethods": "Gestionarea metodelor de plată:",
+  "viewAllMethodsInWallet": "• Vezi toate metodele salvate în secțiunea \"Portofel\"",
+  "editOrDeleteMethods": "• Editează sau șterge metodele existente",
+  "setDefaultPaymentMethod": "• Setează o metodă ca implicită pentru plăți automate",
+  "paymentMethodsTypes": "Tipuri de metode de plată:",
+  "creditDebitCards": "• Carduri de credit/debit (Visa, Mastercard)",
+  "cashPayment": "• Numerar (plata se face direct șoferului)",
+  "walletBalance": "• Nabour Cash (balanță în portofel)",
+  "paymentSecurity": "Securitate plăți:",
+  "allPaymentsSecure": "• Toate plățile sunt procesate în siguranță",
+  "cardDetailsEncrypted": "• Detaliile cardurilor sunt criptate și stocate securizat",
+  "pciCompliant": "• Aplicația respectă standardele PCI DSS pentru securitate",
+  "paymentMethodTip": "💡 Sfat util:",
+  "youCanSendToContact": "Poți trimite bani către persoane de contact folosind metodele de plată salvate.",
+  "vouchersHelpTitle": "Vouchere",
+  "addingVoucher": "Adăugarea unui voucher:",
+  "tapVouchersSection": "• Apasă pe secțiunea \"Vouchere\" din Portofel",
+  "tapAddVoucherCode": "• Apasă pe \"Adaugă codul voucherului\"",
+  "enterVoucherCode": "• Introdu codul voucherului",
+  "applyVoucher": "• Apasă \"Aplică\" pentru a activa voucherul",
+  "usingVouchers": "Utilizarea voucherelor:",
+  "vouchersAppliedAutomatically": "• Voucherele se aplică automat la următoarea cursă",
+  "checkVoucherStatus": "• Verifică statusul voucherelor în secțiunea Vouchere",
+  "voucherExpiryInfo": "• Voucherele au o dată de expirare",
+  "voucherTypes": "Tipuri de vouchere:",
+  "percentageDiscount": "• Reducere procentuală (ex: 10% reducere)",
+  "fixedAmountDiscount": "• Reducere fixă (ex: 5 RON reducere)",
+  "freeRideVoucher": "• Cursă gratuită",
+  "voucherTip": "💡 Sfat util:",
+  "oneVoucherPerRide": "Poți folosi un singur voucher per cursă.",
+  "walletHelpTitle": "Portofel",
+  "walletOverview": "Prezentare generală:",
+  "walletOverviewInfo": "Secțiunea Portofel îți permite să gestionezi metodele de plată, voucherele, și balanța Nabour Cash.",
+  "friendsRideCash": "Nabour Cash:",
+  "friendsRideCashInfo": "• Balanță digitală pentru plăți rapide",
+  "addFundsToWallet": "• Poți adăuga fonduri în portofel",
+  "useWalletForPayments": "• Poți folosi balanța pentru plăți automate",
+  "walletSections": "Secțiuni disponibile:",
+  "paymentMethodsSection": "• Metode de plată - gestionează cardurile și numerarul",
+  "vouchersSection": "• Vouchere - adaugă și gestionează coduri promoționale",
+  "rideProfilesSection": "• Profilurile curselor - Personal și Business",
+  "promotionsSection": "• Promoții - coduri promoționale și recomandări",
+  "walletTip": "💡 Sfat util:",
+  "walletBalanceNeverExpires": "Balanța Nabour Cash nu expiră niciodată.",
+  
+  "driverDashboard": "Panou de Bord Nabour",
+  "earningsToday": "Sprijin Oferit Astăzi",
+  "ridesToday": "Vecini Ajutați",
+  "averageRating": "Rating Comunitate",
+  "lastCompletedRides": "Ultimele Curse Finalizate",
+  "allRides": "Toate Cursele",
+  "todayRides": "Cursele de Astăzi",
+  "generateDailyReport": "Generează Raport Zilnic",
+  "noRidesYet": "Nicio cursă finalizată încă",
+  "viewDetails": "Vezi Detalii",
+  
+  "safety": "Siguranță",
+  "addTrustedContact": "Adaugă contact de încredere",
+  "name": "Nume",
+  "phoneNumber": "Număr de telefon",
+  "phoneNumberExample": "ex: 0712 345 678",
+  "save": "Salvează",
+  "contactSaved": "Contactul {name} a fost salvat.",
+  "@contactSaved": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "trustedContacts": "Contacte de Încredere",
+  "noContacts": "Niciun contact de încredere adăugat încă",
+  "emergencyCall": "Apel de Urgență",
+  "shareLocation": "Partajează Locația",
+  "safetyFeatures": "Funcții de Siguranță",
+  "emergencyAssistance": "Asistență de Urgență",
+  "shareTrip": "Partajează Cursa",
+  "reportIncident": "Raportează Incident",
+  
+  "help": "Ajutor",
+  "helpCenter": "Centru de Ajutor",
+  "frequentlyAskedQuestions": "Întrebări Frecvente",
+  "contactSupport": "Contactează Suportul",
+  "reportProblem": "Raportează o Problemă",
+  "career": "Carieră",
+  "cannotRequestRide": "Nu pot solicita o cursă",
+  "cannotRequestRideContent": "Dacă întâmpinați probleme la solicitarea unei curse, încercați următoarele soluții:",
+  "checkInternetConnection": "• Verificați conexiunea la internet",
+  "ensureGpsEnabled": "• Asigurați-vă că locația GPS este activată",
+  "restartApp": "• Restartați aplicația",
+  "checkValidPayment": "• Verificați dacă aveți o metodă de plată validă",
+  "contactSupportIfPersists": "• Contactați echipa de suport dacă problema persistă",
+  "pickupTimeLonger": "Timpul de preluare este mai mare decât cel estimat",
+  "pickupTimeLongerContent": "Timpul estimat poate varia din următoarele motive:",
+  "unexpectedHeavyTraffic": "• Trafic intens neașteptat",
+  "unfavorableWeather": "• Condiții meteorologice nefavorabile",
+  "driverFindingAddress": "• Șoferul poate avea dificultăți în găsirea adresei",
+  "specialEvents": "• Evenimente speciale în zona dvs.",
+  "contactDriverDirectly": "Puteți contacta șoferul direct prin aplicație pentru a clarifica situația.",
+  "rideDidNotHappen": "Cursa nu a avut loc",
+  "rideDidNotHappenContent": "Dacă cursa nu a avut loc, verificați:",
+  "rideStatusInApp": "• Statusul cursei în aplicație",
+  "messagesFromDriver": "• Mesajele de la șofer",
+  "correctLocation": "• Dacă ați fost la locația corectă",
+  "contactSupportForRefund": "Pentru rambursări, contactați suportul cu detaliile cursei.",
+  "lostItems": "Obiecte pierdute",
+  "lostItemsContent": "Dacă ați uitat ceva în mașina șoferului:",
+  "contactDriverImmediately": "1. Contactați imediat șoferul prin aplicație",
+  "describeLostItem": "2. Descrieți obiectul pierdut",
+  "arrangePickup": "3. Stabiliți o întâlnire pentru recuperare",
+  "reportToSupport": "4. Dacă nu reușiți să contactați șoferul, raportați prin suport",
+  "returnFeeNote": "Notă: Poate fi aplicată o taxă mică pentru returnarea obiectelor.",
+  "driverDeviatedRoute": "Șoferul a deviat de la traseu",
+  "driverDeviatedContent": "Dacă șoferul a luat o rută diferită:",
+  "askDriverReason": "• Întrebați șoferul despre motivul schimbării",
+  "checkTrafficWorks": "• Verificați dacă există trafic sau lucrări pe traseul inițial",
+  "reportIfUnjustified": "• Dacă considerați că devierea este nejustificată, raportați",
+  "driversCanChooseAlternatives": "Șoferii pot alege rute alternative pentru a evita traficul.",
+  "driverDashboardWeeklyActivityTitle": "Activitate în comunitate",
+  "driverDashboardWeeklyKudosHeader": "Aprecieri",
+  "driverDashboardWeeklyTotalHelpsWeek": "Total ajutoare săptămână:",
+  "emergencyAssistanceUsage": "Utilizarea asistenței de urgență",
+  "emergencyAssistanceContent": "Funcția de urgență vă permite să:",
+  "quickCall112": "• Apelați rapid 112",
+  "sendLocationToContact": "• Trimiteți locația dvs. unui contact de urgență",
+  "reportIncidentToSafety": "• Raportați un incident către echipa de siguranță",
+  
+  "voiceSettings": "Setări Vocale",
+  "voiceSettingsSaved": "Setările vocale au fost salvate",
+  "availableVoiceCommands": "Comenzi Vocale Disponibile",
+  "basicCommands": "Comenzi de bază:",
+  "wantRideToDestination": "\"Vreau o cursă la [destinație]\"",
+  "economyRideToDestination": "\"Cursă economică la [destinație]\"",
+  "urgentRideToDestination": "\"Cursă urgentă la [destinație]\"",
+  "premiumRideToDestination": "\"Cursă premium la [destinație]\"",
+  "commandsDuringRide": "Comenzi în timpul cursei:",
+  "sendMessageToDriver": "\"Trimite mesaj șoferului\"",
+  "whereIsDriver": "\"Unde este șoferul?\"",
+  "cancelRide": "\"Anulează cursa\"",
+  "wantToPayCash": "\"Vreau să plătesc cash\"",
+  "controlCommands": "Comenzi de control:",
+  "heyNabour": "\"Hey Nabour\" (activare)",
+  "helpCommand": "\"Ajutor\" (ajutor)",
+  "cancelCommand": "\"Anulează\" (anulare)",
+  "stopCommand": "\"Stop\" (oprire)",
+  "close": "Închide",
+  "advancedHelp": "Ajutor Avansat",
+  "advancedFeaturesAvailable": "Funcții avansate disponibile:",
+  "automaticVoiceActivation": "   - Activare vocală automată",
+  "customActivationWord": "   - Personalizare cuvânt activare",
+  "realtimeDetection": "   - Detectare în timp real",
+  "continuousListening": "Continuous Listening",
+  "continuousListeningForCommands": "   - Ascultare continuă pentru comenzi",
+  "realtimeProcessing": "   - Procesare în timp real",
+  "smartBatterySaving": "   - Economie baterie inteligentă",
+  "multiLanguageSupport": "Multi-language Support",
+  "supportFor6Languages": "   - Suport pentru 6 limbi",
+  "voiceSwitchBetweenLanguages": "   - Comutare vocală între limbi",
+  "localAccentAdaptation": "   - Adaptare accent local",
+  "privacySecurity": "Privacy & Security",
+  "localProcessing": "   - Procesare locală",
+  "endToEndEncryption": "   - Criptare end-to-end",
+  "fullDataControl": "   - Control total asupra datelor",
+  "contactSupportForTechnical": "Pentru asistență tehnică, contactați suportul.",
+  
+  "listening": "Vă Ascult",
+  "sayYourAnswer": "Spuneți răspunsul:",
+  "acceptOrDecline": "\"ACCEPT\" sau \"REFUZ\"",
+  
+  "greeting": "Salutare! Unde doriți să mergeți?",
+  
+  "account": "Cont",
+  "personalInformation": "Informații Personale",
+  "changePassword": "Schimbă Parola",
+  "security": "Securitate",
+  "notifications": "Notificări",
+  
+  "reportGenerated": "Raport generat",
+  "dailyReportGeneratedSuccess": "Raportul zilnic a fost generat cu succes. Doriți să vă întoarceți la harta principală?",
+  "stayHere": "Rămân aici",
+  "goToMap": "Mergi la Hartă",
+  "driverOptions": "Opțiuni Șofer",
+  "generatingReport": "Generez raport...",
+  "showAll": "Arată Toate",
+  "viewDetails": "Vezi Detalii",
+  "noRidesMatchFilter": "Nu există nicio cursă care să corespundă filtrului.",
+  "to": "Către:",
+  "destination": "Destinație:",
+  "activeRide": "Cursă Activă",
+  "driverModeDeactivated": "Modul Șofer Dezactivat",
+  "goToMapAndActivate": "Mergi la Hartă și activează switch-ul pentru a primi curse.",
+  "youAreAvailable": "Ești Disponibil pentru Curse",
+  "newRidesWillAppear": "Cursele noi vor apărea pe hartă ca notificări interactive.",
+  "waitingForPassengerConfirmation": "Aștepți confirmarea pasagerului",
+  "confirmedGoToPassenger": "Confirmată - Mergi spre pasager",
+  "rideInProgress": "Cursă în desfășurare",
+  "earningsTodayShort": "Fapte Bune",
+  "completedRidesToday": "Vecini ajutați azi",
+  "ridesTodayShort": "Ajutor",
+  "averageRatingShort": "Rating",
+  "errorGeneratingReport": "Eroare la generarea raportului: {error}",
+  "@errorGeneratingReport": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "noRidesTodayForReport": "Nu există curse finalizate astăzi pentru raport.",
+  
+  "safetyCenter": "Centrul de Siguranță",
+  "addContact": "Adaugă contact",
+  "emergencyAssistanceButton": "Butonul de Asistență de Urgență",
+  "emergencyAssistanceButtonDesc": "În timpul oricărei curse, aveți la dispoziție butonul 112 în colțul ecranului pentru a contacta rapid serviciile de urgență.",
+  "tripSharing": "Partajarea Traseului",
+  "tripSharingDesc": "Puteți partaja detaliile cursei și traseul în timp real cu prietenii sau familia pentru un plus de siguranță.",
+  "verifiedDrivers": "Șoferi Verificați",
+  "verifiedDriversDesc": "Toți șoferii parteneri trec printr-un proces riguros de verificare a documentelor și a istoricului pentru a asigura siguranța dumneavoastră.",
+  "reportIncidentTitle": "Raportarea unui Incident",
+  "reportIncidentDesc": "Dacă întâmpinați orice problemă de siguranță, o puteți raporta direct din aplicație, din secțiunea Ajutor, iar echipa noastră va investiga prompt.",
+  "trustedContacts": "Contacte de încredere",
+  "noTrustedContactsYet": "Nu ați adăugat încă persoane de încredere.",
+  "addFamilyFriends": "Adăugați rapid familia sau prietenii care vor primi notificări atunci când partajați o cursă.",
+  "sendTestMessage": "Trimite mesaj de test",
+  "delete": "Șterge",
+  "contactRemoved": "Contactul {name} a fost eliminat.",
+  "@contactRemoved": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "couldNotOpenMessages": "Nu am putut deschide aplicația de mesaje pentru acest contact.",
+  "testMessageBody": "Te-am setat ca persoană de încredere în Nabour. Voi partaja călătoriile active când am nevoie de ajutor.",
+  
+  "voiceSettings": "Setări Vocale",
+  "voiceSettingsSaved": "Setările vocale au fost salvate",
+  "voiceSystemActive": "Sistemul vocal este activ",
+  "voiceSystemNotActive": "Sistemul vocal nu este activ",
+  "canUseVoiceCommands": "Puteți folosi comenzi vocale pentru a rezerva curse",
+  "checkMicrophonePermissions": "Verificați permisiunile pentru microfon",
+  "activate": "Activează",
+  "basicMode": "Basic Mode",
+  "continuous": "Continuous",
+  "privacy": "Privacy",
+  "on": "ON",
+  "off": "OFF",
+  "generalSettings": "Setări Generale",
+  "continuousListening": "Ascultare continuă",
+  "continuousListeningSubtitle": "Ascultă continuu pentru comenzi vocale",
+  "voicePreferences": "Preferințe Vocale",
+  "speechRate": "Viteza de vorbire",
+  "percentOfNormalSpeed": "{percent}% din viteza normală",
+  "@percentOfNormalSpeed": {
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "volume": "Volumul",
+  "percentOfMaxVolume": "{percent}% din volumul maxim",
+  "@percentOfMaxVolume": {
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "pitch": "Tonul",
+  "lowerPitch": "Ton mai jos",
+  "normalPitch": "Ton normal",
+  "higherPitch": "Ton mai înalt",
+  "language": "Limba",
+  "romanian": "Română",
+  "english": "English",
+  "german": "Deutsch",
+  "french": "Français",
+  "spanish": "Español",
+  "italian": "Italiano",
+  "advancedVoiceFeatures": "Funcții Vocale Avansate",
+  "voiceCommandTraining": "Antrenare comenzi vocale",
+  "voiceCommandTrainingSubtitle": "Îmbunătățește recunoașterea comenzilor",
+  "customVoiceProfile": "Profil vocal personalizat",
+  "customVoiceProfileSubtitle": "Adaptează sistemul la vocea dvs",
+  "multiLanguageSupport": "Suport multi-limbă",
+  "multiLanguageSupportSubtitle": "Comutați între limbi în timpul conversației",
+  "advancedSettings": "Setări Avansate",
+  "testMicrophone": "Testează microfonul",
+  "testMicrophoneSubtitle": "Verifică dacă microfonul funcționează corect",
+  "testSound": "Testează sunetul",
+  "testSoundSubtitle": "Verifică dacă sunetul funcționează corect",
+  "testRecognition": "Testează recunoașterea",
+  "testRecognitionSubtitle": "Verifică recunoașterea vocală",
+  "voiceCommandsHelp": "Ajutor comenzi vocale",
+  "voiceCommandsHelpSubtitle": "Lista completă de comenzi disponibile",
+  "privacySettings": "Confidențialitate",
+  "privacySettingsSubtitle": "Gestionați datele vocale și confidențialitatea",
+  "analyticsAndImprovements": "Analiză și îmbunătățiri",
+  "analyticsAndImprovementsSubtitle": "Gestionați analiza vocală pentru îmbunătățiri",
+  "saveSettings": "Salvează Setările",
+  "voiceSystemActivatedSuccessfully": "Sistemul vocal a fost activat cu succes!",
+  "errorActivatingVoiceSystem": "Eroare la activarea sistemului vocal: {error}",
+  "@errorActivatingVoiceSystem": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "activateVoiceSystemFirst": "Activează mai întâi sistemul vocal.",
+  "errorTestingMicrophone": "Eroare la testarea microfonului: {error}",
+  "@errorTestingMicrophone": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "errorTestingSound": "Eroare la testarea sunetului: {error}",
+  "@errorTestingSound": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "errorTestingRecognition": "Eroare la testarea recunoașterii: {error}",
+  "@errorTestingRecognition": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "voiceCommandTrainingTitle": "Antrenare Comenzi Vocale",
+  "voiceCommandTrainingContent": "Antrenarea va îmbunătăți recunoașterea comenzilor vocale. Vă va fi cerut să repetați comenzi multiple ori pentru a crea un profil vocal personalizat.",
+  "later": "Mai târziu",
+  "startTraining": "Începe Antrenarea",
+  "trainingStepsTitle": "Pași Antrenare",
+  "repeatCommand1": "1. Repetați comanda \"Vreau o cursă\" de 3 ori",
+  "repeatCommand2": "2. Repetați comanda \"Cursă economică\" de 3 ori",
+  "repeatCommand3": "3. Repetați comanda \"Anulează cursă\" de 3 ori",
+  "repeatCommand4": "4. Repetați comanda \"Ajutor\" de 3 ori",
+  "trainingWillTakeApprox": "Antrenarea va dura aproximativ 5 minute.",
+  "customVoiceProfileTitle": "Profil Vocal Personalizat",
+  "customVoiceProfileContent": "Creați un profil vocal personalizat pentru a îmbunătăți recunoașterea. Sistemul va învăța să vă recunoască vocea și să se adapteze la accentul dvs.",
+  "createProfile": "Creează Profil",
+  "multiLanguageSettingsTitle": "Suport Multi-limbă",
+  "primaryLanguage": "Limba principală: Română",
+  "secondaryLanguages": "Limbi secundare:",
+  "switchBetweenLanguages": "Puteți comuta între limbi spunând \"Switch to English\" sau \"Schimbă în română\"",
+  "availableVoiceCommandsTitle": "Comenzi Vocale Disponibile",
+  "basicCommands": "Comenzi de bază:",
+  "commandsDuringRide": "Comenzi în timpul cursei:",
+  "controlCommands": "Comenzi de control:",
+  "privacySettingsTitle": "Confidențialitate Vocală",
+  "privacySettingsLabel": "Setări confidențialitate:",
+  "saveVoiceHistory": "Salvează istoricul vocal",
+  "saveVoiceHistorySubtitle": "Stochează comenzile vocale pentru îmbunătățirea serviciului",
+  "anonymousAnalysis": "Analiză anonimă",
+  "anonymousAnalysisSubtitle": "Permite analiza anonimă pentru îmbunătățirea recunoașterii",
+  "cloudSync": "Sincronizare cloud",
+  "cloudSyncSubtitle": "Sincronizează preferințele vocale între dispozitive",
+  "voiceDataProcessedLocally": "Datele vocale sunt procesate local pe dispozitivul dvs pentru confidențialitate maximă.",
+  "analyticsSettingsTitle": "Analiză și Îmbunătățiri",
+  "analyticsSettingsLabel": "Setări analiză:",
+  "improveRecognition": "Îmbunătățire recunoaștere",
+  "improveRecognitionSubtitle": "Permite analiza pentru îmbunătățirea recunoașterii vocale",
+  "usageStatistics": "Statistici utilizare",
+  "usageStatisticsSubtitle": "Colectează statistici despre utilizarea funcțiilor vocale",
+  "errorReporting": "Raportare erori",
+  "errorReportingSubtitle": "Raportează automat erorile vocale pentru rezolvare",
+  "allDataAnonymized": "Toate datele sunt anonimizate și nu conțin informații personale.",
+  "advancedHelpTitle": "Ajutor Avansat",
+  "advancedFeaturesAvailable": "Funcții avansate disponibile:",
+  "automaticVoiceActivation": "   - Activare vocală automată",
+  "customActivationWord": "   - Personalizare cuvânt activare",
+  "realtimeDetection": "   - Detectare în timp real",
+  "continuousListeningForCommands": "   - Ascultare continuă pentru comenzi",
+  "realtimeProcessing": "   - Procesare în timp real",
+  "smartBatterySaving": "   - Economie baterie inteligentă",
+  "supportFor6Languages": "   - Suport pentru 6 limbi",
+  "voiceSwitchBetweenLanguages": "   - Comutare vocală între limbi",
+  "localAccentAdaptation": "   - Adaptare accent local",
+  "localProcessing": "   - Procesare locală",
+  "endToEndEncryption": "   - Criptare end-to-end",
+  "fullDataControl": "   - Control total asupra datelor",
+  "contactSupportForTechnical": "Pentru asistență tehnică, contactați suportul.",
+  "advancedHelp": "Ajutor Avansat",
+  
+  "aiSpeaking": "AI VORBEȘTE",
+  "aiListening": "AI ASCULTĂ",
+  "aiProcessing": "AI PROCESEAZĂ",
+  "waitingForResponse": "AȘTEPT RĂSPUNS",
+  "voiceAssistant": "ASISTENT VOCAL",
+  "pleaseListenToResponse": "Vă rog ascultați răspunsul...",
+  "speakNow": "VORBIȚI ACUM!",
+  "processingInformation": "Procesez informația...",
+  "pleaseWait": "Vă rog așteptați...",
+  "pressButtonToStart": "Apăsați butonul pentru a începe",
+  "newRideAudioUnavailable": "🚨 CURSĂ NOUĂ! (Audio indisponibil)",
+  
+  "emergencyAssistanceUsage": "Utilizarea asistenței de urgență",
+  "emergencyAssistanceUsageContent": "Funcția de urgență vă permite să:",
+  "call112Quickly": "• Apelați rapid 112",
+  "sendLocationToEmergencyContact": "• Trimiteți locația dvs. unui contact de urgență",
+  "reportIncidentToSafetyTeam": "• Raportați un incident către echipa de siguranță",
+  "useOnlyRealEmergencies": "Utilizați această funcție doar în situații reale de urgență.",
+  "reportAccidentOrUnpleasantEvent": "Raportează accident sau eveniment neplăcut",
+  "toReportIncident": "Pentru a raporta un incident:",
+  "ensureYourSafety": "1. Asigurați-vă de siguranța dvs",
+  "useEmergencyFunctionInApp": "2. Folosiți funcția de urgență din aplicație",
+  "describeInDetail": "3. Descrieți detaliat ce s-a întâmplat",
+  "addPhotosIfPossible": "4. Adăugați fotografii dacă este posibil",
+  "cooperateWithInvestigationTeam": "5. Cooperați cu echipa de investigații",
+  "falseReportsCanLead": "Raporturile false pot duce la suspendarea contului.",
+  "cleaningOrDamageFee": "Taxă curățenie sau daune",
+  "cleaningFeeTitle": "🧹 Taxa pentru curățenie și daune în aplicația Nabour",
+  "cleaningFeeIntro": "La Nabour, ne dorim ca toate călătoriile să fie plăcute și confortabile pentru toți utilizatorii noștri. Din acest motiv, avem o politică clară privind curățenia vehiculelor și responsabilitatea pentru eventualele daune.",
+  "whenFeeApplied": "🚨 Când se aplică taxa pentru curățenie sau daune?",
+  "spillingLiquids": "1. Vărsarea de lichide în vehicul (apă, cafea, sucuri, alcool, etc.)",
+  "soilingSeatsOrFloor": "2. Murdărirea scaunelor sau podelei cu noroi, mâncare sau alte substanțe",
+  "vomitingInVehicle": "3. Vărsături în vehicul",
+  "smokingInVehicle": "4. Fumatul în vehicul (inclusiv țigări electronice)",
+  "damagingVehicleElements": "5. Deteriorarea unor elemente din vehicul (scaune, centuri, etc.)",
+  "leavingFoodOrTrash": "6. Lăsarea de resturi de mâncare sau gunoi în vehicul",
+  "persistentOdors": "7. Mirosuri persistente care necesită dezodorizare profesională",
+  "howFeeProcessWorks": "⚙️ Cum funcționează procesul de aplicare a taxei?",
+  "driverDocumentsDamage": "1. Șoferul documentează paguba prin fotografii imediat după cursă",
+  "driverReportsIncident": "2. Șoferul raportează incidentul prin aplicația Nabour în maxim 24 de ore",
+  "teamAnalyzesReport": "3. Echipa noastră analizează raportul și fotografiile",
+  "ifFeeJustified": "4. În cazul în care taxa este justificată, pasagerul va fi notificat",
+  "feeChargedAutomatically": "5. Taxa va fi prelevată automat din metoda de plată asociată contului",
+  "passengerCanContest": "6. Pasagerul poate contesta taxa în termen de 48 de ore de la notificare",
+  "feeAmounts": "💰 Cuantumul taxelor",
+  "lightCleaning": "🧽 Curățenie ușoară: 50-100 RON",
+  "wipingAndVacuuming": "• Ștergerea și aspirarea urmelor ușoare de murdărie",
+  "removingSmallStains": "• Îndepărtarea petelor mici de pe scaune",
+  "intensiveCleaning": "🧼 Curățenie intensivă: 150-300 RON",
+  "professionalCleaning": "• Curățare profesională pentru pete mari sau mirosuri",
+  "deodorizationAndSpecialTreatments": "• Dezodorizare și tratamente speciale",
+  "repairsAndReplacements": "Reparații și înlocuiri",
+  "replacingDamagedSeatCovers": "• Înlocuirea huselor de scaune deteriorate",
+  "repairingDamagedComponents": "• Repararea componentelor deteriorate",
+  "costsDependOnSeverity": "• Costurile variază în funcție de gravitate",
+  "yourRightsAsPassenger": "⚖️ Drepturile dvs. ca pasager",
+  "rightToReceivePhotos": "✅ Aveți dreptul să primiți fotografiile și detaliile complete ale daunelor",
+  "canContestFee": "✅ Puteți contesta taxa în termen de 48 de ore prin aplicație",
+  "rightToObjectiveInvestigation": "✅ Aveți dreptul la o investigație obiectivă a cazului dvs.",
+  "ifContestationJustified": "✅ În cazul contestațiilor justificate, taxa va fi returnată integral",
+  "howToAvoidFee": "🛡️ Cum să evitați taxa pentru curățenie sau daune",
+  "doNotConsumeFood": "• Nu consumați mâncare sau băuturi în vehicul",
+  "checkShoesNotDirty": "• Verificați că încălțămintea nu este murdară înainte de a urca",
+  "notifyDriverIfFeelingUnwell": "• Anunțați șoferul dacă vă simțiți rău și aveți nevoie de o pauză",
+  "doNotSmokeInVehicle": "• Nu fumați în vehicul",
+  "treatVehicleWithRespect": "• Tratați vehiculul cu același respect ca și cum ar fi al dvs.",
+  "takeTrashWithYou": "• Duceți gunoiul cu dvs. la sfârșitul călătoriei",
+  "contestationProcess": "📝 Procesul de contestare",
+  "accessRideHistory": "1. Accesați secțiunea \"Istoric călătorii\" din aplicație",
+  "selectRideForContestation": "2. Selectați călătoria pentru care contestați taxa",
+  "pressContestFee": "3. Apăsați pe \"Contestă taxa\" și completați formularul",
+  "addRelevantEvidence": "4. Adăugați orice dovezi relevante (fotografii, explicații)",
+  "teamWillReanalyze": "5. Echipa noastră va reanaliza cazul în maxim 72 de ore",
+  "receiveDetailedResponse": "6. Veți primi un răspuns detaliat prin email și în aplicație",
+  "haveQuestionsOrNeedAssistance": "📞 Aveți întrebări sau aveți nevoie de asistență?",
+  "emailSupport": "📧 Email: suport@nabour.ro",
+  "phoneSupport": "📱 Telefon: +40 700 NABOUR",
+  "chatInApp": "💬 Chat în aplicație: Secțiunea \"Ajutor\"",
+  "scheduleSupport": "🕒 Program: Luni-Duminică, 24/7",
+  "importantToRemember": "⚠️ Important de reținut",
+  "feeOnlyAppliedWithClearEvidence": "Taxa pentru curățenie și daune se aplică doar în cazurile în care există dovezi clare ale deteriorării sau murdăririi vehiculului. Echipa Nabour analizează fiecare caz individual și se asigură că toate taxele sunt justificate și corecte.",
+  "howToActivateDriverMode": "Cum activez modul șofer partener Nabour",
+  "toBecomeDriverPartner": "Pentru a deveni șofer partener Nabour, urmează acești pași:",
+  "checkConditions": "1. Verifică condițiile",
+  "validLicenseRequired": "Trebuie să ai permis de conducere valabil, experiență de minim 2 ani și vârsta de minim 21 de ani.",
+  "prepareDocuments": "2. Pregătește documentele",
+  "documentsNeeded": "Ai nevoie de: permis de conducere, carte de identitate, certificat de înmatriculare auto, ITP valabil și asigurarea RCA.",
+  "completeApplication": "3. Completează aplicația",
+  "accessCareerSection": "Accesează secțiunea \"Carieră\" din meniul principal și completează formularul online cu datele tale.",
+  "submitDocuments": "4. Transmite documentele",
+  "uploadClearPhotos": "Încarcă fotografii clare cu toate documentele necesare prin platforma online.",
+  "applicationVerification": "5. Verificarea aplicației",
+  "teamWillVerify": "Echipa noastră va verifica documentele în maxim 48 de ore lucrătoare.",
+  "receiveActivationCode": "6. Primește codul de activare",
+  "afterApproval": "După aprobare, vei primi un cod unic prin email/SMS pentru activarea contului de șofer.",
+  "activateAccount": "7. Activează contul",
+  "enterCodeInApp": "Introdu codul în aplicație și începe să câștigi bani conducând!",
+  "usefulTip": "💡 Sfat util:",
+  "ensureDocumentsValid": "Asigură-te că toate documentele sunt valabile și fotografiile sunt clare pentru o procesare rapidă.",
+  "ratesAndPayments": "Tarife și plăți",
+  "ratesAndPaymentsInfo": "Informații despre Tarife și Plăți",
+  "ratesCalculatedAutomatically": "• Tarifele sunt calculate automat în funcție de distanță și timp",
+  "paymentMadeAutomatically": "• Plata se face automat prin metoda salvată în cont",
+  "canSeeRateDetails": "• Puteți vedea detaliile tarifului înainte de a confirma cursa",
+  "inCaseOfPaymentProblems": "• În caz de probleme cu plata, contactați suportul",
+  "forCurrentRatesDetails": "Pentru detalii despre tarifele actuale, verificați în aplicație.",
+  "deliveryOrderRequest": "Solicitare comandă livrare",
+  "deliveryServices": "Servicii de Livrare",
+  "currentlyFocusedOnTransport": "Momentan, ne concentrăm pe serviciile de transport persoane.",
+  "deliveryServicesAvailableSoon": "Serviciile de livrare vor fi disponibile în viitorul apropiat.",
+  "weWillNotifyYou": "Vă vom anunța când această funcție va fi activă!",
+  "appFunctioningProblems": "Probleme de funcționare a aplicației",
+  "ifAppNotWorkingCorrectly": "Dacă aplicația nu funcționează corect:",
+  "restartApp": "1. Restartați aplicația",
+  "checkInternetConnection": "2. Verificați conexiunea la internet",
+  "updateAppToLatest": "3. Actualizați aplicația la cea mai recentă versiune",
+  "restartPhone": "4. Restartați telefonul",
+  "reinstallAppIfPersists": "5. Reinstalați aplicația dacă problema persistă",
+  "ifProblemContinues": "Dacă problema continuă, trimiteți-ne un raport prin suport.",
+  "forgotPassword": "Am uitat parola",
+  "enterEmailAssociated": "Introduceți adresa de email asociată contului dumneavoastră.",
+  "enterValidEmail": "Introduceți o adresă de email validă.",
+  "sendingResetEmail": "Se trimite emailul de resetare...",
+  "resetEmailSent": "Un email de resetare a parolei a fost trimis. Verificați-vă inbox-ul (inclusiv folderul Spam)!",
+  "errorSendingResetEmail": "A apărut o eroare la trimiterea email-ului de resetare.",
+  "noAccountWithEmail": "Nu există niciun cont cu această adresă de email.",
+  "unexpectedError": "A apărut o eroare neașteptată.",
+  "resetPassword": "Resetează Parola",
+  "applyNow": "Aplică acum",
+  "close": "Închide",
+  "contentComingSoon": "Conținutul pentru acest subiect va fi disponibil în curând.",
+  
+  "joinTeam": "Alătură-te echipei Nabour",
+  "applyForDriver": "Mașina mea",
+  "neighborhoodRequests": "Cereri din cartier",
+  "neighborhoodChat": "Chat de cartier",
+  "activateDriverCode": "Activare cod mod Șofer Nabour",
+  "activateDriverCodeTitle": "Activare Cod Șofer",
+  "activateDriverCodeDescription": "Introduceți codul de activare primit pentru a deveni șofer partener Nabour.",
+  "enterActivationCode": "Vă rugăm introduceți codul de activare.",
+  "codeTooShort": "Codul introdus este prea scurt. Verificați din nou.",
+  "validatingCode": "Validez codul...",
+  "codeActivatedSuccess": "Codul a fost activat cu succes! Acum sunteți șofer.",
+  "codeInvalidOrUsed": "Cod invalid sau deja utilizat. Vă rugăm verificați.",
+  "errorValidatingCode": "Eroare la validarea codului: {error}",
+  "@errorValidatingCode": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "activate": "Activează",
+  "lowDataMode": "Mod date reduse",
+  "highContrastUI": "Interfață contrast ridicat",
+  "assistantStatusOverlay": "Suprapunere status asistent",
+  "performanceOverlay": "Suprapunere performanță",
+  
+  "aiGreeting": "Salut, unde doriți să mergeți?",
+  "aiSearchingDrivers": "Caut șoferi disponibili...",
+  "aiSearchingDriversInArea": "Caut șoferi disponibili în zonă...",
+  "aiDriverFound": "Am găsit un șofer disponibil la {minutes} minute distanță.",
+  "@aiDriverFound": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "aiBestDriverSelected": "Am selectat cel mai bun șofer pentru dumneavoastră. Trimit cererea de cursă...",
+  "aiNoDriversAvailable": "Îmi pare rău, dar nu am găsit șoferi disponibili în zona dumneavoastră. Te rugăm să revii mai târziu.",
+  "aiEverythingResolved": "Perfect! Am rezolvat totul automat. Cererea dvs. de cursă a fost trimisă!",
+  
+  "subscriptionsTitle": "Abonamente Nabour",
+  "recommended": "RECOMANDAT",
+  "ronPerMonth": "RON / lună",
+  "planSelected": "Ai selectat planul {plan}! (simulare)",
+  "@planSelected": {
+    "placeholders": {
+      "plan": {
+        "type": "String"
+      }
+    }
+  },
+  "choosePlan": "Alege Planul",
+  "subscriptionBasicDescription": "Pentru călătorii ocazionali.",
+  "subscriptionPlusDescription": "Cel mai popular plan.",
+  "subscriptionPremiumDescription": "Beneficii exclusive.",
+  "subscriptionBasicBenefit1": "5% reducere la 10 curse/lună",
+  "subscriptionBasicBenefit2": "Anulare gratuită în 2 minute",
+  "subscriptionPlusBenefit1": "10% reducere la toate cursele",
+  "subscriptionPlusBenefit2": "Anulare gratuită în 5 minute",
+  "subscriptionPlusBenefit3": "Suport prioritar 24/7",
+  "subscriptionPremiumBenefit1": "15% reducere la toate cursele",
+  "subscriptionPremiumBenefit2": "Anulare gratuită oricând",
+  "subscriptionPremiumBenefit3": "Suport prioritar 24/7",
+  "subscriptionPremiumBenefit4": "Acces la mașini premium",
+  
+  "rideHistory": "Istoric Curse",
+  "deleteConfirmation": "Confirmare Ștergere",
+  "deleteRideConfirmation": "Sunteți sigur că doriți să ștergeți definitiv cursa către \"{destination}\" din istoricul dumneavoastră? Această acțiune este ireversibilă.",
+  "@deleteRideConfirmation": {
+    "placeholders": {
+      "destination": {
+        "type": "String"
+      }
+    }
+  },
+  "delete": "Șterge",
+  "rideDeletedSuccess": "Cursa a fost ștearsă cu succes!",
+  "errorLoadingRole": "Eroare la încărcarea rolului: {error}",
+  "@errorLoadingRole": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "errorGeneric": "Eroare",
+  "errorLoadingData": "Eroare la încărcarea datelor",
+  "errorDetails": "Detalii: {error}",
+  "@errorDetails": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "retry": "Reîncearcă",
+  "noRidesInPeriod": "Nu aveți nicio cursă în perioada selectată.",
+  "filterAll": "Tot",
+  "filterLastMonth": "Ultima Lună",
+  "filterLast3Months": "Ultimele 3 Luni",
+  "filterThisYear": "Anul Acesta",
+  "rideToDestination": "Către: {destination}",
+  "@rideToDestination": {
+    "placeholders": {
+      "destination": {
+        "type": "String"
+      }
+    }
+  },
+  "rideDate": "Data: {date}",
+  "@rideDate": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "deleteRide": "Șterge cursa",
+  "asDriver": "Ca Șofer",
+  "asPassenger": "Ca Pasager",
+  "errorLoadingUserRole": "Eroare la încărcarea rolului utilizatorului.",
+  
+  "receiptsTitle": "Chitantele Tale",
+  "receiptsTitlePassenger": "Chitante (Pasager)",
+  "errorLoadingReceipts": "Eroare la încărcarea chitanțelor",
+  "noReceiptsInPeriod": "Nu aveți nicio chitanță în această categorie pentru perioada selectată.",
+  "deleteSelectedReceipts": "Șterge {count} chitante selectate?",
+  "@deleteSelectedReceipts": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "deleteSelectedReceiptsWarning": "Această acțiune va șterge permanent chitanțele selectate. Acțiunea nu poate fi anulată.",
+  "receiptsDeletedSuccess": "Au fost șterse cu succes {count} chitante.",
+  "@receiptsDeletedSuccess": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "receiptsDeletedPartial": "Au fost șterse {deleted} chitante. {error} nu au putut fi șterse.",
+  "@receiptsDeletedPartial": {
+    "placeholders": {
+      "deleted": {
+        "type": "int"
+      },
+      "error": {
+        "type": "int"
+      }
+    }
+  },
+  "deleteAllReceipts": "Șterge toate chitanțele ({count})?",
+  "@deleteAllReceipts": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "deleteAllReceiptsWarning": "Această acțiune va șterge permanent TOATE chitanțele din perioada selectată. Acțiunea nu poate fi anulată.",
+  "allReceiptsDeleted": "Au fost șterse {count} chitante.",
+  "@allReceiptsDeleted": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "filterAllReceipts": "Toate",
+  "generating": "Generez...",
+  "monthlyReportPDF": "Raport Lunar PDF",
+  "select": "Selectează",
+  "selectedCount": "{count} selectate",
+  "@selectedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "selectAll": "Selectează tot",
+  "deselectAll": "Deselectează tot",
+  "deleteSelected": "Șterge selectate",
+  "deleteAll": "Șterge toate",
+  "noRidesForReport": "Nu există curse în ultima lună pentru a genera raportul.",
+  "reportGenerated": "Raport Generat",
+  "returnToMapQuestion": "Doriți să vă întoarceți la harta principală?",
+  "stayHere": "Rămân aici",
+  "goToMap": "Mergi la Hartă",
+  "errorGeneratingReport": "Eroare la generarea raportului: {error}",
+  "@errorGeneratingReport": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "rideTo": "Cursă către: {destination}",
+  "@rideTo": {
+    "placeholders": {
+      "destination": {
+        "type": "String"
+      }
+    }
+  },
+  
+  "rideFrom": "Ride from {date}",
+  "@rideFrom": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "from": "De la:",
+  "earningsSummary": "Sumar Câștiguri",
+  "totalRide": "Total Cursă:",
+  "appCommission": "Comision Aplicație:",
+  "yourEarnings": "Câștigul Tău:",
+  "reportProblem": "Raportează o problemă",
+  
+  "activeRideDetected": "Cursă activă detectată",
+  "cancelPreviousRide": "Anulează cursa precedentă",
+  
+  "rideAcceptedWaiting": "Cursă acceptată! Așteptăm confirmarea pasagerului...",
+  "driverProfileLoading": "Profilul șofer se încarcă, încercați din nou...",
+  "searching": "Se caută…",
+  "searchInThisArea": "Caută în această zonă",
+  "declining": "Refuz...",
+  "decline": "Refuză",
+  "accepting": "Accept...",
+  "accept": "Acceptă",
+  "destination": "Destinație",
+  "addAsStop": "Adaugă ca oprire",
+  "pickupPointDeleted": "Punctul de plecare a fost șters",
+  "destinationDeleted": "Destinația a fost ștearsă",
+  "selectPickupAndDestination": "Selectează punctul de plecare și destinația",
+  
+  "rideSummary": "Sumar Cursă",
+  "couldNotLoadRideDetails": "Nu s-au putut încărca detaliile cursei",
+  "back": "Înapoi",
+  "noTip": "Fără bacșiș",
+  
+  "routeNotLoaded": "🗺️ Nu s-a putut încărca traseul automat",
+  "rideCancelledSuccess": "Cursa a fost anulată cu succes.",
+  "forceCancelRide": "Anulează Forțat Cursa",
+  "passengerAddedStop": "Pasagerul a adăugat o nouă oprire. Ruta a fost recalculată.",
+  "stopAdded": "Oprire adăugată! Traseul și costul au fost actualizate.",
+  "errorAddingStop": "Eroare la adăugarea opririi: {error}",
+  "@errorAddingStop": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "navigationWithGoogleMaps": "Navigație cu Google Maps",
+  "navigationWithWaze": "Navigație cu Waze",
+  "safetyTeamNotified": "Am notificat echipa de siguranță. Suntem alături de tine.",
+  "sendViaApps": "Trimite prin aplicații",
+  "noTrustedContacts": "Nu aveți contacte de încredere",
+  "manageContacts": "Gestionează contacte",
+  "iAmSafe": "Sunt în siguranță",
+  "falseAlarm": "Alarmă falsă",
+  "shareRoute": "Partajează traseul",
+  "rideCancelledSuccessShort": "Cursa a fost anulată cu succes",
+  "recenterMap": "Recentrează harta",
+  "mapMovedTapToRecenter": "Mișcat harta. Atinge pentru recentrare",
+  "entrySelected": "Intrare selectată.",
+  "addStop": "Adaugă Oprire",
+  "navigationBanner": "Banner navigație. {type} {modifier}. Distanță {distance} metri.",
+  "@navigationBanner": {
+    "placeholders": {
+      "type": {
+        "type": "String"
+      },
+      "modifier": {
+        "type": "String"
+      },
+      "distance": {
+        "type": "String"
+      }
+    }
+  },
+  "entrySelectedWithLabel": "Intrare selectată: {label}",
+  "@entrySelectedWithLabel": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "editMessage": "Editează mesajul",
+  "save": "Salvează",
+  
+  "passengerNotifiedArrived": "✅ Pasagerul a fost notificat că ai ajuns!",
+  "cannotOpenPhoneApp": "Nu se poate deschide aplicația de telefon",
+  "errorLoadingRoute": "Eroare la încărcarea rutei: {error}",
+  "@errorLoadingRoute": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "rideCancelledReason": "Cursa anulată: {reason}",
+  "@rideCancelledReason": {
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "cancelRide": "Anulează cursa",
+  "selectCancellationReason": "Selectează motivul anulării:",
+  "backButton": "Înapoi",
+  "passengerNotResponding": "Pasager nu răspunde",
+  "technicalProblem": "Problemă tehnică",
+  "emergency": "Urgență",
+  "pickupRide": "Preluare Cursă",
+  "loadingPassengerInfo": "Se încarcă informațiile pasagerului...",
+  "call": "Sună",
+  
+  "pleaseValidateAddress": "Te rugăm să validezi adresa sau să o selectezi de pe hartă.",
+  "editAddress": "Editează Adresa",
+  "addNewAddress": "Adaugă Adresă Nouă",
+  "errorVoiceRecognition": "Eroare la recunoașterea vocală: {error}",
+  "@errorVoiceRecognition": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "updateAddress": "Actualizează Adresa",
+  "saveAddress": "Salvează Adresa",
+  
+  "resetPassword": "Resetare Parolă",
+  "enterEmailAssociated": "Introduceți adresa de email asociată contului dumneavoastră.",
+  "resetEmailSent": "Un email de resetare a parolei a fost trimis. Verificați-vă inbox-ul (inclusiv folderul Spam)!",
+  "unexpectedError": "A apărut o eroare neașteptată.",
+  "resetPasswordButton": "Resetează Parola",
+  
+  "howToActivateDriverMode": "Cum activez modul șofer partener Nabour",
+  "close": "Închide",
+  "applyNow": "Aplică acum",
+  "pleaseFillAllFields": "Vă rugăm completați corect toate câmpurile.",
+  "welcomeBack": "👋 Bun venit înapoi!",
+  "welcomeToNabour": "Bun venit în Nabour!",
+  "pleaseEnterValidEmail": "Vă rugăm introduceți o adresă de email validă în câmpul de Email pentru resetare.",
+  "errorResettingPassword": "A apărut o eroare neașteptată la resetarea parolei.",
+  "enterValidPhoneNumber": "Introduceți un număr de telefon valid.",
+  "autoAuthCompleted": "Autentificare automată finalizată",
+  "errorAutoAuth": "Eroare autentificare automată: {error}",
+  "@errorAutoAuth": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "enterSmsCode": "Introduceți codul SMS primit.",
+  "verifyAndAuthenticate": "Verifică și autentifică",
+  
+  "max5Stops": "Poți adăuga maximum 5 opriri",
+  "addressNotFound": "Nu s-a putut găsi adresa: {address}",
+  "@addressNotFound": {
+    "placeholders": {
+      "address": {
+        "type": "String"
+      }
+    }
+  },
+  "noCoordinatesForDestination": "Nu s-au găsit coordonate pentru destinație: {error}",
+  "@noCoordinatesForDestination": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "fillBothAddresses": "Completează ambele adrese pentru a continua",
+  "addStop": "Adaugă oprire",
+  "intermediateStopAdded": "Oprire intermediară adăugată",
+  "home": "Acasă",
+  "work": "Serviciu",
+  "edit": "Editează",
+  "recentDestinations": "Destinații Recente",
+  "noFavoriteAddressAdded": "Nicio adresă favorită adăugată.",
+  
+  "addressUpdated": "Adresa a fost actualizată!",
+  "addressSaved": "Adresa a fost salvată!",
+  
+  "pleaseSelectRating": "Te rugăm selectează un rating înainte de a trimite.",
+  "ratingSentSuccess": "Evaluare trimisă cu succes!",
+  "errorSendingRating": "Eroare la trimiterea evaluării: {error}",
+  "@errorSendingRating": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "rideDetailsCompleted": "Detalii Cursă Finalizată",
+  "saveRating": "Salvează Evaluarea",
+  
+  "errorConfirmingDriver": "Eroare la confirmarea șoferului: {error}",
+  "@errorConfirmingDriver": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "errorDecliningDriver": "Eroare la refuzarea șoferului: {error}",
+  "@errorDecliningDriver": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "confirmDriver": "Confirmă Șoferul",
+  "backToMap": "Înapoi la Hartă",
+  
+  "currentLocation": "Locația actuală",
+  "finalDestination": "Destinație finală",
+  "accordingToSelection": "Conform selecției",
+  
+  "aiSpeaking": "🗣️ AI VORBEȘTE\n\nVă rog ascultați...",
+  "aiListening": "🎤 AI ASCULTĂ\n\nVORBIȚI ACUM!",
+  "aiProcessing": "🧠 AI PROCESEAZĂ\n\nVă rog așteptați...",
+  "waitingResponse": "⏳ AȘTEPT RĂSPUNS...",
+  "waitingConfirmation": "❓ AȘTEPT CONFIRMARE\n\nSpuneți DA sau NU",
+  
+  "driverMode": "Mod Șofer",
+  
+  "arrivedNotifyPassenger": "Am ajuns - Anunță pasagerul",
+  "passengerBoarding": "Pasagerul se îmbarcă",
+  "startRide": "Pornește cursa",
+  "route": "Rută",
+  
+  "preferencesSaved": "Preferințele au fost salvate",
+  
+  "pleaseSelectRatingBeforeSubmit": "Vă rugăm selectați un rating înainte de a trimite.",
+  "errorSubmittingRating": "Eroare la trimiterea evaluării. Încercați din nou.",
+  "thankYouForRide": "Vă mulțumim pentru călătorie!",
+  "howWasExperience": "Cum a fost experiența?",
+  "leaveCommentOptional": "Lasă un comentariu (opțional)",
+  "noTip": "Fără bacșiș",
+  
+  "thanksForRating": "Mulțumim pentru evaluare!",
+  "ratePassenger": "Evaluează Pasagerul",
+  "shortCharacterization": "Scurtă caracterizare (ex: curat, a murdărit mașina)",
+  "addPrivateNoteAboutPassenger": "Adaugă o notă privată despre pasager...",
+  
+  "routeUpdated": "Traseu Actualizat",
+  "passengerAddedNewStop": "Pasagerul a adăugat o nouă oprire. Ruta a fost recalculată.",
+  "ok": "OK",
+  
+  "rideManagement": "Gestionare Cursă",
+  "modifyDestination": "Modifică Destinația",
+  "cannotModifyCompletedRide": "Nu poți modifica destinația pentru o cursă finalizată sau anulată.",
+  "destinationUpdatedSuccessfully": "Destinația a fost actualizată cu succes!",
+  "errorUpdatingDestination": "Eroare la actualizarea destinației: {error}",
+  "@errorUpdatingDestination": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "changeFinalLocation": "Schimbă locația finală",
+  "addStop": "Adaugă Oprire",
+  "intermediateStop": "Oprire intermediară",
+  "cancelRide": "Anulează Cursa",
+  "mayIncludeCancellationFee": "Poate include taxă de anulare",
+  "viewReceipt": "Vizualizează Chitanța",
+  "completeRideDetails": "Detalii complete ale cursei",
+  "rateRide": "Evaluează Cursa",
+  "provideDriverFeedback": "Oferă feedback șoferului",
+  
+  "communication": "Comunicare",
+  "callDriver": "Sună Șoferul",
+  "chat": "Chat",
+  
+  "chatWith": "Chat cu {name}",
+  "@chatWith": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "chatAvailableSoon": "Chat-ul va fi disponibil în curând",
+  
+  "costSummary": "Sumar Cost",
+  "baseFare": "Tarif de bază:",
+  "distance": "Distanță ({km} km):",
+  "@distance": {
+    "placeholders": {
+      "km": {
+        "type": "String"
+      }
+    }
+  },
+  "time": "Timp ({min} min):",
+  "@time": {
+    "placeholders": {
+      "min": {
+        "type": "String"
+      }
+    }
+  },
+  "totalPaid": "Total Plătit:",
+  "ratingGiven": "Rating acordat:",
+  "noRatingGiven": "Niciun rating acordat",
+  
+  "optionalComments": "Comentarii opționale...",
+  "howWasYourExperience": "Cum a fost experiența ta?",
+  "routeNotLoadedAuto": "🗺️ Nu s-a putut încărca traseul automat",
+  "rideCancelledSuccessfully": "Cursa a fost anulată cu succes.",
+  "forceCancelRide": "Anulează Forțat Cursa",
+  "stopAddedRouteUpdated": "Oprire adăugată! Traseul și costul au fost actualizate.",
+  "errorAddingStop": "Eroare la adăugarea opririi: {error}",
+  "@errorAddingStop": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "navigationWithGoogleMaps": "Navigație cu Google Maps",
+  "navigationWithWaze": "Navigație cu Waze",
+  "safetyTeamNotified": "Am notificat echipa de siguranță. Suntem alături de tine.",
+  "sendViaApps": "Trimite prin aplicații",
+  "noTrustedContacts": "Nu aveți contacte de încredere",
+  "manageContacts": "Gestionează contacte",
+  "iAmSafe": "Sunt în siguranță",
+  "falseAlarm": "Alarmă falsă",
+  "shareRoute": "Partajează traseul",
+  "rideCancelledSuccess": "Cursa a fost anulată cu succes",
+  "mapMovedTapToRecenter": "Mișcat harta. Atinge pentru recentrare",
+  "entrySelected": "Intrare selectată.",
+  "entrySelectedWithLabel": "Intrare selectată: {label}",
+  "@entrySelectedWithLabel": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "editMessage": "Editează mesajul",
+  "save": "Salvează",
+  "writeNewText": "Scrie noul text...",
+  "messageEditedSuccess": "Mesajul a fost editat cu succes!",
+  "errorEditingMessage": "Eroare la editarea mesajului: {error}",
+  "@errorEditingMessage": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "errorCancelling": "Eroare la anulare: {error}",
+  "@errorCancelling": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "inviteFriendsDescription": "Invită vecini să se alăture comunității Nabour",
+  "splitPayment": "Împărțire Misiune",
+  "splitPaymentDescription": "Invită vecinii să se alăture drumului tău",
+  "createSplitPayment": "Creează Împărțire",
+  "splitPaymentCreated": "Împărțirea a fost creată",
+  "shareLinkWithParticipants": "Partajează link-ul cu participanții:",
+  "share": "Partajează",
+  "splitWithHowMany": "Cu câți să împărți?",
+  "selectNumberOfPeople": "Selectează numărul de persoane",
+  "confirm": "Confirmă",
+  "acceptSplitPayment": "Acceptă Împărțirea",
+  "markAsPaid": "Marchează ca Plătit",
+  "totalAmount": "Total",
+  "perPerson": "Per Persoană",
+  "participants": "Participanți",
+  "participant": "Participant",
+  "paid": "Plătit",
+  "pending": "În așteptare",
+  "accepted": "Acceptat",
+  "completed": "Finalizat",
+  "rejected": "Respins",
+  "cancelled": "Anulat",
+  "errorCreatingSplitPayment": "Eroare la crearea împărțirii: {error}",
+  "@errorCreatingSplitPayment": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "errorAcceptingSplitPayment": "Eroare la acceptarea împărțirii: {error}",
+  "@errorAcceptingSplitPayment": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "errorCompletingPayment": "Eroare la finalizarea plății: {error}",
+  "@errorCompletingPayment": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "paymentCompleted": "Misiune îndeplinită",
+  "promotionCode": "Cod Promoțional",
+  "enterPromotionCode": "Introdu codul promoțional",
+  "apply": "Aplică",
+  "promotionAppliedSuccessfully": "Cod promoțional aplicat cu succes",
+  
+  "subscriptionsHelpTitle": "Abonamente și Promoții",
+  "subscriptionsHelpOverview": "Abonamentele Nabour vă oferă beneficii exclusive și reduceri la curse.",
+  "subscriptionsHelpPlans": "Planuri Disponibile:",
+  "subscriptionsHelpBasic": "• Nabour Basic - 5% reducere la 10 curse/lună",
+  "subscriptionsHelpPlus": "• Nabour Plus - 10% reducere la toate cursele (Recomandat)",
+  "subscriptionsHelpPremium": "• Nabour Premium - 15% reducere + beneficii exclusive",
+  "subscriptionsHelpHowToSubscribe": "Cum să vă abonați:",
+  "subscriptionsHelpGoToMenu": "1. Accesați meniul hamburger",
+  "subscriptionsHelpTapSubscriptions": "2. Apăsați pe 'Abonamente și Promoții'",
+  "subscriptionsHelpSelectPlan": "3. Selectați planul dorit",
+  "subscriptionsHelpCompletePayment": "4. Completați plata",
+  "subscriptionsHelpPromotions": "Promoții Active:",
+  "subscriptionsHelpPromotionsInfo": "Verificați secțiunea 'Promoții' pentru oferte speciale și coduri promoționale disponibile.",
+  "subscriptionsHelpReferral": "Program de Recomandare:",
+  "subscriptionsHelpReferralInfo": "Partajați codul dvs. de recomandare și primiți beneficii pentru fiecare prieten care se înscrie.",
+  
+  "splitPaymentHelpTitle": "Split Payment - Împărțirea Costului",
+  "splitPaymentHelpOverview": "Split Payment vă permite să împărțiți costul cursei cu alți pasageri.",
+  "splitPaymentHelpHowToCreate": "Cum să creați Split Payment:",
+  "splitPaymentHelpAfterRide": "1. După finalizarea cursei, apăsați pe 'Split Payment'",
+  "splitPaymentHelpSelectPeople": "2. Selectați numărul de persoane cu care împărțiți",
+  "splitPaymentHelpShareLink": "3. Partajați linkul generat cu participanții",
+  "splitPaymentHelpParticipantsAccept": "4. Participanții acceptă și plătesc partea lor",
+  "splitPaymentHelpHowToAccept": "Cum să acceptați Split Payment:",
+  "splitPaymentHelpReceiveLink": "1. Primirea linkului de partajare",
+  "splitPaymentHelpTapAccept": "2. Apăsați pe 'Accept Split'",
+  "splitPaymentHelpSelectPayment": "3. Selectați metoda de plată",
+  "splitPaymentHelpCompletePayment": "4. Completați plata",
+  "splitPaymentHelpNote": "Notă: Split Payment este disponibil doar pentru curse finalizate.",
+  
+  "rideSharingHelpTitle": "Ride Sharing - Curse Partajate",
+  "rideSharingHelpOverview": "Ride Sharing vă permite să partajați cursa cu alți pasageri care merg în aceeași direcție.",
+  "rideSharingHelpHowToEnable": "Cum să activați Ride Sharing:",
+  "rideSharingHelpDuringRequest": "1. În timpul solicitării cursei, activați opțiunea 'Ride Sharing'",
+  "rideSharingHelpSystemMatches": "2. Sistemul va căuta automat alți pasageri compatibili",
+  "rideSharingHelpIfMatchFound": "3. Dacă se găsește un match, veți fi notificat",
+  "rideSharingHelpBenefits": "Beneficii:",
+  "rideSharingHelpCostReduction": "• Reducere semnificativă a costului cursei",
+  "rideSharingHelpEcoFriendly": "• Opțiune prietenoasă cu mediul",
+  "rideSharingHelpSocial": "• Oportunitate de a cunoaște oameni noi",
+  "rideSharingHelpNote": "Notă: Ride Sharing este disponibil doar pentru anumite rute și în anumite zone.",
+  
+  "modifyDestinationHelpTitle": "Modificare Destinație",
+  "modifyDestinationHelpOverview": "Puteți modifica destinația cursei în timpul cursei active.",
+  "modifyDestinationHelpHowToModify": "Cum să modificați destinația:",
+  "modifyDestinationHelpDuringRide": "1. În timpul cursei active, apăsați pe 'Gestionare Cursă'",
+  "modifyDestinationHelpTapModify": "2. Apăsați pe 'Modifică Destinația'",
+  "modifyDestinationHelpSelectNew": "3. Selectați noua destinație",
+  "modifyDestinationHelpConfirm": "4. Confirmați modificarea",
+  "modifyDestinationHelpRouteRecalculated": "5. Ruta și prețul vor fi recalculate automat",
+  "modifyDestinationHelpLimitations": "Limitări:",
+  "modifyDestinationHelpCannotModifyCompleted": "• Nu puteți modifica destinația pentru curse finalizate sau anulate",
+  "modifyDestinationHelpPriceMayChange": "• Prețul poate varia în funcție de noua destinație",
+  "modifyDestinationHelpDriverNotified": "• Șoferul va fi notificat automat despre modificare",
+  
+  "lowDataModeHelpTitle": "Mod Date Reduse",
+  "lowDataModeHelpOverview": "Modul Date Reduse reduce consumul de date mobile optimizând funcționalitățile aplicației.",
+  "lowDataModeHelpHowToEnable": "Cum să activați Mod Date Reduse:",
+  "lowDataModeHelpGoToMenu": "1. Accesați meniul hamburger",
+  "lowDataModeHelpTapToggle": "2. Găsiți opțiunea 'Mod date reduse'",
+  "lowDataModeHelpActivate": "3. Activați toggle-ul",
+  "lowDataModeHelpWhatItDoes": "Ce face Mod Date Reduse:",
+  "lowDataModeHelpReducesImages": "• Reduce calitatea imaginilor și cache-ul",
+  "lowDataModeHelpLimitsAnimations": "• Limitează animațiile și efectele vizuale",
+  "lowDataModeHelpOptimizesMaps": "• Optimizează încărcarea hărților",
+  "lowDataModeHelpReducesSync": "• Reduce sincronizarea în timp real",
+  "lowDataModeHelpBenefits": "Beneficii:",
+  "lowDataModeHelpSavesData": "• Economisește date mobile",
+  "lowDataModeHelpFasterLoading": "• Încărcare mai rapidă pe conexiuni slabe",
+  "lowDataModeHelpBatteryLife": "• Îmbunătățește durata bateriei",
+  "lowDataModeHelpNote": "Notă: Mod Date Reduse poate afecta calitatea anumitor funcții, dar aplicația rămâne complet funcțională.",
+  
+  "highContrastUIHelpTitle": "Interfață Contrast Ridicat",
+  "highContrastUIHelpOverview": "Interfața cu Contrast Ridicat îmbunătățește vizibilitatea pentru utilizatorii cu deficiențe de vedere sau în condiții de lumină slabă.",
+  "highContrastUIHelpHowToEnable": "Cum să activați Interfața cu Contrast Ridicat:",
+  "highContrastUIHelpGoToMenu": "1. Accesați meniul hamburger",
+  "highContrastUIHelpTapToggle": "2. Găsiți opțiunea 'Interfață contrast ridicat'",
+  "highContrastUIHelpActivate": "3. Activați toggle-ul",
+  "highContrastUIHelpWhatItDoes": "Ce face Interfața cu Contrast Ridicat:",
+  "highContrastUIHelpIncreasesContrast": "• Mărește contrastul între text și fundal",
+  "highContrastUIHelpBolderText": "• Face textul mai bold și mai ușor de citit",
+  "highContrastUIHelpClearerIcons": "• Face iconițele și butoanele mai vizibile",
+  "highContrastUIHelpBetterVisibility": "• Îmbunătățește vizibilitatea în condiții de lumină slabă",
+  "highContrastUIHelpBenefits": "Beneficii:",
+  "highContrastUIHelpAccessibility": "• Îmbunătățește accesibilitatea pentru utilizatori cu deficiențe de vedere",
+  "highContrastUIHelpReadability": "• Text mai ușor de citit",
+  "highContrastUIHelpOutdoorUse": "• Utilizare mai bună în condiții de lumină puternică",
+  "highContrastUIHelpNote": "Notă: Interfața cu Contrast Ridicat este disponibilă atât pentru tema clară, cât și pentru tema întunecată.",
+  
+  "assistantStatusOverlayHelpTitle": "Suprapunere Status Asistent",
+  "assistantStatusOverlayHelpOverview": "Suprapunerea Status Asistent afișează un indicator mic în colțul ecranului care arată când asistentul AI procesează comenzi.",
+  "assistantStatusOverlayHelpHowToEnable": "Cum să activați Suprapunerea Status Asistent:",
+  "assistantStatusOverlayHelpGoToMenu": "1. Accesați meniul hamburger",
+  "assistantStatusOverlayHelpTapToggle": "2. Găsiți opțiunea 'Suprapunere status asistent'",
+  "assistantStatusOverlayHelpActivate": "3. Activați toggle-ul",
+  "assistantStatusOverlayHelpWhatItShows": "Ce afișează indicatorul:",
+  "assistantStatusOverlayHelpWorking": "• 'Lucrez' - când asistentul AI procesează comenzi sau interacționează cu utilizatorul",
+  "assistantStatusOverlayHelpWaiting": "• 'Aștept comenzi' - când asistentul AI este inactiv și așteaptă comenzi",
+  "assistantStatusOverlayHelpLocation": "Unde apare indicatorul:",
+  "assistantStatusOverlayHelpTopRight": "• Indicatorul apare în colțul din dreapta sus al ecranului",
+  "assistantStatusOverlayHelpNonIntrusive": "• Este non-intruziv și nu interferează cu utilizarea aplicației",
+  "assistantStatusOverlayHelpBenefits": "Beneficii:",
+  "assistantStatusOverlayHelpVisualFeedback": "• Feedback vizual rapid despre starea asistentului AI",
+  "assistantStatusOverlayHelpDebugging": "• Util pentru debugging și înțelegerea când AI-ul lucrează",
+  "assistantStatusOverlayHelpTransparency": "• Transparență despre activitatea asistentului",
+  "assistantStatusOverlayHelpNote": "Notă: Indicatorul se actualizează automat când pornești sau oprești interacțiunea vocală cu AI-ul.",
+
+    "securityAndSafety": "Siguranță și Securitate",
+    "changePasswordSubtitle": "Modifică parola contului tău",
+    "sessions": "Sesiuni",
+    "logoutAllDevices": "Deconectare de pe toate dispozitivele",
+    "logoutAllDevicesSubtitle": "Ieșire din cont pe toate dispozitivele conectate",
+    "dangerZone": "Zonă periculoasă",
+    "deleteAccount": "Ștergere cont",
+    "deleteAccountSubtitle": "Șterge permanent contul și toate datele asociate",
+    "confirmLogoutAllDevicesTitle": "Deconectare de pe toate dispozitivele",
+    "confirmLogoutAllDevicesContent": "Vei fi deconectat de pe toate dispozitivele, inclusiv cel curent. Va trebui să te autentifici din nou.",
+    "disconnect": "Deconectează",
+    "permanentDeleteAccount": "Ștergere cont permanent",
+    "attention": "Atenție! Această acțiune este ireversibilă.",
+    "willBeDeletedTitle": "Vor fi șterse definitiv:",
+    "willBeDeletedProfile": "• Profilul tău",
+    "willBeDeletedRideHistory": "• Istoricul curselor",
+    "willBeDeletedData": "• Toate datele asociate contului",
+    "accountPassword": "Parola contului",
+    "enterPasswordConfirm": "Introduceți parola pentru confirmare.",
+    "deleteAccountButton": "Ștergere cont",
+    "errorPrefix": "Eroare: {error}",
+    "notificationPreferences": "Preferințe notificări",
+    "notifRideSection": "Curse",
+    "notifRideNotifications": "Notificări curse",
+    "notifRideNotificationsSubtitle": "Solicitări noi, cursă acceptată, șofer în apropiere etc.",
+    "notifCommunicationSection": "Comunicare",
+    "notifChatMessages": "Mesaje chat",
+    "notifChatMessagesSubtitle": "Notificări pentru mesaje noi din conversații",
+    "notifMarketingSection": "Marketing și actualizări",
+    "notifPromoOffers": "Promoții și oferte",
+    "notifPromoOffersSubtitle": "Reduceri, coduri promoționale și oferte speciale",
+    "notifAppUpdates": "Actualizări aplicație",
+    "notifAppUpdatesSubtitle": "Noutăți și îmbunătățiri ale aplicației",
+    "notifSafetySection": "Siguranță",
+    "notifSafetyAlerts": "Alerte de siguranță",
+    "notifSafetyAlertsSubtitle": "Notificări importante legate de siguranța ta în cursă",
+    "notifSavedSuccess": "Preferințe salvate cu succes.",
+    "notifLoadError": "Eroare la încărcarea preferințelor: {error}",
+    "notifSaveError": "Eroare la salvare: {error}",
+    "privacyLocationSection": "Locație",
+    "privacyLocationSharing": "Partajare locație în timp real",
+    "privacyLocationSharingSubtitle": "Permite partajarea locației tale cu șoferul în timpul cursei",
+    "privacyProfileSection": "Profil",
+    "privacyProfileVisibility": "Vizibilitate profil pentru șoferi",
+    "privacyProfileVisibilitySubtitle": "Șoferii pot vedea profilul tău (nume, fotografie, rating)",
+    "privacyRideHistoryVisible": "Istoricul curselor vizibil",
+    "privacyRideHistoryVisibleSubtitle": "Permite afișarea istoricului curselor în profilul tău public",
+    "privacyDataSection": "Date și analiză",
+    "privacyAnalyticsConsent": "Date pentru îmbunătățirea serviciului",
+    "privacyAnalyticsConsentSubtitle": "Ajută-ne să îmbunătățim aplicația prin partajarea datelor de utilizare anonime",
+    "privacyGdprNote": "Datele tale sunt procesate conform GDPR. Poți solicita exportul sau ștergerea datelor din secțiunea Siguranță și Securitate.",
+    "privacySavedSuccess": "Setări de confidențialitate salvate.",
+    "privacyLoadError": "Eroare la încărcarea setărilor: {error}",
+    "privacySaveError": "Eroare la salvare: {error}",
+    "adminDocumentReview": "Verificare Documente Șoferi",
+    "noPendingApplications": "Nu există aplicații în așteptare.",
+    "unknownApplicant": "Aplicant necunoscut",
+    "statusLabel": "Status: {status}",
+    "missingRequired": "Lipsă (obligatoriu)",
+    "missing": "Lipsă",
+    "rejectDocumentTitle": "Respinge: {name}",
+    "rejectReason": "Motiv respingere",
+    "rejectionHint": "ex. Imagine neclară, document expirat",
+    "documentApproved": "✅ {name} aprobat",
+    "documentRejected": "❌ {name} respins",
+    "activateDriver": "Activează Șofer",
+    "driverActivatedTitle": "Șofer Activat ✅",
+    "driverActivatedContent": "{name} a fost activat cu succes.",
+    "accessCodeLabel": "Cod de acces:",
+    "accessCodeGenerated": "Cod de acces generat:",
+    "sendCodeToDriver": "Transmiteți acest cod șoferului.",
+    "activationError": "Eroare la activare: {error}",
+    "approveTooltip": "Aprobă",
+    "rejectTooltip": "Respinge",
+    "rejectionReasonLabel": "Motiv: {reason}",
+    "statusSubmitted": "Trimis",
+    "statusUnderReview": "În revizuire",
+    "statusApproved": "Aprobat",
+    "statusActivated": "Activat",
+    "statusRejected": "Respins",
+    "docStatusApproved": "Aprobat",
+    "docStatusRejected": "Respins",
+    "docStatusPending": "În așteptare",
+    "docExpiresOn": "Expiră: {date}",
+    "docExpiredLabel": "EXPIRAT ({date})",
+    "docExpiringSoonLabel": "Expiră în curând ({date})",
+    "bePartnerDriver": "Devino Șofer Partener",
+    "applicationProgress": "Progres aplicație",
+    "applicationComplete": "Aplicația este completă și poate fi trimisă!",
+    "applicationIncomplete": "Completați informațiile și documentele pentru a continua",
+    "accountActivated": "Cont Activat 🎉",
+    "accessCodeGeneratedAt": "Generat la: {date}",
+    "personalInfoStep": "Informații Personale",
+    "vehicleInfoStep": "Informații Autovehicul",
+    "finalDocumentsStep": "Documente Finale",
+    "fullNameLabel": "Nume Complet *",
+    "ageLabel": "Vârstă *",
+    "carBrandLabel": "Marcă *",
+    "carModelLabel": "Model *",
+    "carColorLabel": "Culoare *",
+    "carYearLabel": "An Fabricație *",
+    "licensePlateLabel": "Număr Înmatriculare *",
+    "bankAccountLabel": "Cont Bancar (IBAN)",
+    "importantInfoTitle": "Informații importante",
+    "applicationConfirmationText": "Prin trimiterea aplicației, confirmați că:\n• Toate informațiile furnizate sunt corecte\n• Sunteți de acord cu Termenii și Condițiile\n• Acceptați verificarea documentelor\n• Aveți cel puțin 21 de ani împliniți",
+    "applicationIncompleteWarning": "Vă rugăm să completați toate câmpurile obligatorii și să încărcați documentele necesare înainte de a trimite aplicația.",
+    "applicationSubmitSuccess": "Aplicația a fost trimisă cu succes pentru verificare!",
+    "applicationLoadError": "Eroare la încărcarea datelor: {error}",
+    "applicationSaveError": "Eroare la salvarea datelor: {error}",
+    "applicationSubmitError": "Eroare la trimiterea aplicației: {error}",
+    "documentUploadSuccess": "{name} a fost încărcat cu succes!",
+    "documentDeleteSuccess": "{name} a fost șters cu succes!",
+    "documentUploadError": "Eroare la încărcarea documentului: {error}",
+    "documentDeleteError": "Eroare la ștergerea documentului: {error}",
+    "selectSourceTitle": "Selectează sursa",
+    "selectSourceContent": "De unde dorești să selectezi imaginea?",
+    "cameraOption": "Cameră",
+    "galleryOption": "Galerie",
+    "selectFileTypeTitle": "Selectează tipul fișierului",
+    "selectFileTypeContent": "Dorești să încarci o imagine sau un document PDF?",
+    "imageOption": "Imagine",
+    "pdfOption": "PDF",
+    "requiredBadge": "Obligatoriu",
+    "documentUploadedText": "Document încărcat cu succes",
+    "tapToUploadText": "Apasă pentru a încărca documentul",
+    "continueBtn": "Continuă",
+    "submitApplication": "Trimite Aplicația",
+    "backBtn": "Înapoi",
+    "expiryDateTitle": "Dată expirare",
+    "expiryDateQuestion": "Doriți să setați data de expirare pentru \"{name}\"?",
+    "skipExpiry": "Nu, sari peste",
+    "photographOption": "Fotografiază",
+    "selectFromGallery": "Selectează din galerie",
+    "viewDocumentOption": "Vizualizează",
+    "deleteDocumentOption": "Șterge",
+    "pdfDocument": "Document PDF",
+    "tapToOpen": "Apasă pentru a deschide",
+    "errorLoadingImage": "Eroare la încărcarea imaginii",
+    "fileTooLarge": "Fișierul este prea mare (max 10MB)",
+    "serviceUnavailable": "Serviciul nu este disponibil temporar",
+    "connectionError": "Problemă de conexiune. Verificați internetul",
+    "unexpectedError": "Eroare neașteptată. Încercați din nou",
+  "uploadedAt": "Încărcat: {date}",
+  "selectExpiryDate": "Selectați data de expirare",
+  "yes": "Da",
+
+  "drawerSectionActivityAccount": "Activitate și cont",
+  "drawerSectionYourCommunity": "Comunitatea ta",
+  "drawerSectionMyBusiness": "Afacerea mea",
+  "drawerSectionGetInvolved": "Implicare",
+  "drawerSectionAiPerformance": "AI și performanță",
+  "drawerSectionSupportInfo": "Suport și informații",
+  "drawerSectionAddresses": "Adrese",
+  "drawerFavoriteAddresses": "Adrese favorite",
+  "drawerBusinessOffersTitle": "Oferte din cartier",
+  "drawerSocialMapTitle": "Harta socială",
+  "drawerSocialVisible": "Vizibil",
+  "drawerSocialHidden": "Ascuns",
+  "drawerVoiceAiSettingsTitle": "Setări voce AI",
+  "drawerBusinessDashboardTitle": "Panoul meu: {businessName}",
+  "@drawerBusinessDashboardTitle": {
+    "placeholders": {
+      "businessName": { "type": "String" }
+    }
+  },
+  "drawerBusinessRegisterTitle": "Înregistrează-ți afacerea",
+  "businessIntroTitle": "Afacerea mea",
+  "businessIntroBody": "Trebuie mai întâi să îți înregistrezi afacerea. După înregistrare o poți administra: editezi cardul afișat în Oferte din cartier și gestionezi anunțurile (adaugi, modifici sau ștergi) din Panoul de business.",
+  "businessIntroContinueButton": "Continuă la înregistrare",
+  "drawerTeamNabour": "Echipa Nabour",
+
+  "drawerRolePassenger": "Pasager",
+  "drawerRoleDriver": "Șofer",
+  "drawerThemeDarkLabel": "Temă: întunecată",
+  "drawerThemeLightLabel": "Temă: deschisă",
+  "drawerMenuWeekReview": "Recap săptămână",
+  "drawerMenuMysteryBoxActivity": "Activitate cutii",
+  "drawerMenuMyGarage": "Garajul meu",
+  "drawerMenuPlaces": "Locuri",
+  "drawerMenuExplorations": "Explorări",
+  "drawerMenuSyncContacts": "Sincronizează contactele",
+  "drawerSyncContactsDialogTitle": "De ce sincronizare?",
+  "drawerSyncContactsDialogBody": "Aplicația îți arată pe hartă doar persoanele care sunt în agenda ta și care folosesc Nabour.\n\nDacă ai adăugat un contact nou sau un prieten tocmai s-a înscris, apasă „Sincronizează” pentru a actualiza lista de vizibilitate pe harta socială.",
+  "drawerSyncContactsDialogOk": "Înțeles",
+
+  "warmupCloseTooltip": "Închide",
+  "warmupHeadline": "Călătorește cu\nvecinii tăi",
+  "warmupShortcutsTitle": "Scurtături",
+  "warmupShortcutRideTitle": "Cursă",
+  "warmupShortcutRideSubtitle": "Cere acum",
+  "warmupShortcutMapTitle": "Hartă",
+  "warmupShortcutMapSubtitle": "Disponibili în zonă",
+  "warmupShortcutChatTitle": "Chat",
+  "warmupShortcutChatSubtitle": "Cartierul tău",
+  "warmupScheduleTitle": "Planifică mai târziu",
+  "warmupScheduleSubtitle": "Anunță din timp — vecinii confirmă când sunt liberi.",
+  "warmupWhyTitle": "De ce Nabour?",
+  "warmupCtaOpenMap": "Deschide harta",
+  "warmupSwipeDownHint": "Sau trage în jos pentru a închide",
+
+  "warmupHeroNeighborsTitle": "Curse între vecini",
+  "warmupHeroNeighborsSubtitle": "Cere o cursă pe hartă; șoferii disponibili din comunitate te pot prelua.",
+  "warmupHeroBusinessTitle": "Oferte locale",
+  "warmupHeroBusinessSubtitle": "Promovează afacerea cu anunțuri vizibile în zonă, direct din app.",
+  "warmupHeroSafetyTitle": "Siguranță la drum",
+  "warmupHeroSafetySubtitle": "Partajare traseu live, chat în cursă și verificări clare la îmbarcare.",
+  "warmupHeroChatTitle": "Chat de cartier",
+  "warmupHeroChatSubtitle": "Conversații în zona ta; poți filtra și după contactele din telefon.",
+
+  "warmupFeatureCommunityTitle": "Ecosistem unificat",
+  "warmupFeatureCommunitySubtitle": "Curse, chat și oferte într-o singură aplicație — mai simplu decât să sari între grupuri.",
+  "warmupFeatureContactsTitle": "Încredere controlată",
+  "warmupFeatureContactsSubtitle": "Alege cine te vede: comunitatea din zonă sau doar oameni din agendă.",
+  "warmupFeatureLiveTitle": "Live pe hartă",
+  "warmupFeatureLiveSubtitle": "Disponibilitate și status actualizate, ca să știi rapid cine poate ajuta.",
+  "warmupFeatureSecureTitle": "Transparent și previzibil",
+  "warmupFeatureSecureSubtitle": "Istoric, tokeni clari pentru acțiuni și suport când ai nevoie.",
+
+  "drawerDefaultUserName": "Utilizator",
+  "drawerTrialPrivilegedTitle": "Cont privilegiat",
+  "drawerTrialPrivilegedSubtitle": "Acces nelimitat la toate funcționalitățile.",
+  "drawerTrialSevenDayTitle": "7 zile trial",
+  "drawerTrialPricingSubtitle": "Apoi 10 RON/lună (PF) sau 15 RON/lună (firme).",
+  "drawerTrialDuringSubtitle": "Apoi 10 RON/lună (PF) / 15 RON/lună (firme).",
+  "drawerTrialDaysLeftTitle": "{count, plural, =1{O zi rămasă din trial} other{{count} zile rămase din trial}}",
+  "@drawerTrialDaysLeftTitle": {
+    "placeholders": {
+      "count": { "type": "num" }
+    }
+  },
+  "drawerTrialExpiredTitle": "Trial expirat",
+  "drawerTrialExpiredSubtitle": "Abonează-te (10/15 RON) pentru a continua.",
+
+  "activateDriverCodeLabel": "Cod de activare",
+  "activateDriverCodeHint": "Ex: DRV-TEST-102",
+
+  "tokenShopTitle": "Tokeni și planuri",
+  "tokenShopTabPlans": "Planuri",
+  "tokenShopTabTopup": "Top-up",
+  "tokenShopTabHistory": "Istoric",
+  "tokenShopChoosePlanTitle": "Alege planul tău",
+  "tokenShopChoosePlanSubtitle": "Tokenii se resetează în prima zi a fiecărei luni",
+  "tokenShopAlreadyOnPlan": "Deja ești pe acest plan.",
+  "tokenShopDowngradeContactSupport": "Contactează suportul pentru downgrade.",
+  "tokenShopUpgradeSuccess": "Upgrade la {planName} realizat!",
+  "@tokenShopUpgradeSuccess": {
+    "placeholders": {
+      "planName": { "type": "String" }
+    }
+  },
+  "tokenShopErrorPaymentsNotReady": "Plățile nu sunt încă activate pe server. Configurează Cloud Functions (vezi functions/).",
+  "tokenShopErrorWithMessage": "Eroare: {message}",
+  "@tokenShopErrorWithMessage": {
+    "placeholders": {
+      "message": { "type": "String" }
+    }
+  },
+  "tokenShopUpgradeError": "Eroare upgrade: {error}",
+  "@tokenShopUpgradeError": {
+    "placeholders": {
+      "error": { "type": "String" }
+    }
+  },
+  "tokenShopMostPopular": "CEL MAI POPULAR",
+  "tokenShopPopularBadge": "POPULAR",
+  "tokenShopActive": "Activ",
+  "tokenShopSelect": "Selectează",
+  "tokenShopBuyExtraTitle": "Cumpără tokeni extra",
+  "tokenShopBuyExtraSubtitle": "Tokenii cumpărați nu expiră niciodată",
+  "tokenShopTokensWord": "tokeni",
+  "tokenShopTokensAdded": "+{count} tokeni adăugați în cont!",
+  "@tokenShopTokensAdded": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "tokenShopTopupRequiresBackend": "Top-up necesită backend (ALLOW_UNVERIFIED_WALLET_CREDIT sau plată reală).",
+  "tokenShopNoTransactions": "Nicio tranzacție încă.",
+  "tokenShopPaymentMethodsTitle": "Metode de plată acceptate",
+  "tokenShopPaymentSecureFooter": "Plățile sunt procesate securizat. Nu stocăm datele cardului.",
+  "tokenShopPaymentMethodTitle": "Metodă de plată",
+  "tokenShopPay": "Plătește",
+  "tokenShopTestModeDisclaimer": "Plățile reale nu sunt încă conectate. „Plătește” simulează tranzacția: planul și tokenii se actualizează prin server (Firebase Functions). Dacă apare eroare, rulează „firebase deploy --only functions” sau setează parametrul ALLOW_UNVERIFIED_WALLET_CREDIT=true în consolă.",
+  "tokenShopMethodNetopia": "Netopia (card RO)",
+  "tokenShopMethodStripe": "Stripe",
+  "tokenShopMethodRevolut": "Revolut Pay",
+  "tokenShopPackageStarter": "Starter",
+  "tokenShopPackagePopular": "Popular",
+  "tokenShopPackageAdvanced": "Avansat",
+  "tokenShopPackageBusiness": "Business",
+  "tokenPlanFreeName": "Gratuit",
+  "tokenPlanBasicName": "Basic",
+  "tokenPlanProName": "Pro",
+  "tokenPlanUnlimitedName": "Unlimited",
+  "tokenPlanPriceFree": "Gratuit",
+  "tokenPlanPriceBasic": "9 RON / lună",
+  "tokenPlanPricePro": "29 RON / lună",
+  "tokenPlanPriceUnlimited": "49 RON / lună",
+  "tokenShopPlanAllowanceMonthly": "{allowance} tokeni / lună",
+  "@tokenShopPlanAllowanceMonthly": {
+    "placeholders": {
+      "allowance": { "type": "String" }
+    }
+  },
+  "tokenShopEconomyApproxLine": "≈ {ai} AI · {routes} rute · {geo} geocodări · {br} postări",
+  "@tokenShopEconomyApproxLine": {
+    "placeholders": {
+      "ai": { "type": "int" },
+      "routes": { "type": "int" },
+      "geo": { "type": "int" },
+      "br": { "type": "int" }
+    }
+  },
+  "tokenShopEconomyBusinessLine": "≈ {biz} anunțuri business ({tokens} tokeni/anunț)",
+  "@tokenShopEconomyBusinessLine": {
+    "placeholders": {
+      "biz": { "type": "int" },
+      "tokens": { "type": "int" }
+    }
+  },
+  "tokenShopEconomyUnlimited": "Nelimitat: AI, rute, geocodare și postări fără consum din cotă lunară.",
+  "tokenShopStaffMenuTooltip": "Setare abonament staff",
+  "tokenShopStaffDialogTitle": "Abonament staff (cont autorizat)",
+  "tokenShopStaffApplied": "Abonament aplicat.",
+  "tokenShopTxPurchasePackage": "Pachet {label} · {count} tokeni",
+  "@tokenShopTxPurchasePackage": {
+    "placeholders": {
+      "label": { "type": "String" },
+      "count": { "type": "int" }
+    }
+  },
+
+  "appMissionTagline": "Vecini, curse și chat de cartier — într-o singură aplicație, pe harta ta.",
+  "settingsSectionUpdates": "Actualizări",
+  "settingsSectionInterfaceData": "Interfață și date",
+  "settingsSectionPrivacyLanguage": "Confidențialitate și limbă",
+  "settingsVisibilityExclusionsTitle": "Excluderi vizibilitate",
+  "settingsVisibilityExclusionsSubtitle": "Alege cine nu te poate vedea pe harta socială",
+  "driverMenuViewDailyReport": "Vezi raportul zilnic",
+
+  "accountScreenTitle": "Cont Nabour",
+  "accountDefaultNeighbor": "Vecin",
+  "accountDriverPartnerBadge": "Șofer partener Nabour",
+  "accountMenuDriverVehicleDetails": "Detalii șofer și autovehicul",
+  "accountMenuPersonalDetails": "Date personale",
+  "accountMenuSecurity": "Siguranță și cont",
+  "accountMenuSavedAddresses": "Adrese salvate",
+  "accountMenuRidePreferences": "Preferințe cursă",
+  "accountMenuRideHistory": "Istoric curse",
+  "accountMenuBusinessProfile": "Profil business",
+  "accountMenuSelfieVerification": "Verificare identitate (selfie)",
+  "accountMenuNotifications": "Notificări",
+  "accountMenuPrivacy": "Confidențialitate",
+  "accountDeleteTitle": "Șterge contul definitiv",
+  "accountDeleteBody": "Acțiunea este ireversibilă. Introdu parola pentru a confirma.",
+  "accountDeletePasswordLabel": "Parolă",
+  "accountDeletePasswordError": "Introdu parola.",
+  "accountDeleteConfirm": "Șterge contul",
+
+  "tokenWalletBalanceShort": "{balance} tokeni",
+  "@tokenWalletBalanceShort": {
+    "placeholders": { "balance": { "type": "String" } }
+  },
+  "tokenWalletDrawerSubline": "{spent} / {allowance} folosiți · reset {when}",
+  "@tokenWalletDrawerSubline": {
+    "placeholders": {
+      "spent": { "type": "String" },
+      "allowance": { "type": "String" },
+      "when": { "type": "String" }
+    }
+  },
+  "tokenWalletAvailableLong": "{balance} tokeni disponibili",
+  "@tokenWalletAvailableLong": {
+    "placeholders": { "balance": { "type": "String" } }
+  },
+  "tokenWalletPlanLine": "Plan {planName}",
+  "@tokenWalletPlanLine": {
+    "placeholders": { "planName": { "type": "String" } }
+  },
+  "tokenWalletUsedThisMonth": "Folosit luna aceasta",
+  "tokenWalletPercentUsage": "{pct}% ({spent} / {allowance})",
+  "@tokenWalletPercentUsage": {
+    "placeholders": {
+      "pct": { "type": "String" },
+      "spent": { "type": "String" },
+      "allowance": { "type": "String" }
+    }
+  },
+  "tokenWalletAutoReset": "Reset automat: {when}",
+  "@tokenWalletAutoReset": {
+    "placeholders": { "when": { "type": "String" } }
+  },
+  "tokenWalletStatTotalSpent": "Total consumat",
+  "tokenWalletStatTotalEarned": "Total primit",
+  "tokenWalletOpenShopCta": "Tokeni și planuri",
+  "tokenWalletResetInDays": "în {days} zile",
+  "@tokenWalletResetInDays": {
+    "placeholders": { "days": { "type": "int" } }
+  },
+  "tokenWalletResetInHours": "în {hours} h",
+  "@tokenWalletResetInHours": {
+    "placeholders": { "hours": { "type": "int" } }
+  },
+  "tokenWalletResetTomorrow": "mâine",
+  "helpWeekReviewTitle": "Week in Review și istoricul locațiilor",
+  "helpWeekReviewHeader": "Cum funcționează Week in Review",
+  "helpWeekReviewIntro": "Week in Review construiește un recap vizual al deplasărilor tale pe o perioadă selectată (de obicei ultima săptămână), cu traseu animat, hotspot-uri și statistici (km / ore active).",
+  "helpWeekReviewDataSourceTitle": "De unde se iau datele",
+  "helpWeekReviewDataSourceBody": "Aplicația folosește punctele brute de locație din backend doar ca sursă de input pentru generarea recap-ului.",
+  "helpWeekReviewStorageTitle": "Unde se stochează recap-ul",
+  "helpWeekReviewStorageBody": "Istoricul procesat, timeline-ul, hotspot-urile și exporturile Week in Review sunt stocate local, pe dispozitivul tău.",
+  "helpWeekReviewDeleteTitle": "Cum se șterge",
+  "helpWeekReviewDeleteBody": "Mergi în Setări -> Istoric locație (Timeline) -> Șterge istoricul local. Poți seta și retenția locală (ex: 30/60/90 zile).",
+  "helpWeekReviewPrivacyNote": "Privacy-first: recap-ul și fișierele exportate rămân locale pe telefon. Tu controlezi retenția și ștergerea lor.",
+  "businessOffersNoOffersInSelectedCategory": "Nu există oferte în categoria selectată",
+  "businessOffersNoOffersInArea": "Nu există oferte în zona ta",
+  "businessOffersTryAnotherCategory": "Încearcă o altă categorie.",
+  "businessOffersNoNearbyOffers": "Revino mai târziu pentru oferte noi în apropiere.",
+  "businessOffersManageFilters": "Gestionează filtrele",
+  "businessOffersResetCategory": "Resetează categoria",
+  "businessOffersAllCategories": "Toate categoriile"
+}

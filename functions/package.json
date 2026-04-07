@@ -1,0 +1,20 @@
+{
+  "name": "nabour-functions",
+  "private": true,
+  "engines": {
+    "node": "20"
+  },
+  "main": "lib/index.js",
+  "scripts": {
+    "build": "tsc",
+    "deploy": "npm run build && firebase deploy --only functions"
+  },
+  "dependencies": {
+    "firebase-admin": "^12.6.0",
+    "firebase-functions": "^6.1.0",
+    "h3-js": "^4.4.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.3"
+  }
+}

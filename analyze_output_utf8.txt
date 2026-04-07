@@ -1,0 +1,16 @@
+﻿Analyzing nabour_app...                                         
+
+  error - Target of URI doesn't exist: 'package:nabour_app/utils/saved_address_search.dart' - lib\screens\map_screen.dart:47:8 - uri_does_not_exist
+  error - The method 'normalizeRomanianTextForSearch' isn't defined for the type '_MapUniversalSearchOverlayState' - lib\screens\map_screen.dart:12102:16 - undefined_method
+  error - The method 'savedAddressMatchScoreNormalized' isn't defined for the type '_MapUniversalSearchOverlayState' - lib\screens\map_screen.dart:12106:18 - undefined_method
+  error - The method 'savedAddressDisplayLine' isn't defined for the type '_MapUniversalSearchOverlayState' - lib\screens\map_screen.dart:12119:22 - undefined_method
+  error - Target of URI doesn't exist: 'package:nabour_app/utils/saved_address_search.dart' - lib\widgets\address_input_view.dart:23:8 - uri_does_not_exist
+  error - The method 'normalizeRomanianTextForSearch' isn't defined for the type '_AddressInputViewState' - lib\widgets\address_input_view.dart:1801:49 - undefined_method
+  error - The method 'savedAddressMatchScoreNormalized' isn't defined for the type '_AddressInputViewState' - lib\widgets\address_input_view.dart:1844:21 - undefined_method
+  error - The method 'savedAddressDisplayLine' isn't defined for the type '_AddressInputViewState' - lib\widgets\address_input_view.dart:1847:24 - undefined_method
+  error - The method 'savedAddressMatchScoreNormalized' isn't defined for the type '_AddressInputViewState' - lib\widgets\address_input_view.dart:1855:21 - undefined_method
+  error - The method 'savedAddressDisplayLine' isn't defined for the type '_AddressInputViewState' - lib\widgets\address_input_view.dart:1858:24 - undefined_method
+  error - The method 'savedAddressMatchScoreNormalized' isn't defined for the type '_AddressInputViewState' - lib\widgets\address_input_view.dart:1868:21 - undefined_method
+  error - The method 'savedAddressDisplayLine' isn't defined for the type '_AddressInputViewState' - lib\widgets\address_input_view.dart:1871:24 - undefined_method
+  error - The method 'searchMatchScoreNormalized' isn't defined for the type '_AddressInputViewState' - lib\widgets\address_input_view.dart:1900:7 - undefined_method
+

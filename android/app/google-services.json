@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "346882274941",
+    "firebase_url": "https://nabour-4b4e4-default-rtdb.firebaseio.com",
+    "project_id": "nabour-4b4e4",
+    "storage_bucket": "nabour-4b4e4.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:346882274941:android:4b10a882274c050ed06314",
+        "android_client_info": {
+          "package_name": "com.florin.nabour"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "346882274941-94ggchsuk0eph1qlfg6f3kijqraa4bkd.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.florin.nabour",
+            "certificate_hash": "51b39f82a6d2119d1a5ef4b20451946230c9dab8"
+          }
+        },
+        {
+          "client_id": "346882274941-8gfu4ftpehl80csl51sdotg5rn4ogj9a.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD4QE3PEaIBZImXpqqaVl2TNiudvQupR7k"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "346882274941-8gfu4ftpehl80csl51sdotg5rn4ogj9a.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "346882274941-936dejokc5kb54hpdkaue7ccfghs2jvq.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.florin.nabour"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,0 +1,9 @@
+{
+  "balance": 999999999,
+  "totalEarned": 999999999,
+  "totalSpent": 0,
+  "plan": "unlimited",
+  "resetAt": "2030-01-01T00:00:00Z",
+  "createdAt": "2024-01-01T00:00:00Z",
+  "freeMonthlyAllowance": 999999999
+}
