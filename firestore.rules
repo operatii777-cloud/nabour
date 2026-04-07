@@ -924,5 +924,36 @@ service cloud.firestore {
     match /{document=**} {
       allow read, write: if false;
     }
+
+    // ── Token Transfer: portofel transferabil ──────────────────────────────
+    // Balanța e modificată exclusiv din Cloud Functions (Admin SDK).
+    match /token_wallets/{userId} {
+      allow read: if isAuthenticated() && request.auth.uid == userId;
+      allow write: if false;
+    }
+
+    // ── Token Transfer: transferuri directe ────────────────────────────────
+    match /token_direct_transfers/{transferId} {
+      allow read: if isAuthenticated() && (
+        resource.data.fromUserId == request.auth.uid ||
+        resource.data.toUserId   == request.auth.uid
+      );
+      allow write: if false;
+    }
+
+    // ── Token Transfer: cereri de plată ────────────────────────────────────
+    match /token_payment_requests/{requestId} {
+      allow read: if isAuthenticated() && (
+        resource.data.payerId == request.auth.uid ||
+        resource.data.payeeId == request.auth.uid
+      );
+      allow write: if false;
+    }
+
+    // ── Token Transfer: jurnal de audit ────────────────────────────────────
+    match /token_ledger/{entryId} {
+      allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      allow write: if false;
+    }
   }
 }

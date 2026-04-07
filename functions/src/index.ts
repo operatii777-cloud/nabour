@@ -13,6 +13,13 @@
  *   firebase params:set ALLOW_UNVERIFIED_WALLET_CREDIT true
  * (sau din consola Firebase — Parameters)
  */
+export {
+  createTokenDirectTransfer,
+  createTokenPaymentRequest,
+  respondToTokenPaymentRequest,
+  cancelTokenPaymentRequest,
+  expireTokenPaymentRequests,
+} from "./token_transfers";
 import * as admin from "firebase-admin";
 import { randomBytes } from "node:crypto";
 import { latLngToCell } from "h3-js";
