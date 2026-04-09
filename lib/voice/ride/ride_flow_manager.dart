@@ -2120,6 +2120,16 @@ class RideFlowManager {
       // ✅ Rezolvă alias-urile de adrese salvate ('Acasă', 'Serviciu')
       if (!await _resolveSavedAddressAlias()) return;
 
+      // ✅ Ca la _handleDestinationResponse: pickup + geocodare destinație înainte de UI.
+      // MapScreen transmite către RideRequestPanel.setDestination doar dacă există
+      // destLat/destLng — fără geocodare, utilizatorul aude „am înțeles” dar panoul rămâne gol.
+      if (_pickupLatitude == null || _pickupLongitude == null) {
+        _pickup = await _getCurrentUserLocation();
+      }
+      if (_destinationLatitude == null || _destinationLongitude == null) {
+        await _silentlyGeocodeDestination();
+      }
+
       // ✅ ACTUALIZEAZĂ UI-UL CU ADRESA ȘI COORDONATELE (dacă sunt disponibile)
       try {
         if (_destination != null && _destination!.isNotEmpty) {

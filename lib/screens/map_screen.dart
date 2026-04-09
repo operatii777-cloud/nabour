@@ -684,14 +684,18 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
   Animation<double>? _routePulse;
   PolylineAnnotation? _activeRouteAnnotation;
   PointAnnotation? _userPointAnnotation;
-  /// Reper manual pe hartă (`users.mapOrientationPin`).
+  /// Reper manual de orientare (`users.mapOrientationPin`) — afișat ca **ac cu gamalie verde**, separat de Acasă.
   GeoPoint? _manualOrientationPin;
-  /// „Acasă” din favorite pe hartă (`users.showSavedHomePinOnMap` + coordonate din `saved_addresses`).
+  /// „Acasă” din favorite pe hartă (`users.showSavedHomePinOnMap` + coordonate din `saved_addresses`) — **casă în glob**.
   bool _showSavedHomePinOnMap = false;
   bool _awaitingMapOrientationPinPlacement = false;
-  PointAnnotationManager? _mapOrientationPinManager;
-  bool _mapOrientationPinTapRegistered = false;
-  Future<void>? _homePinUpdateChain; // ✅ Serialize updates (Acas─â / Manual)
+  /// Pin Acasă (favorite) — strat separat față de reperul de orientare.
+  PointAnnotationManager? _savedHomeFavoritePinManager;
+  bool _savedHomeFavoritePinTapRegistered = false;
+  /// Reper orientare (ac compas) — strat separat.
+  PointAnnotationManager? _orientationReperPinManager;
+  bool _orientationReperPinTapRegistered = false;
+  Future<void>? _homePinUpdateChain; // Serialize updates pentru ambele pinuri private
 
   /// După schimbare avatar în garaj: următorul update șterge toate punctele user și recreează (Mapbox poate raporta
   /// „isn't an active annotation” la `update` fără excepție în Dart).
@@ -705,12 +709,16 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
   Uint8List? _androidUserMarkerOverlayImageBytes;
   String? _androidUserMarkerOverlayLabel;
   static const double _androidUserMarkerOverlaySize = 88.0;
-  /// Android: reper orientare (ac compas) randat în Flutter (același motiv ca la markerul user — PointAnnotation nativ poate lipsi pe unele GPU).
-  Point? _androidHomePinGeometry;
-  Offset? _androidHomePinOverlayPx;
-  Uint8List? _androidHomePinOverlayBytes;
-  static const double _androidHomePinOverlayWidth = 48.0;
-  static const double _androidHomePinOverlayHeight = 56.0;
+  /// Android: pin Acasă (favorite) — bitmap casă în glob.
+  Point? _androidSavedHomePinGeometry;
+  Offset? _androidSavedHomePinOverlayPx;
+  Uint8List? _androidSavedHomePinOverlayBytes;
+  /// Android: reper orientare — ac compas.
+  Point? _androidOrientationReperGeometry;
+  Offset? _androidOrientationReperOverlayPx;
+  Uint8List? _androidOrientationReperOverlayBytes;
+  static const double _androidPrivatePinOverlayWidth = 48.0;
+  static const double _androidPrivatePinOverlayHeight = 56.0;
   /// Serialize user-marker updates so concurrent GPS ticks do not race Mapbox `update` vs `delete`.
   Future<void>? _userMarkerUpdateChain;
   StreamSubscription? _honkSubscription;
@@ -1506,30 +1514,46 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
     return p.latitude.abs() <= 90 && p.longitude.abs() <= 180;
   }
 
-  /// Coordonata pinului privat (preferă „Acasă” din favorite dacă e activat).
-  GeoPoint? _resolvedPrivateHomePinCoords() {
-    if (_showSavedHomePinOnMap) {
-      final h = _savedHomeAddressEntry();
-      if (h != null && _coordsPlausibleForSavedAddress(h.coordinates)) {
-        return h.coordinates;
-      }
+  /// Coordonate pin „Acasă” (favorite) când afișarea e activă — **independent** de reperul manual.
+  GeoPoint? _savedHomePinCoordsIfVisible() {
+    if (!_showSavedHomePinOnMap) return null;
+    final h = _savedHomeAddressEntry();
+    if (h != null && _coordsPlausibleForSavedAddress(h.coordinates)) {
+      return h.coordinates;
     }
-    return _manualOrientationPin;
+    return null;
   }
 
-  bool get _displayingHomePinFromSavedAddress =>
-      _showSavedHomePinOnMap &&
-      _savedHomeAddressEntry() != null &&
-      _coordsPlausibleForSavedAddress(_savedHomeAddressEntry()!.coordinates);
+  static const List<String> _kSavedHomeFavoritePinAssets = [
+    'assets/images/home_pin_v2.png',
+    'assets/images/home_pin.png',
+    'assets/images/home_pinv2.png',
+  ];
 
-  /// Bitmap reper orientare: ac de compas (gamalie nord verde), aceeași suprafață ca overlay-ul Acasă (48×56).
-  Future<Uint8List> _loadHomeOrientationPinBytes() async {
+  /// Bitmap pin Acasă (favorite): casă în glob (asset PNG).
+  Future<Uint8List> _loadSavedHomeFavoritePinBytes() async {
+    for (final path in _kSavedHomeFavoritePinAssets) {
+      try {
+        final bd = await rootBundle.load(path);
+        return bd.buffer.asUint8List();
+      } catch (_) {}
+    }
+    Logger.warning(
+      'Lipsește PNG Acasă favorite — folosesc pictogramă generată (casă în glob).',
+      tag: 'MAP_HOME',
+    );
+    return _generateSavedHomeGlassHouseFallbackPinBytes();
+  }
+
+  /// Bitmap reper orientare: ac cu gamalie verde (aceeași suprafață 48×56).
+  Future<Uint8List> _loadOrientationReperPinBytes() async {
     return _generateOrientationCompassNeedlePinBytes();
   }
 
+  /// Sincronizează **două** markere independente: Acasă (favorite) și reper (ac compas).
   Future<void> _syncMapOrientationPinAnnotation() async {
     if (!mounted || _mapboxMap == null) {
-      Logger.debug('Home Pin: Skip - not mounted or map null', tag: 'MAP_HOME');
+      Logger.debug('Private pins: Skip - not mounted or map null', tag: 'MAP_HOME');
       return;
     }
     final previous = _homePinUpdateChain;
@@ -1542,92 +1566,167 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
       } catch (_) {}
 
       try {
-        final pin = _resolvedPrivateHomePinCoords();
-        if (pin == null) {
-          if (_showSavedHomePinOnMap && !_savedAddressesFirestoreHydrated) {
-            Logger.debug(
-              'Home Pin: skip clear until saved_addresses first snapshot',
-              tag: 'MAP_HOME',
-            );
-            return;
-          }
-          try {
-            await _mapOrientationPinManager?.deleteAll();
-          } catch (_) {}
-          if (_useAndroidFlutterUserMarkerOverlay && mounted) {
-            setState(_clearAndroidHomePinOverlayFields);
-          } else {
-            _clearAndroidHomePinOverlayFields();
-          }
-          return;
-        }
+        GeoPoint? homeGp = _savedHomePinCoordsIfVisible();
+        GeoPoint? reperGp = _manualOrientationPin;
 
-        Logger.debug('Home Pin: Syncing to ${pin.latitude}, ${pin.longitude}', tag: 'MAP_HOME');
-
-        final bytes = await _loadHomeOrientationPinBytes();
-
-        double lat = pin.latitude;
-        double lng = pin.longitude;
-        final cur = _currentPositionObject;
-        if (cur != null) {
-          final dist = geolocator.Geolocator.distanceBetween(lat, lng, cur.latitude, cur.longitude);
-          if (dist < 10) {
-            lat += 0.00006;
-          }
-        }
-
-        final geom = MapboxUtils.createPoint(lat, lng);
-
-        if (_useAndroidFlutterUserMarkerOverlay) {
-          try {
-            await _mapOrientationPinManager?.deleteAll();
-          } catch (_) {}
-          _mapOrientationPinManager = null;
-          _mapOrientationPinTapRegistered = false;
-          if (!mounted) return;
-          setState(() {
-            _androidHomePinGeometry = geom;
-            _androidHomePinOverlayBytes = bytes;
-          });
-          await _projectAndroidHomePinOverlay();
+        if (homeGp == null &&
+            reperGp == null &&
+            _showSavedHomePinOnMap &&
+            !_savedAddressesFirestoreHydrated) {
           Logger.debug(
-            'Home Pin: Android overlay OK (${bytes.length} bytes)',
+            'Private pins: skip clear until saved_addresses first snapshot',
             tag: 'MAP_HOME',
           );
           return;
         }
 
-        _clearAndroidHomePinOverlayFields();
+        if (homeGp == null && reperGp == null) {
+          try {
+            await _savedHomeFavoritePinManager?.deleteAll();
+          } catch (_) {}
+          try {
+            await _orientationReperPinManager?.deleteAll();
+          } catch (_) {}
+          if (_useAndroidFlutterUserMarkerOverlay && mounted) {
+            setState(_clearAndroidPrivatePinOverlayFields);
+          } else {
+            _clearAndroidPrivatePinOverlayFields();
+          }
+          return;
+        }
 
-        _mapOrientationPinManager ??= await _mapboxMap!.annotations.createPointAnnotationManager(
-          id: 'user-orientation-pin-manager',
+        // Mică separare pe hartă dacă ambele puncte coincid (evită suprapunere perfectă).
+        if (homeGp != null &&
+            reperGp != null &&
+            homeGp.latitude == reperGp.latitude &&
+            homeGp.longitude == reperGp.longitude) {
+          reperGp = GeoPoint(
+            reperGp.latitude + 0.00006,
+            reperGp.longitude + 0.00006,
+          );
+        }
+
+        final homeBytes = await _loadSavedHomeFavoritePinBytes();
+        final reperBytes = await _loadOrientationReperPinBytes();
+
+        Point? homeGeom;
+        Point? reperGeom;
+        if (homeGp != null) {
+          var hLat = homeGp.latitude;
+          var hLng = homeGp.longitude;
+          final cur = _currentPositionObject;
+          if (cur != null) {
+            final dist = geolocator.Geolocator.distanceBetween(
+              hLat, hLng, cur.latitude, cur.longitude,
+            );
+            if (dist < 10) {
+              hLat += 0.00006;
+            }
+          }
+          homeGeom = MapboxUtils.createPoint(hLat, hLng);
+        }
+        if (reperGp != null) {
+          var rLat = reperGp.latitude;
+          var rLng = reperGp.longitude;
+          final cur = _currentPositionObject;
+          if (cur != null) {
+            final dist = geolocator.Geolocator.distanceBetween(
+              rLat, rLng, cur.latitude, cur.longitude,
+            );
+            if (dist < 10) {
+              rLat += 0.00006;
+            }
+          }
+          reperGeom = MapboxUtils.createPoint(rLat, rLng);
+        }
+
+        if (_useAndroidFlutterUserMarkerOverlay) {
+          try {
+            await _savedHomeFavoritePinManager?.deleteAll();
+          } catch (_) {}
+          try {
+            await _orientationReperPinManager?.deleteAll();
+          } catch (_) {}
+          _savedHomeFavoritePinManager = null;
+          _orientationReperPinManager = null;
+          _savedHomeFavoritePinTapRegistered = false;
+          _orientationReperPinTapRegistered = false;
+          if (!mounted) return;
+          setState(() {
+            _androidSavedHomePinGeometry = homeGeom;
+            _androidSavedHomePinOverlayBytes =
+                homeGeom != null ? homeBytes : null;
+            _androidOrientationReperGeometry = reperGeom;
+            _androidOrientationReperOverlayBytes =
+                reperGeom != null ? reperBytes : null;
+          });
+          await _projectAndroidPrivatePinOverlays();
+          Logger.debug(
+            'Private pins: Android overlay OK',
+            tag: 'MAP_HOME',
+          );
+          return;
+        }
+
+        _clearAndroidPrivatePinOverlayFields();
+
+        _savedHomeFavoritePinManager ??=
+            await _mapboxMap!.annotations.createPointAnnotationManager(
+          id: 'user-saved-home-favorite-pin-manager',
+        );
+        _orientationReperPinManager ??=
+            await _mapboxMap!.annotations.createPointAnnotationManager(
+          id: 'user-orientation-reper-pin-manager',
         );
 
-        if (!_mapOrientationPinTapRegistered) {
-          _mapOrientationPinTapRegistered = true;
-          _mapOrientationPinManager!.tapEvents(onTap: (_) {
-            if (mounted) _showMapOrientationPinActions();
+        if (!_savedHomeFavoritePinTapRegistered) {
+          _savedHomeFavoritePinTapRegistered = true;
+          _savedHomeFavoritePinManager!.tapEvents(onTap: (_) {
+            if (mounted) _showSavedHomeFavoritePinActions();
+          });
+        }
+        if (!_orientationReperPinTapRegistered) {
+          _orientationReperPinTapRegistered = true;
+          _orientationReperPinManager!.tapEvents(onTap: (_) {
+            if (mounted) _showOrientationReperPinActions();
           });
         }
 
         try {
-          await _mapOrientationPinManager?.deleteAll();
+          await _savedHomeFavoritePinManager?.deleteAll();
+        } catch (_) {}
+        try {
+          await _orientationReperPinManager?.deleteAll();
         } catch (_) {}
 
-        if (_mapOrientationPinManager != null) {
-          await _mapOrientationPinManager!.create(
+        if (homeGeom != null && _savedHomeFavoritePinManager != null) {
+          await _savedHomeFavoritePinManager!.create(
             PointAnnotationOptions(
-              geometry: geom,
-              image: bytes,
-              iconSize: 1.0,
+              geometry: homeGeom,
+              image: homeBytes,
+              iconSize: 0.4,
               iconAnchor: IconAnchor.BOTTOM,
               symbolSortKey: 2e6,
             ),
           );
-          Logger.debug('Home Pin: Created OK (Asset bytes: ${bytes.length})', tag: 'MAP_HOME');
         }
+        if (reperGeom != null && _orientationReperPinManager != null) {
+          await _orientationReperPinManager!.create(
+            PointAnnotationOptions(
+              geometry: reperGeom,
+              image: reperBytes,
+              iconSize: 1.0,
+              iconAnchor: IconAnchor.BOTTOM,
+              symbolSortKey: 2e6 + 1,
+            ),
+          );
+        }
+        Logger.debug(
+          'Private pins: synced (home=${homeGeom != null}, reper=${reperGeom != null})',
+          tag: 'MAP_HOME',
+        );
       } catch (e, st) {
-        Logger.error('Reper orientare (ac compas): $e', tag: 'MAP_HOME', error: e, stackTrace: st);
+        Logger.error('Private pins sync: $e', tag: 'MAP_HOME', error: e, stackTrace: st);
       } finally {
         if (!done.isCompleted) done.complete();
       }
@@ -1662,7 +1761,6 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
     final lat = point.coordinates.lat.toDouble();
     final lng = point.coordinates.lng.toDouble();
     try {
-      await _firestoreService.setShowSavedHomePinOnMap(false);
       await _firestoreService.setMapOrientationPin(lat, lng);
     } catch (e) {
       if (mounted) {
@@ -1679,7 +1777,6 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
     ScaffoldMessenger.of(context).hideCurrentSnackBar();
     setState(() {
       _awaitingMapOrientationPinPlacement = false;
-      _showSavedHomePinOnMap = false;
       _manualOrientationPin = GeoPoint(lat, lng);
     });
     await _syncMapOrientationPinAnnotation();
@@ -1694,7 +1791,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
     }
   }
 
-  void _showMapOrientationPinActions() {
+  void _showSavedHomeFavoritePinActions() {
     showModalBottomSheet<void>(
       context: context,
       backgroundColor: const Color(0xFF1E293B),
@@ -1705,95 +1802,109 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            if (_displayingHomePinFromSavedAddress) ...[
-              ListTile(
-                leading: const Icon(Icons.bookmark_added_rounded, color: Color(0xFF38BDF8)),
-                title: const Text(
-                  'Editează adresa Acasă',
-                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
-                ),
-                subtitle: Text(
-                  'Schimbi poziția din Adrese salvate',
-                  style: TextStyle(color: Colors.white.withValues(alpha: 0.65), fontSize: 13),
-                ),
-                onTap: () {
-                  Navigator.pop(ctx);
-                  Navigator.of(context).push(
-                    MaterialPageRoute<void>(
-                      builder: (_) => const FavoriteAddressesScreen(),
-                    ),
-                  );
-                },
+            ListTile(
+              leading: const Icon(Icons.bookmark_added_rounded, color: Color(0xFF38BDF8)),
+              title: const Text(
+                'Editează adresa Acasă',
+                style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
               ),
-              ListTile(
-                leading: Icon(Icons.visibility_off_rounded, color: Colors.orange.shade300),
-                title: Text(
-                  'Ascunde Acasă de pe hartă',
-                  style: TextStyle(color: Colors.orange.shade200, fontWeight: FontWeight.w600),
-                ),
-                onTap: () async {
-                  Navigator.pop(ctx);
-                  try {
-                    await _firestoreService.setShowSavedHomePinOnMap(false);
-                  } catch (e) {
-                    if (!mounted) return;
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Eroare: $e'), backgroundColor: Colors.red.shade800),
-                    );
-                    return;
-                  }
-                  if (!mounted) return;
-                  setState(() => _showSavedHomePinOnMap = false);
-                  await _syncMapOrientationPinAnnotation();
+              subtitle: Text(
+                'Schimbi poziția din Adrese salvate',
+                style: TextStyle(color: Colors.white.withValues(alpha: 0.65), fontSize: 13),
+              ),
+              onTap: () {
+                Navigator.pop(ctx);
+                Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (_) => const FavoriteAddressesScreen(),
+                  ),
+                );
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.visibility_off_rounded, color: Colors.orange.shade300),
+              title: Text(
+                'Ascunde Acasă de pe hartă',
+                style: TextStyle(color: Colors.orange.shade200, fontWeight: FontWeight.w600),
+              ),
+              onTap: () async {
+                Navigator.pop(ctx);
+                try {
+                  await _firestoreService.setShowSavedHomePinOnMap(false);
+                } catch (e) {
                   if (!mounted) return;
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Acasă nu mai este afișată pe hartă.')),
+                    SnackBar(content: Text('Eroare: $e'), backgroundColor: Colors.red.shade800),
                   );
-                },
+                  return;
+                }
+                if (!mounted) return;
+                setState(() => _showSavedHomePinOnMap = false);
+                await _syncMapOrientationPinAnnotation();
+                if (!mounted) return;
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Acasă nu mai este afișată pe hartă.')),
+                );
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showOrientationReperPinActions() {
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: const Color(0xFF1E293B),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.edit_location_alt_rounded, color: Color(0xFF38BDF8)),
+              title: const Text('Mută reperul', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
+              subtitle: Text(
+                'Apoi ține apăsat pe hartă la noul loc',
+                style: TextStyle(color: Colors.white.withValues(alpha: 0.65), fontSize: 13),
               ),
-            ] else ...[
-              ListTile(
-                leading: const Icon(Icons.edit_location_alt_rounded, color: Color(0xFF38BDF8)),
-                title: const Text('Mută reperul', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
-                subtitle: Text(
-                  'Apoi ține apăsat pe hartă la noul loc',
-                  style: TextStyle(color: Colors.white.withValues(alpha: 0.65), fontSize: 13),
-                ),
-                onTap: () {
-                  Navigator.pop(ctx);
-                  setState(() => _awaitingMapOrientationPinPlacement = true);
-                  _showMapOrientationPlacementSnackBar(
-                    'Ține apăsat pe hartă pentru noul reper.',
-                  );
-                },
+              onTap: () {
+                Navigator.pop(ctx);
+                setState(() => _awaitingMapOrientationPinPlacement = true);
+                _showMapOrientationPlacementSnackBar(
+                  'Ține apăsat pe hartă pentru noul reper.',
+                );
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.delete_outline_rounded, color: Colors.red.shade300),
+              title: Text(
+                'Elimină reperul de orientare',
+                style: TextStyle(color: Colors.red.shade200, fontWeight: FontWeight.w600),
               ),
-              ListTile(
-                leading: Icon(Icons.delete_outline_rounded, color: Colors.red.shade300),
-                title: Text(
-                  'Elimină reperul manual',
-                  style: TextStyle(color: Colors.red.shade200, fontWeight: FontWeight.w600),
-                ),
-                onTap: () async {
-                  Navigator.pop(ctx);
-                  try {
-                    await _firestoreService.clearMapOrientationPin();
-                  } catch (e) {
-                    if (!mounted) return;
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Eroare: $e'), backgroundColor: Colors.red.shade800),
-                    );
-                    return;
-                  }
-                  if (!mounted) return;
-                  setState(() => _manualOrientationPin = null);
-                  await _syncMapOrientationPinAnnotation();
+              onTap: () async {
+                Navigator.pop(ctx);
+                try {
+                  await _firestoreService.clearMapOrientationPin();
+                } catch (e) {
                   if (!mounted) return;
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Reperul a fost eliminat.')),
+                    SnackBar(content: Text('Eroare: $e'), backgroundColor: Colors.red.shade800),
                   );
-                },
-              ),
-            ],
+                  return;
+                }
+                if (!mounted) return;
+                setState(() => _manualOrientationPin = null);
+                await _syncMapOrientationPinAnnotation();
+                if (!mounted) return;
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Reperul a fost eliminat.')),
+                );
+              },
+            ),
           ],
         ),
       ),
@@ -1839,30 +1950,37 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
     );
   }
 
-  Future<void> _removeMapOrientationPinFromMenu() async {
-    if (_displayingHomePinFromSavedAddress) {
-      try {
-        await _firestoreService.setShowSavedHomePinOnMap(false);
-      } catch (e) {
-        if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Eroare: $e'), backgroundColor: Colors.red.shade800),
-        );
-        return;
-      }
-      if (!mounted) return;
-      setState(() => _showSavedHomePinOnMap = false);
-      await _syncMapOrientationPinAnnotation();
+  Future<void> _hideSavedHomePinFromDrawer() async {
+    if (!_showSavedHomePinOnMap) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Acasă nu mai este afișată pe hartă.')),
+        const SnackBar(content: Text('Acasă nu este afișată pe hartă.')),
       );
       return;
     }
+    try {
+      await _firestoreService.setShowSavedHomePinOnMap(false);
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Eroare: $e'), backgroundColor: Colors.red.shade800),
+      );
+      return;
+    }
+    if (!mounted) return;
+    setState(() => _showSavedHomePinOnMap = false);
+    await _syncMapOrientationPinAnnotation();
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Acasă nu mai este afișată pe hartă.')),
+    );
+  }
+
+  Future<void> _removeOrientationReperFromDrawer() async {
     if (_manualOrientationPin == null) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Nu ai un reper pe hartă (manual sau Acasă).')),
+        const SnackBar(content: Text('Nu ai un reper de orientare pe hartă.')),
       );
       return;
     }
@@ -1880,7 +1998,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
     await _syncMapOrientationPinAnnotation();
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Reperul manual a fost eliminat de pe hartă.')),
+      const SnackBar(content: Text('Reperul de orientare a fost eliminat de pe hartă.')),
     );
   }
 
@@ -2026,8 +2144,8 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
   
   /// Ac de compas pe hartă: gamalia (nord) verde; pivot spre sud — aceeași lățime/înălțime ca markerul Acasă (48×56).
   Future<Uint8List> _generateOrientationCompassNeedlePinBytes() async {
-    final int w = _androidHomePinOverlayWidth.toInt();
-    final int h = _androidHomePinOverlayHeight.toInt();
+    final int w = _androidPrivatePinOverlayWidth.toInt();
+    final int h = _androidPrivatePinOverlayHeight.toInt();
     final recorder = ui.PictureRecorder();
     final canvas = Canvas(
       recorder,
@@ -2077,6 +2195,66 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
     return _pngBytesOrMinimalFallback(
       byteData,
       '_generateOrientationCompassNeedlePinBytes',
+    );
+  }
+
+  /// Fallback când lipsește PNG-ul: casă stilizată într-un cerc (glob de sticlă) — **nu** ac compas.
+  Future<Uint8List> _generateSavedHomeGlassHouseFallbackPinBytes() async {
+    final int w = _androidPrivatePinOverlayWidth.toInt();
+    final int h = _androidPrivatePinOverlayHeight.toInt();
+    final recorder = ui.PictureRecorder();
+    final canvas = Canvas(
+      recorder,
+      Rect.fromLTWH(0, 0, w.toDouble(), h.toDouble()),
+    );
+    final paint = Paint()..isAntiAlias = true;
+
+    final double cx = w / 2.0;
+    final double cy = h / 2.0 - 2.0;
+    const double r = 19.0;
+
+    paint
+      ..style = PaintingStyle.fill
+      ..color = const Color(0x5538BDF8);
+    canvas.drawCircle(Offset(cx, cy), r, paint);
+    paint
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2.0
+      ..color = const Color(0xFF38BDF8);
+    canvas.drawCircle(Offset(cx, cy), r, paint);
+
+    final houseBody = RRect.fromRectAndRadius(
+      Rect.fromCenter(
+        center: Offset(cx, cy + 4),
+        width: 16,
+        height: 12,
+      ),
+      const Radius.circular(2),
+    );
+    paint
+      ..style = PaintingStyle.fill
+      ..color = const Color(0xFFEA580C);
+    canvas.drawRRect(houseBody, paint);
+
+    final roof = Path()
+      ..moveTo(cx - 12, cy - 2)
+      ..lineTo(cx + 12, cy - 2)
+      ..lineTo(cx, cy - 12)
+      ..close();
+    paint.color = const Color(0xFFDC2626);
+    canvas.drawPath(roof, paint);
+    paint
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.0
+      ..color = const Color(0x99000000);
+    canvas.drawPath(roof, paint);
+
+    final picture = recorder.endRecording();
+    final image = await picture.toImage(w, h);
+    final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
+    return _pngBytesOrMinimalFallback(
+      byteData,
+      '_generateSavedHomeGlassHouseFallbackPinBytes',
     );
   }
 
@@ -2613,7 +2791,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
       if (_useAndroidFlutterUserMarkerOverlay && mounted) {
         setState(() {
           _clearAndroidUserMarkerOverlayFields();
-          _clearAndroidHomePinOverlayFields();
+          _clearAndroidPrivatePinOverlayFields();
         });
       }
       Logger.debug('💤 App paused - stopping location updates');
@@ -2889,9 +3067,11 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
     _userPointAnnotation = null;
     _userMarkerVisualCacheKey = null;
     _clearAndroidUserMarkerOverlayFields();
-    _clearAndroidHomePinOverlayFields();
-    _mapOrientationPinManager = null;
-    _mapOrientationPinTapRegistered = false;
+    _clearAndroidPrivatePinOverlayFields();
+    _savedHomeFavoritePinManager = null;
+    _savedHomeFavoritePinTapRegistered = false;
+    _orientationReperPinManager = null;
+    _orientationReperPinTapRegistered = false;
     _resetDriverMarkerInterpolation();
     _nearbyDriverAnnotations.clear();
     _neighborAnnotations.clear();
@@ -2922,21 +3102,28 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
         Logger.debug('User marker deleteAll before style sync: $e', tag: 'MAP');
       }
       try {
-        await _mapOrientationPinManager?.deleteAll();
+        await _savedHomeFavoritePinManager?.deleteAll();
       } catch (e) {
-        Logger.debug('Home pin deleteAll before style sync: $e', tag: 'MAP');
+        Logger.debug('Saved home pin deleteAll before style sync: $e', tag: 'MAP');
+      }
+      try {
+        await _orientationReperPinManager?.deleteAll();
+      } catch (e) {
+        Logger.debug('Orientation reper pin deleteAll before style sync: $e', tag: 'MAP');
       }
     } finally {
       _userPointAnnotationManager = null;
       _userPointAnnotation = null;
       _userMarkerVisualCacheKey = null;
       _clearAndroidUserMarkerOverlayFields();
-      _mapOrientationPinManager = null;
-      _mapOrientationPinTapRegistered = false;
+      _savedHomeFavoritePinManager = null;
+      _savedHomeFavoritePinTapRegistered = false;
+      _orientationReperPinManager = null;
+      _orientationReperPinTapRegistered = false;
       if (mounted) {
-        setState(_clearAndroidHomePinOverlayFields);
+        setState(_clearAndroidPrivatePinOverlayFields);
       } else {
-        _clearAndroidHomePinOverlayFields();
+        _clearAndroidPrivatePinOverlayFields();
       }
     }
     Logger.info(
@@ -2957,9 +3144,11 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
     _userPointAnnotation = null;
     _userMarkerVisualCacheKey = null;
     _clearAndroidUserMarkerOverlayFields();
-    _clearAndroidHomePinOverlayFields();
-    _mapOrientationPinManager = null;
-    _mapOrientationPinTapRegistered = false;
+    _clearAndroidPrivatePinOverlayFields();
+    _savedHomeFavoritePinManager = null;
+    _savedHomeFavoritePinTapRegistered = false;
+    _orientationReperPinManager = null;
+    _orientationReperPinTapRegistered = false;
     _driversAnnotationManager = null;
     _driversAnnotationTapListenerRegistered = false;
     _driverAnnotationIdToUid.clear();
@@ -3827,29 +4016,59 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
     _androidUserMarkerOverlayLabel = null;
   }
 
-  void _clearAndroidHomePinOverlayFields() {
-    _androidHomePinGeometry = null;
-    _androidHomePinOverlayPx = null;
-    _androidHomePinOverlayBytes = null;
+  void _clearAndroidPrivatePinOverlayFields() {
+    _androidSavedHomePinGeometry = null;
+    _androidSavedHomePinOverlayPx = null;
+    _androidSavedHomePinOverlayBytes = null;
+    _androidOrientationReperGeometry = null;
+    _androidOrientationReperOverlayPx = null;
+    _androidOrientationReperOverlayBytes = null;
   }
 
-  Future<void> _projectAndroidHomePinOverlay() async {
+  Future<void> _projectAndroidPrivatePinOverlays() async {
     if (!_useAndroidFlutterUserMarkerOverlay) return;
     if (!mounted || _mapboxMap == null) return;
-    final g = _androidHomePinGeometry;
-    if (g == null || _androidHomePinOverlayBytes == null) {
-      if (mounted) setState(() => _androidHomePinOverlayPx = null);
-      return;
+
+    Offset? homePx;
+    if (_androidSavedHomePinGeometry != null &&
+        _androidSavedHomePinOverlayBytes != null) {
+      try {
+        final sc = await _mapboxMap!.pixelForCoordinate(_androidSavedHomePinGeometry!);
+        if (!mounted) return;
+        homePx = Offset(sc.x.toDouble(), sc.y.toDouble());
+      } catch (e) {
+        Logger.debug('Android Acasă pin overlay project: $e', tag: 'MAP_HOME');
+      }
     }
-    try {
-      final sc = await _mapboxMap!.pixelForCoordinate(g);
-      if (!mounted) return;
-      setState(() {
-        _androidHomePinOverlayPx = Offset(sc.x.toDouble(), sc.y.toDouble());
-      });
-    } catch (e) {
-      Logger.debug('Android home pin overlay project: $e', tag: 'MAP_HOME');
+
+    Offset? reperPx;
+    if (_androidOrientationReperGeometry != null &&
+        _androidOrientationReperOverlayBytes != null) {
+      try {
+        final sc =
+            await _mapboxMap!.pixelForCoordinate(_androidOrientationReperGeometry!);
+        if (!mounted) return;
+        reperPx = Offset(sc.x.toDouble(), sc.y.toDouble());
+      } catch (e) {
+        Logger.debug('Android reper overlay project: $e', tag: 'MAP_HOME');
+      }
     }
+
+    if (!mounted) return;
+    setState(() {
+      if (_androidSavedHomePinGeometry == null ||
+          _androidSavedHomePinOverlayBytes == null) {
+        _androidSavedHomePinOverlayPx = null;
+      } else {
+        _androidSavedHomePinOverlayPx = homePx;
+      }
+      if (_androidOrientationReperGeometry == null ||
+          _androidOrientationReperOverlayBytes == null) {
+        _androidOrientationReperOverlayPx = null;
+      } else {
+        _androidOrientationReperOverlayPx = reperPx;
+      }
+    });
   }
 
   Future<void> _projectAndroidUserMarkerOverlay() async {
@@ -5568,7 +5787,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
   }
 
   void _onUniversalSearchPlace(double lat, double lng, String label) {
-    // Fly-to apoi pin pe același strat ca căutarea (nu pin „Acasă” — acela e `_mapOrientationPinManager`).
+    // Fly-to apoi pin pe același strat ca căutarea (nu pinurile private Acasă/reper — acelea au manageri separați).
     unawaited(() async {
       await _mapboxMap?.flyTo(
         CameraOptions(
@@ -8925,7 +9144,8 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
           );
         },
         onEnableSavedHomePinOnMap: () => unawaited(_enableSavedHomePinFromDrawer()),
-        onRemoveMapOrientationPin: () => unawaited(_removeMapOrientationPinFromMenu()),
+        onHideSavedHomePinOnMap: () => unawaited(_hideSavedHomePinFromDrawer()),
+        onRemoveOrientationReperFromMap: () => unawaited(_removeOrientationReperFromDrawer()),
       ),
       floatingActionButton: null,
       body: SafeArea(
@@ -9119,23 +9339,48 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
                       onConfirm: _onRadarConfirmed,
                     ),
                   if (_useAndroidFlutterUserMarkerOverlay &&
-                      _androidHomePinOverlayPx != null &&
-                      _androidHomePinOverlayBytes != null)
+                      _androidSavedHomePinOverlayPx != null &&
+                      _androidSavedHomePinOverlayBytes != null)
                     Positioned(
-                      left: _androidHomePinOverlayPx!.dx -
-                          _androidHomePinOverlayWidth / 2,
-                      top: _androidHomePinOverlayPx!.dy -
-                          _androidHomePinOverlayHeight,
+                      left: _androidSavedHomePinOverlayPx!.dx -
+                          _androidPrivatePinOverlayWidth / 2,
+                      top: _androidSavedHomePinOverlayPx!.dy -
+                          _androidPrivatePinOverlayHeight,
                       child: GestureDetector(
                         behavior: HitTestBehavior.opaque,
                         onTap: () {
-                          if (mounted) _showMapOrientationPinActions();
+                          if (mounted) _showSavedHomeFavoritePinActions();
                         },
                         child: SizedBox(
-                          width: _androidHomePinOverlayWidth,
-                          height: _androidHomePinOverlayHeight,
+                          width: _androidPrivatePinOverlayWidth,
+                          height: _androidPrivatePinOverlayHeight,
                           child: Image.memory(
-                            _androidHomePinOverlayBytes!,
+                            _androidSavedHomePinOverlayBytes!,
+                            fit: BoxFit.contain,
+                            gaplessPlayback: true,
+                            filterQuality: FilterQuality.medium,
+                          ),
+                        ),
+                      ),
+                    ),
+                  if (_useAndroidFlutterUserMarkerOverlay &&
+                      _androidOrientationReperOverlayPx != null &&
+                      _androidOrientationReperOverlayBytes != null)
+                    Positioned(
+                      left: _androidOrientationReperOverlayPx!.dx -
+                          _androidPrivatePinOverlayWidth / 2,
+                      top: _androidOrientationReperOverlayPx!.dy -
+                          _androidPrivatePinOverlayHeight,
+                      child: GestureDetector(
+                        behavior: HitTestBehavior.opaque,
+                        onTap: () {
+                          if (mounted) _showOrientationReperPinActions();
+                        },
+                        child: SizedBox(
+                          width: _androidPrivatePinOverlayWidth,
+                          height: _androidPrivatePinOverlayHeight,
+                          child: Image.memory(
+                            _androidOrientationReperOverlayBytes!,
                             fit: BoxFit.contain,
                             gaplessPlayback: true,
                             filterQuality: FilterQuality.medium,
@@ -10535,7 +10780,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
         unawaited(_projectMagicEventAuraSlots());
         unawaited(_projectEmergencyAuraSlots());
         unawaited(_projectAndroidUserMarkerOverlay());
-        unawaited(_projectAndroidHomePinOverlay());
+        unawaited(_projectAndroidPrivatePinOverlays());
       }
     });
   }
@@ -10552,7 +10797,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
       unawaited(_updatePreviewPinScreenPos(_previewPinPoint!));
     }
     unawaited(_projectAndroidUserMarkerOverlay());
-    unawaited(_projectAndroidHomePinOverlay());
+    unawaited(_projectAndroidPrivatePinOverlays());
     // Update street name overlay (Bump style)
     unawaited(_updateCurrentStreetName());
     // Track zoom for slider

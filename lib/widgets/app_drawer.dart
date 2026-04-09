@@ -60,13 +60,17 @@ class AppDrawer extends StatelessWidget {
     this.onRefreshContacts,
     this.onAvatarChanged,
     this.onPlaceMapOrientationPin,
-    this.onRemoveMapOrientationPin,
+    this.onHideSavedHomePinOnMap,
+    this.onRemoveOrientationReperFromMap,
     this.onEnableSavedHomePinOnMap,
   });
 
   /// Long-press pe hartă plasează reperul (vezi ecranul hartă).
   final VoidCallback? onPlaceMapOrientationPin;
-  final VoidCallback? onRemoveMapOrientationPin;
+  /// Ascunde doar markerul Acasă (favorite), fără a atinge reperul de orientare.
+  final VoidCallback? onHideSavedHomePinOnMap;
+  /// Elimină doar reperul manual (ac compas), fără a atinge Acasă.
+  final VoidCallback? onRemoveOrientationReperFromMap;
   /// Pin „Acasă” din favorite, vizibil doar pe clientul userului.
   final VoidCallback? onEnableSavedHomePinOnMap;
 
@@ -400,12 +404,22 @@ class AppDrawer extends StatelessWidget {
               ),
               _buildMenuItem(
                 context,
-                icon: Icons.pin_drop_outlined,
+                icon: Icons.visibility_off_outlined,
                 color: Colors.orange.shade700,
-                title: 'Ascunde Acasă / elimină reper manual',
+                title: 'Ascunde Acasă de pe hartă\n(doar markerul favorite)',
                 onTap: () {
                   Navigator.pop(context);
-                  onRemoveMapOrientationPin?.call();
+                  onHideSavedHomePinOnMap?.call();
+                },
+              ),
+              _buildMenuItem(
+                context,
+                icon: Icons.pin_drop_outlined,
+                color: const Color(0xFF15803D),
+                title: 'Ascunde reper orientare\n(elimină acul de pe hartă)',
+                onTap: () {
+                  Navigator.pop(context);
+                  onRemoveOrientationReperFromMap?.call();
                 },
               ),
               Theme(
