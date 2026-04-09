@@ -22,6 +22,7 @@ import 'package:nabour_app/l10n/app_localizations.dart';
 import 'package:nabour_app/services/telemetry_service.dart';
 import 'package:nabour_app/services/local_notifications_service.dart';
 import 'package:nabour_app/widgets/app_drawer.dart';
+import 'package:nabour_app/config/nabour_map_styles.dart';
 
 /// Cursă activă: hartă Mapbox + tracking până la pickup; după pickup — doar Maps/Waze spre destinație.
 class ActiveRideScreen extends StatefulWidget {
@@ -740,11 +741,10 @@ class _ActiveRideScreenState extends State<ActiveRideScreen> {
                     center: initialCenter,
                     zoom: 14,
                   ),
-                  styleUri: AppDrawer.lowDataMode
-                      ? MapboxStyles.LIGHT
-                      : (isDark
-                          ? MapboxStyles.DARK
-                          : MapboxStyles.MAPBOX_STREETS),
+                  styleUri: NabourMapStyles.uriForMainMap(
+                    lowDataMode: AppDrawer.lowDataMode,
+                    darkMode: isDark,
+                  ),
                 ),
               ),
               if (_isManualPan)

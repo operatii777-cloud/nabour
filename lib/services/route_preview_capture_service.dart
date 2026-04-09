@@ -12,6 +12,7 @@ import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart' as mbx;
 import 'package:nabour_app/models/ride_model.dart';
 import 'package:nabour_app/services/routing_service.dart';
 import 'package:nabour_app/utils/logger.dart';
+import 'package:nabour_app/config/nabour_map_styles.dart';
 
 /// Generează PNG al traseului pentru Storage: preferă **Mapbox Snapshotter** (stil ca în app),
 /// cu fallback **OSM / flutter_map** dacă Mapbox e indisponibil.
@@ -65,7 +66,7 @@ class RoutePreviewCaptureService {
         },
       );
 
-      await snapshotter.style.setStyleURI(mbx.MapboxStyles.MAPBOX_STREETS);
+      await snapshotter.style.setStyleURI(NabourMapStyles.streets);
       await styleReady.future.timeout(const Duration(seconds: 25));
 
       final lineData = json.encode({

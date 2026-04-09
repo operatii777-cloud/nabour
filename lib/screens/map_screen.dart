@@ -21,6 +21,7 @@ import 'package:nabour_app/services/firestore_service.dart';
 import 'package:nabour_app/services/passenger_ride_session_bus.dart';
 import 'package:nabour_app/services/location_cache_service.dart';
 import 'package:nabour_app/widgets/app_drawer.dart';
+import 'package:nabour_app/config/nabour_map_styles.dart';
 import 'package:nabour_app/screens/personal_info_screen.dart';
 import 'package:nabour_app/widgets/ride_request_panel.dart';
 import 'package:nabour_app/voice/integration/friendsride_voice_integration.dart';
@@ -2011,9 +2012,10 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
     final isDark = themeProvider.isDarkMode;
     if (_mapboxMap != null && _lastKnownDarkMode != isDark) {
       _lastKnownDarkMode = isDark;
-      final targetStyle = AppDrawer.lowDataMode
-          ? MapboxStyles.LIGHT
-          : (isDark ? MapboxStyles.DARK : MapboxStyles.MAPBOX_STREETS);
+      final targetStyle = NabourMapStyles.uriForMainMap(
+        lowDataMode: AppDrawer.lowDataMode,
+        darkMode: isDark,
+      );
       // Resetăm managerii de adnotare înainte de schimb — Mapbox îi invalidează la loadStyleURI
       _resetAnnotationManagers();
       unawaited(
@@ -9168,11 +9170,10 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
                     onCameraChangeListener: _onCameraChanged,
                     onMapIdleListener: _onMapIdle,
                     cameraOptions: _mapWidgetCameraOptions,
-                    styleUri: AppDrawer.lowDataMode
-                        ? MapboxStyles.LIGHT
-                        : (Provider.of<ThemeProvider>(context, listen: false).isDarkMode
-                            ? MapboxStyles.DARK
-                            : MapboxStyles.MAPBOX_STREETS),
+                    styleUri: NabourMapStyles.uriForMainMap(
+                      lowDataMode: AppDrawer.lowDataMode,
+                      darkMode: Provider.of<ThemeProvider>(context, listen: false).isDarkMode,
+                    ),
                   ),
                   if (_awaitingMapOrientationPinPlacement) ...[
                     Positioned(

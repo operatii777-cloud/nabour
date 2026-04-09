@@ -9,6 +9,7 @@ import 'package:nabour_app/services/firestore_service.dart';
 import 'package:nabour_app/services/route_preview_capture_service.dart';
 import 'package:nabour_app/screens/map_screen.dart';
 import 'package:nabour_app/services/passenger_ride_session_bus.dart'; 
+import 'package:nabour_app/config/nabour_map_styles.dart';
 import 'package:nabour_app/utils/logger.dart';
 import 'package:nabour_app/utils/driver_icon_helper.dart';
 import 'package:nabour_app/core/skeletons/skeleton_driver_search.dart';
@@ -889,9 +890,10 @@ class _SearchingForDriverScreenState extends State<SearchingForDriverScreen>
           _onMapCreated(map);
         }
       },
-      styleUri: Theme.of(context).brightness == Brightness.dark
-          ? MapboxStyles.DARK
-          : MapboxStyles.MAPBOX_STREETS,
+      styleUri: NabourMapStyles.uriForMainMap(
+        lowDataMode: false,
+        darkMode: Theme.of(context).brightness == Brightness.dark,
+      ),
       cameraOptions: CameraOptions(
         center: MapboxUtils.convertToPoint(center),
         zoom: 14.0,

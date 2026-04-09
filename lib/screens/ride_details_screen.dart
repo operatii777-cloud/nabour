@@ -9,6 +9,7 @@ import 'package:geocoding/geocoding.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter/services.dart';
 import 'package:nabour_app/utils/logger.dart';
+import 'package:nabour_app/config/nabour_map_styles.dart';
 
 class RideDetailsScreen extends StatefulWidget {
   final Ride ride;
@@ -136,7 +137,7 @@ class _RideDetailsScreenState extends State<RideDetailsScreen> {
                         center: _startPoint!,
                         zoom: 13,
                       ),
-                      styleUri: MapboxStyles.MAPBOX_STREETS,
+                      styleUri: NabourMapStyles.streets,
                     )
                   : const Center(child: CircularProgressIndicator()),
             ),

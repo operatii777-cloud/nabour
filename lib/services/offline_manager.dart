@@ -10,6 +10,7 @@ import 'package:nabour_app/services/firestore_service.dart';
 // Mapbox offline prefetch (aliased to avoid name conflicts)
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart' as mapbox;
 import 'package:nabour_app/widgets/app_drawer.dart';
+import 'package:nabour_app/config/nabour_map_styles.dart';
 import 'package:nabour_app/utils/logger.dart';
 
 /// 🔄 OFFLINE CAPABILITIES: Advanced offline management system
@@ -36,7 +37,9 @@ class OfflineManager {
   bool _isSyncing = false;
   bool _mapTilesPrefetched = false;
   bool _prefetchScheduled = false;
-  static const bool emergencyPerformanceMode = true; // emergency: disable heavy prefetch
+  /// Dacă e true, nu rulează prefetch Mapbox (style pack + tile regions). Ține false pentru
+  /// cache pe disc aliniat cu [NabourMapStyles]; pe dispozitive foarte slabe poți compila cu true.
+  static const bool emergencyPerformanceMode = false;
 
   // OFFLINE CAPABILITIES: Sync configuration
   static const Duration _syncInterval = Duration(minutes: 5);
@@ -112,7 +115,7 @@ class OfflineManager {
     try {
       Logger.debug('Prefetch Mapbox style pack & tile regions (Bucharest + Ilfov)', tag: 'OFFLINE_MANAGER');
 
-      // 1) Style packs (LIGHT + DARK) pentru paritate offline și switch instant
+      // 1) Style packs: STREETS + DARK + LIGHT (același set ca harta principală + mod date reduse)
       final offlineManager = await mapbox.OfflineManager.create();
       Future<void> loadStyle(String uri, String label) async {
         await offlineManager.loadStylePack(
@@ -126,8 +129,9 @@ class OfflineManager {
           },
         );
       }
-      await loadStyle(mapbox.MapboxStyles.LIGHT, 'LIGHT');
-      await loadStyle(mapbox.MapboxStyles.DARK, 'DARK');
+      await loadStyle(NabourMapStyles.streets, 'STREETS');
+      await loadStyle(NabourMapStyles.dark, 'DARK');
+      await loadStyle(NabourMapStyles.light, 'LIGHT');
 
       // 2) Tile store
       final tileStore = await mapbox.TileStore.createDefault();
@@ -152,7 +156,7 @@ class OfflineManager {
       // Regiunea 1: București centru (bounding box mai strâns)
       final centerGeometry = polygonGeometryFromBbox(25.98, 44.37, 26.12, 44.48);
       final centerDescriptor = mapbox.TilesetDescriptorOptions(
-        styleURI: mapbox.MapboxStyles.LIGHT,
+        styleURI: NabourMapStyles.streets,
         minZoom: 11,
         maxZoom: 14,
         pixelRatio: 1.0,
@@ -199,7 +203,7 @@ class OfflineManager {
       // Coordonate aproximative Ilfov/București (din proiect): 25.75,44.20,26.45,44.70
       final ilfovGeometry = polygonGeometryFromBbox(25.75, 44.20, 26.45, 44.70);
       final ilfovDescriptor = mapbox.TilesetDescriptorOptions(
-        styleURI: mapbox.MapboxStyles.LIGHT,
+        styleURI: NabourMapStyles.streets,
         minZoom: 6,
         maxZoom: 10,
         pixelRatio: 1.0,
@@ -297,7 +301,7 @@ class OfflineManager {
       final geometry = _polygonGeometryFromBboxGeojson(minLng, minLat, maxLng, maxLat);
 
       final descriptor = mapbox.TilesetDescriptorOptions(
-        styleURI: mapbox.MapboxStyles.LIGHT,
+        styleURI: NabourMapStyles.streets,
         minZoom: minZoom,
         maxZoom: maxZoom,
         pixelRatio: 1.0,

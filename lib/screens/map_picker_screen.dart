@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart' as geolocator;
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
+import 'package:nabour_app/config/nabour_map_styles.dart';
 
 import '../utils/mapbox_utils.dart';
 
@@ -116,9 +117,10 @@ class _MapPickerScreenState extends State<MapPickerScreen> {
                               center: _selectedPoint,
               zoom: 16.0,
             ),
-            styleUri: Theme.of(context).brightness == Brightness.dark
-                ? MapboxStyles.DARK
-                : MapboxStyles.MAPBOX_STREETS,
+            styleUri: NabourMapStyles.uriForMainMap(
+              lowDataMode: false,
+              darkMode: Theme.of(context).brightness == Brightness.dark,
+            ),
           ),
           Padding(
             padding: const EdgeInsets.only(bottom: 40.0),

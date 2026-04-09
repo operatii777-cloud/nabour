@@ -22,6 +22,7 @@ import 'package:geolocator/geolocator.dart' as geolocator;
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:nabour_app/utils/logger.dart';
+import 'package:nabour_app/config/nabour_map_styles.dart';
 
 class RideRequestScreen extends StatefulWidget {
   final geolocator.Position startPosition;
@@ -469,9 +470,10 @@ class _RideRequestScreenState extends State<RideRequestScreen> {
                               center: _startPoint != null ? _startPoint! : MapboxUtils.createPoint(widget.startPosition.latitude, widget.startPosition.longitude),
               zoom: 12.0
             ),
-            styleUri: Theme.of(context).brightness == Brightness.dark
-                ? MapboxStyles.DARK
-                : MapboxStyles.MAPBOX_STREETS,
+            styleUri: NabourMapStyles.uriForMainMap(
+              lowDataMode: false,
+              darkMode: Theme.of(context).brightness == Brightness.dark,
+            ),
           ),
           
           _buildSlidingPanel(),

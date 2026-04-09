@@ -6,6 +6,7 @@ import 'package:nabour_app/utils/coordinate_helpers.dart';
 import 'package:nabour_app/theme/app_colors.dart';
 import 'package:nabour_app/widgets/theme_toggle_button.dart';
 import 'package:nabour_app/utils/logger.dart';
+import 'package:nabour_app/config/nabour_map_styles.dart';
 
 /// 🚀 Real-time Tracking Screen cu AI Integration
 /// 
@@ -403,7 +404,7 @@ class _RealTimeTrackingScreenState extends State<RealTimeTrackingScreen>
   Widget _buildMap() {
     return MapWidget(
       key: const ValueKey("mapWidget"),
-      styleUri: MapboxStyles.MAPBOX_STREETS,
+      styleUri: NabourMapStyles.streets,
       onMapCreated: _onMapCreated,
     );
   }

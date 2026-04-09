@@ -13,6 +13,7 @@ import 'package:flutter/services.dart';
 import 'package:nabour_app/l10n/app_localizations.dart';
 import 'package:nabour_app/utils/logger.dart';
 import 'package:nabour_app/utils/content_filter.dart';
+import 'package:nabour_app/config/nabour_map_styles.dart';
 
 class DriverRideDetailsScreen extends StatefulWidget {
   final Ride ride;
@@ -206,9 +207,10 @@ class _DriverRideDetailsScreenState extends State<DriverRideDetailsScreen> {
                         center: _startPoint!,
                         zoom: 13,
                       ),
-                      styleUri: Theme.of(context).brightness == Brightness.dark 
-                        ? MapboxStyles.DARK 
-                        : MapboxStyles.MAPBOX_STREETS,
+                      styleUri: NabourMapStyles.uriForMainMap(
+                        lowDataMode: false,
+                        darkMode: Theme.of(context).brightness == Brightness.dark,
+                      ),
                     )
                   : const Center(child: CircularProgressIndicator()),
             ),

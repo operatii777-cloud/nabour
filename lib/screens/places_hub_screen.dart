@@ -6,6 +6,8 @@ import 'package:nabour_app/features/smart_places/smart_places_db.dart';
 import 'package:nabour_app/screens/favorite_addresses_screen.dart';
 import 'package:nabour_app/theme/theme_provider.dart';
 import 'package:nabour_app/utils/mapbox_utils.dart';
+import 'package:nabour_app/widgets/app_drawer.dart';
+import 'package:nabour_app/config/nabour_map_styles.dart';
 
 /// Hub Locuri: învățate local, favorite, recomandări — polish tip Bump / Places.
 class PlacesHubScreen extends StatefulWidget {
@@ -150,9 +152,10 @@ class _PlacesHubScreenState extends State<PlacesHubScreen>
                           center: center,
                           zoom: 14,
                         ),
-                        styleUri: tp.isDarkMode
-                            ? MapboxStyles.DARK
-                            : MapboxStyles.MAPBOX_STREETS,
+                        styleUri: NabourMapStyles.uriForMainMap(
+                          lowDataMode: AppDrawer.lowDataMode,
+                          darkMode: tp.isDarkMode,
+                        ),
                       );
                     },
                   ),
