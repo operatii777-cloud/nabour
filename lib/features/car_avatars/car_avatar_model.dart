@@ -36,13 +36,12 @@ class CarAvatar {
     );
   }
 
-  /// Pe hartă ca **șofer (la volan)**: doar vehicule din transport (fără animale, personaje, robo).
+  /// Pe hartă ca **șofer (la volan)**: doar vehicule din transport (fără animale, personaje).
   bool get allowsDriverMapSlot {
     if (isDefault) return true;
     if (category == CarCategory.animals || category == CarCategory.characters) {
       return false;
     }
-    if (category == CarCategory.transport && id == 'robo') return false;
     return category == CarCategory.transport;
   }
 

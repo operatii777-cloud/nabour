@@ -47,12 +47,11 @@ class VoiceOrchestrator {
   /// Buffer după TTS înainte de a porni STT (evită ecou / captare ultimă silabă).
   static const int postTtsBufferMs = 400;
 
-  /// După salut: timp pentru adresă + pauze de respirație (nu tăiem fraza după 1–2 s liniște).
-  static const int initialAddressListenSeconds = 24;
+  /// După salut („unde doriți să mergeți?”): fereastră scurtă pentru destinație (max. câteva secunde).
+  static const int initialAddressListenSeconds = 5;
 
-  /// Tăcere fără cuvinte noi înainte de finalizare; valori ~6–8 s permit respirație între idei.
-  /// Pe Android există uneori o limită sistem (~1–3 s) sub care nu coboară — documentat în speech_to_text.
-  static const int initialAddressPauseForSeconds = 7;
+  /// Tăcere înainte de finalizare; trebuie ≤ fereastra de ascultare ca să încheie natural înainte de timeout.
+  static const int initialAddressPauseForSeconds = 3;
 
   /// Conversație normală (după primul turn): propoziții lungi, pauze naturale.
   static const int defaultListenMaxSeconds = 45;

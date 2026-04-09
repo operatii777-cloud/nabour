@@ -18,6 +18,11 @@ class NeighborhoodRequestsManager {
   final VoidCallback onDataChanged;
 
   PointAnnotationManager? _annotationManager;
+  /// Pinuri fly-to (căutare hartă, drop din chat) — separat de [ _annotationManager ],
+  /// altfel [ _updateMapAnnotations ] face `deleteAll` și șterge pinul imediat.
+  PointAnnotationManager? _transientPinManager;
+  PointAnnotation? _lastTransientPin;
+  Timer? _transientPinExpiryTimer;
   StreamSubscription<List<NeighborhoodRequest>>? _subscription;
   Timer? _evaporationTimer;
 
@@ -30,10 +35,45 @@ class NeighborhoodRequestsManager {
     required this.onDataChanged,
   });
 
+  /// Înainte de [initialize] (inclusiv a doua oară după `_onStyleLoaded`): eliberăm id-urile
+  /// fixe de manager, altfel `createPointAnnotationManager` poate eșua sau rămâne Dart valid
+  /// dar fără randare după mutații de stil (vezi `map_screen` / GPU).
+  Future<void> _prepareForReinitialize() async {
+    _transientPinExpiryTimer?.cancel();
+    _transientPinExpiryTimer = null;
+    _lastTransientPin = null;
+
+    _subscription?.cancel();
+    _subscription = null;
+
+    _evaporationTimer?.cancel();
+    _evaporationTimer = null;
+
+    if (_transientPinManager != null) {
+      try {
+        await _transientPinManager!.deleteAll();
+        mapboxMap.annotations.removeAnnotationManagerById('map-transient-pins-layer');
+      } catch (_) {}
+      _transientPinManager = null;
+    }
+    if (_annotationManager != null) {
+      try {
+        await _annotationManager!.deleteAll();
+        mapboxMap.annotations.removeAnnotationManagerById('neighborhood-requests-layer');
+      } catch (_) {}
+      _annotationManager = null;
+    }
+  }
+
   Future<void> initialize() async {
     try {
+      await _prepareForReinitialize();
+
       _annotationManager = await mapboxMap.annotations.createPointAnnotationManager(id: 'neighborhood-requests-layer');
       _annotationManager?.tapEvents(onTap: _onAnnotationTapped);
+
+      _transientPinManager =
+          await mapboxMap.annotations.createPointAnnotationManager(id: 'map-transient-pins-layer');
 
       _subscription = FirestoreService().getActiveNeighborhoodRequests().listen(
         (requests) {
@@ -67,14 +107,7 @@ class NeighborhoodRequestsManager {
   }
 
   void dispose() {
-    _subscription?.cancel();
-    _evaporationTimer?.cancel();
-    if (_annotationManager != null) {
-      try {
-        _annotationManager!.deleteAll();
-        mapboxMap.annotations.removeAnnotationManagerById('neighborhood-requests-layer');
-      } catch (_) {}
-    }
+    unawaited(_prepareForReinitialize());
   }
 
   Future<void> _updateMapAnnotations() async {
@@ -236,27 +269,39 @@ class NeighborhoodRequestsManager {
     }
   }
 
-  /// Afișează un pin roșu tranzitoriu (Map Drop din chat)
+  /// Pin după fly-to (căutare universală pe hartă, locație din chat).
   Future<void> showTransientLocationPin(double lat, double lng) async {
-    if (_annotationManager == null) return;
+    if (_transientPinManager == null) {
+      Logger.warning(
+        'showTransientLocationPin: no transient manager (init not done or style rebuild)',
+        tag: 'NeighborhoodRequests',
+      );
+      return;
+    }
+
+    _transientPinExpiryTimer?.cancel();
+
+    if (_lastTransientPin != null) {
+      try {
+        await _transientPinManager!.delete(_lastTransientPin!);
+      } catch (_) {}
+      _lastTransientPin = null;
+    }
 
     // Generăm un icon roșu pulsativ (simplificat aici ca un cerc roșu dublu)
     final recorder = ui.PictureRecorder();
     final canvas = ui.Canvas(recorder);
-    
-    // Cerc exterior (puls)
+
     final pulsePaint = ui.Paint()
       ..color = Colors.red.withValues(alpha: 0.4)
       ..style = ui.PaintingStyle.fill;
     canvas.drawCircle(const Offset(50, 50), 45, pulsePaint);
-    
-    // Cerc interior (pin)
+
     final pinPaint = ui.Paint()
       ..color = Colors.red
       ..style = ui.PaintingStyle.fill;
     canvas.drawCircle(const Offset(50, 50), 20, pinPaint);
-    
-    // Border alb
+
     final borderPaint = ui.Paint()
       ..color = Colors.white
       ..style = ui.PaintingStyle.stroke
@@ -272,18 +317,27 @@ class NeighborhoodRequestsManager {
       geometry: Point(coordinates: Position(lng, lat)),
       image: icon,
       iconSize: 1.2,
+      iconAnchor: IconAnchor.CENTER,
     );
 
     try {
-      final annotation = await _annotationManager!.create(options);
-      // Ștergem pin-ul după 15 secunde
-      Timer(const Duration(seconds: 15), () {
+      final annotation = await _transientPinManager!.create(options);
+      _lastTransientPin = annotation;
+      final toExpire = annotation;
+      Logger.debug(
+        'Transient fly-to pin created at $lat,$lng',
+        tag: 'NeighborhoodRequests',
+      );
+      _transientPinExpiryTimer = Timer(const Duration(seconds: 15), () {
         try {
-          _annotationManager?.delete(annotation);
+          _transientPinManager?.delete(toExpire);
+          if (_lastTransientPin?.id == toExpire.id) {
+            _lastTransientPin = null;
+          }
         } catch (_) {}
       });
     } catch (e) {
-      Logger.warning('Transient neighborhood pin failed: $e', tag: 'NeighborhoodRequests');
+      Logger.warning('Transient map pin failed: $e', tag: 'NeighborhoodRequests');
     }
   }
 

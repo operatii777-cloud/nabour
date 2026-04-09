@@ -692,11 +692,6 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
   PointAnnotationManager? _mapOrientationPinManager;
   bool _mapOrientationPinTapRegistered = false;
   Future<void>? _homePinUpdateChain; // ✅ Serialize updates (Acas─â / Manual)
-  static const List<String> _kHomePinAssetCandidates = [
-    'assets/images/home_pin_v2.png',
-    'assets/images/home_pin.png',
-    'assets/images/home_pinv2.png',
-  ];
 
   /// După schimbare avatar în garaj: următorul update șterge toate punctele user și recreează (Mapbox poate raporta
   /// „isn't an active annotation” la `update` fără excepție în Dart).
@@ -710,7 +705,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
   Uint8List? _androidUserMarkerOverlayImageBytes;
   String? _androidUserMarkerOverlayLabel;
   static const double _androidUserMarkerOverlaySize = 88.0;
-  /// Android: pin reper / Acasă randat în Flutter (același motiv ca la markerul user — PointAnnotation nativ poate lipsi pe unele GPU).
+  /// Android: reper orientare (ac compas) randat în Flutter (același motiv ca la markerul user — PointAnnotation nativ poate lipsi pe unele GPU).
   Point? _androidHomePinGeometry;
   Offset? _androidHomePinOverlayPx;
   Uint8List? _androidHomePinOverlayBytes;
@@ -1527,15 +1522,9 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
       _savedHomeAddressEntry() != null &&
       _coordsPlausibleForSavedAddress(_savedHomeAddressEntry()!.coordinates);
 
+  /// Bitmap reper orientare: ac de compas (gamalie nord verde), aceeași suprafață ca overlay-ul Acasă (48×56).
   Future<Uint8List> _loadHomeOrientationPinBytes() async {
-    for (final path in _kHomePinAssetCandidates) {
-      try {
-        final bd = await rootBundle.load(path);
-        return bd.buffer.asUint8List();
-      } catch (_) {}
-    }
-    Logger.warning('Lipsește PNG reper Acasă (home_pin_v2) — folosesc pin generic.', tag: 'MAP');
-    return _generatePinBytes();
+    return _generateOrientationCompassNeedlePinBytes();
   }
 
   Future<void> _syncMapOrientationPinAnnotation() async {
@@ -1630,7 +1619,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
             PointAnnotationOptions(
               geometry: geom,
               image: bytes,
-              iconSize: 0.4,
+              iconSize: 1.0,
               iconAnchor: IconAnchor.BOTTOM,
               symbolSortKey: 2e6,
             ),
@@ -1638,7 +1627,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
           Logger.debug('Home Pin: Created OK (Asset bytes: ${bytes.length})', tag: 'MAP_HOME');
         }
       } catch (e, st) {
-        Logger.error('Reper orientare (pin Acasă): $e', tag: 'MAP_HOME', error: e, stackTrace: st);
+        Logger.error('Reper orientare (ac compas): $e', tag: 'MAP_HOME', error: e, stackTrace: st);
       } finally {
         if (!done.isCompleted) done.complete();
       }
@@ -2035,6 +2024,62 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
     }
   }
   
+  /// Ac de compas pe hartă: gamalia (nord) verde; pivot spre sud — aceeași lățime/înălțime ca markerul Acasă (48×56).
+  Future<Uint8List> _generateOrientationCompassNeedlePinBytes() async {
+    final int w = _androidHomePinOverlayWidth.toInt();
+    final int h = _androidHomePinOverlayHeight.toInt();
+    final recorder = ui.PictureRecorder();
+    final canvas = Canvas(
+      recorder,
+      Rect.fromLTWH(0, 0, w.toDouble(), h.toDouble()),
+    );
+    final paint = Paint()..isAntiAlias = true;
+
+    final double cx = w / 2.0;
+    const double northY = 7.0;
+    final double southY = h - 3.0;
+    final double midY = (northY + southY) / 2.0;
+    const double halfW = 11.0;
+
+    final northPath = Path()
+      ..moveTo(cx, northY)
+      ..lineTo(cx + halfW, midY)
+      ..lineTo(cx - halfW, midY)
+      ..close();
+    paint
+      ..style = PaintingStyle.fill
+      ..color = const Color(0xFF16A34A);
+    canvas.drawPath(northPath, paint);
+    paint
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.2
+      ..color = const Color(0xCC000000);
+    canvas.drawPath(northPath, paint);
+
+    final southPath = Path()
+      ..moveTo(cx - halfW, midY)
+      ..lineTo(cx + halfW, midY)
+      ..lineTo(cx, southY)
+      ..close();
+    paint
+      ..style = PaintingStyle.fill
+      ..color = const Color(0xFF78909C);
+    canvas.drawPath(southPath, paint);
+    paint
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.2
+      ..color = const Color(0xCC000000);
+    canvas.drawPath(southPath, paint);
+
+    final picture = recorder.endRecording();
+    final image = await picture.toImage(w, h);
+    final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
+    return _pngBytesOrMinimalFallback(
+      byteData,
+      '_generateOrientationCompassNeedlePinBytes',
+    );
+  }
+
   // 🗺️ Generează programatic un pin icon (roșu cu punct alb)
   Future<Uint8List> _generatePinBytes() async {
     const int w = 64, h = 88;
@@ -3160,7 +3205,8 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
       // Evităm cursa veche (null fără deleteAll): aici facem mereu [deleteAll] înainte de reset.
       if (mounted) {
         await _disposePointAnnotationManagersAfterRuntimeStyleMutation();
-        unawaited(_requestsManager?.initialize());
+        // Așteptăm reinilizarea cererilor de cartier + pin fly-to; altfel managerii rămân invalizi după stil.
+        await _requestsManager?.initialize();
         unawaited(_mysteryBoxManager?.initialize());
         unawaited(_communityMysteryManager?.initialize());
         if (_positionForUserMapMarker() != null) {
@@ -5522,15 +5568,18 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
   }
 
   void _onUniversalSearchPlace(double lat, double lng, String label) {
-    unawaited(_mapboxMap?.flyTo(
-      CameraOptions(
-        center: Point(coordinates: Position(lng, lat)),
-        zoom: 16.5,
-        pitch: 45,
-      ),
-      MapAnimationOptions(duration: 1800),
-    ));
-    unawaited(_requestsManager?.showTransientLocationPin(lat, lng));
+    // Fly-to apoi pin pe același strat ca căutarea (nu pin „Acasă” — acela e `_mapOrientationPinManager`).
+    unawaited(() async {
+      await _mapboxMap?.flyTo(
+        CameraOptions(
+          center: Point(coordinates: Position(lng, lat)),
+          zoom: 16.5,
+          pitch: 45,
+        ),
+        MapAnimationOptions(duration: 1800),
+      );
+      await _requestsManager?.showTransientLocationPin(lat, lng);
+    }());
     _showSafeSnackBar(label, const Color(0xFF3949AB));
   }
 
@@ -8978,8 +9027,11 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                Icon(Icons.place_rounded,
-                                    color: Colors.orange.shade300, size: 28),
+                                Icon(
+                                  Icons.explore_rounded,
+                                  color: const Color(0xFF16A34A),
+                                  size: 28,
+                                ),
                                 const SizedBox(width: 10),
                                 const Text(
                                   'Reper orientare',
@@ -9121,24 +9173,35 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
                               ),
                             ),
                             if (_androidUserMarkerOverlayLabel != null)
-                              Padding(
-                                padding: const EdgeInsets.only(top: 2),
-                                child: Text(
-                                  _androidUserMarkerOverlayLabel!,
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                    fontSize: 11.5,
-                                    fontWeight: FontWeight.w700,
-                                    color: const Color(0xFF1A237E),
-                                    height: 1.05,
-                                    shadows: const [
-                                      Shadow(
-                                        color: Colors.white,
-                                        blurRadius: 3,
+                              Consumer<ThemeProvider>(
+                                builder: (context, themeProvider, _) {
+                                  final mapAppearsDark = !AppDrawer.lowDataMode &&
+                                      themeProvider.isDarkMode;
+                                  const strongOrangeMapHud = Color(0xFFFF6D00);
+                                  return Padding(
+                                    padding: const EdgeInsets.only(top: 2),
+                                    child: Text(
+                                      _androidUserMarkerOverlayLabel!,
+                                      textAlign: TextAlign.center,
+                                      style: TextStyle(
+                                        fontSize: 11.5,
+                                        fontWeight: FontWeight.w700,
+                                        color: mapAppearsDark
+                                            ? strongOrangeMapHud
+                                            : const Color(0xFF1A237E),
+                                        height: 1.05,
+                                        shadows: [
+                                          Shadow(
+                                            color: mapAppearsDark
+                                                ? Colors.black54
+                                                : Colors.white,
+                                            blurRadius: 3,
+                                          ),
+                                        ],
                                       ),
-                                    ],
-                                  ),
-                                ),
+                                    ),
+                                  );
+                                },
                               ),
                           ],
                         ),
@@ -9160,17 +9223,18 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
                   // Aliniat cu MapWidget [styleUri]: întunecată doar când userul a ales tema întunecată.
                   final mapAppearsDark =
                       !AppDrawer.lowDataMode && themeProvider.isDarkMode;
-                  const turquoiseStreet = Color(0xFF22D3EE);
+                  // Dark mode pe hartă: stradă, scară (ex. „3 km”) și °C — portocaliu puternic.
+                  const strongOrangeMapHud = Color(0xFFFF6D00);
                   final streetStyle = mapAppearsDark
                       ? TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w900,
-                          color: turquoiseStreet,
+                          color: strongOrangeMapHud,
                           letterSpacing: -0.5,
                           shadows: const [
-                            Shadow(color: Color(0xFF0EA5E9), blurRadius: 12),
-                            Shadow(color: Color(0xFF0891B2), blurRadius: 22),
-                            Shadow(color: Color(0x6622D3EE), blurRadius: 28),
+                            Shadow(color: Color(0xFFFF9100), blurRadius: 10),
+                            Shadow(color: Color(0xFFE65100), blurRadius: 18),
+                            Shadow(color: Color(0x66FF6D00), blurRadius: 24),
                           ],
                         )
                       : const TextStyle(
@@ -9182,8 +9246,9 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
                   final subStyle = TextStyle(
                     fontSize: 10,
                     fontWeight: FontWeight.bold,
-                    color:
-                        mapAppearsDark ? Colors.grey.shade400 : Colors.grey.shade600,
+                    color: mapAppearsDark
+                        ? strongOrangeMapHud
+                        : Colors.grey.shade600,
                   );
                   return Column(
                     mainAxisSize: MainAxisSize.min,
@@ -9689,52 +9754,9 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
               ),
           ),
 
-          if (shouldShowPassengerUI) ...[
-            // Sugestii inteligente — future memorat în initState (nu re-citire la fiecare frame).
-            FutureBuilder<List<SmartSuggestion>>(
-              future: _smartSuggestionsFuture,
-              builder: (context, snap) {
-                if (!snap.hasData || snap.data!.isEmpty) {
-                  return const SizedBox.shrink();
-                }
-                return SmartSuggestionsRow(
-                  suggestions: snap.data!,
-                  onSuggestionTap: (suggestion) {
-                    _ensureRidePanelVisibleForExternalAction(() {
-                      _rideRequestPanelKey.currentState?.setDestination(
-                        address: suggestion.address,
-                        latitude: suggestion.latitude,
-                        longitude: suggestion.longitude,
-                      );
-                    });
-                    unawaited(SmartSuggestionsService()
-                        .recordDestinationUsed(suggestion));
-                    if (mounted) {
-                      setState(() {
-                        _smartSuggestionsFuture =
-                            SmartSuggestionsService().getSuggestions();
-                      });
-                    }
-                  },
-                );
-              },
-            ),
-            if (_currentPositionObject != null) ...[
-              if (_rideAddressSheetVisible || _inAppNavActive)
-                RideRequestPanel(
-                  key: _rideRequestPanelKey,
-                  draggableController: _rideSheetController,
-                  startPosition: _currentPositionObject!,
-                  onRouteCalculated: _onRouteCalculated,
-                  onDestinationPreview: _onDestinationPreview,
-                  onStartNavigation: (pt, addr) => unawaited(_startInAppNavigation(pt.coordinates.lat.toDouble(), pt.coordinates.lng.toDouble(), addr)),
-                  isNavigating: _inAppNavActive,
-                  onClose: _closeRideAddressSheet,
-                ),
-            ] else
-              const Center(child: CircularProgressIndicator()),
-          ]
-          else if (_currentRole == UserRole.driver && _isDriverAvailable)
+          if (!shouldShowPassengerUI &&
+              _currentRole == UserRole.driver &&
+              _isDriverAvailable)
             MapDriverInterface(
               firestoreService: _firestoreService,
               currentActiveRide: _currentActiveRide,
@@ -10376,6 +10398,52 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
               ),
             ),
           ),
+
+          // Pasager: sugestii + panou cursă — după bara de jos ca să fie deasupra (z-order).
+          if (shouldShowPassengerUI) ...[
+            FutureBuilder<List<SmartSuggestion>>(
+              future: _smartSuggestionsFuture,
+              builder: (context, snap) {
+                if (!snap.hasData || snap.data!.isEmpty) {
+                  return const SizedBox.shrink();
+                }
+                return SmartSuggestionsRow(
+                  suggestions: snap.data!,
+                  onSuggestionTap: (suggestion) {
+                    _ensureRidePanelVisibleForExternalAction(() {
+                      _rideRequestPanelKey.currentState?.setDestination(
+                        address: suggestion.address,
+                        latitude: suggestion.latitude,
+                        longitude: suggestion.longitude,
+                      );
+                    });
+                    unawaited(SmartSuggestionsService()
+                        .recordDestinationUsed(suggestion));
+                    if (mounted) {
+                      setState(() {
+                        _smartSuggestionsFuture =
+                            SmartSuggestionsService().getSuggestions();
+                      });
+                    }
+                  },
+                );
+              },
+            ),
+            if (_currentPositionObject != null) ...[
+              if (_rideAddressSheetVisible || _inAppNavActive)
+                RideRequestPanel(
+                  key: _rideRequestPanelKey,
+                  draggableController: _rideSheetController,
+                  startPosition: _currentPositionObject!,
+                  onRouteCalculated: _onRouteCalculated,
+                  onDestinationPreview: _onDestinationPreview,
+                  onStartNavigation: (pt, addr) => unawaited(_startInAppNavigation(pt.coordinates.lat.toDouble(), pt.coordinates.lng.toDouble(), addr)),
+                  isNavigating: _inAppNavActive,
+                  onClose: _closeRideAddressSheet,
+                ),
+            ] else
+              const Center(child: CircularProgressIndicator()),
+          ],
 
           if (_isVisibleToNeighbors && !_neighborActivityFeedDismissed)
             Positioned.fill(

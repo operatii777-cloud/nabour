@@ -48,6 +48,9 @@ class AddressInputView extends StatefulWidget {
 }
 
 class _AddressInputViewState extends State<AddressInputView> {
+  /// Pe card întunecat, hint-urile trebuie să fie deschise — verde lizibil (nu gri/negru din temă).
+  static const Color _kDarkAddressHintGreen = Color(0xFF86EFAC);
+
   static const double _leftGutterWidth = 24.0;
   final _startAddressController = TextEditingController();
   final _destinationAddressController = TextEditingController();
@@ -885,11 +888,12 @@ class _AddressInputViewState extends State<AddressInputView> {
               color: isDark ? Colors.white : const Color(0xFF1E293B),
             ),
             decoration: InputDecoration(
+              filled: false,
               hintText: hintText,
               hintStyle: TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w400,
-                color: isDark ? Colors.white.withAlpha(60) : Colors.grey[400],
+                color: isDark ? _kDarkAddressHintGreen : Colors.grey[400],
               ),
               prefixIcon: Padding(
                 padding: const EdgeInsets.all(12),
@@ -1223,8 +1227,12 @@ class _AddressInputViewState extends State<AddressInputView> {
                     color: isDark ? Colors.white : const Color(0xFF1E293B),
                   ),
                   decoration: InputDecoration(
+                    filled: false,
                     hintText: hintText,
-                    hintStyle: TextStyle(fontSize: 12, color: Colors.grey[400]),
+                    hintStyle: TextStyle(
+                      fontSize: 12,
+                      color: isDark ? _kDarkAddressHintGreen : Colors.grey[400],
+                    ),
                     border: InputBorder.none,
                     contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
                   ),

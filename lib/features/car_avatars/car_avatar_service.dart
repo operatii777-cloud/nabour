@@ -41,13 +41,13 @@ class CarAvatarService {
     CarAvatar(id: 'moto', name: 'Motocicleta Sport', assetPath: 'assets/images/avatars/moto.png', price: 450, category: CarCategory.transport),
     CarAvatar(id: 'yacht', name: 'Iaht Diamond', assetPath: 'assets/images/avatars/yacht.png', price: 2500, category: CarCategory.transport),
     CarAvatar(id: 'uber', name: 'Uber Prototype', assetPath: 'assets/images/avatars/uber.png', price: 1250, category: CarCategory.transport),
-    CarAvatar(id: 'robo', name: 'Robo Driver', assetPath: 'assets/images/avatars/robo.png', price: 1800, category: CarCategory.transport),
     CarAvatar(id: 'salupa', name: 'Salupa Rapida', assetPath: 'assets/images/avatars/salupa.png', price: 1200, category: CarCategory.transport),
     // --- Animals ---
     CarAvatar(id: 'horse', name: 'Cal de Curse', assetPath: 'assets/images/avatars/horse.png', price: 1500, category: CarCategory.animals),
     CarAvatar(id: 'rhino', name: 'Rinocer Blindat', assetPath: 'assets/images/avatars/rhino.png', price: 2000, category: CarCategory.animals),
     CarAvatar(id: 'elephant', name: 'Elefant Maiestos', assetPath: 'assets/images/avatars/elephant.png', price: 2200, category: CarCategory.animals),
-    // --- Characters ---
+    // --- Characters (inclusiv ROBO — doar mod pasager pe hartă) ---
+    CarAvatar(id: 'robo', name: 'ROBO', assetPath: 'assets/images/avatars/ROBO.png', price: 1800, category: CarCategory.characters),
     CarAvatar(id: 'unicorn', name: 'Unicorn Magic', assetPath: 'assets/images/avatars/unicorn.png', price: 5000, category: CarCategory.characters),
     CarAvatar(id: 'mythic', name: 'Erou Mitic', assetPath: 'assets/images/avatars/mythic.png', price: 3500, category: CarCategory.characters),
   ];

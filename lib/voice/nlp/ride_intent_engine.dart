@@ -151,6 +151,29 @@ class RideIntentEngine {
     }
   };
 
+  /// Evită false positive: `contains('no')` se potrivea în **„nord”**, `contains('nu')` în cuvinte rare, etc.
+  bool _keywordMatches(String normalized, String keyword) {
+    final k = keyword.trim();
+    if (k.isEmpty) return false;
+    if (k.contains(' ')) {
+      final escaped =
+          k.split(RegExp(r'\s+')).where((p) => p.isNotEmpty).map(RegExp.escape).join(r'\s+');
+      return RegExp('\\b$escaped\\b').hasMatch(normalized);
+    }
+    if (k.length <= 3) {
+      return RegExp('\\b${RegExp.escape(k)}\\b').hasMatch(normalized);
+    }
+    return normalized.contains(k);
+  }
+
+  /// Locuri frecvente fără „str.” / „șoseaua” în față (totuși destinații valide pentru cursă).
+  bool _looksLikeLikelyPoiPhrase(String normalized) {
+    if (normalized.length < 4) return false;
+    return RegExp(
+      r'\b(gara|autogara|aeroport|terminal|mall|hypermarket|spital|clinica|piata|parc|campus|stadion|muzeu|biserica|sala palatului|centru comercial|universitate|facultate)\b',
+    ).hasMatch(normalized);
+  }
+
   /// 🧠 Logica de procesare locală bazată pe reguli și keywords
   RideIntent _processLocally(String raw, String normalized) {
     final words = normalized.split(' ');
@@ -166,7 +189,7 @@ class RideIntentEngine {
       
       // Scor bazat pe keywords
       for (var k in keywords) {
-        if (normalized.contains(k)) {
+        if (_keywordMatches(normalized, k)) {
           // Keywords mai lungi sau exacte au pondere mai mare
           if (normalized == k || (words.length == 1 && words[0] == k)) {
             currentConfidence += 0.5;
@@ -210,10 +233,10 @@ class RideIntentEngine {
       }
     }
 
-    // 3b. Adresă / loc spus direct, fără „vreau cursă la…” (ex. „Șoseaua Vergului 22”)
+    // 3b. Adresă / loc spus direct, fără „vreau cursă la…” (ex. „Șoseaua Vergului 22”, „Gara de Nord”)
     // Evită clasificarea greșită ca smallTalk doar pentru că fraza are puține cuvinte.
     if (bestType == RideIntentType.unknown &&
-        _looksLikeFreeformAddress(normalized)) {
+        (_looksLikeFreeformAddress(normalized) || _looksLikeLikelyPoiPhrase(normalized))) {
       bestType = RideIntentType.rideRequest;
       bestConfidence = 0.88;
       destination = raw.trim();
@@ -225,7 +248,8 @@ class RideIntentEngine {
       'soseaua', 'strada', 'bulevard', 'calea ', 'aleea ', 'splai', 'piata ', 'drumul ',
       'intrarea', 'fundatura', 'blocul ', 'scara ', 'sectorul ', 'cartierul ',
     ];
-    final looksLikeRide = rideKeywords.any((k) => normalized.contains(k));
+    final looksLikeRide = rideKeywords.any((k) => normalized.contains(k)) ||
+        _looksLikeLikelyPoiPhrase(normalized);
     if (bestType == RideIntentType.unknown && normalized.isNotEmpty && !looksLikeRide) {
       if (words.length <= 6) {
         bestType = RideIntentType.smallTalk;
