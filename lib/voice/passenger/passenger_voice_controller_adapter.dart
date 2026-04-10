@@ -138,6 +138,7 @@ class PassengerVoiceControllerAdapter extends ChangeNotifier {
         return VoiceConversationState.confirmed;
       case RideFlowState.awaitingAddressSelection:
       case RideFlowState.awaitingClarification:
+      case RideFlowState.awaitingDestinationGeocodeDetail:
         return VoiceConversationState.awaitingClarification;
       case RideFlowState.error:
         return VoiceConversationState.error;

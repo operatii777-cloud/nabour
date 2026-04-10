@@ -319,9 +319,26 @@ class PassengerVoiceController extends ChangeNotifier {
   Future<void> processVoiceInput(String userInput) async {
     try {
       Logger.debug('Processing voice input: $userInput', tag: 'VOICE_CONTROLLER');
+      _processingState = VoiceProcessingState.thinking;
+      notifyListeners();
       await _rideFlowManager.processVoiceInput(userInput);
     } catch (e) {
       Logger.error('Voice processing error: $e', tag: 'VOICE_CONTROLLER', error: e);
+      _processingState = VoiceProcessingState.idle;
+      notifyListeners();
+    } finally {
+      // Dacă orchestratorul nu a trecut deja la speaking/listening (TTS/STT), ieșim din thinking.
+      scheduleMicrotask(() {
+        if (_processingState != VoiceProcessingState.thinking) return;
+        if (_voiceOrchestrator.isSpeaking ||
+            _voiceOrchestrator.isListening ||
+            _voiceOrchestrator.isTtsSpeaking ||
+            _voiceOrchestrator.isSpeakThenListenInProgress) {
+          return;
+        }
+        _processingState = VoiceProcessingState.idle;
+        notifyListeners();
+      });
     }
   }
 
@@ -437,6 +454,23 @@ class PassengerVoiceController extends ChangeNotifier {
     final rs = _rideFlowManager.currentState;
     if (rs == RideFlowState.awaitingDriverAcceptance || rs == RideFlowState.driverFound) {
       await Future.delayed(const Duration(milliseconds: 500));
+      if (_continuousListeningEnabled) {
+        await _startContinuousListeningLoop();
+      }
+      return;
+    }
+    // Nu suprapune tura TTS→STT atomică din RideFlow ([speakThenListen] serializat).
+    if (_voiceOrchestrator.isSpeakThenListenInProgress) {
+      await Future.delayed(const Duration(milliseconds: 350));
+      if (_continuousListeningEnabled) {
+        await _startContinuousListeningLoop();
+      }
+      return;
+    }
+    // Procesare NLU/LLM sau redare: așteaptă (altfel două sesiuni STT).
+    if (_processingState == VoiceProcessingState.thinking ||
+        _processingState == VoiceProcessingState.speaking) {
+      await Future.delayed(const Duration(milliseconds: 350));
       if (_continuousListeningEnabled) {
         await _startContinuousListeningLoop();
       }

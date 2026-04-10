@@ -128,22 +128,54 @@ class RideFlowManager {
     VoiceEmotion emotion = VoiceEmotion.calm,
     int? timeoutSeconds,
     int? pauseForSeconds,
+    /// Răspunsuri foarte scurte (da/nu); altfel folosiți implicit dictation pentru adrese și clarificări.
+    bool shortConfirmation = false,
   }) async {
     try {
       _lastSpokenMessage = text;
       final languageCode = await _getCurrentLanguageCode();
       final localeId = languageCode == 'en' ? 'en_US' : 'ro_RO';
-      
-      await _voiceOrchestrator.speakThenListen(
-        text,
-        emotion: emotion,
-        timeoutSeconds: timeoutSeconds,
-        pauseForSeconds: pauseForSeconds,
-        localeId: localeId,
-      );
+
+      if (shortConfirmation) {
+        await _voiceOrchestrator.speakThenListenConfirmation(
+          text,
+          emotion: emotion,
+          localeId: localeId,
+        );
+      } else {
+        await _voiceOrchestrator.speakThenListen(
+          text,
+          emotion: emotion,
+          timeoutSeconds: timeoutSeconds,
+          pauseForSeconds: pauseForSeconds,
+          localeId: localeId,
+        );
+      }
     } catch (e) {
       Logger.error('Speak then listen error: $e', tag: 'RIDE_FLOW', error: e);
     }
+  }
+
+  /// Răspuns sigur când LLM-ul depășește timpul — continuă conversația, fără stare moartă.
+  Future<GeminiVoiceResponse> _responseForLlmTimeout() async {
+    final msg = await VoiceTranslations.getAiTimeoutRetry();
+    return GeminiVoiceResponse(
+      type: 'needs_clarification',
+      message: msg,
+      confidence: 0.3,
+      needsClarification: true,
+      clarificationQuestion: msg,
+    );
+  }
+
+  /// Geocodarea destinației a eșuat — cere reper/cartier; păstrează pipeline-ul vocal (atomic speak→listen).
+  Future<void> _promptDestinationLandmarkAndListen() async {
+    _currentState = RideFlowState.awaitingDestinationGeocodeDetail;
+    final languageCode = await _getCurrentLanguageCode();
+    await _tts.setLanguage(languageCode);
+    final message = await VoiceTranslations.getAskDestinationLandmark();
+    _lastSpokenMessage = message;
+    await _speakThenListen(message, emotion: VoiceEmotion.calm);
   }
 
   /// Mesajele vocale trec prin orchestrator: barge-in, stări UI, același guard STT/TTS ca la [speakThenListen].
@@ -190,6 +222,10 @@ class RideFlowManager {
         await _voiceOrchestrator.stopListening();
         final cleanedDriver = _cleanInputFromTTS(userInput);
         Logger.debug('Cleaned input (driver acceptance): "$cleanedDriver"', tag: 'RIDE_FLOW');
+        if (cleanedDriver.isEmpty) {
+          Logger.debug('Driver acceptance: empty utterance, skip', tag: 'RIDE_FLOW');
+          return;
+        }
         _addToHistory('User: $cleanedDriver');
         if (_isPositiveConfirmation(cleanedDriver)) {
           await _handleDriverAcceptanceResponse(
@@ -208,12 +244,20 @@ class RideFlowManager {
       await _voiceOrchestrator.stopListening();
       
       // 🧹 CURĂȚ INPUT-UL DE CE SPUNE AI-UL (elimină echo-ul TTS-ului)
-      final String cleanedInput = _cleanInputFromTTS(userInput);
+      String cleanedInput = _cleanInputFromTTS(userInput);
       Logger.debug('Cleaned input: "$cleanedInput"', tag: 'RIDE_FLOW');
-      
+      if (cleanedInput.isEmpty) {
+        Logger.info('Empty utterance after clean — skip AI round', tag: 'RIDE_FLOW');
+        return;
+      }
+      if (cleanedInput.length > 8000) {
+        cleanedInput = '${cleanedInput.substring(0, 7997)}…';
+        Logger.warning('Input truncated to 8000 chars for AI', tag: 'RIDE_FLOW');
+      }
+
       // 📝 Adaug la istoric
       _addToHistory('User: $cleanedInput');
-      
+
       // 🧠 Construiesc contextul pentru Gemini
       final context = VoiceContext(
         destination: _destination,
@@ -221,20 +265,25 @@ class RideFlowManager {
         conversationState: _currentState.toString(),
         conversationHistory: _conversationHistory,
       );
-      
+
       // 🧠 1. Încearcă procesarea locală de intenții (NLP Local)
       final intentEngine = RideIntentEngine();
       final intent = await intentEngine.process(cleanedInput);
-      
+
       GeminiVoiceResponse? response;
-      
+
       if (intent.handledLocally && intent.type != RideIntentType.unknown) {
         Logger.info('Handled by Local RideIntentEngine: ${intent.type}', tag: 'RIDE_FLOW');
         response = await _mapIntentToResponse(intent);
       } else {
-        // 🚀 2. Router multi-provider: Cerebras → Gemini → Grok
+        // 🚀 2. Router multi-provider: Cerebras → Gemini → Grok (timeout → reluare conversațională)
         final languageCode = await _getCurrentLanguageCode();
-        response = await AIProviderRouter().route(cleanedInput, context, languageCode: languageCode);
+        response = await AIProviderRouter()
+            .route(cleanedInput, context, languageCode: languageCode)
+            .timeout(
+              const Duration(seconds: 45),
+              onTimeout: _responseForLlmTimeout,
+            );
       }
       
       // 🔔 Beep pentru confirmarea procesării
@@ -606,7 +655,26 @@ class RideFlowManager {
 
       // ✅ Geocodare silențioasă a destinației pentru a asigura coordonatele la confirmare
       if (_destinationLatitude == null || _destinationLongitude == null) {
-        await _silentlyGeocodeDestination();
+        final geocoded = await _silentlyGeocodeDestination();
+        if (!geocoded) {
+          try {
+            if (_destination != null && _destination!.isNotEmpty) {
+              final pickup = _pickup ?? 'Locația curentă';
+              onFillAddressInUI(
+                pickup,
+                _destination!,
+                pickupLat: _pickupLatitude,
+                pickupLng: _pickupLongitude,
+                destLat: _destinationLatitude,
+                destLng: _destinationLongitude,
+              );
+            }
+          } catch (e) {
+            Logger.error('UI update callback error: $e', tag: 'RIDE_FLOW', error: e);
+          }
+          await _promptDestinationLandmarkAndListen();
+          return;
+        }
       }
 
       // ✅ ACTUALIZEAZĂ UI-UL CU ADRESA ȘI COORDONATELE (dacă sunt disponibile)
@@ -634,7 +702,7 @@ class RideFlowManager {
       // ✅ FIX: Obțin limba curentă și mesajul tradus
       final confirmMessage = await VoiceTranslations.getDestinationWithPrice(_destination ?? '');
       _lastSpokenMessage = confirmMessage;
-      // ✅ USE ATOMIC FLOW: SPEAK THEN LISTEN FOR CONFIRMATION
+      // Dictation: utilizatorul poate confirma sau reformula destinația într-o propoziție lungă.
       await _speakThenListen(confirmMessage, emotion: VoiceEmotion.confident);
       _currentState = RideFlowState.awaitingConfirmation;
       // ✅ AFIȘEAZĂ PREȚUL ÎN UI (dacă callback-ul este disponibil)
@@ -677,8 +745,9 @@ class RideFlowManager {
           await _voiceOrchestrator.stopListening();
           
           final confirmMessage = await VoiceTranslations.getFinalRideConfirmation();
-          await _speakThenListen(confirmMessage, emotion: VoiceEmotion.confident);
-          
+          // Utilizatorul a confirmat deja — doar feedback TTS, fără a deschide din nou microfonul înainte de trimitere.
+          await _speakEmotion(confirmMessage, VoiceEmotion.confident);
+
           // CREEAZĂ CEREREA DE CURSĂ (nu mai căuta șoferi din nou!)
           await _fillAddressAndNavigateToConfirmation();
           return; // IMPORTANT: Oprește execuția aici!
@@ -986,36 +1055,59 @@ class RideFlowManager {
     }
   }
   
-  /// 🎯 ÎMBUNĂTĂȚIT: Gestionează erorile cu feedback UI și TTS
-  Future<void> _handleError(String error) async {
+  /// Transformă textul brut de eroare într-un mesaj scurt, fără stack / zgomot tehnic.
+  String _toUserFacingError(String raw) {
+    var s = raw.trim();
+    const prefixes = ['Exception:', 'Exception :', 'Error:', 'Dart exception:'];
+    var stripped = true;
+    while (stripped) {
+      stripped = false;
+      for (final prefix in prefixes) {
+        final pl = prefix.length;
+        if (s.length >= pl && s.substring(0, pl).toLowerCase() == prefix.toLowerCase()) {
+          s = s.substring(pl).trim();
+          stripped = true;
+          break;
+        }
+      }
+    }
+    final nl = s.indexOf('\n');
+    if (nl != -1) s = s.substring(0, nl).trim();
+    if (s.length > 220) s = '${s.substring(0, 217)}…';
+    return s;
+  }
+
+  /// 🎯 ÎMBUNĂTĂȚIT: Eroare cu TTS + reluare conversație (nu rămâneți într-o stare moartă fără microfon).
+  Future<void> _handleError(String error, {bool recoverSession = true}) async {
     Logger.error('Error: $error', tag: 'RIDE_FLOW', error: error);
-    
-    // ✅ FIX: Setează limba înainte de a vorbi
+
     final languageCode = await _getCurrentLanguageCode();
     await _tts.setLanguage(languageCode);
-    
-    // ✅ MESAJ DE EROARE PRIETENOS (tradus)
-    final errorMessage = error.isNotEmpty 
-        ? error 
-        : (languageCode == 'en' 
-            ? 'I\'m sorry, I encountered a problem. Please try again.' 
-            : 'Îmi pare rău, am întâmpinat o problemă. Vă rog să încercați din nou.');
-    
-    _lastSpokenMessage = errorMessage;
-    
-    // ✅ TTS pentru feedback vocal
-    await _speakEmotion(errorMessage, VoiceEmotion.calm);
-    
-    // ✅ UI feedback prin callback (dacă este disponibil)
-    // Notă: onShowError este un callback opțional care poate fi setat din UI
+
+    var brief = _toUserFacingError(error);
+    if (brief.isEmpty) {
+      brief = await VoiceTranslations.getGenericProblemShort();
+    }
+
+    final spoken = recoverSession
+        ? await VoiceTranslations.composeErrorWithRecoveryHint(brief)
+        : brief;
+
+    _lastSpokenMessage = spoken;
+
+    if (recoverSession) {
+      _currentState = RideFlowState.listeningForInitialCommand;
+      await _speakThenListen(spoken, emotion: VoiceEmotion.calm, pauseForSeconds: 5);
+    } else {
+      await _speakEmotion(spoken, VoiceEmotion.calm);
+      _currentState = RideFlowState.error;
+    }
+
     try {
-      // Callback pentru afișare eroare în UI (dacă este implementat)
-      // onShowError?.call(errorMessage);
+      // onShowError?.call(spoken);
     } catch (e) {
       Logger.error('Error callback not available: $e', tag: 'RIDE_FLOW', error: e);
     }
-    
-    _currentState = RideFlowState.error;
   }
   
 
@@ -1714,10 +1806,14 @@ class RideFlowManager {
     }
   }
 
-  /// 🎯 NOUĂ METODĂ: Geocodare silențioasă pentru destinație
-  Future<void> _silentlyGeocodeDestination() async {
-    if (_destination == null || _destination!.isEmpty) return;
-    
+  /// 🎯 Geocodare silențioasă pentru destinație (nativ + OSM ca în fluxul principal). [true] dacă avem coordonate.
+  Future<bool> _silentlyGeocodeDestination() async {
+    if (_destination == null || _destination!.isEmpty) return false;
+
+    if (_destinationLatitude != null && _destinationLongitude != null) {
+      return true;
+    }
+
     try {
       Logger.debug('Silently geocoding destination: $_destination', tag: 'GPS');
       final locations = await geocoding.locationFromAddress(_destination!);
@@ -1725,10 +1821,55 @@ class RideFlowManager {
         _destinationLatitude = locations.first.latitude;
         _destinationLongitude = locations.first.longitude;
         Logger.info('Destination geocoded to: $_destinationLatitude, $_destinationLongitude', tag: 'GPS');
+        return true;
       }
     } catch (e) {
-      Logger.error('Silently geocode destination error: $e', tag: 'RIDE_FLOW', error: e);
+      Logger.debug('Silent geocode native: $e', tag: 'GPS');
     }
+
+    if (_pickupLatitude != null && _pickupLongitude != null) {
+      try {
+        final pos = geolocator.Position(
+          latitude: _pickupLatitude!,
+          longitude: _pickupLongitude!,
+          timestamp: DateTime.now(),
+          accuracy: 0,
+          altitude: 0,
+          altitudeAccuracy: 0,
+          heading: 0,
+          headingAccuracy: 0,
+          speed: 0,
+          speedAccuracy: 0,
+        );
+        var suggestions =
+            await geocoding_svc.GeocodingService().fetchSuggestions(_destination!, pos);
+        if (suggestions.isEmpty) {
+          suggestions = await geocoding_svc.GeocodingService().fetchSuggestions(
+            '$_destination, România',
+            pos,
+          );
+        }
+        if (suggestions.isNotEmpty) {
+          suggestions.sort((a, b) {
+            final distA = a.distanceMeters ?? double.infinity;
+            final distB = b.distanceMeters ?? double.infinity;
+            return distA.compareTo(distB);
+          });
+          final closest = suggestions.first;
+          _destinationLatitude = closest.latitude;
+          _destinationLongitude = closest.longitude;
+          Logger.info(
+            'Destination geocoded via OSM: $_destinationLatitude, $_destinationLongitude',
+            tag: 'GPS',
+          );
+          return true;
+        }
+      } catch (e) {
+        Logger.error('Silent geocode OSM: $e', tag: 'RIDE_FLOW', error: e);
+      }
+    }
+
+    return false;
   }
 
   /// 🎯 NOUĂ METODĂ: Geocodare silențioasă pentru pickup
@@ -2279,7 +2420,26 @@ class RideFlowManager {
         _pickup = await _getCurrentUserLocation();
       }
       if (_destinationLatitude == null || _destinationLongitude == null) {
-        await _silentlyGeocodeDestination();
+        final geocoded = await _silentlyGeocodeDestination();
+        if (!geocoded) {
+          try {
+            if (_destination != null && _destination!.isNotEmpty) {
+              final pickup = _pickup ?? 'Locația curentă';
+              onFillAddressInUI(
+                pickup,
+                _destination!,
+                pickupLat: _pickupLatitude,
+                pickupLng: _pickupLongitude,
+                destLat: _destinationLatitude,
+                destLng: _destinationLongitude,
+              );
+            }
+          } catch (e) {
+            Logger.error('UI update callback error: $e', tag: 'RIDE_FLOW', error: e);
+          }
+          await _promptDestinationLandmarkAndListen();
+          return;
+        }
       }
 
       // ✅ ACTUALIZEAZĂ UI-UL CU ADRESA ȘI COORDONATELE (dacă sunt disponibile)
@@ -2324,7 +2484,14 @@ class RideFlowManager {
       Logger.debug('AUTONOM: Starting autonomous ride processing...', tag: 'RIDE_FLOW');
       
       // Pasul 1: Detectează locația curentă automat
-      await _detectCurrentLocationAutonomously();
+      final locationPipelineOk = await _detectCurrentLocationAutonomously();
+      if (!locationPipelineOk) {
+        Logger.info(
+          'AUTONOM: Oprit după clarificare destinație / selecție adresă — nu se caută șoferi încă.',
+          tag: 'RIDE_FLOW',
+        );
+        return;
+      }
 
       // Pasul 2: Caută șoferi automat (fără calcul preț — cursele sunt gratuite)
       await _searchDriversAutonomously();
@@ -2343,8 +2510,8 @@ class RideFlowManager {
     }
   }
 
-  /// 🎯 AUTONOM: Detectează locația curentă automat
-  Future<void> _detectCurrentLocationAutonomously() async {
+  /// 🎯 AUTONOM: Detectează locația curentă automat. [false] = clarificare reper sau selecție adresă (nu continua căutarea).
+  Future<bool> _detectCurrentLocationAutonomously() async {
     try {
       Logger.debug('AUTONOM: Detecting current location...', tag: 'RIDE_FLOW');
       
@@ -2480,7 +2647,7 @@ class RideFlowManager {
                   'Multiple different addresses found (${suggestions.length}), asking user to choose',
                   tag: 'GPS');
               await _askForAddressDisambiguation(suggestions);
-              return; // Fluxul continuă după selecția utilizatorului
+              return false; // Fluxul continuă după selecția utilizatorului
             }
 
             final closest = suggestions.first;
@@ -2608,30 +2775,20 @@ class RideFlowManager {
                           Logger.debug('Distance to destination: ${distanceKm.toStringAsFixed(2)} km', tag: 'GPS');
                           Logger.debug('Address: ${closest.description}', tag: 'GPS');
                         } else {
-                          // Dacă nici cu Gemini AI nu găsește, anunță eroare
                           Logger.error('ERROR: Could not geocode destination even with Gemini AI help!', tag: 'GPS');
-                          // ✅ NOU: Folosește traducere
-                          final errorMsg = await VoiceTranslations.getAddressNotFound(_destination ?? '');
-                          await _speakEmotion(errorMsg, VoiceEmotion.calm);
-                          return; // Oprește procesul
+                          await _promptDestinationLandmarkAndListen();
+                          return false;
                         }
                       }
                     } else {
-                      // Dacă Gemini AI nu poate ajuta, anunță eroare
                       Logger.error('ERROR: Could not geocode destination after all retries!', tag: 'GPS');
-                      // ✅ FIX: Obțin limba curentă și mesajul tradus
-                      final languageCode = await _getCurrentLanguageCode();
-                      await _tts.setLanguage(languageCode);
-                      final errorMsg = await VoiceTranslations.getAddressNotFound(_destination ?? '');
-                      await _speakEmotion(errorMsg, VoiceEmotion.calm);
-                      return; // Oprește procesul
+                      await _promptDestinationLandmarkAndListen();
+                      return false;
                     }
                   } catch (geminiError) {
                     Logger.error('Error asking Gemini AI for clarification: $geminiError', tag: 'GPS');
-                    // Dacă Gemini AI eșuează, anunță eroare
-                    final errorMsg = 'Îmi pare rău, nu am putut găsi adresa "$_destination". Vă rog să specificați o adresă mai clară sau un loc cunoscut.';
-                    await _speakEmotion(errorMsg, VoiceEmotion.calm);
-                    return; // Oprește procesul
+                    await _promptDestinationLandmarkAndListen();
+                    return false;
                   }
                 }
               }
@@ -2653,30 +2810,18 @@ class RideFlowManager {
                     Logger.info('Destination found with Gemini AI coordinates: $_destinationLatitude, $_destinationLongitude', tag: 'GPS');
                   } else {
                     Logger.error('ERROR: Could not geocode destination after all retries!', tag: 'GPS');
-                    // ✅ FIX: Obțin limba curentă și mesajul tradus
-                    final languageCode = await _getCurrentLanguageCode();
-                    await _tts.setLanguage(languageCode);
-                    final errorMsg = await VoiceTranslations.getAddressNotFound(_destination ?? '');
-                    await _speakEmotion(errorMsg, VoiceEmotion.calm);
-                    return;
+                    await _promptDestinationLandmarkAndListen();
+                    return false;
                   }
                 } else {
                   Logger.error('ERROR: Could not geocode destination after all retries!', tag: 'GPS');
-                  // ✅ FIX: Obțin limba curentă și mesajul tradus
-                  final languageCode = await _getCurrentLanguageCode();
-                  await _tts.setLanguage(languageCode);
-                  final errorMsg = await VoiceTranslations.getAddressNotFound(_destination ?? '');
-                  await _speakEmotion(errorMsg, VoiceEmotion.calm);
-                  return;
+                  await _promptDestinationLandmarkAndListen();
+                  return false;
                 }
               } catch (geminiError) {
                 Logger.error('Error asking Gemini AI: $geminiError', tag: 'GPS');
-                // ✅ FIX: Obțin limba curentă și mesajul tradus
-                final languageCode = await _getCurrentLanguageCode();
-                await _tts.setLanguage(languageCode);
-                final errorMsg = await VoiceTranslations.getAddressNotFound(_destination ?? '');
-                await _speakEmotion(errorMsg, VoiceEmotion.calm);
-                return;
+                await _promptDestinationLandmarkAndListen();
+                return false;
               }
             }
           }
@@ -2685,13 +2830,15 @@ class RideFlowManager {
       
       // ✅ NU mai anunță coordonatele - doar confirmă locația
       // Anunțurile sunt simplificate mai jos
-      
+
+      return true;
     } catch (e) {
       Logger.error('Location detection error: $e', tag: 'RIDE_FLOW', error: e);
       // Folosește o locație default
       _pickup = 'Locația curentă detectată automat';
       _pickupLatitude = 44.4268;
       _pickupLongitude = 26.1025;
+      return true;
     }
   }
 

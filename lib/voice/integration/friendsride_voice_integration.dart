@@ -320,7 +320,9 @@ class FriendsRideVoiceIntegration extends ChangeNotifier {
         // RideFlow pornește singur STT la confirmare șofer / mesaje critice — nu suprapune listenOnce.
         final rs = _voiceController!.rideState;
         if (rs == RideFlowState.awaitingDriverAcceptance ||
-            rs == RideFlowState.driverFound) {
+            rs == RideFlowState.driverFound ||
+            rs == RideFlowState.awaitingDestinationGeocodeDetail ||
+            rs == RideFlowState.awaitingAddressSelection) {
           return;
         }
         // CORECTAT: Verifică doar starea idle, nu waiting (care poate fi folosită pentru sincronizare)

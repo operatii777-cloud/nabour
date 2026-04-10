@@ -54,6 +54,9 @@ enum RideFlowState {
   
   /// ❓ Așteaptă clarificare
   awaitingClarification,
+
+  /// 🗺️ Geocodarea destinației a eșuat — așteaptă reper / cartier (pipeline vocal activ)
+  awaitingDestinationGeocodeDetail,
   
   /// 🎯 NOU: Așteaptă confirmarea adreselor
   awaitingAddressConfirmation,
@@ -443,6 +446,8 @@ class VoiceConversationContext {
         return 'Cursa finalizată';
       case RideFlowState.awaitingClarification:
         return 'Aștept clarificare...';
+      case RideFlowState.awaitingDestinationGeocodeDetail:
+        return 'Aștept reper sau cartier pentru destinație...';
       // 🎯 NOU: Stările pentru integrarea cu UI
       case RideFlowState.awaitingAddressConfirmation:
         return 'Aștept confirmarea adreselor...';

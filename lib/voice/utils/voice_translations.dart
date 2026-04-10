@@ -79,6 +79,49 @@ class VoiceTranslations {
         ? 'Sorry, I couldn\'t find the address "$address". Please specify a clearer address or a known location.'
         : 'Îmi pare rău, nu am putut găsi adresa "$address". Vă rog să specificați o adresă mai clară sau un loc cunoscut.';
   }
+
+  /// După eșec geocodare: cere reper / zonă, fără a închide sesiunea vocală.
+  static Future<String> getAskDestinationLandmark() async {
+    final lang = await _getCurrentLanguageCode();
+    return lang == 'en'
+        ? 'I could not find that street. Can you name a nearby landmark or neighborhood?'
+        : 'Nu am găsit strada respectivă. Puteți să îmi spuneți un reper sau un cartier?';
+  }
+
+  /// Mesaj scurt când eroarea tehnică nu poate fi afișată clar (fără stack).
+  static Future<String> getGenericProblemShort() async {
+    final lang = await _getCurrentLanguageCode();
+    return lang == 'en'
+        ? 'Something went wrong. Please try again, or type the address in the field.'
+        : 'A apărut o problemă. Încercați din nou sau scrieți adresa în câmp.';
+  }
+
+  /// Răspuns când modelul nu răspunde la timp (timeout rețea / server).
+  static Future<String> getAiTimeoutRetry() async {
+    final lang = await _getCurrentLanguageCode();
+    return lang == 'en'
+        ? 'That took too long. Please say again briefly where you want to go.'
+        : 'A durat prea mult. Spuneți pe scurt unde doriți să mergeți.';
+  }
+
+  /// Combină mesajul de problemă cu invitația de reluare (VUI: recuperare conversațională).
+  static Future<String> composeErrorWithRecoveryHint(String problem) async {
+    final lang = await _getCurrentLanguageCode();
+    final p = problem.trim();
+    if (p.isEmpty) return await getGenericProblemShort();
+    final lower = p.toLowerCase();
+    if (lower.contains('scrie') ||
+        lower.contains('tastatur') ||
+        lower.contains('field') ||
+        lower.contains('type the') ||
+        lower.contains('încercați din nou')) {
+      return p;
+    }
+    final hint = lang == 'en'
+        ? ' You can say it again or type the address in the field.'
+        : ' Puteți spune din nou sau scrie adresa în câmp.';
+    return p + hint;
+  }
   
   /// Obține mesajul "Perfect! Completez adresele..."
   static Future<String> getCompletingAddresses() async {
