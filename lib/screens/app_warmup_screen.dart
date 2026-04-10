@@ -8,7 +8,10 @@ class AppWarmupScreen extends StatefulWidget {
   /// If null, falls back to Navigator.pop().
   final VoidCallback? onDismiss;
 
-  const AppWarmupScreen({super.key, this.onDismiss});
+  /// Acoperă tot ecranul (ex. peste hartă în [MapWithWarmupScreen]).
+  final bool edgeToEdge;
+
+  const AppWarmupScreen({super.key, this.onDismiss, this.edgeToEdge = false});
 
   @override
   State<AppWarmupScreen> createState() => _AppWarmupScreenState();
@@ -74,8 +77,9 @@ class _AppWarmupScreenState extends State<AppWarmupScreen> {
     final layoutScale = layoutScaleFactor(context);
     final screenHeight = MediaQuery.of(context).size.height;
     final heroSlides = _heroSlides(theme, l10n);
+    final edge = widget.edgeToEdge;
 
-    return GestureDetector(
+    final sheet = GestureDetector(
       onVerticalDragUpdate: (details) {
         if (details.delta.dy > 0) {
           setState(() {
@@ -98,11 +102,25 @@ class _AppWarmupScreenState extends State<AppWarmupScreen> {
             : Duration.zero,
         curve: Curves.easeOut,
         child: Material(
-          color: theme.colorScheme.surface.withValues(alpha: 0.98),
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+          color: theme.colorScheme.surface.withValues(alpha: edge ? 1.0 : 0.98),
+          borderRadius: edge
+              ? BorderRadius.zero
+              : const BorderRadius.vertical(top: Radius.circular(20)),
           clipBehavior: Clip.antiAlias,
           child: Column(
             children: [
+              if (edge)
+                Center(
+                  child: Container(
+                    margin: const EdgeInsets.only(top: 10, bottom: 4),
+                    width: 40,
+                    height: 5,
+                    decoration: BoxDecoration(
+                      color: theme.colorScheme.onSurface.withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(3),
+                    ),
+                  ),
+                ),
               _TopBar(onClose: _dismiss, closeTooltip: l10n.warmupCloseTooltip),
               Expanded(
                 child: ListView(
@@ -289,6 +307,15 @@ class _AppWarmupScreenState extends State<AppWarmupScreen> {
         ),
       ),
     );
+
+    if (edge) {
+      return SafeArea(
+        top: true,
+        bottom: true,
+        child: sheet,
+      );
+    }
+    return sheet;
   }
 }
 

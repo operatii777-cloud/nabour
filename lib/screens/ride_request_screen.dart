@@ -1089,16 +1089,14 @@ class _RideRequestScreenState extends State<RideRequestScreen> {
       if (mounted) {
         setState(() {
           try {
-            _homeAddress = addresses.firstWhere((addr) =>
-                addr.label.toLowerCase() == 'acasă' ||
-                addr.label.toLowerCase() == 'acasa');
+            _homeAddress =
+                addresses.firstWhere((addr) => addr.isHomeCategory);
           } catch (e) {
             _homeAddress = null;
           }
           try {
-            _workAddress = addresses.firstWhere((addr) =>
-                addr.label.toLowerCase() == 'serviciu' ||
-                addr.label.toLowerCase() == 'birou');
+            _workAddress =
+                addresses.firstWhere((addr) => addr.isWorkCategory);
           } catch (e) {
             _workAddress = null;
           }

@@ -91,6 +91,7 @@ class _AddressInputViewState extends State<AddressInputView> {
   Point? _favoriteEditPoint;
   bool _isSavingHome = false;
   bool _isSavingFavorite = false;
+  SavedAddressCategory _favoriteCategory = SavedAddressCategory.other;
 
   bool get _isSearching =>
     (_destinationFocusNode.hasFocus && _destinationAddressController.text.isNotEmpty) ||
@@ -599,9 +600,18 @@ class _AddressInputViewState extends State<AddressInputView> {
     _savedAddressesSubscription = _firestoreService.getSavedAddresses().listen((addresses) {
       if (mounted) {
         setState(() {
-          try { _homeAddress = addresses.firstWhere((addr) => addr.label.toLowerCase() == 'acasă'); } catch (e) { _homeAddress = null; }
-          try { _workAddress = addresses.firstWhere((addr) => addr.label.toLowerCase() == 'serviciu'); } catch (e) { _workAddress = null; }
-          _favoriteAddresses = addresses.where((addr) => addr.label.toLowerCase() != 'acasă' && addr.label.toLowerCase() != 'serviciu').toList();
+          try {
+            _homeAddress = addresses.firstWhere((addr) => addr.isHomeCategory);
+          } catch (e) {
+            _homeAddress = null;
+          }
+          try {
+            _workAddress = addresses.firstWhere((addr) => addr.isWorkCategory);
+          } catch (e) {
+            _workAddress = null;
+          }
+          _favoriteAddresses =
+              addresses.where((addr) => addr.isGeneralFavorite).toList();
         });
       }
     });
@@ -1085,6 +1095,9 @@ class _AddressInputViewState extends State<AddressInputView> {
               onTap: () => setState(() {
                 _showFavoriteInput = !_showFavoriteInput;
                 _showHomeInput = false;
+                if (_showFavoriteInput) {
+                  _favoriteCategory = SavedAddressCategory.other;
+                }
               }),
             ),
           ],
@@ -1116,6 +1129,36 @@ class _AddressInputViewState extends State<AddressInputView> {
           ),
         ],
         if (_showFavoriteInput) ...[
+          const SizedBox(height: 8),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: Text(
+              'Categorie',
+              style: TextStyle(
+                fontWeight: FontWeight.w700,
+                fontSize: 12,
+                color: isDark ? _kDarkAddressHintGreen : Colors.grey.shade800,
+              ),
+            ),
+          ),
+          const SizedBox(height: 6),
+          Wrap(
+            spacing: 6,
+            runSpacing: 6,
+            children: [
+              SavedAddressCategory.school,
+              SavedAddressCategory.gym,
+              SavedAddressCategory.other,
+            ].map((c) {
+              final selected = _favoriteCategory == c;
+              return ChoiceChip(
+                label: Text(c.labelRo, style: const TextStyle(fontSize: 12)),
+                selected: selected,
+                visualDensity: VisualDensity.compact,
+                onSelected: (_) => setState(() => _favoriteCategory = c),
+              );
+            }).toList(),
+          ),
           const SizedBox(height: 8),
           _buildSaveAddressInput(
             controller: _favoriteEditController,
@@ -1310,7 +1353,13 @@ class _AddressInputViewState extends State<AddressInputView> {
         point.coordinates.lat.toDouble(),
         point.coordinates.lng.toDouble(),
       );
-      final newAddr = SavedAddress(id: '', label: 'Acasă', address: address, coordinates: geoPoint);
+      final newAddr = SavedAddress(
+        id: '',
+        label: 'Acasă',
+        address: address,
+        coordinates: geoPoint,
+        category: SavedAddressCategory.home,
+      );
       if (_homeAddress != null) {
         await _firestoreService.updateSavedAddress(_homeAddress!.id, newAddr);
       } else {
@@ -1349,7 +1398,13 @@ class _AddressInputViewState extends State<AddressInputView> {
         point.coordinates.lng.toDouble(),
       );
       final label = address.split(',').first.trim();
-      final newAddr = SavedAddress(id: '', label: label, address: address, coordinates: geoPoint);
+      final newAddr = SavedAddress(
+        id: '',
+        label: label,
+        address: address,
+        coordinates: geoPoint,
+        category: _favoriteCategory,
+      );
       await _firestoreService.addSavedAddress(newAddr);
       if (mounted) {
         setState(() { _showFavoriteInput = false; _favoriteEditController.clear(); _favoriteEditPoint = null; });
@@ -1675,19 +1730,23 @@ class _AddressInputViewState extends State<AddressInputView> {
         : '${(meters / 1000).toStringAsFixed(1)} km';
   }
 
-  // ✅ NOU: Navighează la ecranul de adăugare adresă cu label precompletat
-  void _navigateToAddAddress(String label) {
-    final existingAddress = label == 'Acasă' ? _homeAddress : _workAddress;
-    
+  // ✅ Navighează la ecranul de adăugare adresă (slot Acasă / Serviciu + categorie).
+  void _navigateToAddAddress(SavedAddressCategory slot) {
+    final l10n = AppLocalizations.of(context)!;
+    final existingAddress =
+        slot == SavedAddressCategory.home ? _homeAddress : _workAddress;
+
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (ctx) => AddAddressScreen(
           addressToEdit: existingAddress,
-          initialLabel: existingAddress == null ? label : null, // ✅ Precompletează label-ul doar dacă nu există adresă
+          initialLabel: existingAddress == null
+              ? (slot == SavedAddressCategory.home ? l10n.home : l10n.work)
+              : null,
+          initialCategory: slot,
         ),
       ),
     ).then((_) {
-      // Reîncarcă adresele salvate după ce utilizatorul revine
       _loadSavedAddresses();
     });
   }
@@ -1709,7 +1768,7 @@ class _AddressInputViewState extends State<AddressInputView> {
                     label: Text(l10n.home),
                     onPressed: _homeAddress != null
                         ? () => _selectAddress(_homeAddress!.address, point: Point(coordinates: Position(_homeAddress!.coordinates.longitude, _homeAddress!.coordinates.latitude)))
-                        : () => _navigateToAddAddress(l10n.home),
+                        : () => _navigateToAddAddress(SavedAddressCategory.home),
                   );
                 },
               ),
@@ -1723,7 +1782,7 @@ class _AddressInputViewState extends State<AddressInputView> {
                   label: Text(l10n.work),
                   onPressed: _workAddress != null
                       ? () => _selectAddress(_workAddress!.address, point: Point(coordinates: Position(_workAddress!.coordinates.longitude, _workAddress!.coordinates.latitude)))
-                      : () => _navigateToAddAddress(l10n.work),
+                      : () => _navigateToAddAddress(SavedAddressCategory.work),
                 );
               },
             ),

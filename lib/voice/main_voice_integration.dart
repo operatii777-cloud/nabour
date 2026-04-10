@@ -268,10 +268,10 @@ class MainVoiceIntegration extends ChangeNotifier {
           ? 'Hello, where would you like to go?'
           : 'Salut, unde doriți să mergeți?';
       
-      // 🗣️ Salut utilizatorul
-      await _naturalTts.speakWithEmotion(
+      // 🗣️ Salut utilizatorul (orchestrator: barge-in + stări)
+      await _voiceOrchestrator.speak(
         greetingMessage,
-        VoiceEmotion.friendly,
+        emotion: VoiceEmotion.friendly,
       );
       
       // 🎤 Actualizez contextul

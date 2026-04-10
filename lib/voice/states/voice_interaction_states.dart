@@ -1,5 +1,5 @@
 
-// Voice Interaction States - Stările interacțiunii vocale ca Gemini Voice
+// Stări UI/logică pentru sesiunea vocală Nabour (ascultare, vorbire, procesare, eroare).
 // Caracteristici: Stări clare și logice, Tranziții naturale, Gestionarea contextului, Flow-ul conversației
 
 import 'dart:async';

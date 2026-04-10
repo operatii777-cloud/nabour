@@ -97,11 +97,8 @@ class _FavoriteAddressesScreenState extends State<FavoriteAddressesScreen> {
           }
 
           final addresses = snapshot.data ?? [];
-          final favoriteAddresses = addresses
-              .where((a) =>
-                  a.label.toLowerCase() != 'acasă' &&
-                  a.label.toLowerCase() != 'serviciu')
-              .toList();
+          final favoriteAddresses =
+              addresses.where((a) => a.isGeneralFavorite).toList();
 
           if (favoriteAddresses.isEmpty) {
             return Center(
@@ -128,10 +125,27 @@ class _FavoriteAddressesScreenState extends State<FavoriteAddressesScreen> {
                     color: Theme.of(context).colorScheme.primary),
                 title: Text(addr.label,
                     style: const TextStyle(fontWeight: FontWeight.bold)),
-                subtitle: Text(
-                  addr.address,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
+                subtitle: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    if (addr.category != SavedAddressCategory.other)
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 2),
+                        child: Text(
+                          addr.category.labelRo,
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: Theme.of(context).colorScheme.primary,
+                          ),
+                        ),
+                      ),
+                    Text(
+                      addr.address,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
                 ),
                 trailing: Row(
                   mainAxisSize: MainAxisSize.min,

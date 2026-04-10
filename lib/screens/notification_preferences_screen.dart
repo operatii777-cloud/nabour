@@ -2,6 +2,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:nabour_app/l10n/app_localizations.dart';
+import 'package:nabour_app/core/ui/app_feedback.dart';
 
 class NotificationPreferencesScreen extends StatefulWidget {
   const NotificationPreferencesScreen({super.key});
@@ -60,12 +61,7 @@ class _NotificationPreferencesScreenState
     } catch (e) {
       if (mounted) {
         final l10n = AppLocalizations.of(context)!;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(l10n.notifLoadError(e)),
-            backgroundColor: Colors.red,
-          ),
-        );
+        AppFeedback.error(context, l10n.notifLoadError(e));
       }
     } finally {
       if (mounted) setState(() => _isLoading = false);
@@ -92,22 +88,12 @@ class _NotificationPreferencesScreenState
 
       if (mounted) {
         final l10n = AppLocalizations.of(context)!;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(l10n.notifSavedSuccess),
-            backgroundColor: Colors.green,
-          ),
-        );
+        AppFeedback.success(context, l10n.notifSavedSuccess);
       }
     } catch (e) {
       if (mounted) {
         final l10n = AppLocalizations.of(context)!;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(l10n.notifSaveError(e)),
-            backgroundColor: Colors.red,
-          ),
-        );
+        AppFeedback.error(context, l10n.notifSaveError(e));
       }
     } finally {
       if (mounted) setState(() => _isSaving = false);

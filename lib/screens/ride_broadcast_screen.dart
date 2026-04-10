@@ -3,7 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:geolocator/geolocator.dart' as geo;
+import 'package:intl/intl.dart';
+import 'package:nabour_app/models/neighborhood_request_model.dart';
 import 'package:nabour_app/screens/chat_screen.dart';
+import 'package:nabour_app/services/firestore_service.dart';
+import 'package:nabour_app/services/map_quick_action_badge_prefs.dart';
 import 'package:nabour_app/utils/logger.dart';
 import 'package:nabour_app/widgets/nabour_nametag_widget.dart';
 import 'package:nabour_app/services/contacts_service.dart';
@@ -185,10 +189,25 @@ class _RideBroadcastFeedScreenState extends State<RideBroadcastFeedScreen>
   /// Schimbă la pull-to-refresh ca StreamBuilder să se re-aboneze la query (recepție / cache).
   int _activeFeedSalt = 0;
 
+  /// Un singur abonament Firestore — dacă [getActiveNeighborhoodRequests] e apelat la fiecare
+  /// rebuild, StreamBuilder reziliază listenerul și poate rămâne goală lista în ciuda bulelor de pe hartă.
+  late final Stream<List<NeighborhoodRequest>> _neighborhoodBubblesStream =
+      FirestoreService().getActiveNeighborhoodRequests();
+
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      unawaited(MapQuickActionBadgePrefs.markCereriFeedOpened());
+    });
+    _tabController = TabController(length: 3, vsync: this);
+    _tabController.addListener(() {
+      if (_tabController.indexIsChanging || !mounted) return;
+      if (_tabController.index == 1) {
+        unawaited(_loadUserPosition());
+      }
+      setState(() {});
+    });
     _loadUserPosition();
     // Reîncarcă feed-ul la fiecare minut pentru a elimina cererile expirate
     _expireTimer = Timer.periodic(const Duration(minutes: 1), (_) {
@@ -223,6 +242,17 @@ class _RideBroadcastFeedScreenState extends State<RideBroadcastFeedScreen>
           _userPosition!.longitude,
           r.passengerLat,
           r.passengerLng,
+        ) /
+        1000;
+  }
+
+  double? _distanceToNeighborhoodBubble(NeighborhoodRequest r) {
+    if (_userPosition == null) return null;
+    return geo.Geolocator.distanceBetween(
+          _userPosition!.latitude,
+          _userPosition!.longitude,
+          r.lat,
+          r.lng,
         ) /
         1000;
   }
@@ -318,11 +348,13 @@ class _RideBroadcastFeedScreenState extends State<RideBroadcastFeedScreen>
           indicatorColor: const Color(0xFF7C3AED),
           tabs: const [
             Tab(text: 'Active'),
+            Tab(text: 'Bule pe hartă'),
             Tab(text: 'Istoricul meu'),
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton.extended(
+      floatingActionButton: _tabController.index == 0
+          ? FloatingActionButton.extended(
         onPressed: () async {
           final result = await Navigator.push<RideBroadcastPostResult?>(
             context,
@@ -360,7 +392,8 @@ class _RideBroadcastFeedScreenState extends State<RideBroadcastFeedScreen>
         label: const Text('Cer o cursă'),
         backgroundColor: const Color(0xFF7C3AED),
         foregroundColor: Colors.white,
-      ),
+      )
+          : null,
       body: TabBarView(
         controller: _tabController,
         children: [
@@ -424,7 +457,132 @@ class _RideBroadcastFeedScreenState extends State<RideBroadcastFeedScreen>
               );
             },
           ),
-          // ── Tab 2: Istoricul meu ──────────────────────────────────
+          // ── Tab 2: Bule pe hartă — același stream ca harta; filtru 6 km (ca tab „Active”).
+          StreamBuilder<List<NeighborhoodRequest>>(
+            stream: _neighborhoodBubblesStream,
+            builder: (context, snap) {
+              Future<void> onPullRefresh() async {
+                await _loadUserPosition();
+                if (mounted) setState(() {});
+                await Future<void>.delayed(const Duration(milliseconds: 120));
+              }
+
+              if (snap.hasError) {
+                return RefreshIndicator(
+                  onRefresh: onPullRefresh,
+                  child: ListView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    padding: const EdgeInsets.all(24),
+                    children: [
+                      SizedBox(height: MediaQuery.of(context).size.height * 0.2),
+                      Text(
+                        'Nu s-au putut încărca bulele. Trage în jos pentru reîncercare.\n${snap.error}',
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color: theme.colorScheme.error,
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }
+
+              if (snap.connectionState == ConnectionState.waiting &&
+                  !snap.hasData) {
+                return RefreshIndicator(
+                  onRefresh: onPullRefresh,
+                  child: ListView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    padding: const EdgeInsets.only(top: 120),
+                    children: const [
+                      Center(child: CircularProgressIndicator()),
+                    ],
+                  ),
+                );
+              }
+
+              final clientNow = DateTime.now();
+              final raw = snap.data ?? [];
+              // Fără snapshot nou, Firestore poate livra încă doc-uri expirate — refiltrăm la fiecare build (timer 1 min).
+              final stillActive = raw
+                  .where(
+                    (r) => !r.resolved && r.expiresAt.isAfter(clientNow),
+                  )
+                  .toList();
+              final bubbles = stillActive.where((r) {
+                final d = _distanceToNeighborhoodBubble(r);
+                if (d == null) return true;
+                return d <= _radiusKm;
+              }).toList()
+                ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+
+              if (bubbles.isEmpty) {
+                final onlyOutsideRadius = stillActive.isNotEmpty &&
+                    _userPosition != null;
+                return RefreshIndicator(
+                  onRefresh: onPullRefresh,
+                  child: ListView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    children: [
+                      SizedBox(
+                        height: MediaQuery.of(context).size.height * 0.25,
+                      ),
+                      Center(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Text('🫧', style: TextStyle(fontSize: 56)),
+                            const SizedBox(height: 16),
+                            Text(
+                              onlyOutsideRadius
+                                  ? 'Nicio bulă în raza de ${_radiusKm.toInt()} km'
+                                  : 'Nicio bulă activă aici',
+                              style: theme.textTheme.titleMedium
+                                  ?.copyWith(fontWeight: FontWeight.w800),
+                              textAlign: TextAlign.center,
+                            ),
+                            const SizedBox(height: 12),
+                            Text(
+                              onlyOutsideRadius
+                                  ? 'Există bule active, dar sunt peste ${_radiusKm.toInt()} km față de locația curentă. Verifică pe hartă sau actualizează GPS-ul (trage în jos).'
+                                  : 'Bulele sunt vizibile pe hartă cam o oră de la plasare, apoi dispar. '
+                                      'Plasează una din meniul hărții. Dacă tocmai ai deschis ecranul, trage în jos pentru sincron.',
+                              style: theme.textTheme.bodyMedium?.copyWith(
+                                color: Colors.grey.shade600,
+                                height: 1.45,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }
+
+              final fmt = DateFormat('dd.MM.yyyy · HH:mm', 'ro');
+              return RefreshIndicator(
+                onRefresh: onPullRefresh,
+                child: ListView.builder(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 100),
+                  itemCount: bubbles.length,
+                  itemBuilder: (_, i) {
+                    final r = bubbles[i];
+                    return _NeighborhoodBubbleFeedCard(
+                      request: r,
+                      distanceKm: _distanceToNeighborhoodBubble(r),
+                      createdLabel: fmt.format(r.createdAt),
+                      expiresLabel: fmt.format(r.expiresAt),
+                      currentUid: uid,
+                    );
+                  },
+                ),
+              );
+            },
+          ),
+          // ── Tab 3: Istoricul meu ──────────────────────────────────
           StreamBuilder<List<RideBroadcastRequest>>(
             stream: _historyStream,
             builder: (context, snap) {
@@ -527,6 +685,154 @@ class _RideBroadcastFeedScreenState extends State<RideBroadcastFeedScreen>
                   ?.copyWith(color: Colors.grey.shade500, height: 1.45),
               textAlign: TextAlign.center,
             ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Rând în tab-ul „Bule pe hartă” — aceleași documente ca markerii de pe hartă.
+class _NeighborhoodBubbleFeedCard extends StatelessWidget {
+  final NeighborhoodRequest request;
+  final String? currentUid;
+  final double? distanceKm;
+  final String createdLabel;
+  final String expiresLabel;
+
+  const _NeighborhoodBubbleFeedCard({
+    required this.request,
+    required this.currentUid,
+    this.distanceKm,
+    required this.createdLabel,
+    required this.expiresLabel,
+  });
+
+  String _emojiForType(String type) {
+    switch (type) {
+      case 'ride':
+        return '🚗';
+      case 'help':
+        return '🛠️';
+      case 'tool':
+        return '🔧';
+      case 'alert':
+        return '🚨';
+      default:
+        return '🫧';
+    }
+  }
+
+  Future<void> _confirmDelete(BuildContext context) async {
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Ștergi cererea de pe hartă?'),
+        content: const Text(
+            'Bula dispare pentru toți vecinii; acțiunea nu poate fi anulată.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Anulează'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Șterge', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+    if (ok != true || !context.mounted) return;
+    try {
+      await FirestoreService().deleteNeighborhoodRequest(request.id);
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Bula a fost ștearsă de pe hartă.')),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Nu s-a putut șterge: $e'),
+            backgroundColor: Colors.red.shade800,
+          ),
+        );
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isMine =
+        currentUid != null && currentUid == request.authorUid && currentUid!.isNotEmpty;
+
+    return Card(
+      margin: const EdgeInsets.only(bottom: 12),
+      elevation: 0,
+      color: const Color(0xFF7C3AED).withValues(alpha: 0.06),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(14, 12, 8, 12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(_emojiForType(request.type), style: const TextStyle(fontSize: 26)),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    request.message,
+                    style: theme.textTheme.bodyLarge?.copyWith(
+                      fontWeight: FontWeight.w700,
+                      height: 1.25,
+                    ),
+                  ),
+                ),
+                if (isMine)
+                  IconButton(
+                    tooltip: 'Șterge de pe hartă',
+                    icon: Icon(Icons.delete_outline_rounded,
+                        color: Colors.red.shade700),
+                    onPressed: () => unawaited(_confirmDelete(context)),
+                  ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            Text(
+              request.authorName,
+              style: theme.textTheme.labelLarge?.copyWith(
+                color: Colors.grey.shade800,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              'Plasată: $createdLabel',
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: Colors.grey.shade800,
+              ),
+            ),
+            Text(
+              'Expiră: $expiresLabel (≈1 h după plasare)',
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: Colors.deepOrange.shade800,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            if (distanceKm != null) ...[
+              const SizedBox(height: 4),
+              Text(
+                'La ~${distanceKm!.toStringAsFixed(1)} km față de tine',
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: const Color(0xFF7C3AED),
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
           ],
         ),
       ),

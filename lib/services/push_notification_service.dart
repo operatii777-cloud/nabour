@@ -160,6 +160,14 @@ class PushNotificationService {
           channelId: 'chat_messages',
         );
         break;
+      case 'radar_group_message':
+        LocalNotificationsService().showSimple(
+          title: title,
+          body: body,
+          payload: message.data.toString(),
+          channelId: 'chat_messages',
+        );
+        break;
       case 'community_mystery_opened':
         LocalNotificationsService().showSimple(
           title: title,

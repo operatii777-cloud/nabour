@@ -19,9 +19,35 @@ class AppTheme {
 
   static final ThemeData lightTheme = ThemeData(
     brightness: Brightness.light,
+    useMaterial3: true,
+    visualDensity: VisualDensity.adaptivePlatformDensity,
+    splashFactory: InkSparkle.splashFactory,
     primaryColor: AppColors.electricBlue,
     scaffoldBackgroundColor: AppColors.background,
     pageTransitionsTheme: _pageTransitions,
+    snackBarTheme: SnackBarThemeData(
+      behavior: SnackBarBehavior.floating,
+      elevation: 3,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+      backgroundColor: const Color(0xFF1E293B),
+      contentTextStyle: const TextStyle(
+        color: Colors.white,
+        fontSize: 15,
+        fontWeight: FontWeight.w500,
+      ),
+    ),
+    dialogTheme: DialogThemeData(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      elevation: 2,
+    ),
+    tooltipTheme: TooltipThemeData(
+      waitDuration: const Duration(milliseconds: 400),
+      textStyle: const TextStyle(color: Colors.white, fontSize: 13),
+      decoration: BoxDecoration(
+        color: AppColors.textPrimary.withValues(alpha: 0.92),
+        borderRadius: BorderRadius.circular(8),
+      ),
+    ),
     colorScheme: const ColorScheme.light(
       primary: AppColors.electricBlue,
       secondary: AppColors.secondary,
@@ -100,9 +126,35 @@ class AppTheme {
 
   static final ThemeData darkTheme = ThemeData(
     brightness: Brightness.dark,
+    useMaterial3: true,
+    visualDensity: VisualDensity.adaptivePlatformDensity,
+    splashFactory: InkSparkle.splashFactory,
     primaryColor: AppColors.indigoDeep,
     scaffoldBackgroundColor: AppColors.darkBackground,
     pageTransitionsTheme: _pageTransitions,
+    snackBarTheme: SnackBarThemeData(
+      behavior: SnackBarBehavior.floating,
+      elevation: 3,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+      backgroundColor: AppColors.darkSurfaceElevated,
+      contentTextStyle: const TextStyle(
+        color: Colors.white,
+        fontSize: 15,
+        fontWeight: FontWeight.w500,
+      ),
+    ),
+    dialogTheme: DialogThemeData(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      elevation: 4,
+    ),
+    tooltipTheme: TooltipThemeData(
+      waitDuration: const Duration(milliseconds: 400),
+      textStyle: const TextStyle(color: Colors.white, fontSize: 13),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(8),
+      ),
+    ),
     colorScheme: ColorScheme.dark(
       primary: AppColors.indigoDeep,
       secondary: AppColors.secondary,

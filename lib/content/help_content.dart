@@ -64,7 +64,15 @@ class HelpContent {
     ],
     // --- FINAL MODIFICARE ---
     
-    'Tarife și plăți': [_buildParagraph('Tarifele noastre sunt calculate dinamic pe baza unei sume de pornire, a distanței parcurse și a duratei călătoriei. Puteți vedea o estimare a costului înainte de a confirma cursa. Toate plățile sunt procesate în siguranță prin intermediul aplicației.')],
+    'Tarife și plăți': [_buildParagraph('Tarifele noastre sunt calculate dinamic pe baza unei sumei de pornire, a distanței parcurse și a duratei călătoriei. Puteți vedea o estimare a costului înainte de a confirma cursa. Toate plățile sunt procesate în siguranță prin intermediul aplicației.')],
+    'Transfer de tokeni între utilizatori': [
+      _buildParagraph(
+        'Din meniul lateral, „Transfer tokeni” deschide ecranul unde poți trimite tokeni direct către ID-ul altui utilizator sau poți crea o cerere prin care soliciți tokeni de la cineva. Soldul transferabil este gestionat pe server; verifică ID-ul înainte de a confirma.',
+      ),
+      _buildParagraph(
+        'La cereri de plată: plătitorul poate accepta sau refuza; tu poți anula cererea ta cât timp este în așteptare. În fila Istoric vezi transferurile și cererile încheiate.',
+      ),
+    ],
   };
 
   static Padding _buildParagraph(String text) {

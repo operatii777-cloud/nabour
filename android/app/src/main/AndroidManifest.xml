@@ -114,8 +114,9 @@
             android:name="flutterEmbedding"
             android:value="2" />
 
-        <!-- Impeller (OpenGL/Vulkan) poate cauza SIGSEGV în libGLESv2_mtk.so pe unele chipset-uri
-             MediaTek / Android 10 (ex. Lenovo TB-X606X). Skia e mai stabil acolo. -->
+        <!-- Impeller dezactivat: SIGSEGV în libGLESv2_mtk.so pe unele MediaTek (ex. Lenovo tablet).
+             Flutter afișează avertisment de depreciere la opt-out — îl păstrăm până când Impeller
+             e stabil pe aceste GPU; nu e o eroare de build. -->
         <meta-data
             android:name="io.flutter.embedding.android.EnableImpeller"
             android:value="false" />

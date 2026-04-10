@@ -3,9 +3,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:nabour_app/screens/map_screen.dart';
 import 'package:nabour_app/screens/app_warmup_screen.dart';
 
-/// Wrapper that renders MapScreen in the background and AppWarmupScreen
-/// as a dismissible overlay on top. This gives the map time to fully load
-/// while the user reads the warmup screen.
+/// [MapScreen] sub hartă; [AppWarmupScreen] full-screen deasupra până la trage în jos
+/// sau „Deschide harta”. La închidere, harta face fly din zoom glob spre locația userului.
 ///
 /// Warmup is removed with an instant [setState] (no opacity animation).
 /// On some devices (MIUI + Impeller + Mapbox GL), fading the overlay out
@@ -21,12 +20,22 @@ class _MapWithWarmupScreenState extends State<MapWithWarmupScreen> {
   bool _showWarmup = true;
   bool _dismissingWarmup = false;
 
+  /// [true] = overlay warmup vizibil; la [false] [MapScreen] lansează fly din spațiu spre user.
+  late final ValueNotifier<bool> _warmupOverlayVisible;
+
   static const String _disclaimerKey = 'nabour_disclaimer_accepted_v1';
 
   @override
   void initState() {
     super.initState();
+    _warmupOverlayVisible = ValueNotifier<bool>(true);
     WidgetsBinding.instance.addPostFrameCallback((_) => _maybeShowDisclaimer());
+  }
+
+  @override
+  void dispose() {
+    _warmupOverlayVisible.dispose();
+    super.dispose();
   }
 
   Future<void> _maybeShowDisclaimer() async {
@@ -160,9 +169,10 @@ class _MapWithWarmupScreenState extends State<MapWithWarmupScreen> {
   void _dismissWarmup() {
     if (!_showWarmup || _dismissingWarmup) return;
     _dismissingWarmup = true;
-    // Let the platform process the tap, then rebuild once (safer with Mapbox resize).
+    // Notifică harta înainte de dispariția overlay-ului → fly din spațiu când devine vizibilă.
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
+      _warmupOverlayVisible.value = false;
       setState(() {
         _showWarmup = false;
         _dismissingWarmup = false;
@@ -173,21 +183,15 @@ class _MapWithWarmupScreenState extends State<MapWithWarmupScreen> {
   @override
   Widget build(BuildContext context) {
     return Stack(
+      fit: StackFit.expand,
       children: [
-        const MapScreen(),
+        MapScreen(warmupOverlayVisible: _warmupOverlayVisible),
 
         if (_showWarmup)
-          Align(
-            alignment: Alignment.bottomCenter,
-            child: LayoutBuilder(
-              builder: (ctx, constraints) {
-                final h = constraints.maxHeight * 0.75;
-                return SizedBox(
-                  height: h,
-                  width: constraints.maxWidth,
-                  child: AppWarmupScreen(onDismiss: _dismissWarmup),
-                );
-              },
+          Positioned.fill(
+            child: AppWarmupScreen(
+              onDismiss: _dismissWarmup,
+              edgeToEdge: true,
             ),
           ),
       ],

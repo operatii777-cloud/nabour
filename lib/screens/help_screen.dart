@@ -1389,6 +1389,133 @@ class _HelpScreenState extends State<HelpScreen> {
           ),
         ];
       }
+      case 'tokenPeerTransferHelp':
+      case 'Transfer de tokeni între utilizatori':
+      case 'Token transfers between users': {
+        final isEn =
+            (Localizations.maybeLocaleOf(context)?.languageCode ?? 'ro') == 'en';
+        return [
+          Text(
+            isEn ? 'What it is' : 'Despre funcție',
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            isEn
+                ? 'From the side menu, open “Token transfer” to move Nabour tokens to another account or to ask someone to send you tokens. Balances and ledger entries are updated on the server; you need the other person’s user ID (Firebase UID).'
+                : 'Din meniul lateral, deschide „Transfer tokeni” pentru a trimite tokeni Nabour către alt cont sau pentru a cere cuiva să îți trimită tokeni. Soldurile și înregistrările din jurnal sunt actualizate pe server; ai nevoie de ID-ul de utilizator al celeilalte persoane (UID Firebase).',
+            style: const TextStyle(fontSize: 15, height: 1.35),
+          ),
+          const SizedBox(height: 20),
+          Text(
+            isEn ? 'Transferable wallet' : 'Portofel transferabil',
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF0D9488),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            isEn
+                ? 'This screen shows the transferable token balance (not the same view as the monthly usage bar at the top of the menu). If the wallet is frozen or missing, transfers and requests will be blocked until the account is eligible.'
+                : 'Acest ecran arată soldul de tokeni transferabili (nu este același indicator ca bara de utilizare lunară din partea de sus a meniului). Dacă portofelul lipsește sau este înghețat, transferurile și cererile sunt blocate până când contul este eligibil.',
+            style: const TextStyle(fontSize: 15, height: 1.35),
+          ),
+          const SizedBox(height: 20),
+          Text(
+            isEn ? 'Direct transfer' : 'Transfer direct',
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF0D9488),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            isEn
+                ? 'You send tokens immediately to the recipient’s user ID. You cannot transfer to yourself. Amounts must be a whole number of tokens within the allowed range. An optional note can be attached.'
+                : 'Trimite tokeni imediat către ID-ul destinatarului. Nu poți transfera către propriul cont. Suma trebuie să fie un număr întreg de tokeni, în intervalul permis. Poți adăuga o notă opțională.',
+            style: const TextStyle(fontSize: 15, height: 1.35),
+          ),
+          const SizedBox(height: 20),
+          Text(
+            isEn ? 'Payment request' : 'Cerere de plată',
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF0D9488),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            isEn
+                ? 'You ask another user (the payer) to send you tokens. They receive a pending request and can accept or decline. If they accept, tokens move from their transferable wallet to yours. Requests expire after a limited time if not answered.'
+                : 'Ceri altui utilizator (plătitorul) să îți trimită tokeni. Acesta primește o cerere în așteptare și poate accepta sau refuza. La acceptare, tokenii se mută din portofelul său transferabil în al tău. Cererile pot expira dacă nu primesc răspuns la timp.',
+            style: const TextStyle(fontSize: 15, height: 1.35),
+          ),
+          const SizedBox(height: 20),
+          Text(
+            isEn ? 'Requests tab' : 'Filă „Cereri”',
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF0D9488),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            isEn
+                ? '• As payer: you can accept or decline incoming requests; you may add an optional reason when declining.\n'
+                    '• As requester: you can cancel a request you created while it is still pending.'
+                : '• Ca plătitor: poți accepta sau refuza cererile primite; la refuz poți adăuga un motiv opțional.\n'
+                    '• Ca inițiator al cererii: poți anula o cerere creată de tine cât timp este în așteptare.',
+            style: const TextStyle(fontSize: 15, height: 1.4),
+          ),
+          const SizedBox(height: 20),
+          Text(
+            isEn ? 'History tab' : 'Filă „Istoric”',
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF0D9488),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            isEn
+                ? 'Shows recent direct transfers and resolved payment requests. Pull down to refresh.'
+                : 'Afișează transferurile directe recente și cererile de plată rezolvate. Trage în jos pentru reîmprospătare.',
+            style: const TextStyle(fontSize: 15, height: 1.35),
+          ),
+          const SizedBox(height: 24),
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: const Color(0xFF0D9488).withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: const Color(0xFF0D9488).withValues(alpha: 0.25),
+              ),
+            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Icon(Icons.shield_outlined, color: Color(0xFF0D9488)),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    isEn
+                        ? 'Only share your user ID with people you trust. Double-check the ID before confirming a transfer or request.'
+                        : 'Distribuie ID-ul de utilizator doar persoanelor în care ai încredere. Verifică din nou ID-ul înainte de a confirma un transfer sau o cerere.',
+                    style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ];
+      }
       default:
         return [
           Text(
@@ -1908,6 +2035,26 @@ class _HelpScreenState extends State<HelpScreen> {
               _buildHelpTopic(context, icon: Icons.subscriptions_rounded,   title: isEn ? 'Subscriptions'   : l10n.subscriptions,   iconColor: Colors.indigo),
               _buildHelpTopic(context, icon: Icons.group_outlined,          title: isEn ? 'Split Payment'   : l10n.splitPayment,    iconColor: Colors.cyan),
               _buildHelpTopic(context, icon: Icons.share_rounded,           title: isEn ? 'Ride Sharing'    : 'Curse Partajate',     iconColor: Colors.lightGreen),
+              _buildHelpTopic(
+                context,
+                icon: Icons.swap_horiz_rounded,
+                title: isEn ? 'Token transfers between users' : 'Transfer de tokeni între utilizatori',
+                iconColor: const Color(0xFF0D9488),
+                onTap: () {
+                  final content = _buildHelpArticle('tokenPeerTransferHelp', l10n);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (ctx) => HelpArticleScreen(
+                        articleTitle: isEn
+                            ? 'Token transfers between users'
+                            : 'Transfer de tokeni între utilizatori',
+                        contentWidgets: content,
+                      ),
+                    ),
+                  );
+                },
+              ),
             ],
           ),
 

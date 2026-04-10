@@ -14,6 +14,7 @@ import 'package:nabour_app/services/nearby_social_notifications_prefs.dart';
 import 'package:nabour_app/services/now_playing_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:nabour_app/core/ui/app_feedback.dart';
 
 class SettingsScreen extends StatefulWidget {
   final VoidCallback? onManageExclusions;
@@ -265,12 +266,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         await MovementHistoryPreferencesService.instance.setEnabled(false);
                         if (!context.mounted) return;
                         setState(() => _movementHistoryEnabled = false);
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text(
-                              'Nu s-a putut porni înregistrarea. Acordă acces la locație și, pe Android, „Permite tot timpul” pentru înregistrare când aplicația nu e deschisă.',
-                            ),
-                          ),
+                        AppFeedback.error(
+                          context,
+                          'Nu s-a putut porni înregistrarea. Acordă acces la locație și, pe Android, „Permite tot timpul” pentru înregistrare când aplicația nu e deschisă.',
                         );
                         return;
                       }
@@ -278,15 +276,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       await MovementHistoryService.instance.stopRecorder();
                     }
                     if (!context.mounted) return;
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(
-                          val
-                              ? 'Istoricul locației a fost activat (vezi notificarea pe Android când rulează în fundal).'
-                              : 'Istoricul locației a fost dezactivat.',
-                        ),
-                      ),
-                    );
+                    if (val) {
+                      AppFeedback.success(
+                        context,
+                        'Istoricul locației a fost activat (vezi notificarea pe Android când rulează în fundal).',
+                      );
+                    } else {
+                      AppFeedback.info(context, 'Istoricul locației a fost dezactivat.');
+                    }
                   }
                 : (_) {},
           ),
@@ -523,9 +520,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     await MovementHistoryService.instance.pruneLocalRetention(retentionDays: selected);
     if (!mounted) return;
     setState(() => _movementRetentionDays = selected);
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Retenția locală a fost setată la $selected zile.')),
-    );
+    AppFeedback.success(context, 'Retenția locală a fost setată la $selected zile.');
   }
 
   Future<void> _openNowPlayingSheet(BuildContext context) async {
@@ -575,9 +570,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   _npTitle = tCtrl.text.trim();
                   _npArtist = aCtrl.text.trim();
                 });
-                ScaffoldMessenger.of(this.context).showSnackBar(
-                  const SnackBar(content: Text('Profil muzical actualizat.')),
-                );
+                AppFeedback.success(this.context, 'Profil muzical actualizat.');
               },
               child: const Text('Salvează în cont'),
             ),
@@ -664,9 +657,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   if (context.mounted) Navigator.pop(ctx);
                   if (mounted) setState(() {});
                   if (context.mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Mod comunitate salvat.')),
-                    );
+                    AppFeedback.success(context, 'Mod comunitate salvat.');
                   }
                 },
                 child: const Text('Salvează'),
@@ -702,8 +693,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
     if (ok != true) return;
     await MovementHistoryService.instance.clearLocalHistoryForCurrentUser();
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Istoricul local a fost șters.')),
-    );
+    AppFeedback.success(context, 'Istoricul local a fost șters.');
   }
 }

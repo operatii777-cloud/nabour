@@ -86,6 +86,8 @@ dependencies:
   image_picker: ^1.1.2
   file_picker: ^10.3.2
   audioplayers: ^6.0.0
+  # Android AudioManager / focus + iOS AVAudioSession (voice chat); folosit cu [record]
+  audio_session: ^0.2.3
   record: ^6.1.2
   emoji_picker_flutter: ^2.0.0
   wakelock_plus: ^1.1.4

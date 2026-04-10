@@ -1,5 +1,6 @@
 ﻿import 'package:flutter/material.dart';
 import 'package:nabour_app/services/firestore_service.dart';
+import 'package:nabour_app/core/ui/app_feedback.dart';
 
 class ChangePasswordScreen extends StatefulWidget {
   const ChangePasswordScreen({super.key});
@@ -31,20 +32,14 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
       if (!mounted) return;
 
       if (result['success']) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(result['message']), backgroundColor: Colors.green),
-        );
-        Navigator.pop(context); 
+        AppFeedback.success(context, result['message'] as String);
+        Navigator.pop(context);
       } else {
-         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(result['message']), backgroundColor: Colors.red),
-        );
+        AppFeedback.error(context, result['message'] as String);
       }
     } catch (e) {
       if (!mounted) return;
-       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("A apărut o eroare neașteptată."), backgroundColor: Colors.red),
-      );
+      AppFeedback.error(context, 'A apărut o eroare neașteptată.');
     } finally {
       if (mounted) {
         setState(() { _isLoading = false; });

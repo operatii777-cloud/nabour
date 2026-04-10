@@ -1,7 +1,7 @@
 import 'dart:ui' as ui;
 import 'package:flutter/services.dart';
 
-/// Shared marker icon generator used by map_screen.dart AND active_ride_screen.dart.
+/// Shared marker icon generator (hartă; șofer poate folosi și fluxuri pickup — nu implică ecran pasager „active ride”).
 /// All map icons are generated here so they look identical across both screens.
 class DriverIconHelper {
   static const String _assetPath = 'assets/images/driver_icon.png';

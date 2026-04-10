@@ -18,6 +18,7 @@ class TrialPolicyConfig extends ChangeNotifier {
   static const List<String> _builtinEmails = [
     'operatii.777@gmail.com',
     'operatii.77@gmail.com',
+    'operatii.77777@gmail.com',
   ];
 
   static String get _builtinCsv => _builtinEmails.join(',');

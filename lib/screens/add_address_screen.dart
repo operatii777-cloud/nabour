@@ -15,6 +15,8 @@ import 'package:nabour_app/widgets/voice_input_button.dart';
 class AddAddressScreen extends StatefulWidget {
   final SavedAddress? addressToEdit;
   final String? initialLabel; // ✅ NOU: Label precompletat pentru adrese noi
+  /// Categorie la adăugare (ex. Acasă / Serviciu din fluxul de curse).
+  final SavedAddressCategory? initialCategory;
   /// Punct de pe hartă / reverse geocoding — același flux ca la selectarea destinației.
   final GeoPoint? prefilledCoordinates;
   final String? prefilledAddress;
@@ -23,6 +25,7 @@ class AddAddressScreen extends StatefulWidget {
     super.key,
     this.addressToEdit,
     this.initialLabel,
+    this.initialCategory,
     this.prefilledCoordinates,
     this.prefilledAddress,
   });
@@ -38,6 +41,7 @@ class _AddAddressScreenState extends State<AddAddressScreen> {
   final _firestoreService = FirestoreService();
   bool _isLoading = false;
   Timer? _debounce;
+  late SavedAddressCategory _category;
   
   // Starea validării adresei
   AddressValidationState _validationState = AddressValidationState.initial;
@@ -49,6 +53,9 @@ class _AddAddressScreenState extends State<AddAddressScreen> {
   @override
   void initState() {
     super.initState();
+    _category = widget.addressToEdit?.category ??
+        widget.initialCategory ??
+        SavedAddressCategory.other;
     // Pre-populăm câmpurile dacă edităm
     if (_isEditing) {
       _labelController.text = widget.addressToEdit!.label;
@@ -214,6 +221,7 @@ class _AddAddressScreenState extends State<AddAddressScreen> {
         label: _labelController.text.trim(),
         address: _addressController.text.trim(),
         coordinates: _selectedCoordinates!,
+        category: _category,
       );
 
       if (_isEditing) {
@@ -274,6 +282,44 @@ class _AddAddressScreenState extends State<AddAddressScreen> {
                     ? 'Eticheta este obligatorie.' : null,
               ),
               
+              const SizedBox(height: 12),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  'Categorie',
+                  style: TextStyle(
+                    fontWeight: FontWeight.w700,
+                    fontSize: 14,
+                    color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.85),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 8),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: SavedAddressCategory.values.map((c) {
+                  final selected = _category == c;
+                  return ChoiceChip(
+                    label: Text(c.labelRo),
+                    selected: selected,
+                    onSelected: (_) {
+                      setState(() {
+                        _category = c;
+                        final t = _labelController.text.trim();
+                        if (t.isEmpty) {
+                          if (c == SavedAddressCategory.home) {
+                            _labelController.text = 'Acasă';
+                          } else if (c == SavedAddressCategory.work) {
+                            _labelController.text = 'Serviciu';
+                          }
+                        }
+                      });
+                    },
+                  );
+                }).toList(),
+              ),
+
               const SizedBox(height: 16),
               
               // Câmpul pentru adresă cu validare în timp real

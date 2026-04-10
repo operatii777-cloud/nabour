@@ -3,16 +3,18 @@ cmake_minimum_required(VERSION 3.14)
 
 set(EPHEMERAL_DIR "${CMAKE_CURRENT_SOURCE_DIR}/ephemeral")
 
-# Configuration provided via flutter tool.
-include(${EPHEMERAL_DIR}/generated_config.cmake)
+# Set fallback configurations for older versions of the flutter tool.
+if (NOT DEFINED FLUTTER_TARGET_PLATFORM)
+  set(FLUTTER_TARGET_PLATFORM "windows-x64")
+endif()
 
 # TODO: Move the rest of this into files in ephemeral. See
 # https://github.com/flutter/flutter/issues/57146.
 set(WRAPPER_ROOT "${EPHEMERAL_DIR}/cpp_client_wrapper")
 
-# Set fallback configurations for older versions of the flutter tool.
-if (NOT DEFINED FLUTTER_TARGET_PLATFORM)
-  set(FLUTTER_TARGET_PLATFORM "windows-x64")
+# Configuration provided via flutter tool.
+if (EXISTS "${EPHEMERAL_DIR}/generated_config.cmake")
+  include(${EPHEMERAL_DIR}/generated_config.cmake)
 endif()
 
 # === Flutter Library ===
@@ -23,6 +25,15 @@ set(FLUTTER_LIBRARY ${FLUTTER_LIBRARY} PARENT_SCOPE)
 set(FLUTTER_ICU_DATA_FILE "${EPHEMERAL_DIR}/icudtl.dat" PARENT_SCOPE)
 set(PROJECT_BUILD_DIR "${PROJECT_DIR}/build/" PARENT_SCOPE)
 set(AOT_LIBRARY "${PROJECT_DIR}/build/windows/app.so" PARENT_SCOPE)
+
+# Set fallback version info if not provided.
+if (NOT DEFINED FLUTTER_VERSION)
+  set(FLUTTER_VERSION "1.0.0" PARENT_SCOPE)
+  set(FLUTTER_VERSION_MAJOR 1 PARENT_SCOPE)
+  set(FLUTTER_VERSION_MINOR 0 PARENT_SCOPE)
+  set(FLUTTER_VERSION_PATCH 0 PARENT_SCOPE)
+  set(FLUTTER_VERSION_BUILD 1 PARENT_SCOPE)
+endif()
 
 list(APPEND FLUTTER_LIBRARY_HEADERS
   "flutter_export.h"

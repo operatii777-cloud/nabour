@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -39,6 +41,9 @@ class TokenService {
 
   final _db   = FirebaseFirestore.instance;
   final _auth = FirebaseAuth.instance;
+
+  /// O singură încercare amânată per sesiune dacă burst-ul inițial primește doar `unauthenticated`.
+  static bool _deferredWalletMaintainScheduled = false;
 
   // ── Paths ─────────────────────────────────────────────────────────────────
 
@@ -94,6 +99,16 @@ class TokenService {
       if (!snap.exists || snap.data() == null) return null;
       return TokenWallet.fromMap(uid, snap.data()!);
     });
+  }
+
+  /// Stream pentru portofelul TRANSFERABIL (P2P).
+  Stream<Map<String, dynamic>?> get transferableWalletStream {
+    final uid = _currentUid;
+    if (uid == null) return const Stream.empty();
+    return _db
+        .doc('token_wallets/$uid')
+        .snapshots()
+        .map((s) => s.exists ? s.data() : null);
   }
 
   /// Obține wallet-ul o singură dată (pentru verificări punctuale).
@@ -313,14 +328,19 @@ class TokenService {
     int amount,
     TokenTransactionType type, {
     required String description,
+    bool isTransferable = false,
   }) async {
     try {
       await NabourFunctions.instance.httpsCallable('nabourWalletCredit').call({
         'action': 'topup',
         'amount': amount,
         'description': description,
+        'isTransferable': isTransferable,
       });
-      Logger.info('Tokeni adăugați (CF): +$amount ($description)', tag: 'TokenService');
+      Logger.info(
+        'Tokeni adăugați (CF): +$amount ($description, transferable: $isTransferable)',
+        tag: 'TokenService',
+      );
     } on FirebaseFunctionsException catch (e) {
       Logger.error(
         'addTokens CF: ${e.code} ${e.message}',
@@ -337,7 +357,7 @@ class TokenService {
   // ── Reset lunar / credite — Cloud Functions ───────────────────────────────
 
   Future<void> _invokeMaintainTokenWallet() async {
-    const maxAttempts = 5;
+    const maxAttempts = 6;
     for (var attempt = 0; attempt < maxAttempts; attempt++) {
       try {
         final user = _auth.currentUser;
@@ -345,10 +365,12 @@ class TokenService {
           Logger.debug('nabourMaintainTokenWallet: skip — no user', tag: 'TokenService');
           return;
         }
-        // Forțează token proaspăt după cold start (înainte era race cu App Check / auth).
-        await user.getIdToken(attempt > 0);
+        // Cold start: pe unele tablete (GMS / token) ID-ul ajunge la Functions după o clipă.
         if (attempt == 0) {
-          await Future<void>.delayed(const Duration(milliseconds: 350));
+          await user.getIdToken();
+          await Future<void>.delayed(const Duration(milliseconds: 1000));
+        } else {
+          await user.getIdToken(true);
         }
 
         await NabourFunctions.instance
@@ -362,13 +384,22 @@ class TokenService {
             code == 'deadline-exceeded';
         if (transient && attempt < maxAttempts - 1) {
           final step = (1 << attempt).clamp(1, 8);
-          await Future<void>.delayed(Duration(milliseconds: 400 * step));
+          await Future<void>.delayed(Duration(milliseconds: 450 * step));
           continue;
         }
-        Logger.warning(
-          'nabourMaintainTokenWallet: ${e.code} ${e.message}',
-          tag: 'TokenService',
-        );
+        if (code == 'unauthenticated') {
+          Logger.debug(
+            'nabourMaintainTokenWallet: unauthenticated după $maxAttempts încercări '
+            '(uneori token/GMS la cold start; reset lunar se poate relua la următoarea deschidere).',
+            tag: 'TokenService',
+          );
+          unawaited(_scheduleDeferredMaintainRetry());
+        } else {
+          Logger.warning(
+            'nabourMaintainTokenWallet: ${e.code} ${e.message}',
+            tag: 'TokenService',
+          );
+        }
         return;
       } catch (e) {
         if (attempt < maxAttempts - 1) {
@@ -378,6 +409,38 @@ class TokenService {
         Logger.warning('nabourMaintainTokenWallet: $e', tag: 'TokenService');
         return;
       }
+    }
+  }
+
+  /// Pe tablete cu GMS instabil, primul lanț de apeluri poate eșua; după ~18s tokenul e adesea acceptat.
+  Future<void> _scheduleDeferredMaintainRetry() async {
+    if (_deferredWalletMaintainScheduled) return;
+    _deferredWalletMaintainScheduled = true;
+    await Future<void>.delayed(const Duration(seconds: 18));
+    try {
+      final user = _auth.currentUser;
+      if (user == null) return;
+      await user.getIdToken(true);
+      await Future<void>.delayed(const Duration(milliseconds: 500));
+      await NabourFunctions.instance
+          .httpsCallable('nabourMaintainTokenWallet')
+          .call();
+      Logger.info(
+        'nabourMaintainTokenWallet: reușit după retry amânat',
+        tag: 'TokenService',
+      );
+    } on FirebaseFunctionsException catch (e) {
+      Logger.debug(
+        'nabourMaintainTokenWallet: retry amânat — ${e.code}',
+        tag: 'TokenService',
+      );
+    } catch (e) {
+      Logger.debug(
+        'nabourMaintainTokenWallet: retry amânat — $e',
+        tag: 'TokenService',
+      );
+    } finally {
+      _deferredWalletMaintainScheduled = false;
     }
   }
 
@@ -482,6 +545,24 @@ class TokenService {
       ).toMap());
     } catch (e) {
       Logger.warning('Nu s-a putut loga tranzacția: $e', tag: 'TokenService');
+    }
+  }
+
+  /// Achiziționează un plan (abonament) folosind soldul transferabil (P2P).
+  Future<void> purchasePlanWithTokens(String plan) async {
+    try {
+      await NabourFunctions.instance
+          .httpsCallable('nabourPurchasePlanWithTokens')
+          .call({'plan': plan});
+      Logger.info('Planul $plan a fost achiziționat cu tokeni.',
+          tag: 'TokenService');
+    } on FirebaseFunctionsException catch (e) {
+      Logger.error('purchasePlanWithTokens CF: ${e.code} ${e.message}',
+          tag: 'TokenService');
+      rethrow;
+    } catch (e) {
+      Logger.error('purchasePlanWithTokens: $e', tag: 'TokenService');
+      rethrow;
     }
   }
 }

@@ -1,6 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:nabour_app/models/token_wallet_model.dart';
+import 'package:nabour_app/utils/logger.dart';
+import 'package:nabour_app/utils/firestore_error_ui.dart';
 
 /// Admin dashboard — statistici globale pentru operatorii Nabour.
 /// Accesibil doar pentru userii cu role == 'admin'.
@@ -73,6 +75,17 @@ class _UsersTab extends StatelessWidget {
           .limit(100)
           .snapshots(),
       builder: (context, snap) {
+        if (snap.hasError) {
+          Logger.error(
+            'AdminDashboard users stream',
+            error: snap.error,
+            tag: 'AdminDashboard',
+          );
+          return FirestoreStreamErrorCenter(
+            error: snap.error,
+            fallbackMessage: 'Nu s-au putut încărca lista de utilizatori.',
+          );
+        }
         if (!snap.hasData) {
           return const Center(child: CircularProgressIndicator());
         }

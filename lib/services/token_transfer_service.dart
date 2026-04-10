@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:nabour_app/models/token_transfer_models.dart';
+import 'package:nabour_app/services/contacts_service.dart';
 import 'package:nabour_app/services/nabour_functions.dart';
 import 'package:nabour_app/utils/logger.dart';
 
@@ -108,6 +109,76 @@ class TokenTransferService {
       Logger.error('getWallet error', error: e, tag: 'TokenTransferService');
       return null;
     }
+  }
+
+  /// Rezolvă textul introdus ca **UID** (`users/{id}` există) sau ca **număr de telefon**
+  /// (câmpurile `phoneNumber` / `phoneE164`). Folosit pentru transfer și cereri de plată.
+  ///
+  /// Returnează eroare dacă nu există niciun utilizator, sau mai mulți pentru același număr.
+  Future<({String? userId, String? error})> resolveCounterpartyUserId(
+    String input,
+  ) async {
+    final raw = input.trim();
+    if (raw.isEmpty) {
+      return (userId: null, error: 'Introdu un număr de telefon sau ID-ul contului.');
+    }
+
+    try {
+      final byDoc = await _db.collection('users').doc(raw).get();
+      if (byDoc.exists) {
+        return (userId: raw, error: null);
+      }
+    } catch (e) {
+      Logger.warning('resolveCounterpartyUserId doc: $e', tag: 'TokenTransferService');
+    }
+
+    final candidates = ContactsService.phoneLookupCandidates(raw).toList();
+    if (candidates.isEmpty) {
+      return (
+        userId: null,
+        error: 'Nu am găsit utilizator. Verifică numărul sau ID-ul din profilul Nabour.',
+      );
+    }
+
+    final uids = <String>{};
+    const batchSize = 10;
+    for (var i = 0; i < candidates.length; i += batchSize) {
+      final batch = candidates.skip(i).take(batchSize).toList();
+      try {
+        final s1 =
+            await _db.collection('users').where('phoneNumber', whereIn: batch).get();
+        for (final d in s1.docs) {
+          uids.add(d.id);
+        }
+      } catch (e) {
+        Logger.warning('resolveCounterpartyUserId phoneNumber: $e',
+            tag: 'TokenTransferService');
+      }
+      try {
+        final s2 =
+            await _db.collection('users').where('phoneE164', whereIn: batch).get();
+        for (final d in s2.docs) {
+          uids.add(d.id);
+        }
+      } catch (e) {
+        Logger.warning('resolveCounterpartyUserId phoneE164: $e',
+            tag: 'TokenTransferService');
+      }
+    }
+
+    if (uids.isEmpty) {
+      return (
+        userId: null,
+        error: 'Nu am găsit utilizator cu acest număr. Poți folosi ID-ul din Profil.',
+      );
+    }
+    if (uids.length > 1) {
+      return (
+        userId: null,
+        error: 'Mai mulți utilizatori pentru acest număr. Folosește ID-ul exact al contului.',
+      );
+    }
+    return (userId: uids.first, error: null);
   }
 
   // ─── Cloud Functions — Transfer direct ───────────────────────────────────

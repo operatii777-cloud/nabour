@@ -46,10 +46,9 @@ class _SavedAddressesScreenState extends State<SavedAddressesScreen> {
           final favoriteAddresses = <SavedAddress>[];
           
           for (final address in addresses) {
-            final labelLower = address.label.toLowerCase();
-            if (labelLower == 'acasă') {
+            if (address.isHomeCategory) {
               homeAddress = address;
-            } else if (labelLower == 'serviciu') {
+            } else if (address.isWorkCategory) {
               workAddress = address;
             } else {
               favoriteAddresses.add(address);

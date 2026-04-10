@@ -52,6 +52,8 @@ import 'package:nabour_app/services/connectivity_service.dart';
 import 'package:nabour_app/services/autonomous_app_coordinator.dart';
 import 'package:nabour_app/config/neighbor_telemetry_config.dart';
 import 'package:nabour_app/config/trial_policy_config.dart';
+import 'package:nabour_app/services/trial_config_service.dart';
+import 'package:nabour_app/services/app_audio_session.dart';
 
 Future<void> main() async {
   final widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
@@ -118,11 +120,21 @@ Future<void> main() async {
     }),
   );
 
+  if (!kIsWeb) {
+    unawaited(AppAudioSession.ensureConfiguredForVoiceCommunication());
+  }
+
   // Set Mapbox token BEFORE any MapView is created
   final mapboxToken = dotenv.maybeGet('MAPBOX_PUBLIC_TOKEN') ??
       dotenv.maybeGet('MAPBOX_ACCESS_TOKEN');
   if (mapboxToken != null && mapboxToken.startsWith('pk.')) {
     MapboxOptions.setAccessToken(mapboxToken);
+    if (!kIsWeb) {
+      // Motorul de hărți verifică mai întâi TileStore (implicit READ_ONLY); setăm explicit + quota
+      // înainte de primul MapWidget, ca să fie același magazin ca la prefetch (OfflineManager).
+      MapboxMapsOptions.setTileStoreUsageMode(TileStoreUsageMode.READ_ONLY);
+      unawaited(_primeDefaultTileStoreDiskQuota());
+    }
   }
 
   final sentryDsn = await _resolveSentryDsn();
@@ -194,6 +206,16 @@ void _runNabourApp() {
   WidgetsBinding.instance.addPostFrameCallback((_) {
     unawaited(_initializeBackground());
   });
+}
+
+/// Quota disc pentru tile-uri (MAPS) — aceeași magnitudine ca în [OfflineManager.prefetchBucharestIlfov].
+Future<void> _primeDefaultTileStoreDiskQuota() async {
+  try {
+    final ts = await TileStore.createDefault();
+    ts.setDiskQuota(500 * 1024 * 1024, domain: TileDataDomain.MAPS);
+  } catch (e) {
+    Logger.debug('TileStore disk quota prime: $e', tag: 'APP');
+  }
 }
 
 Future<String?> _resolveSentryDsn() async {
@@ -397,8 +419,12 @@ class _MyAppState extends State<MyApp> {
 // ── Trial helpers ─────────────────────────────────────────────────────────────
 const int _trialDays = 7;
 
-bool _isTrialExpired(User user, {bool isUnlimited = false}) {
-  if (isUnlimited) return false;
+bool _isTrialExpired(
+  User user, {
+  bool isUnlimited = false,
+  bool firestoreTrialExempt = false,
+}) {
+  if (isUnlimited || firestoreTrialExempt) return false;
   final email = (user.email ?? '').toLowerCase().trim();
   if (TrialPolicyConfig.instance.isExempt(email)) return false;
   final creationTime = user.metadata.creationTime;
@@ -515,18 +541,22 @@ class _AuthRoleResolver extends StatefulWidget {
 }
 
 class _AuthRoleResolverState extends State<_AuthRoleResolver> {
-  late final Future<(UserRole, bool)> _authDataFuture = _fetchAuthData();
+  late final Future<(UserRole, bool, bool)> _authDataFuture = _fetchAuthData();
 
-  Future<(UserRole, bool)> _fetchAuthData() async {
+  Future<(UserRole, bool, bool)> _fetchAuthData() async {
     final role = await FirestoreService().getUserRole();
     final wallet = await TokenService().getWallet(widget.user.uid);
     final isUnlimited = wallet?.isUnlimited ?? false;
-    return (role, isUnlimited);
+    final firestoreTrialExempt = await TrialConfigService.instance.isExempt(
+      uid: widget.user.uid,
+      email: widget.user.email,
+    );
+    return (role, isUnlimited, firestoreTrialExempt);
   }
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<(UserRole, bool)>(
+    return FutureBuilder<(UserRole, bool, bool)>(
       future: _authDataFuture,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
@@ -566,8 +596,14 @@ class _AuthRoleResolverState extends State<_AuthRoleResolver> {
 
         final user = widget.user;
         if (snapshot.hasData) {
-          final (role, isUnlimited) = snapshot.data!;
-          if (_isTrialExpired(user, isUnlimited: isUnlimited)) return const TrialExpiredScreen();
+          final (role, isUnlimited, firestoreTrialExempt) = snapshot.data!;
+          if (_isTrialExpired(
+                user,
+                isUnlimited: isUnlimited,
+                firestoreTrialExempt: firestoreTrialExempt,
+              )) {
+            return const TrialExpiredScreen();
+          }
           return const MapWithWarmupScreen();
         } else if (snapshot.hasError) {
           return Scaffold(
@@ -619,7 +655,9 @@ class _AuthRoleResolverState extends State<_AuthRoleResolver> {
           );
         }
 
-        if (_isTrialExpired(user)) return const TrialExpiredScreen();
+        if (_isTrialExpired(user, firestoreTrialExempt: false)) {
+          return const TrialExpiredScreen();
+        }
         return const MapWithWarmupScreen();
       },
     );

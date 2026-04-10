@@ -7,6 +7,7 @@ import 'package:nabour_app/models/token_wallet_model.dart';
 import 'package:nabour_app/services/subscription_catalog_service.dart';
 import 'package:nabour_app/services/token_service.dart';
 import 'package:nabour_app/theme/app_colors.dart';
+import 'package:nabour_app/core/ui/app_feedback.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 /// Trebuie să coincidă cu lista din parametrul Functions `STAFF_SUBSCRIPTION_EMAILS`.
@@ -109,15 +110,11 @@ class _TokenShopScreenState extends State<TokenShopScreen>
     try {
       await TokenService().applyStaffSubscription(picked);
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.tokenShopStaffApplied)),
-        );
+        AppFeedback.success(context, l10n.tokenShopStaffApplied);
       }
     } catch (e) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('$e'), backgroundColor: Colors.red.shade800),
-        );
+        AppFeedback.error(context, '$e');
       }
     }
   }
@@ -126,6 +123,12 @@ class _TokenShopScreenState extends State<TokenShopScreen>
 // ─────────────────────────────────────────────────────────────────────────────
 // Tab 1: Planuri de abonament
 // ─────────────────────────────────────────────────────────────────────────────
+
+const Map<TokenPlan, int> kPlanTokenPrices = {
+  TokenPlan.basic: 1000,
+  TokenPlan.pro: 5000,
+  TokenPlan.unlimited: 15000,
+};
 
 class _PlansTab extends StatelessWidget {
   const _PlansTab();
@@ -142,33 +145,63 @@ class _PlansTab extends StatelessWidget {
 
         return StreamBuilder<TokenWallet?>(
           stream: TokenService().walletStream,
-          builder: (context, snap) {
-            final currentPlan = snap.data?.plan ?? TokenPlan.free;
+          builder: (context, walletSnap) {
+            final currentPlan = walletSnap.data?.plan ?? TokenPlan.free;
 
-            return ListView(
-              padding: const EdgeInsets.all(16),
-              children: [
-                _SectionHeader(
-                  icon: Icons.workspace_premium_rounded,
-                  title: l10n.tokenShopChoosePlanTitle,
-                  subtitle: l10n.tokenShopChoosePlanSubtitle,
-                ),
-                const SizedBox(height: 12),
-                ...catalog.expand((doc) {
-                  final plan = doc.tokenPlan;
-                  if (plan == null) return const Iterable<Widget>.empty();
-                  return [
-                    _PlanCard(
-                      plan: plan,
-                      monthlyAllowance: doc.monthlyAllowance,
-                      isCurrent: plan == currentPlan,
-                      onSelect: () => _selectPlan(context, plan, currentPlan),
+            return StreamBuilder<Map<String, dynamic>?>(
+              stream: TokenService().transferableWalletStream,
+              builder: (context, p2pSnap) {
+                final p2pBalance = p2pSnap.data?['balanceMinor'] as int? ?? 0;
+
+                return ListView(
+                  padding: const EdgeInsets.all(16),
+                  children: [
+                    _SectionHeader(
+                      icon: Icons.workspace_premium_rounded,
+                      title: l10n.tokenShopChoosePlanTitle,
+                      subtitle: l10n.tokenShopChoosePlanSubtitle,
                     ),
-                  ];
-                }),
-                const SizedBox(height: 24),
-                _PaymentMethodsNote(),
-              ],
+                    const SizedBox(height: 8),
+                    // Sold curent P2P (pentru context)
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: AppColors.violetAccent.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.account_balance_wallet_outlined, size: 14, color: AppColors.violetAccent),
+                            const SizedBox(width: 6),
+                            Text(
+                              'Sold Transferabil: $p2pBalance Tokeni',
+                              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.violetAccent),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    ...catalog.expand((doc) {
+                      final plan = doc.tokenPlan;
+                      if (plan == null) return const Iterable<Widget>.empty();
+                      return [
+                        _PlanCard(
+                          plan: plan,
+                          monthlyAllowance: doc.monthlyAllowance,
+                          isCurrent: plan == currentPlan,
+                          onSelect: () => _selectPlan(context, plan, currentPlan, p2pBalance),
+                        ),
+                      ];
+                    }),
+                    const SizedBox(height: 24),
+                    _PaymentMethodsNote(),
+                  ],
+                );
+              },
             );
           },
         );
@@ -176,60 +209,95 @@ class _PlansTab extends StatelessWidget {
     );
   }
 
-  void _selectPlan(BuildContext context, TokenPlan plan, TokenPlan current) {
+  void _selectPlan(BuildContext context, TokenPlan plan, TokenPlan current, int p2pBalance) {
     final l10n = AppLocalizations.of(context)!;
     if (plan == current) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l10n.tokenShopAlreadyOnPlan)),
-      );
+      AppFeedback.info(context, l10n.tokenShopAlreadyOnPlan);
       return;
     }
     if (plan == TokenPlan.free) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l10n.tokenShopDowngradeContactSupport)),
-      );
+      AppFeedback.warning(context, l10n.tokenShopDowngradeContactSupport);
       return;
     }
+
     final planName = _tokenPlanDisplayName(plan, l10n);
-    final price = _tokenPlanPriceLabel(plan, l10n);
-    _showPaymentDialog(context, planName, price, () async {
-      final uid = FirebaseAuth.instance.currentUser?.uid;
-      if (uid == null) return;
-      try {
-        await TokenService().upgradePlan(uid, plan);
-        if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(l10n.tokenShopUpgradeSuccess(planName)),
-            ),
-          );
-        }
-      } on FirebaseFunctionsException catch (e) {
-        if (!context.mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              e.code == 'failed-precondition'
-                  ? l10n.tokenShopErrorPaymentsNotReady
-                  : l10n.tokenShopErrorWithMessage(e.message ?? e.code),
-            ),
-            backgroundColor: Colors.red.shade800,
+    final ronPrice = _tokenPlanPriceLabel(plan, l10n);
+    final tokenPrice = kPlanTokenPrices[plan] ?? 0;
+
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (ctx) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Alege metoda de plată pentru $planName',
+                style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 18),
+              ),
+              const SizedBox(height: 20),
+              // Opțiunea 1: Card/Bancar
+              ListTile(
+                leading: const Icon(Icons.credit_card_rounded, color: AppColors.violetAccent),
+                title: const Text('Plată cu Cardul', style: TextStyle(fontWeight: FontWeight.w700)),
+                subtitle: Text('Preț: $ronPrice (Reînnoire automată)'),
+                trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 14),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    side: BorderSide(color: Colors.grey.shade200)),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  _showPaymentDialog(context, planName, ronPrice, () async {
+                    final uid = FirebaseAuth.instance.currentUser?.uid;
+                    if (uid == null) return;
+                    await TokenService().upgradePlan(uid, plan);
+                  });
+                },
+              ),
+              const SizedBox(height: 12),
+              // Opțiunea 2: Tokeni (P2P)
+              ListTile(
+                enabled: p2pBalance >= tokenPrice,
+                leading: Icon(Icons.generating_tokens_outlined, 
+                    color: p2pBalance >= tokenPrice ? Colors.teal : Colors.grey),
+                title: const Text('Plătește cu Tokeni Transferabili', 
+                    style: TextStyle(fontWeight: FontWeight.w700)),
+                subtitle: Text('Preț: $tokenPrice Tokeni (Fără reînnoire)'),
+                trailing: p2pBalance < tokenPrice 
+                    ? const Text('Insalificient', style: TextStyle(color: Colors.red, fontSize: 10))
+                    : const Icon(Icons.arrow_forward_ios_rounded, size: 14),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    side: BorderSide(color: p2pBalance >= tokenPrice ? Colors.teal.shade100 : Colors.grey.shade200)),
+                onTap: () async {
+                  Navigator.pop(ctx);
+                  try {
+                    await TokenService().purchasePlanWithTokens(plan.name);
+                    if (context.mounted) {
+                      AppFeedback.success(context, 'Planul $planName a fost activat!');
+                    }
+                  } catch (e) {
+                    if (context.mounted) {
+                      AppFeedback.error(context, 'Eroare: $e');
+                    }
+                  }
+                },
+              ),
+              const SizedBox(height: 12),
+            ],
           ),
-        );
-      } catch (e) {
-        if (!context.mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(l10n.tokenShopUpgradeError(e.toString())),
-            backgroundColor: Colors.red.shade800,
-          ),
-        );
-      }
-    });
+        ),
+      ),
+    );
   }
 }
 
-class _PlanCard extends StatelessWidget {
+class _PlanCard extends StatefulWidget {
   final TokenPlan plan;
   final int monthlyAllowance;
   final bool isCurrent;
@@ -243,197 +311,222 @@ class _PlanCard extends StatelessWidget {
   });
 
   @override
+  State<_PlanCard> createState() => _PlanCardState();
+}
+
+class _PlanCardState extends State<_PlanCard> with SingleTickerProviderStateMixin {
+  late final AnimationController _controller = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 150),
+  );
+  late final Animation<double> _scale = Tween<double>(begin: 1.0, end: 0.96).animate(
+    CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
+  );
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context)!;
-    final surface = theme.colorScheme.surface;
-    const violet = AppColors.violetAccent;
-    final planName = _tokenPlanDisplayName(plan, l10n);
-    final price = _tokenPlanPriceLabel(plan, l10n);
-    final allowanceStr = monthlyAllowance >= 999999998
-        ? '∞'
-        : '$monthlyAllowance';
-    final allowanceLine = l10n.tokenShopPlanAllowanceMonthly(allowanceStr);
-    final economy = TokenEconomySummary.fromMonthlyAllowance(monthlyAllowance);
-    final isPopular = plan == TokenPlan.basic;
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      decoration: BoxDecoration(
-        color: surface,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: isCurrent
-              ? violet
-              : isPopular
-                  ? violet.withValues(alpha: 0.4)
-                  : theme.dividerColor.withValues(alpha: 0.35),
-          width: isCurrent ? 2 : 1,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        children: [
-          if (isPopular && !isCurrent)
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(vertical: 5),
-              decoration: const BoxDecoration(
-                color: violet,
-                borderRadius:
-                    BorderRadius.vertical(top: Radius.circular(15)),
-              ),
-              child: Text(
-                l10n.tokenShopMostPopular,
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 11,
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: 1,
-                ),
-              ),
+    final planName = _tokenPlanDisplayName(widget.plan, l10n);
+    final price = _tokenPlanPriceLabel(widget.plan, l10n);
+    final allowanceStr = widget.monthlyAllowance >= 999999998 ? '∞' : '${widget.monthlyAllowance}';
+    final economy = TokenEconomySummary.fromMonthlyAllowance(widget.monthlyAllowance);
+    final isPopular = widget.plan == TokenPlan.basic;
+    
+    // Aesthetic Colors
+    const darkMatter = Color(0xFF131620);
+    const neonCyan = Color(0xFF00E5FF);
+    const neonAmber = Color(0xFFFFB300);
+    const neonViolet = Color(0xFF7C3AED);
+    
+    final accentColor = widget.isCurrent ? neonCyan : (isPopular ? neonAmber : neonViolet);
+
+    return GestureDetector(
+      onTapDown: (_) => _controller.forward(),
+      onTapUp: (_) {
+        _controller.reverse();
+        widget.onSelect();
+      },
+      onTapCancel: () => _controller.reverse(),
+      child: ScaleTransition(
+        scale: _scale,
+        child: Container(
+          margin: const EdgeInsets.only(bottom: 16),
+          decoration: BoxDecoration(
+            color: darkMatter,
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(
+              color: widget.isCurrent 
+                  ? accentColor.withValues(alpha: 0.6) 
+                  : Colors.white.withValues(alpha: 0.05),
+              width: widget.isCurrent ? 1.5 : 1.0,
             ),
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Row(
-              children: [
-                // Iconiță plan
-                Container(
-                  width: 44,
-                  height: 44,
-                  decoration: BoxDecoration(
-                    color: violet.withValues(alpha: 0.10),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(_planIcon(plan), color: violet, size: 22),
+            boxShadow: [
+              if (widget.isCurrent || isPopular)
+                BoxShadow(
+                  color: accentColor.withValues(alpha: 0.15),
+                  blurRadius: 20,
+                  spreadRadius: -5,
                 ),
-                const SizedBox(width: 14),
-                // Info
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        planName,
-                        style: const TextStyle(
-                          fontWeight: FontWeight.w900,
-                          fontSize: 16,
-                        ),
-                      ),
-                      Text(
-                        allowanceLine,
-                        style: TextStyle(
-                          fontSize: 13,
-                          color: theme.colorScheme.onSurface
-                              .withValues(alpha: 0.55),
-                        ),
-                      ),
-                      if (economy.isUnlimited)
-                        Padding(
-                          padding: const EdgeInsets.only(top: 4),
-                          child: Text(
-                            l10n.tokenShopEconomyUnlimited,
-                            style: TextStyle(
-                              fontSize: 11,
-                              height: 1.25,
-                              color: theme.colorScheme.onSurface
-                                  .withValues(alpha: 0.48),
-                            ),
-                          ),
-                        )
-                      else ...[
-                        Padding(
-                          padding: const EdgeInsets.only(top: 4),
-                          child: Text(
-                            l10n.tokenShopEconomyApproxLine(
-                              economy.aiQueries,
-                              economy.routeCalcs,
-                              economy.geocodings,
-                              economy.broadcastPosts,
-                            ),
-                            style: TextStyle(
-                              fontSize: 11,
-                              height: 1.25,
-                              color: theme.colorScheme.onSurface
-                                  .withValues(alpha: 0.48),
-                            ),
-                          ),
-                        ),
-                        Text(
-                          l10n.tokenShopEconomyBusinessLine(
-                            economy.businessOffers,
-                            TokenCost.businessOffer,
-                          ),
-                          style: TextStyle(
-                            fontSize: 11,
-                            height: 1.25,
-                            color: theme.colorScheme.onSurface
-                                .withValues(alpha: 0.45),
-                          ),
-                        ),
-                      ],
+            ],
+          ),
+          child: Stack(
+            children: [
+              // Subtle background glow
+              Positioned(
+                right: -20,
+                top: -20,
+                child: Container(
+                  width: 100,
+                  height: 100,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: accentColor.withValues(alpha: 0.1),
+                        blurRadius: 40,
+                        spreadRadius: 20,
+                      )
                     ],
                   ),
                 ),
-                // Preț + buton
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
+              ),
+              Padding(
+                padding: const EdgeInsets.all(20),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    Text(
-                      price,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.w900,
-                        fontSize: 14,
-                        color: violet,
+                    // Dynamic Icon
+                    Container(
+                      width: 52,
+                      height: 52,
+                      decoration: BoxDecoration(
+                        color: accentColor.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: accentColor.withValues(alpha: 0.3)),
+                      ),
+                      child: Icon(_planIcon(widget.plan), color: accentColor, size: 26),
+                    ),
+                    const SizedBox(width: 16),
+                    // Details
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Text(
+                                planName.toUpperCase(),
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w900,
+                                  fontSize: 16,
+                                  letterSpacing: 1.2,
+                                ),
+                              ),
+                              if (isPopular && !widget.isCurrent) ...[
+                                const SizedBox(width: 8),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                  decoration: BoxDecoration(
+                                    color: neonAmber.withValues(alpha: 0.15),
+                                    borderRadius: BorderRadius.circular(6),
+                                    border: Border.all(color: neonAmber.withValues(alpha: 0.4)),
+                                  ),
+                                  child: const Text(
+                                    'POPULAR',
+                                    style: TextStyle(color: neonAmber, fontSize: 8, fontWeight: FontWeight.bold),
+                                  ),
+                                ),
+                              ]
+                            ],
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            '$allowanceStr Tokeni',
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.white.withValues(alpha: 0.7),
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          if (economy.isUnlimited)
+                            Text(
+                              'Acces absolut la inteligența rețelei.',
+                              style: TextStyle(fontSize: 11, color: Colors.white.withValues(alpha: 0.4)),
+                            )
+                          else
+                            Text(
+                              '~${economy.aiQueries} AI Queries | ~${economy.routeCalcs} Rute',
+                              style: TextStyle(fontSize: 11, color: Colors.white.withValues(alpha: 0.4)),
+                            ),
+                        ],
                       ),
                     ),
-                    const SizedBox(height: 4),
-                    if (isCurrent)
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 10, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: Colors.green.shade50,
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(color: Colors.green.shade200),
-                        ),
-                        child: Text(
-                          l10n.tokenShopActive,
-                          style: TextStyle(
-                              fontSize: 12,
-                              color: Colors.green.shade700,
-                              fontWeight: FontWeight.w700),
-                        ),
-                      )
-                    else if (plan != TokenPlan.free)
-                      TextButton(
-                        onPressed: onSelect,
-                        style: TextButton.styleFrom(
-                          backgroundColor: violet,
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 14, vertical: 6),
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8)),
-                        ),
-                        child: Text(
-                          l10n.tokenShopSelect,
+                    // Price & Action
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Text(
+                          price,
                           style: const TextStyle(
-                              fontSize: 12, fontWeight: FontWeight.w800),
+                            fontWeight: FontWeight.w900,
+                            fontSize: 16,
+                            color: Colors.white,
+                          ),
                         ),
-                      ),
+                        if (widget.plan != TokenPlan.free)
+                          Text(
+                            'sau ${kPlanTokenPrices[widget.plan]} TKN',
+                            style: TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w600,
+                              color: neonCyan.withValues(alpha: 0.7),
+                            ),
+                          ),
+                        const SizedBox(height: 12),
+                        if (widget.isCurrent)
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: neonCyan.withValues(alpha: 0.15),
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(color: neonCyan.withValues(alpha: 0.5)),
+                            ),
+                            child: const Text(
+                              'ACTIV',
+                              style: TextStyle(fontSize: 10, color: neonCyan, fontWeight: FontWeight.w900, letterSpacing: 1),
+                            ),
+                          )
+                        else if (widget.plan != TokenPlan.free)
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                            decoration: BoxDecoration(
+                              color: accentColor,
+                              borderRadius: BorderRadius.circular(12),
+                              boxShadow: [
+                                BoxShadow(color: accentColor.withValues(alpha: 0.4), blurRadius: 8, offset: const Offset(0, 2))
+                              ],
+                            ),
+                            child: const Text(
+                              'SELECTEAZĂ',
+                              style: TextStyle(fontSize: 10, color: Colors.black, fontWeight: FontWeight.w900, letterSpacing: 0.5),
+                            ),
+                          ),
+                      ],
+                    ),
                   ],
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
@@ -458,14 +551,17 @@ class _TopupTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final packages = _topupPackages(l10n);
+    final personalPackages = _topupPackages(l10n);
+    final transferablePackages = _transferablePackages(l10n);
+
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
+        // Secțiunea 1: Uz Personal
         _SectionHeader(
-          icon: Icons.add_circle_outline_rounded,
+          icon: Icons.person_outline_rounded,
           title: l10n.tokenShopBuyExtraTitle,
-          subtitle: l10n.tokenShopBuyExtraSubtitle,
+          subtitle: 'Tokeni pentru AI, rute și funcțiile tale.',
         ),
         const SizedBox(height: 12),
         GridView.count(
@@ -474,14 +570,40 @@ class _TopupTab extends StatelessWidget {
           physics: const NeverScrollableScrollPhysics(),
           crossAxisSpacing: 10,
           mainAxisSpacing: 10,
-          childAspectRatio: 1.1,
-          children: packages
+          childAspectRatio: 1.2,
+          children: personalPackages
               .map((p) => _TopupCard(
                     package: p,
                     onBuy: () => _buyPackage(context, p),
                   ))
               .toList(),
         ),
+
+        const SizedBox(height: 32),
+
+        // Secțiunea 2: Transferabili (Nou!)
+        _SectionHeader(
+          icon: Icons.card_giftcard_rounded,
+          title: 'PACHETE TRANSFERABILE',
+          subtitle: 'Tokeni reali pe care îi poți trimite oricui.',
+        ),
+        const SizedBox(height: 12),
+        GridView.count(
+          crossAxisCount: 2,
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          crossAxisSpacing: 10,
+          mainAxisSpacing: 10,
+          childAspectRatio: 1.2,
+          children: transferablePackages
+              .map((p) => _TopupCard(
+                    package: p,
+                    isTransferable: true,
+                    onBuy: () => _buyPackage(context, p),
+                  ))
+              .toList(),
+        ),
+
         const SizedBox(height: 24),
         _PaymentMethodsNote(),
       ],
@@ -490,9 +612,13 @@ class _TopupTab extends StatelessWidget {
 
   void _buyPackage(BuildContext context, _TopupPackage pkg) {
     final l10n = AppLocalizations.of(context)!;
+    final title = pkg.isTransferable 
+        ? 'Pachet Transferabil: ${pkg.tokens} Tokeni'
+        : '${pkg.tokens} ${l10n.tokenShopTokensWord} (${pkg.label})';
+
     _showPaymentDialog(
       context,
-      '${pkg.tokens} ${l10n.tokenShopTokensWord} (${pkg.label})',
+      title,
       pkg.price,
       () async {
         final uid = FirebaseAuth.instance.currentUser?.uid;
@@ -502,36 +628,29 @@ class _TopupTab extends StatelessWidget {
             uid,
             pkg.tokens,
             TokenTransactionType.purchase,
-            description: l10n.tokenShopTxPurchasePackage(pkg.label, pkg.tokens),
+            isTransferable: pkg.isTransferable,
+            description: pkg.isTransferable 
+                ? 'Cumpărare pachet TRANSFERABIL: ${pkg.label}'
+                : l10n.tokenShopTxPurchasePackage(pkg.label, pkg.tokens),
           );
           if (context.mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(l10n.tokenShopTokensAdded(pkg.tokens)),
-                backgroundColor: Colors.green,
-              ),
+            AppFeedback.success(
+              context,
+              l10n.tokenShopTokensAdded(pkg.tokens) +
+                  (pkg.isTransferable ? ' (în portofelul transferabil)' : ''),
             );
           }
         } on FirebaseFunctionsException catch (e) {
           if (!context.mounted) return;
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                e.code == 'failed-precondition'
-                    ? l10n.tokenShopTopupRequiresBackend
-                    : l10n.tokenShopErrorWithMessage(e.message ?? e.code),
-              ),
-              backgroundColor: Colors.red.shade800,
-            ),
+          AppFeedback.error(
+            context,
+            e.code == 'failed-precondition'
+                ? l10n.tokenShopTopupRequiresBackend
+                : l10n.tokenShopErrorWithMessage(e.message ?? e.code),
           );
         } catch (e) {
           if (!context.mounted) return;
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(l10n.tokenShopErrorWithMessage(e.toString())),
-              backgroundColor: Colors.red.shade800,
-            ),
-          );
+          AppFeedback.error(context, l10n.tokenShopErrorWithMessage(e.toString()));
         }
       },
     );
@@ -543,41 +662,50 @@ class _TopupPackage {
   final String price;
   final String label;
   final bool popular;
+  final bool isTransferable;
   const _TopupPackage({
     required this.tokens,
     required this.price,
     required this.label,
     this.popular = false,
+    this.isTransferable = false,
   });
 }
 
 class _TopupCard extends StatelessWidget {
   final _TopupPackage package;
   final VoidCallback onBuy;
+  final bool isTransferable;
 
-  const _TopupCard({required this.package, required this.onBuy});
+  const _TopupCard({
+    required this.package,
+    required this.onBuy,
+    this.isTransferable = false,
+  });
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context)!;
-    const violet = AppColors.violetAccent;
+    final accent = isTransferable ? theme.colorScheme.tertiary : AppColors.violetAccent;
     final surface = theme.colorScheme.surface;
+    
     return InkWell(
       onTap: onBuy,
       borderRadius: BorderRadius.circular(14),
       child: Container(
         decoration: BoxDecoration(
-          color: package.popular ? violet : surface,
+          color: package.popular ? accent : surface,
           borderRadius: BorderRadius.circular(14),
           border: Border.all(
             color: package.popular
-                ? violet
+                ? accent
                 : theme.dividerColor.withValues(alpha: 0.35),
+            width: isTransferable ? 1.5 : 1,
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.05),
+              color: accent.withValues(alpha: 0.05),
               blurRadius: 8,
             ),
           ],
@@ -586,16 +714,15 @@ class _TopupCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            if (package.popular)
+            if (package.popular || isTransferable)
               Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
                 decoration: BoxDecoration(
                   color: Colors.white.withValues(alpha: 0.25),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(
-                  l10n.tokenShopPopularBadge,
+                  isTransferable ? 'GIFT' : l10n.tokenShopPopularBadge,
                   style: const TextStyle(
                     fontSize: 9,
                     color: Colors.white,
@@ -605,20 +732,30 @@ class _TopupCard extends StatelessWidget {
                 ),
               ),
             const Spacer(),
-            Text(
-              '${package.tokens}',
-              style: TextStyle(
-                fontSize: 28,
-                fontWeight: FontWeight.w900,
-                color: package.popular
-                    ? Colors.white
-                    : theme.colorScheme.onSurface,
-              ),
+            Row(
+              children: [
+                Text(
+                  '${package.tokens}',
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.w900,
+                    fontFamily: 'Outfit',
+                    color: package.popular
+                        ? Colors.white
+                        : theme.colorScheme.onSurface,
+                  ),
+                ),
+                if (isTransferable)
+                  const Padding(
+                    padding: EdgeInsets.only(left: 4),
+                    child: Icon(Icons.share_rounded, size: 14, color: Colors.white70),
+                  ),
+              ],
             ),
             Text(
               l10n.tokenShopTokensWord,
               style: TextStyle(
-                fontSize: 12,
+                fontSize: 11,
                 color: package.popular
                     ? Colors.white70
                     : theme.colorScheme.onSurface.withValues(alpha: 0.45),
@@ -628,9 +765,9 @@ class _TopupCard extends StatelessWidget {
             Text(
               package.price,
               style: TextStyle(
-                fontSize: 16,
+                fontSize: 14,
                 fontWeight: FontWeight.w900,
-                color: package.popular ? Colors.white : violet,
+                color: package.popular ? Colors.white : accent,
               ),
             ),
           ],
@@ -1073,5 +1210,27 @@ List<_TopupPackage> _topupPackages(AppLocalizations l10n) => [
         tokens: 15000,
         price: '49,99 RON',
         label: l10n.tokenShopPackageBusiness,
+      ),
+    ];
+
+List<_TopupPackage> _transferablePackages(AppLocalizations l10n) => [
+      const _TopupPackage(
+        tokens: 100,
+        price: '0,99 RON',
+        label: 'Micro Gift',
+        isTransferable: true,
+      ),
+      const _TopupPackage(
+        tokens: 1000,
+        price: '7,99 RON',
+        label: 'Standard Gift',
+        isTransferable: true,
+        popular: true,
+      ),
+      const _TopupPackage(
+        tokens: 5000,
+        price: '34,99 RON',
+        label: 'Premium Gift',
+        isTransferable: true,
       ),
     ];

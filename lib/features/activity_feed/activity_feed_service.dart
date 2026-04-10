@@ -22,17 +22,22 @@ class ActivityFeedService {
   final Map<String, DateTime> _lastWrite = {};
   static const _throttle = Duration(minutes: 3);
 
+  /// [throttleDedupKey] — dacă e setat (ex. id cerere), fiecare valoare are propriul
+  /// ferestră de throttle (altfel același tip la 3 min ar ascunde evenimente distincte).
   Future<void> postEvent({
     required String type,
     required String text,
     double? lat,
     double? lng,
+    String? throttleDedupKey,
   }) async {
     final uid = _uid;
     if (uid == null) return;
 
     final now = DateTime.now();
-    final key = '$type:$uid';
+    final key = throttleDedupKey != null && throttleDedupKey.isNotEmpty
+        ? '$type:$uid:$throttleDedupKey'
+        : '$type:$uid';
     final last = _lastWrite[key];
     if (last != null && now.difference(last) < _throttle) return;
     _lastWrite[key] = now;

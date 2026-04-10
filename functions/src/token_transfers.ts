@@ -60,14 +60,21 @@ async function assertUserExists(uid: string): Promise<void> {
   }
 }
 
-async function getWallet(
+interface WalletState {
+  ref: admin.firestore.DocumentReference;
+  exists: boolean;
+  balanceMinor: number;
+  status: string;
+}
+
+async function getWalletState(
   txn: admin.firestore.Transaction,
   userId: string
-): Promise<{ ref: admin.firestore.DocumentReference; balanceMinor: number; status: string }> {
+): Promise<WalletState> {
   const ref = db().collection("token_wallets").doc(userId);
   const snap = await txn.get(ref);
   if (!snap.exists) {
-    throw new HttpsError("not-found", `COUNTERPARTY_NOT_FOUND: wallet missing for ${userId}`);
+    return {ref, exists: false, balanceMinor: 0, status: "active"};
   }
   const data = snap.data()!;
   const status = (data.status as string) ?? "active";
@@ -79,10 +86,36 @@ async function getWallet(
   }
   return {
     ref,
+    exists: true,
     balanceMinor: (data.balanceMinor as number) ?? 0,
     status,
   };
 }
+
+function commitWalletMutation(
+  txn: admin.firestore.Transaction,
+  state: WalletState,
+  newBalance: number,
+  now: admin.firestore.FieldValue
+): void {
+  if (!state.exists) {
+    txn.set(state.ref, {
+      balanceMinor: newBalance,
+      status: "active",
+      createdAt: now,
+      updatedAt: now,
+      version: 1,
+      autoProvisioned: true,
+    });
+  } else {
+    txn.update(state.ref, {
+      balanceMinor: newBalance,
+      updatedAt: now,
+      version: admin.firestore.FieldValue.increment(1),
+    });
+  }
+}
+
 
 function writeLedgerEntries(
   txn: admin.firestore.Transaction,
@@ -215,8 +248,9 @@ export const createTokenDirectTransfer = onCall(async (request) => {
 
   try {
     await db().runTransaction(async (txn) => {
-      const fromWallet = await getWallet(txn, uid);
-      const toWallet = await getWallet(txn, toUserId);
+      // READS first
+      const fromWallet = await getWalletState(txn, uid);
+      const toWallet = await getWalletState(txn, toUserId);
 
       if (fromWallet.balanceMinor < amountMinor) {
         throw new HttpsError("failed-precondition", "INSUFFICIENT_BALANCE");
@@ -225,16 +259,9 @@ export const createTokenDirectTransfer = onCall(async (request) => {
       const fromBalanceAfter = fromWallet.balanceMinor - amountMinor;
       const toBalanceAfter = toWallet.balanceMinor + amountMinor;
 
-      txn.update(fromWallet.ref, {
-        balanceMinor: fromBalanceAfter,
-        updatedAt: now,
-        version: admin.firestore.FieldValue.increment(1),
-      });
-      txn.update(toWallet.ref, {
-        balanceMinor: toBalanceAfter,
-        updatedAt: now,
-        version: admin.firestore.FieldValue.increment(1),
-      });
+      // WRITES after
+      commitWalletMutation(txn, fromWallet, fromBalanceAfter, now);
+      commitWalletMutation(txn, toWallet, toBalanceAfter, now);
 
       txn.set(transferRef, {
         fromUserId: uid,
@@ -434,8 +461,9 @@ export const respondToTokenPaymentRequest = onCall(async (request) => {
       payeeId = reqData.payeeId as string;
       const amountMinor = reqData.amountMinor as number;
 
-      const payerWallet = await getWallet(txn, uid);
-      const payeeWallet = await getWallet(txn, payeeId);
+      // READS first
+      const payerWallet = await getWalletState(txn, uid);
+      const payeeWallet = await getWalletState(txn, payeeId);
 
       if (payerWallet.balanceMinor < amountMinor) {
         throw new HttpsError("failed-precondition", "INSUFFICIENT_BALANCE");
@@ -445,16 +473,10 @@ export const respondToTokenPaymentRequest = onCall(async (request) => {
       const payeeBalanceAfter = payeeWallet.balanceMinor + amountMinor;
       const now = admin.firestore.FieldValue.serverTimestamp();
 
-      txn.update(payerWallet.ref, {
-        balanceMinor: payerBalanceAfter,
-        updatedAt: now,
-        version: admin.firestore.FieldValue.increment(1),
-      });
-      txn.update(payeeWallet.ref, {
-        balanceMinor: payeeBalanceAfter,
-        updatedAt: now,
-        version: admin.firestore.FieldValue.increment(1),
-      });
+      // WRITES after
+      commitWalletMutation(txn, payerWallet, payerBalanceAfter, now);
+      commitWalletMutation(txn, payeeWallet, payeeBalanceAfter, now);
+
       txn.update(reqRef, {
         status: "accepted",
         resolvedAt: now,

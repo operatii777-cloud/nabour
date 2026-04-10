@@ -20,13 +20,9 @@ Future<String> _getCurrentLanguageCode() async {
   }
 }
 
-/// 🧠 Gemini Voice Engine - Funcționează EXACT ca interacțiunea cu Gemini Voice
-/// 
-/// Caracteristici:
-/// - Răspuns instant (fără pauze)
-/// - Înțelegere perfectă a contextului
-/// - Procesare naturală a intențiilor
-/// - Integrare completă cu Nabour
+/// Motor de limbaj pentru asistentul vocal Nabour: NLP local, apoi model în cloud când e configurat.
+///
+/// - Context conversație, intenții curse, fallback on-device
 class GeminiVoiceEngine {
   static final GeminiVoiceEngine _instance = GeminiVoiceEngine._internal();
   factory GeminiVoiceEngine() => _instance;
@@ -66,73 +62,94 @@ class GeminiVoiceEngine {
   // double? _estimatedPrice;
   // List<String> _availableDrivers = [];
   
-  /// 🎤 Procesează input-ul vocal EXACT ca Gemini Voice
-  Future<GeminiVoiceResponse> processVoiceInput(String userInput, VoiceContext context, {String? languageCode}) async {
+  /// 🎤 Procesează input-ul vocal
+  ///
+  /// Arhitectura (100% funcțională offline pe Android):
+  ///   1️⃣  NLP local on-device  — dicționar intenții + regex (MEREU disponibil, zero latență)
+  ///   2️⃣  Gemini Cloud API     — dacă există cheie validă + internet
+  ///   3️⃣  Fallback on-device   — răspuns generic inteligent bazat pe input
+  ///
+  /// [skipRemoteLLM] — dacă e true, nu apelează niciun API (Cerebras/Grok/Gemini cloud).
+  /// Folosit de [AIProviderRouter] după ce NLP-ul local a eșuat, dar înainte de a confirma tokeni pentru rețea.
+  Future<GeminiVoiceResponse> processVoiceInput(
+    String userInput,
+    VoiceContext context, {
+    String? languageCode,
+    bool skipRemoteLLM = false,
+  }) async {
     try {
-      Logger.debug('Processing: "$userInput"', tag: 'GEMINI_VOICE');
+      Logger.debug('Processing: "$userInput" (skipRemoteLLM=$skipRemoteLLM)', tag: 'GEMINI_VOICE');
 
-      // ✅ NOU: Obțin limba curentă dacă nu este specificată
       final currentLanguage = languageCode ?? await _getCurrentLanguageCode();
-      
-      // Încearcă procesarea locală inteligentă
+
+      // ─── 1️⃣ NLP LOCAL (on-device, fără internet, zero latență) ───────────────
       final localResponse = await _processLocalCommand(userInput, context: context, languageCode: currentLanguage);
       if (localResponse != null) {
-        Logger.info('Local processing successful!', tag: 'GEMINI_VOICE');
+        Logger.info('On-device NLP: processed locally', tag: 'GEMINI_VOICE');
         return localResponse;
       }
 
-      if (!GeminiConfig.isValid) {
-        Logger.warning('Gemini config invalid, using fallback', tag: 'GEMINI_VOICE');
-        return await _createFallbackResponse(userInput, 'Gemini configuration invalid');
+      if (skipRemoteLLM) {
+        Logger.info('Skipping remote LLM — on-device assistant only', tag: 'GEMINI_VOICE');
+        return _createOfflineAssistantResponse(userInput, context, currentLanguage);
       }
 
-      // Asigură inițializarea modelului și a sesiunii chat
-      _model ??= GenerativeModel(model: 'gemini-1.5-flash', apiKey: GeminiConfig.apiKey);
-      _chat ??= _model!.startChat();
+      // ─── 2️⃣ GEMINI CLOUD (dacă cheie validă + internet disponibil) ───────────
+      if (GeminiConfig.isValid) {
+        // Asigură inițializarea modelului și a sesiunii chat
+        _model ??= GenerativeModel(model: 'gemini-1.5-flash', apiKey: GeminiConfig.apiKey);
+        _chat ??= _model!.startChat();
 
-      // ✅ NOU: Obțin limba curentă dacă nu este specificată
-      final currentLang = languageCode ?? await _getCurrentLanguageCode();
-      final prompt = _buildGeminiPrompt(userInput, context, languageCode: currentLang);
+        final currentLang = languageCode ?? await _getCurrentLanguageCode();
+        final prompt = _buildGeminiPrompt(userInput, context, languageCode: currentLang);
 
-      // 1️⃣ Încercare cu sesiunea chat
-      try {
-        final chatResponse = await _chat!.sendMessage(
-          Content.text(prompt),
-        );
-        final chatText = chatResponse.text ?? '';
-        if (chatText.isNotEmpty) {
-          final cleanedResponse = _cleanGeminiResponse(chatText);
-          final parsedResponse = await _processGeminiResponse(cleanedResponse);
-          _updateConversationContext(userInput, parsedResponse);
-          return parsedResponse;
+        // Încearcă cu sesiunea chat (SDK)
+        try {
+          final chatResponse = await _chat!.sendMessage(Content.text(prompt));
+          final chatText = chatResponse.text ?? '';
+          if (chatText.isNotEmpty) {
+            final parsed = await _processGeminiResponse(_cleanGeminiResponse(chatText));
+            _updateConversationContext(userInput, parsed);
+            Logger.info('Gemini Cloud (chat SDK): success', tag: 'GEMINI_VOICE');
+            return parsed;
+          }
+        } catch (e) {
+          Logger.warning('Gemini chat SDK failed: $e — trying HTTP', tag: 'GEMINI_VOICE');
         }
-        Logger.warning('Empty chat response, falling back to HTTP API', tag: 'GEMINI_VOICE');
-      } catch (e) {
-        Logger.error('Chat API error: $e', tag: 'GEMINI_VOICE', error: e);
-      }
 
-      // 2️⃣ Fallback la API HTTP cu retry
-      try {
-        final apiResponse = await _callGeminiAPIWithRetry(prompt);
-        final extractedText = _extractTextFromHttpResponse(apiResponse);
-        if (extractedText.isEmpty) {
-          Logger.warning('Empty HTTP response payload', tag: 'GEMINI_VOICE');
-          return await _createFallbackResponse(userInput, 'Empty response from Gemini');
+        // Fallback la HTTP REST cu retry
+        try {
+          final apiResponse = await _callGeminiAPIWithRetry(prompt);
+          final extracted = _extractTextFromHttpResponse(apiResponse);
+          if (extracted.isNotEmpty) {
+            final parsed = await _processGeminiResponse(_cleanGeminiResponse(extracted));
+            _updateConversationContext(userInput, parsed);
+            Logger.info('Gemini Cloud (HTTP): success', tag: 'GEMINI_VOICE');
+            return parsed;
+          }
+        } catch (e) {
+          Logger.warning('Gemini HTTP failed: $e — falling back on-device', tag: 'GEMINI_VOICE');
         }
-        final cleanedResponse = _cleanGeminiResponse(extractedText);
-        final parsedResponse = await _processGeminiResponse(cleanedResponse);
-        _updateConversationContext(userInput, parsedResponse);
-        return parsedResponse;
-      } catch (e) {
-        Logger.error('HTTP API error: $e', tag: 'GEMINI_VOICE', error: e);
+      } else {
+        Logger.info('Gemini API key absent — running fully on-device', tag: 'GEMINI_VOICE');
       }
 
-      // Fallback generic dacă toate încercările eșuează
-      return await _createFallbackResponse(userInput, 'No specific command detected');
+      // ─── 3️⃣ FALLBACK ON-DEVICE (NLP extins, mereu funcțional pe Android) ─────
+      return await _createFallbackResponse(
+        userInput,
+        'cloud_unavailable',
+        context: context,
+        languageCode: currentLanguage,
+      );
 
     } catch (e) {
-      Logger.error('Local processing error: $e', tag: 'GEMINI_VOICE', error: e);
-      return await _createFallbackResponse(userInput, e.toString());
+      Logger.error('processVoiceInput error: $e', tag: 'GEMINI_VOICE', error: e);
+      return await _createFallbackResponse(
+        userInput,
+        e.toString(),
+        context: context,
+        languageCode: languageCode ?? await _getCurrentLanguageCode(),
+      );
     }
   }
 
@@ -412,7 +429,7 @@ YOUR RESPONSE (JSON):
       throw Exception('Gemini API error: ${response.statusCode}');
     }
   }
-  
+
   /// 🗺️ Clarifică o adresă și obține coordonate GPS folosind Gemini AI (pentru geocoding)
   /// Această metodă apelează direct API-ul Gemini cu un prompt specific pentru clarificarea adreselor,
   /// fără să treacă prin logica normală de procesare vocală
@@ -684,16 +701,76 @@ Răspuns JSON:
     // }
   }
   
+  /// Răspuns util când nu există rețea / nu vrem apel LLM, dar NLP-ul strict a ratat.
+  GeminiVoiceResponse _createOfflineAssistantResponse(
+    String userInput,
+    VoiceContext context,
+    String languageCode,
+  ) {
+    final trimmed = userInput.trim();
+    final lower = trimmed.toLowerCase();
+    final en = languageCode.toLowerCase().startsWith('en');
+
+    // Heuristică conservatoare: pare adresă vocală (stradă, număr, sector) → tratăm ca destinație.
+    final looksLikeAddress = trimmed.length >= 8 &&
+        (lower.contains('strada') ||
+            lower.contains('str.') ||
+            lower.contains('bulevard') ||
+            lower.contains('b-dul') ||
+            lower.contains('calea') ||
+            lower.contains('aleea') ||
+            lower.contains('sector') ||
+            RegExp(r'\bnr\.?\s*\d').hasMatch(lower) ||
+            RegExp(r'\d{2,}').hasMatch(trimmed));
+
+    if (looksLikeAddress) {
+      final msg = en
+          ? 'I took that as the destination. Say yes to confirm or correct the address.'
+          : 'Am luat asta ca destinație. Spune „da” ca să confirmi sau corectează adresa.';
+      return GeminiVoiceResponse(
+        type: 'destination',
+        message: msg,
+        confidence: 0.55,
+        needsClarification: false,
+        destination: trimmed,
+      );
+    }
+
+    final help = en
+        ? 'Say where you want to go, for example: “I want a ride to the airport”. This works without internet for basic commands.'
+        : 'Spune unde vrei să mergi, de exemplu: „Vreau cursă la aeroport”. Comenzile simple merg și fără internet.';
+
+    // Tip dedicat: [AIProviderRouter] știe că poate încerca LLM în cloud dacă există tokeni.
+    return GeminiVoiceResponse(
+      type: 'offline_guidance',
+      message: help,
+      confidence: 0.5,
+      needsClarification: true,
+      clarificationQuestion: help,
+    );
+  }
+
   /// 🆘 Răspuns de fallback când Gemini eșuează - cu procesare locală inteligentă
-  Future<GeminiVoiceResponse> _createFallbackResponse(String userInput, String error) async {
+  Future<GeminiVoiceResponse> _createFallbackResponse(
+    String userInput,
+    String error, {
+    VoiceContext? context,
+    String? languageCode,
+  }) async {
     Logger.warning('Using local fallback processing for: "$userInput"', tag: 'GEMINI_VOICE');
-    
+
+    final lang = languageCode ?? await _getCurrentLanguageCode();
+
     // 🎯 Procesare locală inteligentă pentru comenzile comune
-    final localResponse = await _processLocalCommand(userInput);
+    final localResponse = await _processLocalCommand(
+      userInput,
+      context: context,
+      languageCode: lang,
+    );
     if (localResponse != null) {
       return localResponse;
     }
-    
+
     // 🆘 Fallback generic dacă nu pot procesa local
     return GeminiVoiceResponse(
       type: 'fallback',
@@ -730,8 +807,14 @@ Răspuns JSON:
         (context.conversationState.contains('awaitingDriverAcceptance') || 
          context.conversationState.contains('RideFlowState.awaitingDriverAcceptance'));
     
-    // 🎯 PRIORITATE 1: Detectez salutări (TREBUIE SĂ FIE PRIMELE!)
-    if (input.contains('salut') || input.contains('bună') || input.contains('hello')) {
+    // 🎯 PRIORITATE 1: Detectez salutări — DAR NUMAI dacă nu conțin și o destinație
+    // Fix: "salut vreau sa merg la aeroport" trebuie tratat ca destinație, nu ca simplu salut
+    final hasGreeting = input.contains('salut') || input.contains('bună') || input.contains('hello');
+    final hasDestinationHint = input.contains(' la ') || input.contains('merg') ||
+        input.contains('vreau') || input.contains('du-mă') || input.contains('du ma') ||
+        input.contains('spre ') || input.contains('aeroport') || input.contains('gara') ||
+        input.contains('centru') || input.contains('mall') || input.contains('universitate');
+    if (hasGreeting && !hasDestinationHint) {
       return GeminiVoiceResponse(
         type: 'greeting',
         message: 'Salut! Unde doriți să mergeți astăzi?',
@@ -762,8 +845,17 @@ Răspuns JSON:
       );
     }
     
-    // 🎯 PRIORITATE 3: Detectez refuzuri
-    if (input.contains('nu') || input.contains('refuz') || input.contains('nu vreau')) {
+    // 🎯 PRIORITATE 3: Detectez refuzuri — cu word-boundary matching pentru 'nu'
+    // Fix Bug #2: 'nu' din cuvinte ca 'numarul', 'continua', 'inceput' NU trebuie sa triggere rejection
+    final hasRefusal = RegExp(r'\bnu\b').hasMatch(input) ||
+        input.contains('refuz') || input.contains('nu vreau') || input.contains('ba nu');
+    // Nu trata ca refuz dacă input-ul conține cuvinte cheie de adresă (numarul, numar, etc.)
+    final hasAddressKeywords = input.contains('strada') || input.contains('str.') ||
+        input.contains('numarul') || input.contains(' nr ') || input.contains(' nr.') ||
+        input.contains('sector') || input.contains('bulevard') || input.contains('soseaua') ||
+        input.contains('aleea') || input.contains('alee') || input.contains('calea') ||
+        input.contains('intrarea') || input.contains('piata') || input.contains('parcul');
+    if (hasRefusal && !hasAddressKeywords) {
       // ✅ FIX: Dacă starea este awaitingDriverAcceptance, returnează driver_acceptance (refuz)
       if (isAwaitingDriverAcceptance) {
         return GeminiVoiceResponse(
@@ -1130,7 +1222,7 @@ class VoiceContext {
   });
 }
 
-/// 🗣️ Răspunsul de la Gemini Voice Engine
+/// Răspuns structurat al asistentului vocal Nabour (folosit indiferent de providerul LLM).
 class GeminiVoiceResponse {
   final String type; // 'destination', 'confirmation', 'ride_request', etc.
   final String? message;

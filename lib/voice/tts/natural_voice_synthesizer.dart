@@ -2,13 +2,7 @@ import 'package:flutter_tts/flutter_tts.dart';
 import '../states/voice_interaction_states.dart';
 import 'package:nabour_app/utils/logger.dart';
 
-/// 🗣️ Natural Voice Synthesizer - Funcționează EXACT ca Gemini Voice TTS
-/// 
-/// Caracteristici:
-/// - Vocea naturală și fluidă
-/// - Răspuns instant (fără pauze)
-/// - Procesare continuă a textului
-/// - Integrare perfectă cu Nabour
+/// Sinteză vocală pentru Nabour (Flutter TTS): limbă, emoție, pauze între propoziții.
 class NaturalVoiceSynthesizer {
   // Lazy: FlutterTts() constructor triggers Android TTS service binding (~640ms
   // BpBinder IPC). Only instantiate on first actual TTS call, not at construction.
@@ -98,7 +92,6 @@ class NaturalVoiceSynthesizer {
     }
   }
   
-  /// 🗣️ Vorbește textul EXACT ca Gemini Voice
   Future<void> speak(String text) async {
     if (!_isInitialized) {
       Logger.warning('Not initialized, initializing now...', tag: 'NATURAL_TTS');

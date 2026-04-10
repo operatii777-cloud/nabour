@@ -3857,6 +3857,24 @@ class AppLocalizationsRo extends AppLocalizations {
   String get drawerMenuMysteryBoxActivity => 'Activitate cutii';
 
   @override
+  String get drawerMenuTokenTransfer => 'Transfer tokeni';
+
+  @override
+  String get drawerGroupAccountActivity => 'Cont, istoric și activitate';
+
+  @override
+  String get drawerGroupMapAddresses => 'Hartă și adrese';
+
+  @override
+  String get drawerGroupCommunityFeed => 'Comunitate și descoperiri';
+
+  @override
+  String get drawerGroupSocialApp => 'Vizibilitate și aplicație';
+
+  @override
+  String get drawerGroupHelpLegal => 'Ajutor și informații legale';
+
+  @override
   String get drawerMenuMyGarage => 'Garajul meu';
 
   @override

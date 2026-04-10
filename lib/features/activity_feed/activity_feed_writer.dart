@@ -62,4 +62,25 @@ class ActivityFeedWriter {
         lat: lat,
         lng: lng,
       );
+
+  /// Cerere de cartier (bulă) pe hartă — apare în meniul Activitate la prieteni/contacte.
+  static Future<void> neighborhoodRequestOnMap(
+    String message, {
+    required String requestId,
+    double? lat,
+    double? lng,
+  }) {
+    final t = message.trim();
+    final snippet = t.length > 120 ? '${t.substring(0, 117)}…' : t;
+    final text = snippet.isEmpty
+        ? 'a lansat o cerere pe hartă în cartier'
+        : 'a lansat o cerere pe hartă: $snippet';
+    return ActivityFeedService.instance.postEvent(
+      type: 'neighborhood_request',
+      text: text,
+      lat: lat,
+      lng: lng,
+      throttleDedupKey: requestId,
+    );
+  }
 }

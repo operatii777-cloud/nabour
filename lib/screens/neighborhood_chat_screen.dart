@@ -8,11 +8,14 @@ import 'package:share_plus/share_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/services.dart';
 import 'package:nabour_app/utils/logger.dart';
+import 'package:nabour_app/utils/firestore_error_ui.dart';
+import 'package:nabour_app/services/map_quick_action_badge_prefs.dart';
 import 'package:nabour_app/screens/chat_screen.dart';
 import 'package:nabour_app/utils/content_filter.dart';
 import 'package:nabour_app/services/nabour_functions.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:nabour_app/services/walkie_talkie_service.dart';
+import 'package:nabour_app/core/ui/app_feedback.dart';
 import 'package:shimmer/shimmer.dart';
 
 class NeighborhoodChatScreen extends StatefulWidget {
@@ -37,6 +40,8 @@ class _NeighborhoodChatScreenState extends State<NeighborhoodChatScreen> {
   Timer? _expireTimer;
   final _walkieTalkieService = WalkieTalkieService();
   bool _isRecording = false;
+  /// Degetul e încă pe microfon (evită upload dacă s-a eliberat înainte să pornească înregistrarea).
+  bool _fingerOnMic = false;
   DateTime? _recordingStartTime;
 
   // Profilul userului curent (cached)
@@ -51,6 +56,10 @@ class _NeighborhoodChatScreenState extends State<NeighborhoodChatScreen> {
 
   @override
   void dispose() {
+    final rid = _roomId;
+    if (rid != null && rid.isNotEmpty) {
+      unawaited(MapQuickActionBadgePrefs.markNeighborhoodChatRead(rid));
+    }
     _expireTimer?.cancel();
     _msgSoundSub?.cancel();
     _textController.dispose();
@@ -108,11 +117,10 @@ class _NeighborhoodChatScreenState extends State<NeighborhoodChatScreen> {
       prefs.setBool('chat_muted_$_roomId', _isMuted);
     });
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(_isMuted ? 'Chat silențios' : 'Sunet activat'),
-        duration: const Duration(seconds: 1),
-      ),
+    AppFeedback.info(
+      context,
+      _isMuted ? 'Chat silențios' : 'Sunet activat',
+      duration: const Duration(seconds: 2),
     );
   }
 
@@ -243,6 +251,8 @@ class _NeighborhoodChatScreenState extends State<NeighborhoodChatScreen> {
           _roomId = resolvedRoom;
           _locating = false;
         });
+        unawaited(
+            MapQuickActionBadgePrefs.markNeighborhoodChatRead(resolvedRoom));
       }
     } catch (e) {
       Logger.error('NeighborhoodChat: location error: $e', error: e);
@@ -259,7 +269,7 @@ class _NeighborhoodChatScreenState extends State<NeighborhoodChatScreen> {
 
     final filterResult = ContentFilter.check(text);
     if (!filterResult.isClean) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(filterResult.message ?? 'Inadecvat.')));
+      AppFeedback.warning(context, filterResult.message ?? 'Mesaj inadecvat.');
       return;
     }
 
@@ -316,17 +326,61 @@ class _NeighborhoodChatScreenState extends State<NeighborhoodChatScreen> {
   }
 
   Future<void> _startRecording() async {
-    setState(() { _isRecording = true; _recordingStartTime = DateTime.now(); });
+    _fingerOnMic = true;
     HapticFeedback.mediumImpact();
-    await _walkieTalkieService.startRecording();
+    final ok = await _walkieTalkieService.startRecording();
+    if (!mounted) return;
+    if (!_fingerOnMic) {
+      await _walkieTalkieService.discardRecording();
+      return;
+    }
+    if (!ok) {
+      if (mounted) {
+        AppFeedback.warning(
+          context,
+          'Permisiune microfon necesară pentru mesaj vocal.',
+        );
+      }
+      return;
+    }
+    setState(() {
+      _isRecording = true;
+      _recordingStartTime = DateTime.now();
+    });
   }
 
   Future<void> _stopAndSendRecording() async {
-    if (!_isRecording) return;
-    final duration = DateTime.now().difference(_recordingStartTime!);
-    setState(() => _isRecording = false);
-    
-    if (duration.inMilliseconds < 500) return;
+    _fingerOnMic = false;
+    await _walkieTalkieService.waitForStartSettled();
+    if (!mounted) return;
+
+    if (!_walkieTalkieService.isRecording) {
+      if (mounted) setState(() => _isRecording = false);
+      return;
+    }
+
+    // Eliberare rapidă: nativ a pornit dar UI nu marcă încă — nu trimitem.
+    if (!_isRecording) {
+      await _walkieTalkieService.discardRecording();
+      if (mounted) setState(() => _isRecording = false);
+      return;
+    }
+
+    final start = _recordingStartTime ?? DateTime.now();
+    if (mounted) setState(() => _isRecording = false);
+    final duration = DateTime.now().difference(start);
+
+    if (duration.inMilliseconds < 500) {
+      await _walkieTalkieService.discardRecording();
+      if (mounted) {
+        AppFeedback.info(
+          context,
+          'Ține apăsat mai mult (0,5s) pentru mesaj vocal.',
+          duration: const Duration(seconds: 2),
+        );
+      }
+      return;
+    }
 
     final url = await _walkieTalkieService.stopRecordingAndUpload(_roomId!);
     if (url != null) {
@@ -397,7 +451,25 @@ class _NeighborhoodChatScreenState extends State<NeighborhoodChatScreen> {
 
   Widget _buildBody() {
     if (_locating) return _buildSkeleton();
-    if (_locationError != null) return Center(child: Text(_locationError!));
+    if (_locationError != null) {
+      return Center(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.location_off_rounded, size: 52, color: Colors.orange.shade700),
+              const SizedBox(height: 16),
+              Text(
+                _locationError!,
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 15, height: 1.4, color: Colors.grey.shade800),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
 
     return Column(
       children: [
@@ -409,8 +481,45 @@ class _NeighborhoodChatScreenState extends State<NeighborhoodChatScreen> {
                 .limitToLast(50)
                 .snapshots(),
             builder: (context, snap) {
+              if (snap.hasError) {
+                Logger.error(
+                  'NeighborhoodChat messages stream: ${snap.error}',
+                  error: snap.error,
+                );
+                return FirestoreStreamErrorCenter(
+                  error: snap.error,
+                  fallbackMessage: 'Nu s-au putut încărca mesajele.',
+                  permissionDeniedMessage:
+                      'Nu ai acces la acest chat sau regulile de securitate s-au schimbat. Reîncearcă după ce te autentifici din nou.',
+                );
+              }
               if (!snap.hasData) return _buildSkeleton();
               final docs = snap.data!.docs;
+              if (docs.isEmpty) {
+                return Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(24),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.chat_bubble_outline_rounded, size: 56, color: Colors.grey.shade400),
+                        const SizedBox(height: 16),
+                        Text(
+                          'Niciun mesaj recent',
+                          style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700, color: Colors.grey.shade700),
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          'Spune „Bună” vecinilor sau trimite o locație. Mesajele dispar după 30 minute.',
+                          style: TextStyle(fontSize: 14, color: Colors.grey.shade600, height: 1.35),
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              }
               return ListView.builder(
                 controller: _scrollController,
                 itemCount: docs.length,
@@ -442,34 +551,102 @@ class _NeighborhoodChatScreenState extends State<NeighborhoodChatScreen> {
     );
   }
 
+  /// IconButton mai îngust — reduce riscul de overflow pe ecrane înguste sau text mărit.
+  static ButtonStyle _compactIconBtn() {
+    return IconButton.styleFrom(
+      visualDensity: VisualDensity.compact,
+      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+      padding: const EdgeInsets.all(6),
+      minimumSize: const Size(40, 40),
+    );
+  }
+
   Widget _buildInputBar() {
-    return Container(
-      padding: const EdgeInsets.all(8),
-      decoration: BoxDecoration(color: Colors.white, border: Border(top: BorderSide(color: Colors.grey.shade200))),
-      child: Row(
-        children: [
-          IconButton(
-            icon: const Icon(Icons.directions_car, color: Colors.orange),
-            onPressed: () { HapticFeedback.lightImpact(); _sendOmw(); },
-          ),
-          IconButton(
-            icon: const Icon(Icons.location_on, color: Colors.blue),
-            onPressed: () { HapticFeedback.lightImpact(); _sendLocation(); },
-          ),
-          Expanded(child: TextField(controller: _textController, decoration: const InputDecoration(hintText: 'Scrie ceva...', border: InputBorder.none, contentPadding: EdgeInsets.symmetric(horizontal: 12)))),
-          GestureDetector(
-            onLongPressStart: (_) => _startRecording(),
-            onLongPressEnd: (_) => _stopAndSendRecording(),
-            child: CircleAvatar(
-              backgroundColor: _isRecording ? Colors.red : Colors.blue.shade100,
-              child: Icon(_isRecording ? Icons.settings_voice : Icons.mic, color: _isRecording ? Colors.white : Colors.blue),
+    final bottomInset = MediaQuery.viewInsetsOf(context).bottom;
+    final compact = _compactIconBtn();
+    return Material(
+      elevation: 8,
+      shadowColor: Colors.black26,
+      color: Theme.of(context).colorScheme.surface,
+      child: Padding(
+        padding: EdgeInsets.fromLTRB(2, 6, 2, 6 + bottomInset),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            IconButton(
+              style: compact,
+              tooltip: 'Sunt pe drum',
+              icon: const Icon(Icons.directions_car_rounded, color: Colors.deepOrange, size: 22),
+              onPressed: () {
+                HapticFeedback.lightImpact();
+                _sendOmw();
+              },
             ),
-          ),
-          IconButton(
-            icon: const Icon(Icons.send, color: Color(0xFF7C3AED)),
-            onPressed: () { HapticFeedback.lightImpact(); _sendMessage(); },
-          ),
-        ],
+            IconButton(
+              style: compact,
+              tooltip: 'Trimite locația ta',
+              icon: const Icon(Icons.location_on_rounded, color: Colors.blue, size: 22),
+              onPressed: () {
+                HapticFeedback.lightImpact();
+                _sendLocation();
+              },
+            ),
+            Expanded(
+              child: TextField(
+                controller: _textController,
+                textCapitalization: TextCapitalization.sentences,
+                minLines: 1,
+                maxLines: 5,
+                decoration: const InputDecoration(
+                  hintText: 'Scrie un mesaj…',
+                  border: InputBorder.none,
+                  isDense: true,
+                  contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+                ),
+              ),
+            ),
+            Tooltip(
+              message: 'Ține apăsat pentru mesaj vocal',
+              child: GestureDetector(
+                onLongPressStart: (_) => _startRecording(),
+                onLongPressEnd: (_) => _stopAndSendRecording(),
+                behavior: HitTestBehavior.opaque,
+                child: SizedBox(
+                  width: 44,
+                  height: 44,
+                  child: Center(
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 180),
+                      width: _isRecording ? 42 : 38,
+                      height: _isRecording ? 42 : 38,
+                      decoration: BoxDecoration(
+                        color: _isRecording ? Colors.red.shade600 : Colors.blue.shade50,
+                        shape: BoxShape.circle,
+                        boxShadow: _isRecording
+                            ? [BoxShadow(color: Colors.red.withValues(alpha: 0.35), blurRadius: 8)]
+                            : null,
+                      ),
+                      child: Icon(
+                        _isRecording ? Icons.graphic_eq_rounded : Icons.mic_rounded,
+                        color: _isRecording ? Colors.white : Colors.blue.shade700,
+                        size: 20,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            IconButton(
+              style: compact,
+              tooltip: 'Trimite',
+              icon: const Icon(Icons.send_rounded, color: Color(0xFF7C3AED), size: 22),
+              onPressed: () {
+                HapticFeedback.lightImpact();
+                _sendMessage();
+              },
+            ),
+          ],
+        ),
       ),
     );
   }

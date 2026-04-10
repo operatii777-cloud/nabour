@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:nabour_app/models/saved_address_model.dart';
 import 'package:nabour_app/screens/add_address_screen.dart';
 import 'package:nabour_app/services/firestore_service.dart';
+import 'package:nabour_app/core/ui/app_feedback.dart';
 
 class ManageAddressesScreen extends StatefulWidget {
   const ManageAddressesScreen({super.key});
@@ -48,15 +49,11 @@ class _ManageAddressesScreenState extends State<ManageAddressesScreen> {
       try {
         await _firestoreService.deleteSavedAddress(address.id);
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Adresa a fost ștearsă.'), backgroundColor: Colors.green),
-          );
+          AppFeedback.success(context, 'Adresa a fost ștearsă.');
         }
       } catch (e) {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Eroare la ștergere: $e'), backgroundColor: Colors.red),
-          );
+          AppFeedback.error(context, 'Eroare la ștergere: $e');
         }
       }
     }
@@ -97,9 +94,12 @@ class _ManageAddressesScreenState extends State<ManageAddressesScreen> {
 
           final addresses = snapshot.data!;
           // Separăm adresele pentru a le afișa în ordine
-          final homeAddress = addresses.where((a) => a.label.toLowerCase() == 'acasă').toList();
-          final workAddress = addresses.where((a) => a.label.toLowerCase() == 'serviciu').toList();
-          final favoriteAddresses = addresses.where((a) => a.label.toLowerCase() != 'acasă' && a.label.toLowerCase() != 'serviciu').toList();
+          final homeAddress =
+              addresses.where((a) => a.isHomeCategory).toList();
+          final workAddress =
+              addresses.where((a) => a.isWorkCategory).toList();
+          final favoriteAddresses =
+              addresses.where((a) => a.isGeneralFavorite).toList();
           
           return ListView(
             padding: const EdgeInsets.only(bottom: 80), // Spațiu pentru FloatingActionButton

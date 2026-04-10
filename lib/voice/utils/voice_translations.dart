@@ -353,7 +353,7 @@ class VoiceTranslations {
     return lang == 'en' ? 'Sharing your location...' : 'Partajăm locația ta...';
   }
 
-  /// Mesaj scurt pentru comenzile vocale în timpul cursei (UI pe hartă).
+  /// Mesaj scurt pentru comenzile vocale în timpul cursei (UI pe hartă; fără ecran „active ride” separat).
   static Future<String> getActiveRideVoiceHint() async {
     final lang = await _getCurrentLanguageCode();
     return lang == 'en'

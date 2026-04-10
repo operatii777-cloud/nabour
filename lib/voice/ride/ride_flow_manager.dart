@@ -11,6 +11,7 @@ import '../ai/ai_provider_router.dart';
 import '../tts/natural_voice_synthesizer.dart' as tts;
 import '../states/voice_interaction_states.dart';
 import '../core/voice_orchestrator.dart';
+import 'package:speech_to_text/speech_to_text.dart' as stt;
 import 'package:nabour_app/voice/nlp/ride_intent_engine.dart';
 import 'package:nabour_app/voice/nlp/ride_intent_models.dart';
 import '../../services/firestore_service.dart';
@@ -37,13 +38,7 @@ Future<String> _getCurrentLanguageCode() async {
   }
 }
 
-/// 🚗 Ride Flow Manager - Gestionează flow-ul complet al cursei ca Gemini Voice
-/// 
-/// Caracteristici:
-/// - Flow natural și rapid
-/// - Integrare perfectă cu Gemini AI
-/// - Gestionarea stărilor conversației
-/// - Procesarea instantanee a comenzilor
+/// Gestionarul fluxului de cursă pentru voce: stări, NLP local, LLM opțional, TTS prin orchestrator.
 class RideFlowManager {
   final GeminiVoiceEngine _geminiEngine;
   final tts.NaturalVoiceSynthesizer _tts;
@@ -151,6 +146,10 @@ class RideFlowManager {
     }
   }
 
+  /// Mesajele vocale trec prin orchestrator: barge-in, stări UI, același guard STT/TTS ca la [speakThenListen].
+  Future<void> _speakEmotion(String text, VoiceEmotion emotion) =>
+      _voiceOrchestrator.speak(text, emotion: emotion);
+
   /// 🚀 Inițializează managerul
   Future<void> initialize() async {
     try {
@@ -184,6 +183,25 @@ class RideFlowManager {
       if (_currentState == RideFlowState.awaitingAddressSelection) {
         await _handleAddressSelection(userInput);
         return;
+      }
+
+      // ✅ Confirmare șofer: „da” scurt merge direct (fără rundă LLM), restul prin AI/NLP.
+      if (_currentState == RideFlowState.awaitingDriverAcceptance) {
+        await _voiceOrchestrator.stopListening();
+        final cleanedDriver = _cleanInputFromTTS(userInput);
+        Logger.debug('Cleaned input (driver acceptance): "$cleanedDriver"', tag: 'RIDE_FLOW');
+        _addToHistory('User: $cleanedDriver');
+        if (_isPositiveConfirmation(cleanedDriver)) {
+          await _handleDriverAcceptanceResponse(
+            GeminiVoiceResponse(
+              type: 'driver_acceptance',
+              message: cleanedDriver,
+              confidence: 1.0,
+              needsClarification: false,
+            ),
+          );
+          return;
+        }
       }
 
       // 🎯 Sincronizare: oprește ascultarea imediat (evită ecou și captare pe timpul răspunsului)
@@ -510,6 +528,9 @@ class RideFlowManager {
         case 'needs_clarification':
           await _handleClarificationRequest(response);
           break;
+        case 'offline_guidance':
+          await _handleClarificationRequest(response);
+          break;
         // 🎯 NOU: Cazuri pentru confirmarea finală și opțiuni
         case 'final_confirmation':
           await _handleFinalRideConfirmation(response);
@@ -549,14 +570,14 @@ class RideFlowManager {
         case 'add_stop':
           if (response.message != null && response.message!.isNotEmpty) {
             _lastSpokenMessage = response.message!;
-            await _tts.speakWithEmotion(response.message!, VoiceEmotion.calm);
+            await _speakEmotion(response.message!, VoiceEmotion.calm);
           }
           break;
         case 'cancel_ride':
           await _cancelRideBooking();
           if (response.message != null && response.message!.isNotEmpty) {
             _lastSpokenMessage = response.message!;
-            await _tts.speakWithEmotion(response.message!, VoiceEmotion.calm);
+            await _speakEmotion(response.message!, VoiceEmotion.calm);
           }
           break;
         default:
@@ -676,7 +697,7 @@ class RideFlowManager {
           await _tts.setLanguage(languageCode);
           final confirmMessage = await VoiceTranslations.getPickupConfirmation(_pickup ?? '');
           _lastSpokenMessage = confirmMessage;
-          await _tts.speakWithEmotion(confirmMessage, VoiceEmotion.confident);
+          await _speakEmotion(confirmMessage, VoiceEmotion.confident);
           Logger.info('Pickup confirmed, proceeding to driver search', tag: 'RIDE_FLOW');
           
           // Caută șoferi
@@ -687,7 +708,7 @@ class RideFlowManager {
           await _tts.setLanguage(languageCode);
           final confirmMessage = await VoiceTranslations.getGeneralConfirmation();
           _lastSpokenMessage = confirmMessage;
-          await _tts.speakWithEmotion(confirmMessage, VoiceEmotion.confident);
+          await _speakEmotion(confirmMessage, VoiceEmotion.confident);
           Logger.info('General confirmation received, proceeding to driver search', tag: 'RIDE_FLOW');
           
           // Caută șoferi
@@ -705,7 +726,7 @@ class RideFlowManager {
         await _tts.setLanguage(languageCode);
         final clarifyMessage = await VoiceTranslations.getClarificationQuestion();
         _lastSpokenMessage = clarifyMessage;
-        await _tts.speakWithEmotion(clarifyMessage, VoiceEmotion.calm);
+        await _speakEmotion(clarifyMessage, VoiceEmotion.calm);
         
         // Pornește ascultarea pentru clarificare
         await _startListeningForClarification();
@@ -731,7 +752,7 @@ class RideFlowManager {
     // Flow-ul continuă fluid fără întreruperi
     await _voiceOrchestrator.pauseListening();
     
-    await _tts.speakWithEmotion(searchingMessage, VoiceEmotion.calm);
+    await _speakEmotion(searchingMessage, VoiceEmotion.calm);
     
     // ✅ FIX: Reia listening după ce TTS-ul termină de vorbit cu limba corectă
     final localeId = languageCode == 'en' ? 'en_US' : 'ro_RO';
@@ -776,7 +797,7 @@ class RideFlowManager {
       Logger.debug('Saying results message, will wait for TTS to complete...', tag: 'RIDE_FLOW');
       
       await _voiceOrchestrator.stopListening();
-      await _tts.speakWithEmotion(resultsMessage, VoiceEmotion.happy);
+      await _speakEmotion(resultsMessage, VoiceEmotion.happy);
       
       Logger.info('TTS completed, now setting state to awaitingRideConfirmation', tag: 'RIDE_FLOW');
       _currentState = RideFlowState.awaitingRideConfirmation;
@@ -983,7 +1004,7 @@ class RideFlowManager {
     _lastSpokenMessage = errorMessage;
     
     // ✅ TTS pentru feedback vocal
-    await _tts.speakWithEmotion(errorMessage, VoiceEmotion.calm);
+    await _speakEmotion(errorMessage, VoiceEmotion.calm);
     
     // ✅ UI feedback prin callback (dacă este disponibil)
     // Notă: onShowError este un callback opțional care poate fi setat din UI
@@ -1080,7 +1101,7 @@ class RideFlowManager {
         ? 'I understand. The reservation has been cancelled. Can I help you with anything else?'
         : 'Înțeleg. Rezervarea a fost anulată. Vă pot ajuta cu altceva?';
     _lastSpokenMessage = cancelMessage;
-    await _tts.speakWithEmotion(cancelMessage, VoiceEmotion.calm);
+    await _speakEmotion(cancelMessage, VoiceEmotion.calm);
   }
 
   /// Rezolvă un alias de adresă salvată ('Acasă', 'Serviciu') la adresa reală
@@ -1096,25 +1117,49 @@ class RideFlowManager {
     try {
       final List<SavedAddress> addresses =
           await _firestoreService.getSavedAddresses().first;
-      final destLower = dest.toLowerCase();
-      for (final a in addresses) {
-        if (a.label.toLowerCase().trim() == destLower) {
-          Logger.info(
-            'Resolved alias "$dest" → "${a.address}" (${a.coordinates.latitude}, ${a.coordinates.longitude})',
-            tag: 'RIDE_FLOW',
-          );
-          _destination = a.address;
-          _destinationLatitude = a.coordinates.latitude;
-          _destinationLongitude = a.coordinates.longitude;
-          return true;
+      final destLower = dest.toLowerCase().trim();
+      SavedAddress? resolved;
+      if (destLower == 'acasă' || destLower == 'acasa') {
+        for (final a in addresses) {
+          if (a.isHomeCategory || a.label.toLowerCase().trim() == destLower) {
+            resolved = a;
+            break;
+          }
         }
+      } else if (destLower == 'serviciu' ||
+          destLower == 'birou' ||
+          destLower == 'job') {
+        for (final a in addresses) {
+          if (a.isWorkCategory || a.label.toLowerCase().trim() == destLower) {
+            resolved = a;
+            break;
+          }
+        }
+      } else {
+        for (final a in addresses) {
+          if (a.label.toLowerCase().trim() == destLower) {
+            resolved = a;
+            break;
+          }
+        }
+      }
+      if (resolved != null) {
+        final a = resolved;
+        Logger.info(
+          'Resolved alias "$dest" → "${a.address}" (${a.coordinates.latitude}, ${a.coordinates.longitude})',
+          tag: 'RIDE_FLOW',
+        );
+        _destination = a.address;
+        _destinationLatitude = a.coordinates.latitude;
+        _destinationLongitude = a.coordinates.longitude;
+        return true;
       }
       // Aliasul e recunoscut dar nu a fost salvat de utilizator
       final msg =
           'Nu ai o adresă salvată pentru "$dest". '
           'Poți adăuga una din Setări → Adrese salvate, sau spune adresa completă.';
       _lastSpokenMessage = msg;
-      await _tts.speakWithEmotion(msg, VoiceEmotion.calm);
+      await _speakEmotion(msg, VoiceEmotion.calm);
       _destination = null;
       _currentState = RideFlowState.awaitingClarification;
       return false;
@@ -1144,7 +1189,7 @@ class RideFlowManager {
       // 🗣️ Anunță că completează adresele și trimite solicitarea
       // ✅ NOU: Folosește traducere
       final message = await VoiceTranslations.getCompletingAddresses();
-      await _tts.speakWithEmotion(message, VoiceEmotion.confident);
+      await _speakEmotion(message, VoiceEmotion.confident);
       
       // ✅ 1. Salvează starea internă și geocodează pickup dacă e nevoie
       final currentLocation = await _getCurrentUserLocation();
@@ -1227,7 +1272,7 @@ class RideFlowManager {
       // ✅ 6. Mesaj după trimiterea cererii (încă se caută șofer; cursa pe hartă după acceptare)
       final farewellMessage = await VoiceTranslations.getRequestSentToDrivers();
       _lastSpokenMessage = farewellMessage;
-      await _tts.speakWithEmotion(farewellMessage, VoiceEmotion.happy);
+      await _speakEmotion(farewellMessage, VoiceEmotion.happy);
 
       // ✅ 6.1 Începe monitorizarea statusului pentru voce (BACKGROUND)
       _monitorRideStatus(rideId);
@@ -1324,7 +1369,7 @@ class RideFlowManager {
 
     final message = buffer.toString();
     _lastSpokenMessage = message;
-    await _tts.speakWithEmotion(message, VoiceEmotion.calm);
+    await _speakEmotion(message, VoiceEmotion.calm);
     await _voiceOrchestrator.listen(timeoutSeconds: 30, pauseForSeconds: 8);
   }
 
@@ -1350,7 +1395,7 @@ class RideFlowManager {
 
       final confirmMsg = 'Am selectat: ${chosen.description}. Caut șoferi disponibili...';
       _lastSpokenMessage = confirmMsg;
-      await _tts.speakWithEmotion(confirmMsg, VoiceEmotion.confident);
+      await _speakEmotion(confirmMsg, VoiceEmotion.confident);
 
       _currentState = RideFlowState.destinationConfirmed;
       onFillAddressInUI(
@@ -1367,7 +1412,7 @@ class RideFlowManager {
       _currentState = RideFlowState.idle;
       const mapMsg = 'Selectați destinația pe hartă sau introduceți adresa completă în câmpul de căutare.';
       _lastSpokenMessage = mapMsg;
-      await _tts.speakWithEmotion(mapMsg, VoiceEmotion.calm);
+      await _speakEmotion(mapMsg, VoiceEmotion.calm);
     } else {
       // Răspuns neclar — repetă opțiunile
       await _askForAddressDisambiguation(_disambiguationSuggestions);
@@ -1610,7 +1655,7 @@ class RideFlowManager {
       
       Care opțiune preferați?''';
       
-      await _tts.speakWithEmotion(optionsMessage, VoiceEmotion.confident);
+      await _speakEmotion(optionsMessage, VoiceEmotion.confident);
       
       // 🎯 PORNEȘTE ASCULTAREA DOAR PENTRU OPȚIUNI
       await _startListeningForRideOption();
@@ -1652,7 +1697,7 @@ class RideFlowManager {
         
         // 🗣️ Confirmă opțiunea
         final confirmMessage = 'Ați ales opțiunea $option. Confirm selecția?';
-        await _tts.speakWithEmotion(confirmMessage, VoiceEmotion.confident);
+        await _speakEmotion(confirmMessage, VoiceEmotion.confident);
         
         // ✅ Emite comanda abstractă pentru selecția în UI
         onSelectRideOptionInUI(option);
@@ -1755,7 +1800,7 @@ class RideFlowManager {
     _currentState = RideFlowState.listeningForInitialCommand;
     
     const message = 'Înțeleg că nu confirmați. Vă rog să specificați din nou unde doriți să mergeți.';
-    await _tts.speakWithEmotion(message, VoiceEmotion.calm);
+    await _speakEmotion(message, VoiceEmotion.calm);
     
     // 🎯 PORNEȘTE ASCULTAREA PENTRU NOUA DESTINAȚIE
     await _startListeningForNewDestination();
@@ -1796,12 +1841,20 @@ class RideFlowManager {
       }
       
       final message = await VoiceTranslations.getDriverNotified();
-      await _tts.speakWithEmotion(message, VoiceEmotion.happy);
+      await _speakEmotion(message, VoiceEmotion.happy);
       onDriverResponse(driverId, true);
     } else {
       _currentState = RideFlowState.driverRejected;
       const message = 'Înțeleg. Caut un alt șofer disponibil pentru dumneavoastră.';
-      await _tts.speakWithEmotion(message, VoiceEmotion.calm);
+      await _speakEmotion(message, VoiceEmotion.calm);
+      if (_currentRideId != null && _currentRideId!.isNotEmpty) {
+        try {
+          await _firestoreService.passengerDeclineDriver(_currentRideId!);
+          Logger.info('Passenger declined driver in Firestore for ride: $_currentRideId', tag: 'RIDE_FLOW');
+        } catch (e) {
+          Logger.error('Error declining driver in Firestore: $e', tag: 'RIDE_FLOW', error: e);
+        }
+      }
       onDriverResponse(driverId, false);
     }
   }
@@ -1814,7 +1867,7 @@ class RideFlowManager {
       final message = await VoiceTranslations.getNoDriversAvailable();
       _lastSpokenMessage = message;
       await _voiceOrchestrator.stopListening();
-      await _tts.speakWithEmotion(message, VoiceEmotion.calm);
+      await _speakEmotion(message, VoiceEmotion.calm);
       _currentState = RideFlowState.idle;
     } catch (e) {
       Logger.error('No driver found handling error: $e', tag: 'RIDE_FLOW', error: e);
@@ -1861,37 +1914,124 @@ class RideFlowManager {
 
   // --- Helper Methods ---
 
-  /// ✅ Gestionează când un șofer a fost găsit (când șoferul este atribuit cererii)
+  /// Detalii șofer + poziție pentru ETA (aliniat la fluxul FriendsRide).
+  Future<Map<String, dynamic>> _fetchDriverDetailsForVoice(String? driverId) async {
+    if (driverId == null) {
+      return {
+        'name': 'Vecinul',
+        'carModel': 'vehicul',
+        'carColor': '',
+        'licensePlate': '',
+        'driverLat': null,
+        'driverLng': null,
+      };
+    }
+    try {
+      final snap = await _firestoreService.getProfileByIdStream(driverId).first;
+      final data = snap.data();
+      if (data == null) {
+        return {
+          'name': 'Vecinul',
+          'carModel': 'vehicul',
+          'carColor': '',
+          'licensePlate': '',
+          'driverLat': null,
+          'driverLng': null,
+        };
+      }
+      final pos = data['position'];
+      double? driverLat;
+      double? driverLng;
+      if (pos != null) {
+        driverLat = (pos.latitude as num?)?.toDouble();
+        driverLng = (pos.longitude as num?)?.toDouble();
+      }
+      return {
+        'name': data['displayName'] ?? 'Vecinul',
+        'carModel': data['carModel'] ?? data['vehicleModel'] ?? 'vehicul',
+        'carColor': data['carColor'] ?? data['vehicleColor'] ?? '',
+        'licensePlate': data['licensePlate'] ?? '',
+        'driverLat': driverLat,
+        'driverLng': driverLng,
+      };
+    } catch (e) {
+      Logger.error('Error fetching driver details: $e', tag: 'RIDE_FLOW', error: e);
+      return {
+        'name': 'Vecinul',
+        'carModel': 'vehicul',
+        'carColor': '',
+        'licensePlate': '',
+        'driverLat': null,
+        'driverLng': null,
+      };
+    }
+  }
+
+  int _etaMinutesPickupToDriver(double? driverLat, double? driverLng) {
+    if (driverLat != null &&
+        driverLng != null &&
+        _pickupLatitude != null &&
+        _pickupLongitude != null) {
+      final distKm = _calculateHaversineDistance(
+        _pickupLatitude!,
+        _pickupLongitude!,
+        driverLat,
+        driverLng,
+      );
+      final minutes = (distKm / 25.0 * 60).round();
+      return minutes.clamp(1, 60);
+    }
+    return 5;
+  }
+
+  Future<void> _startListeningForDriverAcceptance() async {
+    try {
+      await Future.delayed(const Duration(milliseconds: 800));
+      _currentState = RideFlowState.awaitingDriverAcceptance;
+      await _voiceOrchestrator.listen(
+        timeoutSeconds: 30,
+        pauseForSeconds: 4,
+        listenMode: stt.ListenMode.confirmation,
+      );
+    } catch (e) {
+      Logger.error('Driver acceptance listening error: $e', tag: 'RIDE_FLOW', error: e);
+    }
+  }
+
+  /// ✅ Șofer atribuit: anunț vocal + întrebare de confirmare + ascultare (fără onDriverResponse înainte de „da”).
   Future<void> _handleDriverAccepted(Ride ride) async {
     try {
+      _driverResponseTimeout?.cancel();
       _currentState = RideFlowState.driverFound;
       _pendingDriverId = ride.driverId;
-      
-      String driverName = 'Un vecin';
-      String carInfo = 'partener Nabour';
+      _currentRideId = ride.id;
 
-      // ✅ Fetch driver details from Firestore for voice announcement
-      if (ride.driverId != null) {
-        try {
-          final profileDoc = await _firestoreService.getProfileByIdStream(ride.driverId!).first;
-          final data = profileDoc.data();
-          if (data != null) {
-            driverName = data['displayName'] ?? driverName;
-            final carModel = data['licensePlate'] ?? '';
-            if (carModel.isNotEmpty) {
-              carInfo = 'cu mașina $carModel';
-            }
-          }
-        } catch (e) {
-          Logger.error('Error fetching driver profile for voice: $e', tag: 'RIDE_FLOW');
-        }
-      }
-      
-      final message = await VoiceTranslations.getDriverFoundSimple(driverName, carInfo);
+      final details = await _fetchDriverDetailsForVoice(ride.driverId);
+      final eta = _etaMinutesPickupToDriver(
+        details['driverLat'] as double?,
+        details['driverLng'] as double?,
+      );
+      final driverName = details['name'] as String? ?? 'Vecinul';
+      final car = details['carModel'] as String? ?? 'vehicul';
+      final carColor = details['carColor'] as String? ?? '';
+      final plate = details['licensePlate'] as String? ?? '';
+
+      final languageCode = await _getCurrentLanguageCode();
+      await _tts.setLanguage(languageCode);
+      final driverMessage = await VoiceTranslations.getDriverAcceptedMessage(
+        driverName,
+        car,
+        carColor,
+        plate,
+        eta,
+      );
+      final confirmQuestion = languageCode == 'en'
+          ? '\n\nDo you want to continue with this driver?'
+          : '\n\nConfirmați că doriți să continuați cu acest vecin?';
+      final message = '$driverMessage$confirmQuestion';
       _lastSpokenMessage = message;
-      
-      await _tts.speakWithEmotion(message, VoiceEmotion.happy);
-      onDriverResponse(ride.driverId ?? 'driver', true);
+      await _speakEmotion(message, VoiceEmotion.happy);
+      await _startListeningForDriverAcceptance();
     } catch (e) {
       Logger.error('Handle driver accepted error: $e', tag: 'RIDE_FLOW', error: e);
     }
@@ -1902,7 +2042,7 @@ class RideFlowManager {
     try {
       _currentState = RideFlowState.driverEnRoute;
       final message = await VoiceTranslations.getDriverEnRoute();
-      await _tts.speakWithEmotion(message, VoiceEmotion.calm);
+      await _speakEmotion(message, VoiceEmotion.calm);
     } catch (e) {
       Logger.error('Handle driver en route error: $e', tag: 'RIDE_FLOW', error: e);
     }
@@ -1913,7 +2053,7 @@ class RideFlowManager {
     try {
       _currentState = RideFlowState.driverArrived;
       final message = await VoiceTranslations.getDriverArrived();
-      await _tts.speakWithEmotion(message, VoiceEmotion.happy);
+      await _speakEmotion(message, VoiceEmotion.happy);
     } catch (e) {
       Logger.error('Handle driver arrived error: $e', tag: 'RIDE_FLOW', error: e);
     }
@@ -1924,7 +2064,7 @@ class RideFlowManager {
     try {
       _currentState = RideFlowState.searchingDrivers;
       const message = 'Șoferul nu a putut prelua cursa. Căutăm alt șofer disponibil pentru dumneavoastră.';
-      await _tts.speakWithEmotion(message, VoiceEmotion.calm);
+      await _speakEmotion(message, VoiceEmotion.calm);
     } catch (e) {
       Logger.error('Handle driver declined error: $e', tag: 'RIDE_FLOW', error: e);
     }
@@ -1935,7 +2075,7 @@ class RideFlowManager {
     try {
       _currentState = RideFlowState.idle;
       final message = await VoiceTranslations.getRideCompleted();
-      await _tts.speakWithEmotion(message, VoiceEmotion.happy);
+      await _speakEmotion(message, VoiceEmotion.happy);
       _resetRideFlow();
       onCloseAI();
     } catch (e) {
@@ -1952,6 +2092,15 @@ class RideFlowManager {
       }, onError: (error) {
         Logger.error('Ride status stream error: $error', tag: 'RIDE_FLOW');
       });
+
+      _driverResponseTimeout?.cancel();
+      _driverResponseTimeout = Timer(const Duration(minutes: 5), () {
+        if (_currentState == RideFlowState.waitingForDriverResponse ||
+            _currentState == RideFlowState.driverFound ||
+            _currentState == RideFlowState.awaitingDriverAcceptance) {
+          unawaited(_handleNoDriverFound());
+        }
+      });
     } catch (e) {
       Logger.error('Monitoring error: $e', tag: 'RIDE_FLOW');
     }
@@ -1963,8 +2112,10 @@ class RideFlowManager {
 
     switch (ride.status) {
       case 'driver_found':
-        // Anunță doar dacă nu am anunțat deja
-        if (_currentState != RideFlowState.driverFound && 
+        if (_currentState != RideFlowState.driverFound &&
+            _currentState != RideFlowState.awaitingDriverAcceptance &&
+            _currentState != RideFlowState.driverEnRoute &&
+            _currentState != RideFlowState.driverArrived &&
             _currentState != RideFlowState.rideAccepted) {
           await _handleDriverAccepted(ride);
         }
@@ -1972,7 +2123,8 @@ class RideFlowManager {
       case 'accepted':
       case 'driver_en_route':
       case 'in_progress':
-        if (_currentState != RideFlowState.driverEnRoute) {
+        if (_currentState != RideFlowState.driverEnRoute &&
+            _currentState != RideFlowState.driverArrived) {
           await _handleDriverEnRoute(ride);
         }
         break;
@@ -2005,7 +2157,7 @@ class RideFlowManager {
     try {
       _currentState = RideFlowState.driverEnRoute;
       final message = await VoiceTranslations.getRideStartedEnjoyTrip();
-      await _tts.speakWithEmotion(message, VoiceEmotion.happy);
+      await _speakEmotion(message, VoiceEmotion.happy);
     } catch (e) {
       Logger.error('Handle ride started error: $e', tag: 'RIDE_FLOW', error: e);
     }
@@ -2016,7 +2168,7 @@ class RideFlowManager {
     try {
       _currentState = RideFlowState.idle;
       const message = 'Cursa a fost anulată. Vă pot ajuta cu o nouă căutare?';
-      await _tts.speakWithEmotion(message, VoiceEmotion.calm);
+      await _speakEmotion(message, VoiceEmotion.calm);
       _resetRideFlow();
       _rideStatusSubscription?.cancel();
     } catch (e) {
@@ -2155,7 +2307,7 @@ class RideFlowManager {
       // ✅ NOU: Folosește traducere
       final confirmMessage = await VoiceTranslations.getDestinationUnderstood();
       _lastSpokenMessage = confirmMessage;
-      await _tts.speakWithEmotion(confirmMessage, VoiceEmotion.confident);
+      await _speakEmotion(confirmMessage, VoiceEmotion.confident);
       
       // 🎯 AUTONOM: Procesează totul automat
       await _processRideRequestAutonomously();
@@ -2200,7 +2352,7 @@ class RideFlowManager {
       final languageCode = await _getCurrentLanguageCode();
       await _tts.setLanguage(languageCode);
       final detectingMessage = await VoiceTranslations.getDetectingCurrentLocation();
-      await _tts.speakWithEmotion(detectingMessage, VoiceEmotion.calm);
+      await _speakEmotion(detectingMessage, VoiceEmotion.calm);
       
       // ✅ Obține GPS real și adresa
       final currentLocation = await _getCurrentUserLocation();
@@ -2216,7 +2368,7 @@ class RideFlowManager {
       final langCode = await _getCurrentLanguageCode();
       await _tts.setLanguage(langCode);
       final verifyingMessage = await VoiceTranslations.getVerifyingDestination();
-      await _tts.speakWithEmotion(verifyingMessage, VoiceEmotion.calm);
+      await _speakEmotion(verifyingMessage, VoiceEmotion.calm);
         
         // ✅ FIX: Verifică mai întâi destinațiile predefinite (rapid, fără API calls)
         final predefinedCoords = _getPredefinedDestinationCoordinates(_destination!);
@@ -2460,7 +2612,7 @@ class RideFlowManager {
                           Logger.error('ERROR: Could not geocode destination even with Gemini AI help!', tag: 'GPS');
                           // ✅ NOU: Folosește traducere
                           final errorMsg = await VoiceTranslations.getAddressNotFound(_destination ?? '');
-                          await _tts.speakWithEmotion(errorMsg, VoiceEmotion.calm);
+                          await _speakEmotion(errorMsg, VoiceEmotion.calm);
                           return; // Oprește procesul
                         }
                       }
@@ -2471,14 +2623,14 @@ class RideFlowManager {
                       final languageCode = await _getCurrentLanguageCode();
                       await _tts.setLanguage(languageCode);
                       final errorMsg = await VoiceTranslations.getAddressNotFound(_destination ?? '');
-                      await _tts.speakWithEmotion(errorMsg, VoiceEmotion.calm);
+                      await _speakEmotion(errorMsg, VoiceEmotion.calm);
                       return; // Oprește procesul
                     }
                   } catch (geminiError) {
                     Logger.error('Error asking Gemini AI for clarification: $geminiError', tag: 'GPS');
                     // Dacă Gemini AI eșuează, anunță eroare
                     final errorMsg = 'Îmi pare rău, nu am putut găsi adresa "$_destination". Vă rog să specificați o adresă mai clară sau un loc cunoscut.';
-                    await _tts.speakWithEmotion(errorMsg, VoiceEmotion.calm);
+                    await _speakEmotion(errorMsg, VoiceEmotion.calm);
                     return; // Oprește procesul
                   }
                 }
@@ -2505,7 +2657,7 @@ class RideFlowManager {
                     final languageCode = await _getCurrentLanguageCode();
                     await _tts.setLanguage(languageCode);
                     final errorMsg = await VoiceTranslations.getAddressNotFound(_destination ?? '');
-                    await _tts.speakWithEmotion(errorMsg, VoiceEmotion.calm);
+                    await _speakEmotion(errorMsg, VoiceEmotion.calm);
                     return;
                   }
                 } else {
@@ -2514,7 +2666,7 @@ class RideFlowManager {
                   final languageCode = await _getCurrentLanguageCode();
                   await _tts.setLanguage(languageCode);
                   final errorMsg = await VoiceTranslations.getAddressNotFound(_destination ?? '');
-                  await _tts.speakWithEmotion(errorMsg, VoiceEmotion.calm);
+                  await _speakEmotion(errorMsg, VoiceEmotion.calm);
                   return;
                 }
               } catch (geminiError) {
@@ -2523,7 +2675,7 @@ class RideFlowManager {
                 final languageCode = await _getCurrentLanguageCode();
                 await _tts.setLanguage(languageCode);
                 final errorMsg = await VoiceTranslations.getAddressNotFound(_destination ?? '');
-                await _tts.speakWithEmotion(errorMsg, VoiceEmotion.calm);
+                await _speakEmotion(errorMsg, VoiceEmotion.calm);
                 return;
               }
             }
@@ -2553,7 +2705,7 @@ class RideFlowManager {
       // ✅ NOU: Folosește traducere
       final message = await VoiceTranslations.getSearchingDriversInArea();
       _lastSpokenMessage = message;
-      await _tts.speakWithEmotion(message, VoiceEmotion.confident);
+      await _speakEmotion(message, VoiceEmotion.confident);
       
       // ✅ FIX: Folosește căutarea REALĂ de șoferi (nu simulare)
       if (_pickupLatitude == null || _pickupLongitude == null) {
@@ -2594,7 +2746,7 @@ class RideFlowManager {
       // ✅ NOU: Folosește traducere
       final foundMessage = await VoiceTranslations.getDriverFound(etaResult.durationInMinutes);
       _lastSpokenMessage = foundMessage;
-      await _tts.speakWithEmotion(foundMessage, VoiceEmotion.confident);
+      await _speakEmotion(foundMessage, VoiceEmotion.confident);
       
     } catch (e) {
       Logger.error('AUTONOM:  Driver search error: $e', tag: 'RIDE_FLOW', error: e);
@@ -2621,7 +2773,7 @@ class RideFlowManager {
       // Anunță utilizatorul
       const message = 'Am selectat cel mai bun șofer pentru dumneavoastră.';
       _lastSpokenMessage = message;
-      await _tts.speakWithEmotion(message, VoiceEmotion.confident);
+      await _speakEmotion(message, VoiceEmotion.confident);
       
     } catch (e) {
       Logger.error('Driver selection error: $e', tag: 'RIDE_FLOW', error: e);
@@ -2637,7 +2789,7 @@ class RideFlowManager {
       // Anunță că trimite cererea
       const message = 'Trimit cererea către șofer...';
       _lastSpokenMessage = message;
-      await _tts.speakWithEmotion(message, VoiceEmotion.confident);
+      await _speakEmotion(message, VoiceEmotion.confident);
       
       // Creează și trimite cererea
       final rideRequest = await _createCompleteRideRequest();
@@ -2685,7 +2837,7 @@ class RideFlowManager {
       final message = await VoiceTranslations.getEverythingResolved(driverName, etaMinutes);
 
       _lastSpokenMessage = message;
-      await _tts.speakWithEmotion(message, VoiceEmotion.confident);
+      await _speakEmotion(message, VoiceEmotion.confident);
 
       Logger.debug('AUTONOM: Final result announced - Driver: $driverName, ETA: $etaMinutes min', tag: 'RIDE_FLOW');
       
@@ -2712,7 +2864,7 @@ class RideFlowManager {
       // 🗣️ Confirmă locația detectată și cere confirmarea
       const confirmMessage = 'Vă detectez la $currentLocation. Preluarea se face de la această locație?';
       _lastSpokenMessage = confirmMessage;
-      await _tts.speakWithEmotion(confirmMessage, VoiceEmotion.confident);
+      await _speakEmotion(confirmMessage, VoiceEmotion.confident);
       
       // Actualizează starea pentru confirmarea pickup-ului
       _currentState = RideFlowState.awaitingConfirmation;
@@ -2749,7 +2901,7 @@ class RideFlowManager {
   Future<void> stop() async {
     try {
       Logger.debug('Stopping...', tag: 'RIDE_FLOW');
-      await _tts.stop();
+      await _voiceOrchestrator.stopSpeaking();
       _currentState = RideFlowState.idle;
       Logger.info('Stopped successfully', tag: 'RIDE_FLOW');
     } catch (e) {

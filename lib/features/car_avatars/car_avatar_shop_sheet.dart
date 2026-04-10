@@ -64,12 +64,31 @@ class _CarAvatarShopSheetState extends State<CarAvatarShopSheet> {
   bool _isLoading = true;
   bool _applyInFlight = false;
   CarCategory _selectedCategory = CarCategory.transport;
+  /// Profil șofer complet (nr. înmatriculare, marcă, etc.) — pentru OZN gratuit la volan.
+  bool _registeredDriver = false;
 
   String get _activeSlotDraftId =>
       _mapSlot == CarAvatarMapSlot.driver ? _draftDriverId : _draftPassengerId;
 
+  /// La volan: transport + animăluțe + caractere (ultimele două doar informativ / navigare).
+  /// Ca pasager: doar animăluțe și caractere — fără categorie transport în UI.
+  List<CarCategory> get _categoriesForCurrentSlot =>
+      _mapSlot == CarAvatarMapSlot.passenger
+          ? const [CarCategory.animals, CarCategory.characters]
+          : CarCategory.values.toList();
+
   bool get _hasUnappliedChanges =>
       _draftDriverId != _selectedDriverId || _draftPassengerId != _selectedPassengerId;
+
+  /// Supliment la [getPurchasedAvatarIds] — UI înainte de sincron / profil incomplet.
+  bool _isFreeAvatarForCurrentSlot(CarAvatar a) {
+    if (a.isDefault) return true;
+    if (a.id == 'robo' && _mapSlot == CarAvatarMapSlot.passenger) return true;
+    if (_mapSlot == CarAvatarMapSlot.driver && _registeredDriver) {
+      if (a.id == 'ufo' || a.id == 'barbie') return true;
+    }
+    return false;
+  }
 
   @override
   void initState() {
@@ -86,11 +105,14 @@ class _CarAvatarShopSheetState extends State<CarAvatarShopSheet> {
       final passengerSel =
           await _avatarService.getSelectedAvatarIdForSlot(CarAvatarMapSlot.passenger);
       final tokens = await _tokenService.getTokenBalance();
+      final registeredDriver =
+          await _avatarService.loadRegisteredDriverProfileFlag();
 
       if (mounted) {
         setState(() {
           _avatars = avatars;
           _purchasedIds = purchased;
+          _registeredDriver = registeredDriver;
           if (driverSel != 'default_car') _purchasedIds.add(driverSel);
           if (passengerSel != 'default_car') _purchasedIds.add(passengerSel);
           _selectedDriverId = driverSel;
@@ -128,6 +150,15 @@ class _CarAvatarShopSheetState extends State<CarAvatarShopSheet> {
   }
 
   Future<void> _handlePurchase(CarAvatar avatar) async {
+    if (avatar.price <= 0) {
+      ScaffoldMessenger.maybeOf(context)?.showSnackBar(
+        const SnackBar(
+          content: Text('Acest vehicul e gratuit — apasă pe el pentru a-l selecta, fără tokeni.'),
+          backgroundColor: Colors.teal,
+        ),
+      );
+      return;
+    }
     if (_mapSlot == CarAvatarMapSlot.driver && !avatar.allowsDriverMapSlot) {
       ScaffoldMessenger.maybeOf(context)?.showSnackBar(
         SnackBar(
@@ -518,6 +549,9 @@ class _CarAvatarShopSheetState extends State<CarAvatarShopSheet> {
                 if (!p.allowsPassengerMapSlot) {
                   _draftPassengerId = 'default_car';
                 }
+                if (_selectedCategory == CarCategory.transport) {
+                  _selectedCategory = CarCategory.animals;
+                }
               }
             });
           },
@@ -592,7 +626,7 @@ class _CarAvatarShopSheetState extends State<CarAvatarShopSheet> {
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: Row(
-        children: CarCategory.values.map((cat) {
+        children: _categoriesForCurrentSlot.map((cat) {
           final isSelected = _selectedCategory == cat;
           String label = cat.name.toUpperCase();
           IconData icon = Icons.directions_car_rounded;
@@ -777,11 +811,13 @@ class _CarAvatarShopSheetState extends State<CarAvatarShopSheet> {
         itemBuilder: (context, index) {
           final avatar = filtered[index];
           final isPurchased = _purchasedIds.contains(avatar.id);
+          final isFreeForSlot = _isFreeAvatarForCurrentSlot(avatar);
+          final unlocked = isPurchased || isFreeForSlot;
           final isSelected = _activeSlotDraftId == avatar.id;
           final isCommittedForSlot = _mapSlot == CarAvatarMapSlot.driver
               ? _selectedDriverId == avatar.id
               : _selectedPassengerId == avatar.id;
-          final isPendingApply = isSelected && isPurchased && !isCommittedForSlot;
+          final isPendingApply = isSelected && unlocked && !isCommittedForSlot;
 
           return GestureDetector(
             onTap: () {
@@ -795,7 +831,21 @@ class _CarAvatarShopSheetState extends State<CarAvatarShopSheet> {
                 );
                 return;
               }
-              if (isPurchased) {
+              if ((avatar.id == 'ufo' || avatar.id == 'barbie') &&
+                  _mapSlot == CarAvatarMapSlot.driver &&
+                  !_registeredDriver) {
+                ScaffoldMessenger.maybeOf(context)?.showSnackBar(
+                  SnackBar(
+                    content: const Text(
+                      'OZN și mașinuța roz sunt gratuite la volan după ce completezi profilul de șofer (date mașină în cont).',
+                    ),
+                    backgroundColor: Colors.orange.shade800,
+                    duration: const Duration(seconds: 5),
+                  ),
+                );
+                return;
+              }
+              if (unlocked) {
                 _pickDraftAvatar(avatar.id);
               } else {
                 _showConfirmPurchase(avatar);
@@ -871,7 +921,7 @@ class _CarAvatarShopSheetState extends State<CarAvatarShopSheet> {
                       fontWeight: FontWeight.bold,
                     ),
                   )
-                else if (isPurchased) ...[
+                else if (unlocked) ...[
                   Text(
                     isPendingApply
                         ? 'APASĂ APLICĂ'
@@ -885,17 +935,30 @@ class _CarAvatarShopSheetState extends State<CarAvatarShopSheet> {
                     ),
                   ),
                 ] else ...[
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Icon(Icons.token, color: Colors.amber, size: 14),
-                      const SizedBox(width: 4),
-                      Text(
-                        '${avatar.price}',
-                        style: const TextStyle(color: Colors.amber, fontSize: 12, fontWeight: FontWeight.bold),
+                  if (avatar.price <= 0)
+                    Text(
+                      (avatar.id == 'ufo' || avatar.id == 'barbie')
+                          ? 'Profil șofer'
+                          : 'Gratuit',
+                      style: TextStyle(
+                        color: Colors.orange.shade200,
+                        fontSize: 10,
+                        fontWeight: FontWeight.w700,
                       ),
-                    ],
-                  ),
+                    )
+                  else
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(Icons.token, color: Colors.amber, size: 14),
+                        const SizedBox(width: 4),
+                        Text(
+                          '${avatar.price}',
+                          style: const TextStyle(
+                              color: Colors.amber, fontSize: 12, fontWeight: FontWeight.bold),
+                        ),
+                      ],
+                    ),
                 ],
                 const SizedBox(height: 12),
               ],
@@ -909,6 +972,7 @@ class _CarAvatarShopSheetState extends State<CarAvatarShopSheet> {
 
   void _showConfirmPurchase(CarAvatar avatar) {
     if (avatar.comingSoon) return;
+    if (avatar.price <= 0) return;
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(

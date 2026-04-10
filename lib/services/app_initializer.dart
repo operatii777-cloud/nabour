@@ -19,6 +19,7 @@ import 'package:nabour_app/utils/logger.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:nabour_app/services/contacts_service.dart';
 import 'package:nabour_app/utils/nametag_helper.dart';
+import 'package:nabour_app/services/trial_config_service.dart';
 
 enum AppStatus { initializing, ready, backendReady, error }
 
@@ -37,6 +38,7 @@ class AppInitializer extends ChangeNotifier {
     _authSubscription = FirebaseAuth.instance.authStateChanges().listen((user) {
       if (user != null) {
         Logger.info('User authenticated: ${user.uid}. Ensuring token wallet & phone sync...', tag: 'INITIALIZER');
+        unawaited(TrialConfigService.instance.ensureTrialAnchorFromServer());
         // Scurt delay pentru ID token + App Check; 2s era excesiv la cold start.
         unawaited(Future<void>.delayed(const Duration(milliseconds: 500), () {
           unawaited(TokenService().ensureWalletExists(user.uid));

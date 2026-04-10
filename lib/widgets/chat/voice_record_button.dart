@@ -9,6 +9,7 @@ import 'package:nabour_app/services/firestore_service.dart';
 import 'package:nabour_app/models/chat_message_model.dart';
 import 'package:nabour_app/theme/app_colors.dart';
 import 'package:nabour_app/utils/logger.dart';
+import 'package:nabour_app/services/app_audio_session.dart';
 
 /// Widget pentru butonul de înregistrare voice message
 class VoiceRecordButton extends StatefulWidget {
@@ -75,10 +76,9 @@ class _VoiceRecordButtonState extends State<VoiceRecordButton> {
       _audioPath = '${directory.path}/voice_message_$timestamp.m4a';
 
       if (await _audioRecorder.hasPermission()) {
+        await AppAudioSession.ensureConfiguredForVoiceCommunication();
         await _audioRecorder.start(
-          const RecordConfig(
-            
-          ),
+          kVoiceRecordingRecordConfig,
           path: _audioPath!,
         );
 

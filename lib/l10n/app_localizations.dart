@@ -6878,6 +6878,42 @@ abstract class AppLocalizations {
   /// **'Activitate cutii'**
   String get drawerMenuMysteryBoxActivity;
 
+  /// No description provided for @drawerMenuTokenTransfer.
+  ///
+  /// In ro, this message translates to:
+  /// **'Transfer tokeni'**
+  String get drawerMenuTokenTransfer;
+
+  /// No description provided for @drawerGroupAccountActivity.
+  ///
+  /// In ro, this message translates to:
+  /// **'Cont, istoric și activitate'**
+  String get drawerGroupAccountActivity;
+
+  /// No description provided for @drawerGroupMapAddresses.
+  ///
+  /// In ro, this message translates to:
+  /// **'Hartă și adrese'**
+  String get drawerGroupMapAddresses;
+
+  /// No description provided for @drawerGroupCommunityFeed.
+  ///
+  /// In ro, this message translates to:
+  /// **'Comunitate și descoperiri'**
+  String get drawerGroupCommunityFeed;
+
+  /// No description provided for @drawerGroupSocialApp.
+  ///
+  /// In ro, this message translates to:
+  /// **'Vizibilitate și aplicație'**
+  String get drawerGroupSocialApp;
+
+  /// No description provided for @drawerGroupHelpLegal.
+  ///
+  /// In ro, this message translates to:
+  /// **'Ajutor și informații legale'**
+  String get drawerGroupHelpLegal;
+
   /// No description provided for @drawerMenuMyGarage.
   ///
   /// In ro, this message translates to:

@@ -28,14 +28,16 @@ class CarAvatarService {
   final List<CarAvatar> _allAvatars = [
     CarAvatar.defaultCar(),
     // --- Transport ---
-    CarAvatar(id: 'ufo', name: 'OZN Galactic', assetPath: 'assets/images/avatars/ufo.png', price: 500, category: CarCategory.transport),
+    /// Gratuit la volan pentru șoferi cu profil complet (inclus în [getPurchasedAvatarIds]).
+    CarAvatar(id: 'ufo', name: 'OZN Galactic', assetPath: 'assets/images/avatars/ufo.png', price: 0, category: CarCategory.transport),
     CarAvatar(id: 'rocket', name: 'Racheta Nabour', assetPath: 'assets/images/avatars/rocket.png', price: 750, category: CarCategory.transport),
     CarAvatar(id: 'dacia', name: 'Dacia Clasica', assetPath: 'assets/images/avatars/dacia.png', price: 300, category: CarCategory.transport),
     CarAvatar(id: 'carpet', name: 'Covor Fermecat', assetPath: 'assets/images/avatars/carpet.png', price: 1000, category: CarCategory.transport),
     CarAvatar(id: 'van', name: 'Dubita Livrare', assetPath: 'assets/images/avatars/van.png', price: 250, category: CarCategory.transport),
     CarAvatar(id: 'limo', name: 'Limuzina Lux', assetPath: 'assets/images/avatars/limo.png', price: 850, category: CarCategory.transport),
     CarAvatar(id: 'pickup', name: 'Camioneta Marfa', assetPath: 'assets/images/avatars/pickup.png', price: 400, category: CarCategory.transport),
-    CarAvatar(id: 'barbie', name: 'Masina Barbie', assetPath: 'assets/images/avatars/barbie.png', price: 600, category: CarCategory.transport),
+    /// Gratuit la volan pentru șoferi cu profil complet (inclus în [getPurchasedAvatarIds]).
+    CarAvatar(id: 'barbie', name: 'Masina Barbie', assetPath: 'assets/images/avatars/barbie.png', price: 0, category: CarCategory.transport),
     CarAvatar(id: 'electric', name: 'Masina E-Tech', assetPath: 'assets/images/avatars/electric.png', price: 550, category: CarCategory.transport),
     CarAvatar(id: 'scooter', name: 'Trotineta Urbana', assetPath: 'assets/images/avatars/scooter.png', price: 150, category: CarCategory.transport),
     CarAvatar(id: 'moto', name: 'Motocicleta Sport', assetPath: 'assets/images/avatars/moto.png', price: 450, category: CarCategory.transport),
@@ -47,12 +49,33 @@ class CarAvatarService {
     CarAvatar(id: 'rhino', name: 'Rinocer Blindat', assetPath: 'assets/images/avatars/rhino.png', price: 2000, category: CarCategory.animals),
     CarAvatar(id: 'elephant', name: 'Elefant Maiestos', assetPath: 'assets/images/avatars/elephant.png', price: 2200, category: CarCategory.animals),
     // --- Characters (inclusiv ROBO — doar mod pasager pe hartă) ---
-    CarAvatar(id: 'robo', name: 'ROBO', assetPath: 'assets/images/avatars/ROBO.png', price: 1800, category: CarCategory.characters),
+    /// Gratuit pentru orice utilizator ca pasager (inclus în [getPurchasedAvatarIds]).
+    CarAvatar(id: 'robo', name: 'ROBO', assetPath: 'assets/images/avatars/ROBO.png', price: 0, category: CarCategory.characters),
     CarAvatar(id: 'unicorn', name: 'Unicorn Magic', assetPath: 'assets/images/avatars/unicorn.png', price: 5000, category: CarCategory.characters),
     CarAvatar(id: 'mythic', name: 'Erou Mitic', assetPath: 'assets/images/avatars/mythic.png', price: 3500, category: CarCategory.characters),
   ];
 
   List<CarAvatar> getAvailableAvatars() => _allAvatars;
+
+  /// Același criteriu ca pe hartă (profil șofer complet) — pentru OZN / mașinuță gratuit la volan.
+  static bool isRegisteredDriverProfile(Map<String, dynamic>? profile) {
+    if (profile == null) return false;
+    String read(String key) => (profile[key] ?? '').toString().trim();
+    final hasPlate = read('licensePlate').isNotEmpty;
+    final hasMake = read('carMake').isNotEmpty || read('carBrand').isNotEmpty;
+    final hasModel = read('carModel').isNotEmpty;
+    final hasColor = read('carColor').isNotEmpty;
+    final hasYear = read('carYear').isNotEmpty;
+    final hasCategory = read('driverCategory').isNotEmpty;
+    return hasPlate && hasMake && hasModel && hasColor && hasYear && hasCategory;
+  }
+
+  Future<bool> loadRegisteredDriverProfileFlag() async {
+    final uid = _auth.currentUser?.uid;
+    if (uid == null) return false;
+    final doc = await _db.collection('users').doc(uid).get();
+    return isRegisteredDriverProfile(doc.data());
+  }
 
   static const String kFieldDriver = 'selectedCarAvatarIdDriver';
   static const String kFieldPassenger = 'selectedCarAvatarIdPassenger';
@@ -108,7 +131,9 @@ class CarAvatarService {
 
   Future<Set<String>> getPurchasedAvatarIds({bool forceRefresh = false}) async {
     final uid = _auth.currentUser?.uid;
-    if (uid == null) return {'default_car'};
+    if (uid == null) {
+      return {'default_car', 'robo'};
+    }
 
     final now = DateTime.now();
     if (!forceRefresh &&
@@ -119,10 +144,17 @@ class CarAvatarService {
       return _purchasedIdsCache!;
     }
 
-    final snap =
-        await _db.collection('users').doc(uid).collection('purchased_avatars').get();
-    final ids = snap.docs.map((d) => d.id).toSet();
+    final userRef = _db.collection('users').doc(uid);
+    final purchasedSnap = await userRef.collection('purchased_avatars').get();
+    final userSnap = await userRef.get();
+    final ids = purchasedSnap.docs.map((d) => d.id).toSet();
     ids.add('default_car');
+    // Galaxy Garage — gratuite prin politică (fără tokeni / fără document achiziție).
+    ids.add('robo');
+    if (isRegisteredDriverProfile(userSnap.data())) {
+      ids.add('ufo');
+      ids.add('barbie');
+    }
     _purchasedIdsCache = ids;
     _purchasedIdsCacheAt = now;
     _purchasedIdsCacheUid = uid;
@@ -136,6 +168,13 @@ class CarAvatarService {
     final uid = _auth.currentUser?.uid;
     if (uid == null) return false;
     if (avatar.comingSoon) return false;
+    if (avatar.price <= 0) {
+      Logger.warning(
+        'Cumpărare respinsă: ${avatar.id} este gratuit — se selectează din garaj fără tokeni.',
+        tag: 'AVATAR_SHOP',
+      );
+      return false;
+    }
     if (applyToSlot == CarAvatarMapSlot.driver && !avatar.allowsDriverMapSlot) {
       Logger.warning(
         'Cumpărare respinsă: ${avatar.id} nu se poate aplica la volan.',

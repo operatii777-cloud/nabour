@@ -1,12 +1,29 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cloud_functions/cloud_functions.dart';
+
+import 'package:nabour_app/services/nabour_functions.dart';
 
 /// Excepții trial: document `app_config/trial` cu `exemptEmails` / `exemptUids` (array).
 /// Configurezi din Firebase Console; fără hardcodare în cod.
+///
+/// Ancla server (`users/{uid}.trialEndsAt`) este scrisă de Cloud Function
+/// [nabourEnsureUserTrialAnchor] — necesară ca regulile Firestore să permită curse.
 class TrialConfigService {
   TrialConfigService._();
   static final TrialConfigService instance = TrialConfigService._();
 
   static const _docPath = 'app_config/trial';
+
+  /// Apel silențios la login: propagă din Auth metadata → Firestore pentru reguli.
+  Future<void> ensureTrialAnchorFromServer() async {
+    try {
+      await NabourFunctions.instance
+          .httpsCallable('nabourEnsureUserTrialAnchor')
+          .call();
+    } on FirebaseFunctionsException catch (_) {
+      // Fără log zgomot: funcția poate lipsi înainte de deploy sau offline.
+    } catch (_) {}
+  }
 
   Future<bool> isExempt({String? uid, String? email}) async {
     final e = email?.toLowerCase().trim();

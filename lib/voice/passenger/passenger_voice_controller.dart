@@ -53,6 +53,11 @@ class PassengerVoiceController extends ChangeNotifier {
   // ✅ Stări pentru UI - controller-ul gestionează starea
   String? _pickupAddressForUI;
   String? _destinationAddressForUI;
+  /// Ultimele coordonate primite din RideFlow (evită geocoding dublu în map_screen).
+  double? _voicePickupLat;
+  double? _voicePickupLng;
+  double? _voiceDestLat;
+  double? _voiceDestLng;
   RideCategory? _selectedCategoryForUI;
   bool _showRideConfirmation = false;
   bool _showSearchingDriver = false;
@@ -84,6 +89,10 @@ class PassengerVoiceController extends ChangeNotifier {
   // ✅ Getters pentru UI
   String? get pickupAddressForUI => _pickupAddressForUI;
   String? get destinationAddressForUI => _destinationAddressForUI;
+  double? get voicePickupLatitude => _voicePickupLat;
+  double? get voicePickupLongitude => _voicePickupLng;
+  double? get voiceDestinationLatitude => _voiceDestLat;
+  double? get voiceDestinationLongitude => _voiceDestLng;
   RideCategory? get selectedCategoryForUI => _selectedCategoryForUI;
   bool get showRideConfirmation => _showRideConfirmation;
   bool get showSearchingDriver => _showSearchingDriver;
@@ -159,6 +168,10 @@ class PassengerVoiceController extends ChangeNotifier {
           Logger.debug('Filling address in UI: $pickup → $destination', tag: 'VOICE_CONTROLLER');
           _pickupAddressForUI = pickup;
           _destinationAddressForUI = destination;
+          _voicePickupLat = pickupLat;
+          _voicePickupLng = pickupLng;
+          _voiceDestLat = destLat;
+          _voiceDestLng = destLng;
           // Forwardeaza catre panelul real de adrese (conectat din map_screen)
           _uiAddressCallback?.call(
             pickup, destination,
@@ -269,18 +282,10 @@ class PassengerVoiceController extends ChangeNotifier {
         onDriverResponse: (driverId, accepted) {
           Logger.debug('Driver response: $driverId, accepted: $accepted', tag: 'VOICE_CONTROLLER');
           if (accepted) {
-            // Nu opri _showSearchingDriver aici: mesajele din monitor (ex. driver_found)
-            // pot veni înainte ca harta să apese push la ecranul de căutare.
+            _showSearchingDriver = false;
             _signalPassengerRideSessionOnMap();
-          } else {
-            // Pasagerul a refuzat șoferul — resetează ride-ul la pending
-            final rideId = _currentRideId;
-            if (rideId != null) {
-              _firestoreService.passengerDeclineDriver(rideId).catchError((e) {
-                Logger.error('passengerDeclineDriver error: $e', tag: 'VOICE_CONTROLLER', error: e);
-              });
-            }
           }
+          // Refuzul și passengerDeclineDriver sunt gestionate în RideFlowManager (fără dublu apel).
           notifyListeners();
         },
         
@@ -325,7 +330,7 @@ class PassengerVoiceController extends ChangeNotifier {
     try {
       // Salut
       const greeting = 'Salut, unde doriți să mergeți?';
-      await _tts.speak(greeting);
+      await _voiceOrchestrator.speak(greeting, emotion: VoiceEmotion.friendly);
       // Adaugă la istoric pentru UI
       _rideFlowManager.addAiMessage(greeting);
       notifyListeners();
@@ -416,7 +421,7 @@ class PassengerVoiceController extends ChangeNotifier {
     await _tts.setLanguage(languageCode);
     
     final responseMessage = languageCode == 'en' ? 'Yes, I\'m listening.' : 'Da, vă ascult.';
-    await _tts.speak(responseMessage);
+    await _voiceOrchestrator.speak(responseMessage, emotion: VoiceEmotion.friendly);
     await _voiceOrchestrator.listen(
       timeoutSeconds: 20,
       localeId: localeId,
@@ -428,6 +433,15 @@ class PassengerVoiceController extends ChangeNotifier {
 
   Future<void> _startContinuousListeningLoop() async {
     if (!_continuousListeningEnabled) return;
+    // RideFlow pornește STT dedicat (ex. confirmare șofer) — nu intercepta cu încă un listen.
+    final rs = _rideFlowManager.currentState;
+    if (rs == RideFlowState.awaitingDriverAcceptance || rs == RideFlowState.driverFound) {
+      await Future.delayed(const Duration(milliseconds: 500));
+      if (_continuousListeningEnabled) {
+        await _startContinuousListeningLoop();
+      }
+      return;
+    }
     // Don't start a new STT session while TTS is still speaking.
     if (_voiceOrchestrator.isTtsSpeaking) {
       await Future.delayed(const Duration(milliseconds: 200));
@@ -494,7 +508,7 @@ class PassengerVoiceController extends ChangeNotifier {
     }
   }
 
-  /// Notifică harta principală că pasagerul are cursă activă (fără ecran separat de cursă).
+  /// Nabour: nu există ecran „cursă activă” pentru pasager — doar sesiune pe hartă (overlay + stream).
   void _signalPassengerRideSessionOnMap() {
     final id = _currentRideId;
     if (id == null || id.isEmpty) return;
@@ -512,6 +526,10 @@ class PassengerVoiceController extends ChangeNotifier {
   void _resetVoiceStates() {
     _pickupAddressForUI = null;
     _destinationAddressForUI = null;
+    _voicePickupLat = null;
+    _voicePickupLng = null;
+    _voiceDestLat = null;
+    _voiceDestLng = null;
     _selectedCategoryForUI = null;
     _showRideConfirmation = false;
     _showSearchingDriver = false;

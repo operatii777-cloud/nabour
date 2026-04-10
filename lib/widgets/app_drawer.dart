@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:nabour_app/l10n/app_localizations.dart';
 import 'package:nabour_app/screens/about_screen.dart';
 import 'package:nabour_app/screens/auth_screen.dart';
@@ -33,12 +34,26 @@ import 'package:nabour_app/screens/favorite_addresses_screen.dart';
 import 'package:nabour_app/screens/places_hub_screen.dart';
 import 'package:nabour_app/screens/explorari_screen.dart';
 import 'package:nabour_app/screens/mystery_box_activity_screen.dart';
+import 'package:nabour_app/screens/token_transfer_screen.dart';
 import 'package:nabour_app/features/car_avatars/car_avatar_model.dart';
 import 'package:nabour_app/features/car_avatars/car_avatar_shop_sheet.dart';
 import 'package:provider/provider.dart';
 import 'package:nabour_app/theme/theme_provider.dart';
+import 'package:nabour_app/core/ui/app_feedback.dart';
+import 'package:nabour_app/services/app_sound_service.dart';
 
 const int _kTrialDays = 7;
+
+/// După [Navigator.pop] pe drawer, contextul item-ului poate fi scos din arbore
+/// (crash: `_elements.contains(element)`). Folosim navigatorul root în frame-ul următor.
+void _popDrawerThen(BuildContext drawerContext, void Function(BuildContext safeContext) action) {
+  final nav = Navigator.of(drawerContext, rootNavigator: true);
+  Navigator.pop(drawerContext);
+  WidgetsBinding.instance.addPostFrameCallback((_) {
+    if (!nav.mounted) return;
+    action(nav.context);
+  });
+}
 
 class AppDrawer extends StatelessWidget {
   final UserRole currentRole;
@@ -164,11 +179,47 @@ class AppDrawer extends StatelessWidget {
                                 phoneNumber,
                                 style: AppTextStyles.menuSubtitle.copyWith(
                                   color: Colors.white70,
+                                  fontSize: 12,
                                 ),
                                 overflow: TextOverflow.ellipsis,
                                 maxLines: 1,
                               ),
                             ],
+                            const SizedBox(height: 4),
+                            // NOU: Afișare ID (UID) pentru transferuri
+                            GestureDetector(
+                              onTap: () {
+                                final uid = FirebaseAuth.instance.currentUser?.uid;
+                                if (uid != null) {
+                                  Clipboard.setData(ClipboardData(text: uid));
+                                  AppFeedback.success(context, 'ID copiat în clipboard.');
+                                }
+                              },
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: Colors.black.withValues(alpha: 0.2),
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    const Icon(Icons.badge, size: 10, color: Colors.white70),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      'ID: ${FirebaseAuth.instance.currentUser?.uid.substring(0, 8) ?? '...'}(...)',
+                                      style: const TextStyle(
+                                        fontSize: 10,
+                                        color: Colors.white,
+                                        fontFamily: 'monospace',
+                                      ),
+                                    ),
+                                    const SizedBox(width: 4),
+                                    const Icon(Icons.copy, size: 10, color: Colors.white70),
+                                  ],
+                                ),
+                              ),
+                            ),
                           ],
                         ),
                       ),
@@ -342,316 +393,407 @@ class AppDrawer extends StatelessWidget {
             ),
             const SizedBox(height: 8),
 
-              // ==========================================
-              // 1. ACTIVITATE ȘI CONT
-              // ==========================================
-              _buildSectionHeader(l10n.drawerSectionActivityAccount),
-              _buildMenuItem(context,
-                icon: Icons.account_circle_rounded,
-                color: Colors.blue.shade600,
-                title: l10n.profile,
-                onTap: () => _navigateTo(context, const PersonalInfoScreen()),
-              ),
-              _buildMenuItem(context,
-                icon: Icons.history_rounded,
-                color: const Color(0xFF00C6FF),
-                title: l10n.rideHistory,
-                onTap: () => _navigateTo(context, const HistoryScreen()),
-              ),
-              _buildMenuItem(
-                context,
-                icon: Icons.auto_awesome_rounded,
-                color: const Color(0xFFFF007F),
-                title: l10n.drawerMenuWeekReview,
-                onTap: () => _navigateTo(context, const WeekReviewScreen()),
-              ),
-              _buildMenuItem(
-                context,
-                icon: Icons.inventory_2_rounded,
-                color: const Color(0xFF0D9488),
-                title: l10n.drawerMenuMysteryBoxActivity,
-                onTap: () => _navigateTo(context, const MysteryBoxActivityScreen()),
-              ),
-              _buildMenuItem(
-                context,
-                icon: Icons.auto_awesome_motion_rounded,
-                color: const Color(0xFFFFD700), // Gold/Amber premium
-                title: 'GALAXY GARAGE',
-                onTap: () {
-                  Navigator.pop(context); // Închide drawer-ul
-                  CarAvatarShopSheet.show(context, onClosed: onAvatarChanged);
-                },
-              ),
-              _buildMenuItem(
-                context,
-                icon: Icons.home_filled,
-                color: const Color(0xFF22C55E),
-                title: 'Afișează Acasă (favorite) pe hartă\n(doar pentru tine)',
-                onTap: () {
-                  Navigator.pop(context);
-                  onEnableSavedHomePinOnMap?.call();
-                },
-              ),
-              _buildMenuItem(
-                context,
-                icon: Icons.home_work_rounded,
-                color: const Color(0xFF38BDF8),
-                title: 'Reper orientare pe hartă\n(ține apăsat pe hartă după activare)',
-                onTap: () {
-                  Navigator.pop(context);
-                  onPlaceMapOrientationPin?.call();
-                },
-              ),
-              _buildMenuItem(
-                context,
-                icon: Icons.visibility_off_outlined,
-                color: Colors.orange.shade700,
-                title: 'Ascunde Acasă de pe hartă\n(doar markerul favorite)',
-                onTap: () {
-                  Navigator.pop(context);
-                  onHideSavedHomePinOnMap?.call();
-                },
-              ),
-              _buildMenuItem(
-                context,
-                icon: Icons.pin_drop_outlined,
-                color: const Color(0xFF15803D),
-                title: 'Ascunde reper orientare\n(elimină acul de pe hartă)',
-                onTap: () {
-                  Navigator.pop(context);
-                  onRemoveOrientationReperFromMap?.call();
-                },
-              ),
-              Theme(
-                data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
-                child: ExpansionTile(
-                  tilePadding: const EdgeInsets.symmetric(horizontal: 16),
-                  leading: Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: Colors.teal.shade600.withValues(alpha: 0.15),
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                    child: Icon(Icons.bookmark_added_rounded,
-                        color: Colors.teal.shade700, size: 22),
+            // ==========================================
+            // 1. ACTIVITATE ȘI CONT
+            // ==========================================
+            _buildSectionHeader(l10n.drawerSectionActivityAccount),
+            _buildDrawerGroup(
+              context,
+              title: l10n.drawerGroupAccountActivity,
+              icon: Icons.person_pin_circle_outlined,
+              accentColor: Colors.blue.shade600,
+              children: [
+                _buildMenuItem(
+                  context,
+                  icon: Icons.account_circle_rounded,
+                  color: Colors.blue.shade600,
+                  title: l10n.profile,
+                  onTap: () => _navigateTo(context, const PersonalInfoScreen()),
+                  isSubItem: true,
+                ),
+                _buildMenuItem(
+                  context,
+                  icon: Icons.history_rounded,
+                  color: const Color(0xFF00C6FF),
+                  title: l10n.rideHistory,
+                  onTap: () => _navigateTo(context, const HistoryScreen()),
+                  isSubItem: true,
+                ),
+                _buildMenuItem(
+                  context,
+                  icon: Icons.auto_awesome_rounded,
+                  color: const Color(0xFFFF007F),
+                  title: l10n.drawerMenuWeekReview,
+                  onTap: () => _navigateTo(context, const WeekReviewScreen()),
+                  isSubItem: true,
+                ),
+                _buildMenuItem(
+                  context,
+                  icon: Icons.inventory_2_rounded,
+                  color: const Color(0xFF0D9488),
+                  title: l10n.drawerMenuMysteryBoxActivity,
+                  onTap: () => _navigateTo(context, const MysteryBoxActivityScreen()),
+                  isSubItem: true,
+                ),
+                _buildMenuItem(
+                  context,
+                  icon: Icons.swap_horiz_rounded,
+                  color: const Color(0xFF0D9488),
+                  title: l10n.drawerMenuTokenTransfer,
+                  onTap: () => _navigateTo(context, const TokenTransferScreen()),
+                  isSubItem: true,
+                ),
+                if (currentRole == UserRole.passenger)
+                  _buildMenuItem(
+                    context,
+                    icon: Icons.drive_eta_rounded,
+                    color: const Color(0xFF00E676),
+                    title: l10n.applyForDriver,
+                    onTap: () => _navigateTo(context, const DriverApplicationScreen()),
+                    isSubItem: true,
                   ),
-                  title: Text(
-                    l10n.drawerSectionAddresses,
-                    style: TextStyle(
-                      fontWeight: FontWeight.w800,
-                      fontSize: 15,
-                      color: Theme.of(context).colorScheme.onSurface,
-                    ),
+                _buildMenuItem(
+                  context,
+                  icon: Icons.auto_awesome_motion_rounded,
+                  color: const Color(0xFFFFD700),
+                  title: 'GALAXY GARAGE',
+                  onTap: () => _popDrawerThen(context, (safe) {
+                    CarAvatarShopSheet.show(safe, onClosed: onAvatarChanged);
+                  }),
+                  isSubItem: true,
+                ),
+                if (currentRole == UserRole.driver)
+                  _buildMenuItem(
+                    context,
+                    icon: Icons.dashboard_rounded,
+                    color: const Color(0xFF00E676),
+                    title: l10n.driverDashboard,
+                    onTap: () => _navigateTo(context, const DriverDashboardScreen()),
+                    isSubItem: true,
                   ),
-                  children: [
-                    _buildMenuItem(
-                      context,
-                      icon: Icons.star_rounded,
-                      color: Colors.amber.shade700,
-                      title: l10n.drawerFavoriteAddresses,
-                      onTap: () => _navigateTo(context, const FavoriteAddressesScreen()),
-                      isSubItem: true,
-                    ),
-                  ],
+              ],
+            ),
+            _buildDrawerGroup(
+              context,
+              title: l10n.drawerGroupMapAddresses,
+              icon: Icons.layers_outlined,
+              accentColor: Colors.teal.shade700,
+              children: [
+                _buildMenuItem(
+                  context,
+                  icon: Icons.star_rounded,
+                  color: Colors.amber.shade700,
+                  title: l10n.drawerFavoriteAddresses,
+                  onTap: () => _navigateTo(context, const FavoriteAddressesScreen()),
+                  isSubItem: true,
                 ),
-              ),
-              if (currentRole == UserRole.driver)
-                _buildMenuItem(context,
-                  icon: Icons.dashboard_rounded,
-                  color: const Color(0xFF00E676), // A bright vibrant green
-                  title: l10n.driverDashboard,
-                  onTap: () => _navigateTo(context, const DriverDashboardScreen()),
+                _buildMenuItem(
+                  context,
+                  icon: Icons.home_filled,
+                  color: const Color(0xFF22C55E),
+                  title: 'Afișează Acasă (favorite) pe hartă\n(doar pentru tine)',
+                  onTap: () {
+                    Navigator.pop(context);
+                    onEnableSavedHomePinOnMap?.call();
+                  },
+                  isSubItem: true,
                 ),
-
-              // ==========================================
-              // 2. COMUNITATEA NABOUR
-              // ==========================================
-              const SizedBox(height: 8),
-              _buildSectionHeader(l10n.drawerSectionYourCommunity),
-              _buildMenuItem(context,
-                icon: Icons.campaign_rounded,
-                color: const Color(0xFF7C3AED),
-                title: l10n.neighborhoodRequests,
-                onTap: () => _navigateTo(context, const RideBroadcastFeedScreen()),
-              ),
-              _buildMenuItem(context,
-                icon: Icons.forum_rounded,
-                color: const Color(0xFF7C3AED),
-                title: l10n.neighborhoodChat,
-                onTap: () => _navigateTo(context, const NeighborhoodChatScreen()),
-              ),
-              _buildMenuItem(context,
-                icon: Icons.map_rounded,
-                color: const Color(0xFF00B894),
-                title: l10n.drawerMenuPlaces,
-                onTap: () => _navigateTo(context, const PlacesHubScreen()),
-              ),
-              _buildMenuItem(context,
-                icon: Icons.grid_goldenratio_rounded,
-                color: const Color(0xFFFF6B9D),
-                title: l10n.drawerMenuExplorations,
-                onTap: () => _navigateTo(context, const ExplorariScreen()),
-              ),
-              _buildMenuItem(context,
-                icon: Icons.storefront_rounded,
-                color: const Color(0xFFFF6B35),
-                title: l10n.drawerBusinessOffersTitle,
-                onTap: () => _navigateTo(context, const BusinessOffersScreen()),
-              ),
-              _buildMenuItem(context,
-                leadingWidget: AnimatedSwitcher(
-                  duration: const Duration(milliseconds: 300),
-                  transitionBuilder: (child, animation) => ScaleTransition(scale: animation, child: child),
-                  child: Icon(
-                    isVisibleToNeighbors ? Icons.visibility_rounded : Icons.visibility_off_rounded,
-                    key: ValueKey(isVisibleToNeighbors),
-                    color: isVisibleToNeighbors ? const Color(0xFF7C3AED) : Colors.grey.shade500,
-                    size: 22,
-                  ),
+                _buildMenuItem(
+                  context,
+                  icon: Icons.home_work_rounded,
+                  color: const Color(0xFF38BDF8),
+                  title: 'Reper orientare pe hartă\n(ține apăsat pe hartă după activare)',
+                  onTap: () {
+                    Navigator.pop(context);
+                    onPlaceMapOrientationPin?.call();
+                  },
+                  isSubItem: true,
                 ),
-                color: isVisibleToNeighbors ? const Color(0xFF7C3AED) : Colors.grey.shade500,
-                title: l10n.drawerSocialMapTitle,
-                trailing: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: isVisibleToNeighbors ? const Color(0xFF7C3AED).withValues(alpha: 0.15) : Theme.of(context).colorScheme.surfaceContainerHighest,
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Text(
-                    isVisibleToNeighbors ? l10n.drawerSocialVisible : l10n.drawerSocialHidden,
-                    style: TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w800,
-                      color: isVisibleToNeighbors ? const Color(0xFF7C3AED) : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
-                    ),
-                  ),
+                _buildMenuItem(
+                  context,
+                  icon: Icons.visibility_off_outlined,
+                  color: Colors.orange.shade700,
+                  title: 'Ascunde Acasă de pe hartă\n(doar markerul favorite)',
+                  onTap: () {
+                    Navigator.pop(context);
+                    onHideSavedHomePinOnMap?.call();
+                  },
+                  isSubItem: true,
                 ),
-                onTap: onToggleVisibility ?? () {},
-              ),
-
-              // ✅ NOU: Buton de sincronizare contacte (ajută când nu apar vecinii)
-              _buildMenuItem(context,
-                icon: Icons.sync_rounded,
-                color: Colors.blueGrey,
-                title: l10n.drawerMenuSyncContacts,
-                trailing: IconButton(
-                  icon: const Icon(Icons.info_outline_rounded, size: 18),
-                  onPressed: () => _showSyncInfo(context),
-                  visualDensity: VisualDensity.compact,
-                ),
-                onTap: () {
-                  Navigator.pop(context); // Închide drawer-ul
-                  onRefreshContacts?.call();
-                },
-              ),
-
-              _buildMenuItem(context,
-                icon: Icons.settings_rounded,
-                color: Colors.blueGrey,
-                title: l10n.settings,
-                onTap: () => _navigateTo(context, SettingsScreen(
-                  onManageExclusions: onManageExclusions,
-                )),
-              ),
-
-              // ==========================================
-              // 3. AFACEREA MEA
-              // ==========================================
-              const SizedBox(height: 8),
-              _buildSectionHeader(l10n.drawerSectionMyBusiness),
-              _DrawerBusinessProfileSlot(
-                navigateTo: _navigateTo,
-                buildMenuItem: _buildMenuItem,
-              ),
-
-              // ==========================================
-              // 4. IMPLICARE (pasageri)
-              // ==========================================
-              if (currentRole == UserRole.passenger) ...[
-                const SizedBox(height: 8),
-                _buildSectionHeader(l10n.drawerSectionGetInvolved),
-                _buildMenuItem(context,
-                  icon: Icons.group_add_rounded,
-                  color: const Color(0xFFF9A826), // Vibrant Orange/Yellow
-                  title: l10n.joinTeam,
-                  onTap: () => _navigateTo(context, const JoinTeamScreen()),
-                ),
-                _buildMenuItem(context,
-                  icon: Icons.drive_eta_rounded,
-                  color: const Color(0xFF00E676),
-                  title: l10n.applyForDriver,
-                  onTap: () => _navigateTo(context, const DriverApplicationScreen()),
+                _buildMenuItem(
+                  context,
+                  icon: Icons.pin_drop_outlined,
+                  color: const Color(0xFF15803D),
+                  title: 'Ascunde reper orientare\n(elimină acul de pe hartă)',
+                  onTap: () {
+                    Navigator.pop(context);
+                    onRemoveOrientationReperFromMap?.call();
+                  },
+                  isSubItem: true,
                 ),
               ],
+            ),
 
-              // ==========================================
-              // 5. PREFERINȚE ȘI AI
-              // ==========================================
-              const SizedBox(height: 8),
-              _buildSectionHeader(l10n.drawerSectionAiPerformance),
-              
-              Theme(
-                data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
-                child: ExpansionTile(
-                  tilePadding: const EdgeInsets.symmetric(horizontal: 16),
-                  leading: Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [Color(0xFF00C6FF), Color(0xFF0072FF)],
-                      ),
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                    child: const Icon(Icons.psychology_rounded, color: Colors.white, size: 22),
-                  ),
-                  title: Text(l10n.aiAssistant, style: TextStyle(fontWeight: FontWeight.w800, fontSize: 15, color: Theme.of(context).colorScheme.onSurface)),
-                  children: [
-                     _buildMenuItem(context,
-                      icon: Icons.mic_rounded,
-                      color: Colors.blue,
-                      title: l10n.drawerVoiceAiSettingsTitle,
-                      onTap: () => _navigateTo(context, const VoiceSettingsScreen()),
-                      isSubItem: true,
-                    ),
-                  ],
+            // ==========================================
+            // 2. COMUNITATEA NABOUR
+            // ==========================================
+            const SizedBox(height: 8),
+            _buildSectionHeader(l10n.drawerSectionYourCommunity),
+            _buildDrawerGroup(
+              context,
+              title: l10n.drawerGroupCommunityFeed,
+              icon: Icons.groups_2_outlined,
+              accentColor: const Color(0xFF7C3AED),
+              children: [
+                _buildMenuItem(
+                  context,
+                  icon: Icons.campaign_rounded,
+                  color: const Color(0xFF7C3AED),
+                  title: l10n.neighborhoodRequests,
+                  onTap: () => _navigateTo(context, const RideBroadcastFeedScreen()),
+                  isSubItem: true,
                 ),
-              ),
+                _buildMenuItem(
+                  context,
+                  icon: Icons.forum_rounded,
+                  color: const Color(0xFF7C3AED),
+                  title: l10n.neighborhoodChat,
+                  onTap: () => _navigateTo(context, const NeighborhoodChatScreen()),
+                  isSubItem: true,
+                ),
+                _buildMenuItem(
+                  context,
+                  icon: Icons.map_rounded,
+                  color: const Color(0xFF00B894),
+                  title: l10n.drawerMenuPlaces,
+                  onTap: () => _navigateTo(context, const PlacesHubScreen()),
+                  isSubItem: true,
+                ),
+                _buildMenuItem(
+                  context,
+                  icon: Icons.grid_goldenratio_rounded,
+                  color: const Color(0xFFFF6B9D),
+                  title: l10n.drawerMenuExplorations,
+                  onTap: () => _navigateTo(context, const ExplorariScreen()),
+                  isSubItem: true,
+                ),
+                _buildMenuItem(
+                  context,
+                  icon: Icons.storefront_rounded,
+                  color: const Color(0xFFFF6B35),
+                  title: l10n.drawerBusinessOffersTitle,
+                  onTap: () => _navigateTo(context, const BusinessOffersScreen()),
+                  isSubItem: true,
+                ),
+              ],
+            ),
+            _buildDrawerGroup(
+              context,
+              title: l10n.drawerGroupSocialApp,
+              icon: Icons.tune_rounded,
+              accentColor: Colors.blueGrey.shade600,
+              children: [
+                _buildMenuItem(
+                  context,
+                  leadingWidget: AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 300),
+                    transitionBuilder: (child, animation) =>
+                        ScaleTransition(scale: animation, child: child),
+                    child: Icon(
+                      isVisibleToNeighbors ? Icons.visibility_rounded : Icons.visibility_off_rounded,
+                      key: ValueKey(isVisibleToNeighbors),
+                      color: isVisibleToNeighbors ? const Color(0xFF7C3AED) : Colors.grey.shade500,
+                      size: 22,
+                    ),
+                  ),
+                  color: isVisibleToNeighbors ? const Color(0xFF7C3AED) : Colors.grey.shade500,
+                  title: l10n.drawerSocialMapTitle,
+                  trailing: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: isVisibleToNeighbors
+                          ? const Color(0xFF7C3AED).withValues(alpha: 0.15)
+                          : Theme.of(context).colorScheme.surfaceContainerHighest,
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text(
+                      isVisibleToNeighbors ? l10n.drawerSocialVisible : l10n.drawerSocialHidden,
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w800,
+                        color: isVisibleToNeighbors
+                            ? const Color(0xFF7C3AED)
+                            : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
+                      ),
+                    ),
+                  ),
+                  onTap: onToggleVisibility ?? () {},
+                  isSubItem: true,
+                ),
+                _buildMenuItem(
+                  context,
+                  icon: Icons.sync_rounded,
+                  color: Colors.blueGrey,
+                  title: l10n.drawerMenuSyncContacts,
+                  trailing: IconButton(
+                    icon: const Icon(Icons.info_outline_rounded, size: 18),
+                    onPressed: () => _showSyncInfo(context),
+                    visualDensity: VisualDensity.compact,
+                  ),
+                  onTap: () {
+                    Navigator.pop(context);
+                    onRefreshContacts?.call();
+                  },
+                  isSubItem: true,
+                ),
+                _buildMenuItem(
+                  context,
+                  icon: Icons.settings_rounded,
+                  color: Colors.blueGrey,
+                  title: l10n.settings,
+                  onTap: () => _navigateTo(
+                    context,
+                    SettingsScreen(onManageExclusions: onManageExclusions),
+                  ),
+                  isSubItem: true,
+                ),
+              ],
+            ),
 
-              // ==========================================
-              // 5. SUPORT ȘI LEGAL
-              // ==========================================
+            // ==========================================
+            // 3. AFACEREA MEA
+            // ==========================================
+            const SizedBox(height: 8),
+            _buildSectionHeader(l10n.drawerSectionMyBusiness),
+            _DrawerBusinessProfileSlot(
+              navigateTo: _navigateTo,
+              buildMenuItem: _buildMenuItem,
+            ),
+
+            // ==========================================
+            // 4. IMPLICARE (pasageri)
+            // ==========================================
+            if (currentRole == UserRole.passenger) ...[
               const SizedBox(height: 8),
-              _buildSectionHeader(l10n.drawerSectionSupportInfo),
-              _buildMenuItem(context,
-                icon: Icons.security_rounded,
-                color: Colors.amber.shade600,
-                title: l10n.safety,
-                onTap: () => _navigateTo(context, const SafetyScreen()),
+              _buildDrawerGroup(
+                context,
+                title: l10n.drawerSectionGetInvolved,
+                icon: Icons.front_hand_outlined,
+                accentColor: const Color(0xFFF9A826),
+                children: [
+                  _buildMenuItem(
+                    context,
+                    icon: Icons.group_add_rounded,
+                    color: const Color(0xFFF9A826),
+                    title: l10n.joinTeam,
+                    onTap: () => _navigateTo(context, const JoinTeamScreen()),
+                    isSubItem: true,
+                  ),
+                ],
               ),
-              _buildMenuItem(context,
-                icon: Icons.help_outline_rounded,
-                color: Colors.grey.shade500,
-                title: l10n.help,
-                onTap: () => _navigateToWithRole(context, HelpScreen(isPassengerMode: currentRole == UserRole.passenger)),
-              ),
-              _buildMenuItem(context,
-                icon: Icons.people_alt_rounded,
-                color: Colors.grey.shade500,
-                title: l10n.drawerTeamNabour,
-                onTap: () => _navigateToWithRole(context, AboutScreen(isPassengerMode: currentRole == UserRole.passenger)),
-              ),
-              _buildMenuItem(context,
-                icon: Icons.gavel_rounded,
-                color: Colors.grey.shade500,
-                title: l10n.legal,
-                onTap: () => _navigateTo(context, const LegalScreen()),
-              ),
+            ],
 
-              // ==========================================
-              // 6. LOGOUT
-              // ==========================================
-              const SizedBox(height: 24),
-              Padding(
+            // ==========================================
+            // 5. PREFERINȚE ȘI AI
+            // ==========================================
+            const SizedBox(height: 8),
+            _buildSectionHeader(l10n.drawerSectionAiPerformance),
+            Theme(
+              data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+              child: ExpansionTile(
+                initiallyExpanded: false,
+                tilePadding: const EdgeInsets.symmetric(horizontal: 16),
+                leading: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF00C6FF), Color(0xFF0072FF)],
+                    ),
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  child: const Icon(Icons.psychology_rounded, color: Colors.white, size: 22),
+                ),
+                iconColor: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
+                collapsedIconColor:
+                    Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
+                title: Text(
+                  l10n.aiAssistant,
+                  style: TextStyle(
+                    fontWeight: FontWeight.w800,
+                    fontSize: 15,
+                    color: Theme.of(context).colorScheme.onSurface,
+                  ),
+                ),
+                children: [
+                  _buildMenuItem(
+                    context,
+                    icon: Icons.mic_rounded,
+                    color: Colors.blue,
+                    title: l10n.drawerVoiceAiSettingsTitle,
+                    onTap: () => _navigateTo(context, const VoiceSettingsScreen()),
+                    isSubItem: true,
+                  ),
+                ],
+              ),
+            ),
+
+            // ==========================================
+            // 6. SUPORT ȘI LEGAL
+            // ==========================================
+            const SizedBox(height: 8),
+            _buildSectionHeader(l10n.drawerSectionSupportInfo),
+            _buildDrawerGroup(
+              context,
+              title: l10n.drawerGroupHelpLegal,
+              icon: Icons.support_agent_rounded,
+              accentColor: Colors.grey.shade600,
+              children: [
+                _buildMenuItem(
+                  context,
+                  icon: Icons.security_rounded,
+                  color: Colors.amber.shade600,
+                  title: l10n.safety,
+                  onTap: () => _navigateTo(context, const SafetyScreen()),
+                  isSubItem: true,
+                ),
+                _buildMenuItem(
+                  context,
+                  icon: Icons.help_outline_rounded,
+                  color: Colors.grey.shade500,
+                  title: l10n.help,
+                  onTap: () => _navigateToWithRole(
+                    context,
+                    HelpScreen(isPassengerMode: currentRole == UserRole.passenger),
+                  ),
+                  isSubItem: true,
+                ),
+                _buildMenuItem(
+                  context,
+                  icon: Icons.people_alt_rounded,
+                  color: Colors.grey.shade500,
+                  title: l10n.drawerTeamNabour,
+                  onTap: () => _navigateToWithRole(
+                    context,
+                    AboutScreen(isPassengerMode: currentRole == UserRole.passenger),
+                  ),
+                  isSubItem: true,
+                ),
+                _buildMenuItem(
+                  context,
+                  icon: Icons.gavel_rounded,
+                  color: Colors.grey.shade500,
+                  title: l10n.legal,
+                  onTap: () => _navigateTo(context, const LegalScreen()),
+                  isSubItem: true,
+                ),
+              ],
+            ),
+
+            // ==========================================
+            // 7. LOGOUT
+            // ==========================================
+            const SizedBox(height: 24),
+            Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 24),
                 child: Material(
                   color: Colors.red.withValues(alpha: 0.12),
@@ -708,6 +850,44 @@ class AppDrawer extends StatelessWidget {
           color: Colors.grey.shade400,
           letterSpacing: 2.0,
         ),
+      ),
+    );
+  }
+
+  /// Grup compact (ExpansionTile) pentru subcategorii în drawer.
+  Widget _buildDrawerGroup(
+    BuildContext context, {
+    required String title,
+    required IconData icon,
+    required Color accentColor,
+    required List<Widget> children,
+  }) {
+    final scheme = Theme.of(context).colorScheme;
+    return Theme(
+      data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+      child: ExpansionTile(
+        initiallyExpanded: false,
+        tilePadding: const EdgeInsets.symmetric(horizontal: 16),
+        childrenPadding: const EdgeInsets.only(bottom: 6),
+        leading: Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: accentColor.withValues(alpha: 0.15),
+            borderRadius: BorderRadius.circular(14),
+          ),
+          child: Icon(icon, color: accentColor, size: 22),
+        ),
+        iconColor: scheme.onSurface.withValues(alpha: 0.45),
+        collapsedIconColor: scheme.onSurface.withValues(alpha: 0.45),
+        title: Text(
+          title,
+          style: TextStyle(
+            fontWeight: FontWeight.w800,
+            fontSize: 15,
+            color: scheme.onSurface,
+          ),
+        ),
+        children: children,
       ),
     );
   }
@@ -777,15 +957,41 @@ class AppDrawer extends StatelessWidget {
   }
 
   void _navigateTo(BuildContext context, Widget screen) {
-    if (!Navigator.of(context).mounted) return;
+    final nav = Navigator.of(context, rootNavigator: true);
+    if (!nav.mounted) return;
+    AppSoundService.instance.playMenuClick();
+
     Navigator.pop(context);
-    Navigator.push(context, MaterialPageRoute(builder: (ctx) => screen));
+
+    // Tranziție zoom + fade la navigarea din drawer
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!nav.mounted) return;
+      nav.push(
+        PageRouteBuilder(
+          transitionDuration: const Duration(milliseconds: 500),
+          reverseTransitionDuration: const Duration(milliseconds: 400),
+          pageBuilder: (context, animation, secondaryAnimation) => screen,
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            final scale = Tween<double>(begin: 0.85, end: 1.0).animate(
+              CurvedAnimation(parent: animation, curve: Curves.easeOutExpo),
+            );
+            final fade = CurvedAnimation(parent: animation, curve: Curves.easeIn);
+
+            return ScaleTransition(
+              scale: scale,
+              child: FadeTransition(
+                opacity: fade,
+                child: child,
+              ),
+            );
+          },
+        ),
+      );
+    });
   }
 
   void _navigateToWithRole(BuildContext context, Widget screen) {
-    if (!Navigator.of(context).mounted) return;
-    Navigator.pop(context);
-    Navigator.push(context, MaterialPageRoute(builder: (ctx) => screen));
+    _navigateTo(context, screen);
   }
 
   void _showSyncInfo(BuildContext context) {

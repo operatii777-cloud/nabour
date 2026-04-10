@@ -35,7 +35,8 @@ class NeighborhoodRequest {
       lat: (data['lat'] ?? 0.0).toDouble(),
       lng: (data['lng'] ?? 0.0).toDouble(),
       createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
-      expiresAt: (data['expiresAt'] as Timestamp?)?.toDate() ?? DateTime.now().add(const Duration(hours: 1)),
+      expiresAt: (data['expiresAt'] as Timestamp?)?.toDate() ??
+          DateTime.now().add(const Duration(hours: 1)),
       resolved: data['resolved'] ?? false,
     );
   }
@@ -54,18 +55,18 @@ class NeighborhoodRequest {
     };
   }
 
-  // A helper method to calculate the remaining lifespan
-  // 1.0 = brand new, 0.0 = expired
+  // Rămas din durată (1.0 = proaspăt, 0.0 = expirat). Ms evită totalDurata 0 când diferența e <1s.
   double get evaporationProgress {
     final now = DateTime.now();
-    if (now.isAfter(expiresAt)) return 0.0;
-    
-    final totalDuration = expiresAt.difference(createdAt).inSeconds;
-    if (totalDuration <= 0) return 0.0;
-    
-    final elapsed = now.difference(createdAt).inSeconds;
-    final remaining = 1.0 - (elapsed / totalDuration);
-    
+    if (!now.isBefore(expiresAt)) return 0.0;
+
+    final totalMs = expiresAt.difference(createdAt).inMilliseconds;
+    // Date invalide sau durată 0 în DB: nu ascunde bula (altfel filtrul UI o elimină complet).
+    if (totalMs <= 0) return 1.0;
+
+    final elapsedMs = now.difference(createdAt).inMilliseconds;
+    final remaining = 1.0 - (elapsedMs / totalMs);
+
     return remaining.clamp(0.0, 1.0);
   }
 }

@@ -11,6 +11,8 @@ import 'package:nabour_app/services/giphy_service.dart';
 import 'package:nabour_app/services/push_notification_service.dart';
 import 'package:nabour_app/services/translation_service.dart';
 import 'package:nabour_app/services/voip_service.dart';
+import 'package:nabour_app/utils/logger.dart';
+import 'package:nabour_app/utils/firestore_error_ui.dart';
 import 'package:nabour_app/widgets/chat/whatsapp_message_bubble.dart';
 import 'package:nabour_app/widgets/chat/voice_record_button.dart';
 import 'package:uuid/uuid.dart';
@@ -610,6 +612,27 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
       body: StreamBuilder<List<ChatMessage>>(
         stream: _getMessagesStream(),
         builder: (context, snapshot) {
+          if (snapshot.hasError) {
+            Logger.error(
+              'ChatScreen messages stream',
+              error: snapshot.error,
+              tag: 'ChatScreen',
+            );
+            return Column(
+              children: [
+                Expanded(
+                  child: FirestoreStreamErrorCenter(
+                    error: snapshot.error,
+                    fallbackMessage: 'Nu s-au putut încărca mesajele.',
+                  ),
+                ),
+                if (_otherTyping) _buildTypingIndicator(isDark),
+                if (_showQuickReplies && _messagesForUi(snapshot.data ?? []).isEmpty) _buildQuickReplies(),
+                if (_replyingTo != null) _buildReplyBar(isDark),
+                _buildInputBar(isDark),
+              ],
+            );
+          }
           final msgs = _messagesForUi(snapshot.data ?? []);
           
           // markAllRead o singura data la deschidere, nu la fiecare mesaj nou

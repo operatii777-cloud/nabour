@@ -1,6 +1,5 @@
-﻿// Configurare pentru Gemini Voice AI - Gestionează setările și inițializarea pentru sistemul de AI vocal
-// 🧠 Gemini Configuration - Configurația pentru Gemini Voice Engine
-// Caracteristici: Management centralizat al API keys, Configurații pentru diferite medii, Securitate și validare, Fallback pentru development
+﻿// Configurare pentru motorul de limbaj opțional (API Google Generative Language) — folosit de asistentul vocal Nabour când cheia e setată.
+// Caracteristici: chei API, medii, validare, fallback la procesare locală când lipsește cheia.
 
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:nabour_app/config/environment.dart';
@@ -85,13 +84,13 @@ Link: https://makersuite.google.com/app/apikey
   static Map<String, dynamic> get promptConfig => {
     'maxTokens': 500,          // 🎯 Lungimea maximă a prompt-ului
     'systemPrompt': '''
-Ești asistentul vocal Nabour, funcționând EXACT ca Gemini Voice.
+Ești asistentul vocal integrat în aplicația Nabour: conversație clară, naturală, orientată spre curse și adrese.
 
 INSTRUCȚIUNI:
-1. Analizează input-ul ca Gemini Voice
+1. Analizează input-ul utilizatorului în contextul Nabour
 2. Identifică intenția exactă
-3. Răspunde natural și rapid
-4. Integrează cu contextul Nabour
+3. Răspunde concis și natural, potrivit pentru citire vocală
+4. Respectă istoricul și destinația/preluarea din context
 5. Returnează JSON valid cu toate câmpurile necesare
 
 FORMATUL RĂSPUNSULUI:

@@ -21,6 +21,7 @@ export {
   expireTokenPaymentRequests,
 } from "./token_transfers";
 import * as admin from "firebase-admin";
+import * as functionsV1 from "firebase-functions/v1";
 import { randomBytes } from "node:crypto";
 import { latLngToCell } from "h3-js";
 import { defineString } from "firebase-functions/params";
@@ -56,6 +57,118 @@ function isStaffSubscriptionEmail(email: string | undefined): boolean {
     .filter(Boolean);
   return list.includes(e);
 }
+
+/** Aliniat cu lista din regulile Firestore + override prin `app_config/trial`. */
+const TRIAL_EXEMPT_EMAILS_BUILTIN_CSV =
+  "operatii.777@gmail.com,operatii.77@gmail.com,operatii.77777@gmail.com";
+
+const TRIAL_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
+
+function parseTrialExemptBuiltinEmails(): string[] {
+  return TRIAL_EXEMPT_EMAILS_BUILTIN_CSV.split(",")
+    .map((s) => s.trim().toLowerCase())
+    .filter(Boolean);
+}
+
+async function loadTrialExemptFromAppConfig(): Promise<{
+  emails: string[];
+  uids: string[];
+}> {
+  try {
+    const snap = await admin.firestore().doc("app_config/trial").get();
+    if (!snap.exists) return { emails: [], uids: [] };
+    const d = snap.data() ?? {};
+    const emails = ((d.exemptEmails as unknown[]) ?? [])
+      .map((x) => String(x).trim().toLowerCase())
+      .filter(Boolean);
+    const uids = ((d.exemptUids as unknown[]) ?? [])
+      .map((x) => String(x))
+      .filter(Boolean);
+    return { emails, uids };
+  } catch {
+    return { emails: [], uids: [] };
+  }
+}
+
+async function isUserTrialExempt(user: admin.auth.UserRecord): Promise<boolean> {
+  const emailNorm = user.email?.trim().toLowerCase();
+  if (emailNorm && parseTrialExemptBuiltinEmails().includes(emailNorm)) {
+    return true;
+  }
+  const cfg = await loadTrialExemptFromAppConfig();
+  if (emailNorm && cfg.emails.includes(emailNorm)) return true;
+  if (cfg.uids.includes(user.uid)) return true;
+  return false;
+}
+
+async function writeUserTrialAnchor(user: admin.auth.UserRecord): Promise<void> {
+  const uid = user.uid;
+  const ref = admin.firestore().doc(`users/${uid}`);
+  const exempt = await isUserTrialExempt(user);
+  if (exempt) {
+    await ref.set(
+      {
+        trialExempt: true,
+        trialEndsAt: admin.firestore.Timestamp.fromDate(
+          new Date("2099-12-31T23:59:59.000Z")
+        ),
+        trialAnchorSource: "cloud_function",
+      },
+      { merge: true }
+    );
+    return;
+  }
+  const createdMs = user.metadata.creationTime
+    ? new Date(user.metadata.creationTime).getTime()
+    : Date.now();
+  const trialEnds = new Date(createdMs + TRIAL_DAYS_MS);
+  await ref.set(
+    {
+      trialExempt: false,
+      trialEndsAt: admin.firestore.Timestamp.fromDate(trialEnds),
+      trialAnchorSource: "cloud_function",
+    },
+    { merge: true }
+  );
+}
+
+/** Sincronizează `trialEndsAt` / `trialExempt` din metadata Auth (utilizatori existenți). */
+export const nabourEnsureUserTrialAnchor = onCall(async (request) => {
+  if (!request.auth?.uid) {
+    throw new HttpsError("unauthenticated", "Autentificare necesară.");
+  }
+  const uid = request.auth.uid;
+  let user: admin.auth.UserRecord;
+  try {
+    user = await admin.auth().getUser(uid);
+  } catch {
+    throw new HttpsError("not-found", "Utilizator inexistent.");
+  }
+  const ref = admin.firestore().doc(`users/${uid}`);
+  const snap = await ref.get();
+  const d = snap.data();
+  const anchored = Boolean(
+    d &&
+      d.trialEndsAt &&
+      d.trialAnchorSource === "cloud_function"
+  );
+  if (anchored) {
+    return { ok: true as const, skipped: true as const };
+  }
+  await writeUserTrialAnchor(user);
+  return { ok: true as const, skipped: false as const };
+});
+
+export const nabourAuthOnUserCreate = functionsV1
+  .region("europe-west1")
+  .auth.user()
+  .onCreate(async (user) => {
+    try {
+      await writeUserTrialAnchor(user);
+    } catch (e) {
+      console.error("nabourAuthOnUserCreate trial anchor failed", e);
+    }
+  });
 
 /**
  * Indexare spațială H3 (Uber): același identificator ca pe client prin callable
@@ -151,6 +264,95 @@ export const nabourMaintainTokenWallet = onCall(async (request) => {
  * Top-up / upgrade — DEZACTIVAT în producție până la verificare plată (IAP/webhook).
  * Setează parametrul ALLOW_UNVERIFIED_WALLET_CREDIT=true doar în dev/staging.
  */
+/** Prețuri în TOKENI pentru achiziția manuală a planurilor (Transferable Tokens). */
+const PLAN_TOKEN_PRICE: Record<string, number> = {
+  basic: 1000,
+  pro: 5000,
+  unlimited: 15000,
+};
+
+/** Achiziție plan folosind soldul din portofelul TRANSFERABIL. */
+export const nabourPurchasePlanWithTokens = onCall(async (request) => {
+  if (!request.auth?.uid) {
+    throw new HttpsError("unauthenticated", "Autentificare necesară.");
+  }
+  const uid = request.auth.uid;
+  const plan = String(request.data?.plan ?? "");
+  const cost = PLAN_TOKEN_PRICE[plan];
+
+  if (!cost) {
+    throw new HttpsError("invalid-argument", "Plan invalid sau preț nedeclarat.");
+  }
+
+  const db = admin.firestore();
+  const transferableWalletRef = db.doc(`token_wallets/${uid}`);
+  const usageWalletRef = db.doc(`users/${uid}/token_wallet/wallet`);
+  const ledgerRef = db.collection("token_ledger").doc();
+
+  await db.runTransaction(async (txn) => {
+    // 1. Verificăm soldul transferabil
+    const tSnap = await txn.get(transferableWalletRef);
+    if (!tSnap.exists || (tSnap.data()?.balanceMinor ?? 0) < cost) {
+      throw new HttpsError(
+        "failed-precondition",
+        `Sold transferabil insuficient. Necesar: ${cost} tokeni.`
+      );
+    }
+
+    // 2. Verificăm wallet-ul de utilizare
+    const uSnap = await txn.get(usageWalletRef);
+    if (!uSnap.exists) {
+      throw new HttpsError("failed-precondition", "Wallet utilizare negăsit.");
+    }
+
+    const now = new Date();
+    const nextReset = nextMonthFirst(now);
+
+    // 3. Deducem din portofelul transferabil
+    txn.update(transferableWalletRef, {
+      balanceMinor: admin.firestore.FieldValue.increment(-cost),
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      version: admin.firestore.FieldValue.increment(1),
+    });
+
+    // 4. Actualizăm planul de utilizare
+    const allowance = PLAN_ALLOWANCE[plan] ?? 1000;
+    txn.update(usageWalletRef, {
+      plan: plan,
+      balance: allowance, // Resetăm soldul la noua cotă imediat
+      totalEarned: admin.firestore.FieldValue.increment(allowance),
+      resetAt: admin.firestore.Timestamp.fromDate(nextReset),
+      lastResetAt: admin.firestore.FieldValue.serverTimestamp(),
+      autoRenew: false, // Dezactivăm reînnoirea automată (plată manuală)
+    });
+
+    // 5. Ledger entry pentru audit
+    txn.set(ledgerRef, {
+      userId: uid,
+      deltaMinor: -cost,
+      type: "plan_purchase",
+      counterpartyUserId: "SYSTEM_SUBSCRIPTION",
+      referenceType: "plan_upgrade",
+      referenceId: plan,
+      correlationGroupId: randomBytes(16).toString("hex"),
+      balanceAfterMinor: (tSnap.data()?.balanceMinor ?? 0) - cost,
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+
+    // 6. Tranzacție în istoricul de utilizare
+    const uTxRef = db.collection(`users/${uid}/token_transactions`).doc();
+    txn.set(uTxRef, {
+      uid,
+      amount: allowance,
+      type: "monthly_reset",
+      description: `Activare plan ${plan} prin tokeni transferabili (-${cost} P2P)`,
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+  });
+
+  return { ok: true, plan };
+});
+
 export const nabourWalletCredit = onCall(async (request) => {
   if (!request.auth?.uid) {
     throw new HttpsError("unauthenticated", "Autentificare necesară.");
@@ -158,32 +360,80 @@ export const nabourWalletCredit = onCall(async (request) => {
   if (!isWalletCreditFromAppAllowed()) {
     throw new HttpsError(
       "failed-precondition",
-      "Creditarea din app este blocată până la integrarea plăților. " +
-        "Pentru testare: firebase params:set ALLOW_UNVERIFIED_WALLET_CREDIT true (sau lasă gol în .env) și redeploy functions."
+      "Creditarea din app este blocată până la integrarea plăților."
     );
   }
 
   const uid = request.auth.uid;
   const action = request.data?.action as string;
+  const isTransferable = Boolean(request.data?.isTransferable);
+  const db = admin.firestore();
 
   if (action === "topup") {
     const amount = Number(request.data?.amount);
-    if (!Number.isFinite(amount) || amount <= 0 || amount > 500000) {
+    if (!Number.isFinite(amount) || amount <= 0 || amount > 1000000) {
       throw new HttpsError("invalid-argument", "Sumă invalidă.");
     }
-    const ref = admin.firestore().doc(`users/${uid}/token_wallet/wallet`);
-    await ref.update({
-      balance: admin.firestore.FieldValue.increment(amount),
-      totalEarned: admin.firestore.FieldValue.increment(amount),
-    });
-    await admin.firestore().collection(`users/${uid}/token_transactions`).add({
-      uid,
-      amount,
-      type: "purchase",
-      description: String(request.data?.description ?? "Cumpărare tokeni"),
-      createdAt: admin.firestore.FieldValue.serverTimestamp(),
-    });
-    return { ok: true };
+    const description = String(request.data?.description ?? "Cumpărare tokeni");
+
+    if (isTransferable) {
+      // ── Credit portofel TRANSFERABIL ──
+      const walletRef = db.doc(`token_wallets/${uid}`);
+      const ledgerRef = db.collection("token_ledger").doc();
+      const correlationGroupId = randomBytes(16).toString("hex");
+
+      await db.runTransaction(async (txn) => {
+        const snap = await txn.get(walletRef);
+        const now = admin.firestore.FieldValue.serverTimestamp();
+        let balanceAfter = amount;
+
+        if (!snap.exists) {
+          txn.set(walletRef, {
+            balanceMinor: amount,
+            status: "active",
+            createdAt: now,
+            updatedAt: now,
+            version: 1,
+            autoProvisioned: true,
+          });
+        } else {
+          balanceAfter = (snap.data()?.balanceMinor ?? 0) + amount;
+          txn.update(walletRef, {
+            balanceMinor: admin.firestore.FieldValue.increment(amount),
+            updatedAt: now,
+            version: admin.firestore.FieldValue.increment(1),
+          });
+        }
+
+        // Ledger entry (credit tip 'topup_transferable')
+        txn.set(ledgerRef, {
+          userId: uid,
+          deltaMinor: amount,
+          type: "topup_credit",
+          counterpartyUserId: "SYSTEM_SHOP",
+          referenceType: "direct_topup",
+          referenceId: "SHOP_" + Date.now(),
+          correlationGroupId,
+          balanceAfterMinor: balanceAfter,
+          createdAt: now,
+        });
+      });
+    } else {
+      // ── Credit portofel USAGE (abonament) ──
+      const ref = db.doc(`users/${uid}/token_wallet/wallet`);
+      await ref.update({
+        balance: admin.firestore.FieldValue.increment(amount),
+        totalEarned: admin.firestore.FieldValue.increment(amount),
+      });
+      await db.collection(`users/${uid}/token_transactions`).add({
+        uid,
+        amount,
+        type: "purchase",
+        description,
+        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      });
+    }
+    return { ok: true, isTransferable };
   }
 
   if (action === "upgrade") {
@@ -191,7 +441,7 @@ export const nabourWalletCredit = onCall(async (request) => {
     if (!PLAN_ALLOWANCE[plan]) {
       throw new HttpsError("invalid-argument", "Plan invalid.");
     }
-    const ref = admin.firestore().doc(`users/${uid}/token_wallet/wallet`);
+    const ref = db.doc(`users/${uid}/token_wallet/wallet`);
     const w = await ref.get();
     if (!w.exists) {
       throw new HttpsError("failed-precondition", "Wallet inexistent.");
@@ -203,7 +453,7 @@ export const nabourWalletCredit = onCall(async (request) => {
         plan: "unlimited",
         freeMonthlyAllowance: newAllowance,
       });
-      await admin.firestore().collection(`users/${uid}/token_transactions`).add({
+      await db.collection(`users/${uid}/token_transactions`).add({
         uid,
         amount: 0,
         type: "purchase",
@@ -228,7 +478,7 @@ export const nabourWalletCredit = onCall(async (request) => {
     await ref.update(updates as Record<string, unknown>);
 
     if (bonus > 0) {
-      await admin.firestore().collection(`users/${uid}/token_transactions`).add({
+      await db.collection(`users/${uid}/token_transactions`).add({
         uid,
         amount: bonus,
         type: "purchase",
@@ -978,6 +1228,93 @@ export const nabourSyncNeighborhoodRoom = onCall(async (request) => {
     nb_room: room,
   });
   return { roomId: room, h3Resolution: NABOUR_H3_RES };
+});
+
+/**
+ * Mesaj text trimis vecinilor selectați în radar (notificări push FCM per destinatar).
+ */
+export const nabourSendRadarGroupMessage = onCall(async (request) => {
+  if (!request.auth?.uid) {
+    throw new HttpsError("unauthenticated", "Autentificare necesară.");
+  }
+  const senderUid = request.auth.uid;
+  const rawRecipients = request.data?.recipientUids;
+  const messageRaw = String(request.data?.message ?? "").trim();
+  if (!Array.isArray(rawRecipients)) {
+    throw new HttpsError("invalid-argument", "recipientUids invalid.");
+  }
+  if (messageRaw.length < 1 || messageRaw.length > 500) {
+    throw new HttpsError(
+      "invalid-argument",
+      "Mesajul trebuie să aibă între 1 și 500 caractere."
+    );
+  }
+  const maxRecipients = 50;
+  const recipientSet = new Set<string>();
+  for (const u of rawRecipients) {
+    if (typeof u !== "string" || u.length < 3) continue;
+    if (u === senderUid) continue;
+    recipientSet.add(u);
+  }
+  if (recipientSet.size === 0) {
+    throw new HttpsError("invalid-argument", "Niciun destinatar valid.");
+  }
+  if (recipientSet.size > maxRecipients) {
+    throw new HttpsError(
+      "invalid-argument",
+      `Maximum ${maxRecipients} destinatari odată.`
+    );
+  }
+  const db = admin.firestore();
+  const senderDoc = await db.doc(`users/${senderUid}`).get();
+  const senderName = String(senderDoc.data()?.displayName ?? "Un vecin");
+  const senderAvatar = String(senderDoc.data()?.avatar ?? "🙂");
+
+  const bodyShort =
+    messageRaw.length > 120 ? messageRaw.slice(0, 120) + "…" : messageRaw;
+  let sent = 0;
+  const recipients = [...recipientSet];
+
+  for (const uid of recipients) {
+    const userDoc = await db.doc(`users/${uid}`).get();
+    const token = userDoc.data()?.fcmToken as string | undefined;
+    if (!token) continue;
+    try {
+      await admin.messaging().send({
+        token,
+        notification: {
+          title: `Mesaj radar de la ${senderName}`,
+          body: bodyShort,
+        },
+        data: {
+          type: "radar_group_message",
+          senderUid,
+          senderName,
+          senderAvatar,
+          message: messageRaw.slice(0, 500),
+        },
+        android: { priority: "high" },
+        apns: { payload: { aps: { sound: "default" } } },
+      });
+      sent++;
+    } catch (e) {
+      console.error("[FCM] radar_group", uid, e);
+    }
+  }
+
+  try {
+    await db.collection("radar_group_broadcasts").add({
+      senderUid,
+      recipientCount: recipients.length,
+      fcmDelivered: sent,
+      messagePreview: messageRaw.slice(0, 80),
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+  } catch (e) {
+    console.error("[radar_group_broadcasts] audit", e);
+  }
+
+  return { ok: true, attempted: recipients.length, sent };
 });
 
 /** Proxy Gemini — cheia rămâne pe server. Setează parametrul GEMINI_API_KEY în Firebase. */

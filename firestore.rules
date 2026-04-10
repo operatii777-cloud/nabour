@@ -12,6 +12,68 @@ service cloud.firestore {
       return request.auth.uid == userId;
     }
 
+    // ── Trial transport (7 zile de la cont Auth; excepții + unlimited) ───────
+    // Sursă timp: users/{uid}.trialEndsAt setat de Cloud Function (auth.onCreate + callable).
+    function trialUserDocPath() {
+      return /databases/$(database)/documents/users/$(request.auth.uid);
+    }
+    function trialAppConfigPath() {
+      return /databases/$(database)/documents/app_config/trial;
+    }
+    function isTrialBuiltinExemptEmail() {
+      return request.auth.token.email != null && (
+        request.auth.token.email == 'operatii.77@gmail.com' ||
+        request.auth.token.email == 'operatii.777@gmail.com' ||
+        request.auth.token.email == 'operatii.77777@gmail.com'
+      );
+    }
+    function isTrialExemptAppConfigEmail() {
+      return isAuthenticated()
+        && request.auth.token.email != null
+        && exists(trialAppConfigPath())
+        && 'exemptEmails' in get(trialAppConfigPath()).data
+        && get(trialAppConfigPath()).data.exemptEmails is list
+        && request.auth.token.email in get(trialAppConfigPath()).data.exemptEmails;
+    }
+    function isTrialExemptAppConfigUid() {
+      return isAuthenticated()
+        && exists(trialAppConfigPath())
+        && 'exemptUids' in get(trialAppConfigPath()).data
+        && get(trialAppConfigPath()).data.exemptUids is list
+        && request.auth.uid in get(trialAppConfigPath()).data.exemptUids;
+    }
+    function userDocTrialExemptFlag() {
+      return exists(trialUserDocPath())
+        && 'trialExempt' in get(trialUserDocPath()).data
+        && get(trialUserDocPath()).data.trialExempt == true;
+    }
+    function isTrialExempt() {
+      return isTrialBuiltinExemptEmail()
+        || isTrialExemptAppConfigEmail()
+        || isTrialExemptAppConfigUid()
+        || userDocTrialExemptFlag();
+    }
+    function isUnlimitedWalletPlan() {
+      return exists(/databases/$(database)/documents/users/$(request.auth.uid)/token_wallet/wallet)
+        && get(/databases/$(database)/documents/users/$(request.auth.uid)/token_wallet/wallet).data.plan == 'unlimited';
+    }
+    function userTrialPeriodActive() {
+      return exists(trialUserDocPath())
+        && 'trialEndsAt' in get(trialUserDocPath()).data
+        && request.time < get(trialUserDocPath()).data.trialEndsAt;
+    }
+    function trialPeriodAllowsRides() {
+      return isAuthenticated() && (
+        isTrialExempt()
+        || isUnlimitedWalletPlan()
+        || userTrialPeriodActive()
+      );
+    }
+    function userOwnerTrialFieldsUnchanged() {
+      let diff = request.resource.data.diff(resource.data).affectedKeys();
+      return !diff.hasAny(['trialEndsAt', 'trialAnchorSource', 'trialExempt']);
+    }
+
     // Catalog abonamente (sincronizat cu PLAN_ALLOWANCE din Cloud Functions + app).
     // Scrieri doar din consolă / script; app citește pentru UI și prețuri.
     match /subscription_plans/{planId} {
@@ -23,7 +85,8 @@ service cloud.firestore {
     // Batch offers — creat de client la pasagerul cursei principale (rides[0]); citire șofer țintă sau pasageri din listă.
     match /batch_offers/{offerId} {
       allow get, list: if isAuthenticated() && batchOfferUserCanRead();
-      allow create: if isAuthenticated() && batchOfferCreateValid();
+      allow create: if isAuthenticated() && batchOfferCreateValid()
+        && trialPeriodAllowsRides();
       allow update, delete: if false;
     }
 
@@ -331,9 +394,10 @@ service cloud.firestore {
     match /users/{userId} {
       allow get:    if isAuthenticated();
       allow list:   if isAuthenticated();
-      allow create: if isAuthenticated() && isOwner(userId);
+      allow create: if isAuthenticated() && isOwner(userId)
+        && !request.resource.data.keys().hasAny(['trialEndsAt', 'trialAnchorSource', 'trialExempt']);
       allow update: if isAuthenticated() && (
-        isOwner(userId)
+        (isOwner(userId) && userOwnerTrialFieldsUnchanged())
         || userDriverAggregateFromPassengerRating(userId)
         || userPassengerAggregateFromDriverRating(userId)
       );
@@ -425,9 +489,15 @@ service cloud.firestore {
       );
       // Doar pasagerul poate crea o cursă pe cont propriu
       allow create: if isAuthenticated() &&
-        request.resource.data.passengerId == request.auth.uid;
+        request.resource.data.passengerId == request.auth.uid
+        && trialPeriodAllowsRides();
       // Participanți + whitelist câmpuri + tranziții status; test_harness pentru integrări.
-      allow update: if rideRequestUpdateAllowed();
+      allow update: if rideRequestUpdateAllowed()
+        && (
+          trialPeriodAllowsRides()
+          || resource.data.passengerId == request.auth.uid
+          || resource.data.driverId == request.auth.uid
+        );
       // Doar pasagerul poate anula/șterge
       allow delete: if isAuthenticated() &&
         resource.data.passengerId == request.auth.uid;
@@ -449,7 +519,7 @@ service cloud.firestore {
     match /driver_locations/{driverId} {
       allow read:  if isAuthenticated();
       allow write: if isAuthenticated() && (
-        isOwner(driverId) ||
+        (isOwner(driverId) && trialPeriodAllowsRides()) ||
         (request.auth.token.test_harness == true && isTestDriverUser(driverId))
       );
     }
@@ -457,7 +527,7 @@ service cloud.firestore {
     // ── Drivers ────────────────────────────────────────────────────────────
     match /drivers/{driverId} {
       allow read:  if isAuthenticated();
-      allow write: if isAuthenticated() && isOwner(driverId);
+      allow write: if isAuthenticated() && isOwner(driverId) && trialPeriodAllowsRides();
     }
 
     // ── Driver applications ────────────────────────────────────────────────
@@ -488,7 +558,8 @@ service cloud.firestore {
       allow create: if isAuthenticated() && (
         request.resource.data.passengerId == request.auth.uid ||
         request.resource.data.driverId    == request.auth.uid
-      );
+      )
+        && trialPeriodAllowsRides();
       allow update: if isAuthenticated() && (
         resource.data.passengerId == request.auth.uid ||
         resource.data.driverId    == request.auth.uid
@@ -555,7 +626,7 @@ service cloud.firestore {
     // Include carAvatarId (ID avatar garaj publicat pentru vecini, RTDB + FS).
     match /user_visible_locations/{userId} {
       allow read:  if isAuthenticated();
-      allow write: if isAuthenticated() && isOwner(userId);
+      allow write: if isAuthenticated() && isOwner(userId) && trialPeriodAllowsRides();
     }
 
     // ── Neighborhood chat — nb_room = index H3 (string), setat de nabourSyncNeighborhoodRoom.
@@ -597,12 +668,18 @@ service cloud.firestore {
     match /ride_broadcasts/{broadcastId} {
       allow read:   if isAuthenticated();
       allow create: if isAuthenticated()
-        && request.resource.data.passengerId == request.auth.uid;
+        && request.resource.data.passengerId == request.auth.uid
+        && trialPeriodAllowsRides();
       // Pasagerul: orice actualizare. Șoferul acceptat: confirmări / status cursă.
       // Membrii din allowedUids: doar oferte, răspunsuri, reacții (arrayUnion etc.).
-      allow update: if rideBroadcastIsPassenger()
+      allow update: if (rideBroadcastIsPassenger()
         || rideBroadcastIsAcceptedDriver()
-        || (rideBroadcastInAudience() && rideBroadcastEngagementOnly());
+        || (rideBroadcastInAudience() && rideBroadcastEngagementOnly()))
+        && (
+          trialPeriodAllowsRides()
+          || rideBroadcastIsPassenger()
+          || rideBroadcastIsAcceptedDriver()
+        );
       allow delete: if isAuthenticated()
         && resource.data.passengerId == request.auth.uid;
 
@@ -638,7 +715,8 @@ service cloud.firestore {
       allow create: if isAuthenticated() && (
         request.resource.data.passengerId == request.auth.uid ||
         request.resource.data.userId == request.auth.uid
-      );
+      )
+        && trialPeriodAllowsRides();
       allow update: if isAuthenticated() && (
         resource.data.passengerId == request.auth.uid ||
         resource.data.driverId    == request.auth.uid

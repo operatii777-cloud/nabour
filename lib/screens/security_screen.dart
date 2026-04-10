@@ -4,6 +4,7 @@ import 'package:nabour_app/l10n/app_localizations.dart';
 import 'package:nabour_app/screens/auth_screen.dart';
 import 'package:nabour_app/screens/change_password_screen.dart';
 import 'package:nabour_app/services/account_service.dart';
+import 'package:nabour_app/core/ui/app_feedback.dart';
 
 class SecurityScreen extends StatelessWidget {
   const SecurityScreen({super.key});
@@ -102,7 +103,6 @@ class SecurityScreen extends StatelessWidget {
           ElevatedButton(
             onPressed: () async {
               final navigator = Navigator.of(context);
-              final scaffoldMessenger = ScaffoldMessenger.of(context);
               Navigator.of(dialogContext).pop();
 
               try {
@@ -112,12 +112,8 @@ class SecurityScreen extends StatelessWidget {
                   (route) => false,
                 );
               } catch (e) {
-                scaffoldMessenger.showSnackBar(
-                  SnackBar(
-                    content: Text(l10n.errorPrefix(e)),
-                    backgroundColor: Colors.red,
-                  ),
-                );
+                if (!context.mounted) return;
+                AppFeedback.error(context, l10n.errorPrefix(e));
               }
             },
             child: Text(l10n.disconnect),
@@ -192,7 +188,6 @@ class SecurityScreen extends StatelessWidget {
               if (!formKey.currentState!.validate()) return;
 
               final navigator = Navigator.of(context);
-              final scaffoldMessenger = ScaffoldMessenger.of(context);
               Navigator.of(dialogContext).pop();
 
               showDialog(
@@ -206,26 +201,17 @@ class SecurityScreen extends StatelessWidget {
                   .deleteAccount(passwordController.text);
 
               navigator.pop(); // close loading indicator
-              if (!navigator.mounted) return;
+              if (!context.mounted) return;
 
               if (result['success'] == true) {
-                scaffoldMessenger.showSnackBar(
-                  SnackBar(
-                    content: Text(result['message'] as String),
-                    backgroundColor: Colors.green,
-                  ),
-                );
+                AppFeedback.success(context, result['message'] as String);
+                if (!context.mounted) return;
                 navigator.pushAndRemoveUntil(
                   MaterialPageRoute(builder: (ctx) => const AuthScreen()),
                   (route) => false,
                 );
               } else {
-                scaffoldMessenger.showSnackBar(
-                  SnackBar(
-                    content: Text(result['message'] as String),
-                    backgroundColor: Colors.red,
-                  ),
-                );
+                AppFeedback.error(context, result['message'] as String);
               }
             },
             child: Text(

@@ -6,7 +6,7 @@ import 'package:nabour_app/voice/core/voice_orchestrator.dart';
 import 'package:nabour_app/widgets/voice/voice_fallback_card.dart';
 import 'package:nabour_app/utils/logger.dart';
 
-/// A panel of quick-action FABs for an active ride.
+/// FAB-uri rapide când există cursă pe hartă (pasager). Nu este un ecran „active ride” separat — în Nabour cursa e pe [MapScreen].
 ///
 /// Provides three floating-action buttons:
 ///   • Call driver  (also triggered by voice: "sună șoferul" / "call driver")

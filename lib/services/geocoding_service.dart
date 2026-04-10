@@ -72,8 +72,11 @@ double savedAddressMatchScoreNormalized(String queryNorm, SavedAddress addr) {
 
 String savedAddressDisplayLine(SavedAddress addr) {
   final t = addr.label.trim();
-  if (t.isEmpty) return addr.address;
-  return '$t · ${addr.address}';
+  final cat = addr.category == SavedAddressCategory.other
+      ? ''
+      : '${addr.category.labelRo} · ';
+  if (t.isEmpty) return '$cat${addr.address}'.trim();
+  return '$cat$t · ${addr.address}';
 }
 
 int _levenshteinForSavedSearch(String s, String t) {

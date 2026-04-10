@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:nabour_app/models/ride_model.dart';
 import 'package:nabour_app/services/firestore_service.dart';
@@ -37,6 +38,12 @@ class OfflineManager {
   bool _isSyncing = false;
   bool _mapTilesPrefetched = false;
   bool _prefetchScheduled = false;
+  /// După un prefetch reușit, persistăm true ca la următoarele porniri să nu reprogramăm
+  /// (flag-ul în memorie se pierdea → trafic Mapbox repetat la fiecare build în dev).
+  /// Incrementează sufixul dacă schimbi regiunile / stilurile prefetch.
+  static const String _prefsBucharestIlfovPrefetchDone =
+      'offline_prefetch_bucharest_ilfov_v1';
+
   /// Dacă e true, nu rulează prefetch Mapbox (style pack + tile regions). Ține false pentru
   /// cache pe disc aliniat cu [NabourMapStyles]; pe dispozitive foarte slabe poți compila cu true.
   static const bool emergencyPerformanceMode = false;
@@ -96,11 +103,37 @@ class OfflineManager {
       rethrow;
     }
 
+    await _loadPrefetchDoneFromPrefs();
+
     // Prefetch adaptiv (Wi‑Fi + Low Data Mode off) după o întârziere scurtă
     if (!emergencyPerformanceMode) {
       _schedulePrefetchIfEligible();
     } else {
       Logger.debug('Prefetch disabled (emergency performance mode)', tag: 'OFFLINE_MANAGER');
+    }
+  }
+
+  Future<void> _loadPrefetchDoneFromPrefs() async {
+    try {
+      final p = await SharedPreferences.getInstance();
+      if (p.getBool(_prefsBucharestIlfovPrefetchDone) == true) {
+        _mapTilesPrefetched = true;
+        Logger.debug(
+          'București+Ilfov prefetch marcat deja ca făcut (persistat) — nu reprogramăm',
+          tag: 'OFFLINE_MANAGER',
+        );
+      }
+    } catch (e) {
+      Logger.debug('Citire prefs prefetch: $e', tag: 'OFFLINE_MANAGER');
+    }
+  }
+
+  Future<void> _persistPrefetchDone() async {
+    try {
+      final p = await SharedPreferences.getInstance();
+      await p.setBool(_prefsBucharestIlfovPrefetchDone, true);
+    } catch (e) {
+      Logger.debug('Scriere prefs prefetch: $e', tag: 'OFFLINE_MANAGER');
     }
   }
 
@@ -246,6 +279,7 @@ class OfflineManager {
         Logger.error('Ilfov region estimate/load failed: $e', tag: 'ESTIMATE', error: e);
       }
 
+      await _persistPrefetchDone();
       _mapTilesPrefetched = true;
       Logger.info('Map tiles prefetch completed', tag: 'OFFLINE_MANAGER');
     } catch (e) {

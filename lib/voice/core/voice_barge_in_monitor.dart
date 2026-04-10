@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:path_provider/path_provider.dart';
 import 'package:record/record.dart';
 import 'package:nabour_app/utils/logger.dart';
+import 'package:nabour_app/services/app_audio_session.dart';
 
 /// In timpul TTS: daca microfonul detecteaza vorbire puternica, opreste redarea (barge-in).
 class VoiceBargeInMonitor {
@@ -14,10 +15,12 @@ class VoiceBargeInMonitor {
   bool _active = false;
   bool _armed = false;
 
-  static const double dbThreshold = -26.0;
-  static const int consecutiveLoudSamples = 3;
-  static const Duration sampleInterval = Duration(milliseconds: 90);
-  static const Duration armDelay = Duration(milliseconds: 550);
+  /// Sub pragul ăsta (dBFS) ignorăm — ecoul TTS pe unele telefoane ajunge ~−3…−6.
+  static const double dbThreshold = -2.8;
+  static const int consecutiveLoudSamples = 6;
+  static const Duration sampleInterval = Duration(milliseconds: 100);
+  /// Întârzie armarea ca primul impuls al difuzorului să nu oprească TTS-ul.
+  static const Duration armDelay = Duration(milliseconds: 1600);
 
   Future<void> start(void Function() onBargeIn) async {
     if (kIsWeb) return;
@@ -33,6 +36,7 @@ class VoiceBargeInMonitor {
       final path =
           '${dir.path}/nabour_barge_${DateTime.now().millisecondsSinceEpoch}.m4a';
 
+      await AppAudioSession.ensureConfiguredForVoiceCommunication();
       await _rec.start(
         const RecordConfig(encoder: AudioEncoder.aacLc),
         path: path,

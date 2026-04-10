@@ -18,6 +18,7 @@ class _EditAddressScreenState extends State<EditAddressScreen> {
   final _formKey = GlobalKey<FormState>();
   late TextEditingController _labelController;
   late TextEditingController _addressController;
+  late SavedAddressCategory _category;
   final _firestoreService = FirestoreService();
   bool _isLoading = false;
 
@@ -26,6 +27,7 @@ class _EditAddressScreenState extends State<EditAddressScreen> {
     super.initState();
     _labelController = TextEditingController(text: widget.address.label);
     _addressController = TextEditingController(text: widget.address.address);
+    _category = widget.address.category;
   }
 
   @override
@@ -62,6 +64,7 @@ class _EditAddressScreenState extends State<EditAddressScreen> {
           label: _labelController.text,
           address: _addressController.text,
           coordinates: coordinates,
+          category: _category,
         ),
       );
 
@@ -93,9 +96,7 @@ class _EditAddressScreenState extends State<EditAddressScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Verificăm dacă e adresă sistem (Acasă/Serviciu)
-    final isSystemAddress = widget.address.label.toLowerCase() == 'acasă' || 
-                          widget.address.label.toLowerCase() == 'serviciu';
+    final isSystemAddress = widget.address.isHomeCategory || widget.address.isWorkCategory;
 
     return Scaffold(
       appBar: AppBar(
@@ -119,6 +120,40 @@ class _EditAddressScreenState extends State<EditAddressScreen> {
                 ),
                 validator: (value) => (value == null || value.isEmpty) ? 'Eticheta este obligatorie.' : null,
               ),
+              const SizedBox(height: 12),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  'Categorie',
+                  style: TextStyle(
+                    fontWeight: FontWeight.w700,
+                    fontSize: 14,
+                    color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.85),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 8),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: SavedAddressCategory.values.map((c) {
+                  return ChoiceChip(
+                    label: Text(c.labelRo),
+                    selected: _category == c,
+                    onSelected: isSystemAddress
+                        ? null
+                        : (_) => setState(() => _category = c),
+                  );
+                }).toList(),
+              ),
+              if (isSystemAddress)
+                Padding(
+                  padding: const EdgeInsets.only(top: 8),
+                  child: Text(
+                    'Categoria Acasă/Serviciu este fixă pentru acest slot.',
+                    style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                  ),
+                ),
               const SizedBox(height: 16),
               // Top row: label + voice + map
               Row(

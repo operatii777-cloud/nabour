@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:nabour_app/features/activity_feed/activity_feed_dismiss_store.dart';
 import 'package:nabour_app/features/activity_feed/activity_feed_service.dart';
 import 'package:nabour_app/services/contacts_service.dart';
@@ -158,9 +159,16 @@ class _ActivityNotificationsScreenState
         return 'Vezi pe hartă';
       case 'moment':
         return 'Vezi momentul';
+      case 'neighborhood_request':
+        return 'Vezi pe hartă';
       default:
         return 'Deschide';
     }
+  }
+
+  String _absoluteDateTime(BuildContext context, DateTime dt) {
+    final loc = Localizations.localeOf(context);
+    return DateFormat('dd.MM.yyyy HH:mm', loc.toString()).format(dt);
   }
 
   @override
@@ -337,6 +345,17 @@ class _ActivityNotificationsScreenState
                         ),
                       ],
                     ),
+                    if (event.type == 'neighborhood_request') ...[
+                      const SizedBox(height: 2),
+                      Text(
+                        'Creată: ${_absoluteDateTime(context, event.ts)}',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey.shade600,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
                     const SizedBox(height: 4),
                     Text(
                       _isProximityHit(event.type)

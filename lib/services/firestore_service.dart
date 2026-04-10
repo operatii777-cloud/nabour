@@ -817,6 +817,21 @@ _pendingUpdates.addAll(updates.map((e) => e as Map<String, dynamic>));
     });
   }
 
+  /// Aceeași regulă ca stream-ul de mai sus — pentru sincron imediat după reset Mapbox (stil / manageri).
+  Future<List<NeighborhoodRequest>> fetchActiveNeighborhoodRequestsOnce() async {
+    final now = Timestamp.now();
+    final snapshot = await _db
+        .collection('neighborhood_requests')
+        .where('resolved', isEqualTo: false)
+        .where('expiresAt', isGreaterThan: now)
+        .get();
+    final clientNow = DateTime.now();
+    return snapshot.docs
+        .map((doc) => NeighborhoodRequest.fromMap(doc.id, doc.data()))
+        .where((r) => !r.resolved && r.expiresAt.isAfter(clientNow))
+        .toList();
+  }
+
   // OPTIMIZED DRIVER SEARCH WITH REDUCED COMPLEXITY
   Future<void> _startAutomaticDriverSearch(String rideId, Ride ride) async {
     Logger.info('Starting optimized driver search for ride $rideId', tag: 'FIRESTORE');
@@ -1913,9 +1928,11 @@ _pendingUpdates.addAll(updates.map((e) => e as Map<String, dynamic>));
     bool hasWork = false;
     
     for (var doc in snapshot.docs) {
-      final label = doc.data()['label']?.toString().toLowerCase() ?? '';
-      if (label == 'acasă') hasHome = true;
-      if (label == 'serviciu') hasWork = true;
+      final d = doc.data();
+      final label = d['label']?.toString().toLowerCase() ?? '';
+      final cat = d['category']?.toString();
+      if (cat == 'home' || label == 'acasă') hasHome = true;
+      if (cat == 'work' || label == 'serviciu') hasWork = true;
     }
     
     if (!hasHome) {
@@ -1923,6 +1940,7 @@ _pendingUpdates.addAll(updates.map((e) => e as Map<String, dynamic>));
         'label': 'Acasă',
         'address': '',
         'coordinates': const GeoPoint(44.4268, 26.1025),
+        'category': 'home',
       });
     }
     
@@ -1931,6 +1949,7 @@ _pendingUpdates.addAll(updates.map((e) => e as Map<String, dynamic>));
         'label': 'Serviciu',
         'address': '',
         'coordinates': const GeoPoint(44.4268, 26.1025),
+        'category': 'work',
       });
     }
   }
@@ -1979,28 +1998,47 @@ _pendingUpdates.addAll(updates.map((e) => e as Map<String, dynamic>));
 
   Future<void> updateDriverAvailability(bool isAvailable, {String? displayName, String? licensePlate, RideCategory? category}) async {
     if (_uid == null) return;
-    await _db.collection('drivers').doc(_uid).set({'isAvailable': isAvailable}, SetOptions(merge: true));
 
-    if (isAvailable && displayName != null && licensePlate != null && category != null) {
+    if (!isAvailable) {
+      await _db.collection('driver_locations').doc(_uid).delete();
+      await _db.collection('drivers').doc(_uid).set({
+        'isAvailable': false,
+        'isOnline': false,
+      }, SetOptions(merge: true));
+      await _db.collection('users').doc(_uid).set({
+        'driverSessionStartedAt': null,
+      }, SetOptions(merge: true));
+      return;
+    }
+
+    await _db.collection('drivers').doc(_uid).set({'isAvailable': true}, SetOptions(merge: true));
+
+    if (displayName != null && licensePlate != null && category != null) {
       final position = await _getCachedPosition();
       if (position != null) {
+        final geohash = _encodeGeohash(position.latitude, position.longitude);
+        // `_searchDriversInRadius` cere `isOnline == true`; fără asta, pasagerul nu vede
+        // șoferul până la primul `updateDriverLocation` (debounce până la ~60s).
         await _db.collection('driver_locations').doc(_uid).set({
           'position': GeoPoint(position.latitude, position.longitude),
           'displayName': displayName,
           'licensePlate': licensePlate,
           'category': category.name,
           'lastUpdate': Timestamp.now(),
-        });
+          'isOnline': true,
+          'geohash': geohash,
+        }, SetOptions(merge: true));
+        await _db.collection('drivers').doc(_uid).set({
+          'isOnline': true,
+          'currentLatitude': position.latitude,
+          'currentLongitude': position.longitude,
+          'lastLocationAt': FieldValue.serverTimestamp(),
+        }, SetOptions(merge: true));
+      } else {
+        await _db.collection('drivers').doc(_uid).set({'isOnline': false}, SetOptions(merge: true));
       }
-      // Feature: Driver hours limit — record session start when going online
       await _db.collection('users').doc(_uid).set({
         'driverSessionStartedAt': FieldValue.serverTimestamp(),
-      }, SetOptions(merge: true));
-    } else {
-      await _db.collection('driver_locations').doc(_uid).delete();
-      // Clear session start time when going offline
-      await _db.collection('users').doc(_uid).set({
-        'driverSessionStartedAt': null,
       }, SetOptions(merge: true));
     }
   }

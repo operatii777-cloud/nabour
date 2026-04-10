@@ -18,7 +18,7 @@ import 'package:nabour_app/utils/logger.dart';
 /// 
 /// Caracteristici:
 /// - Integrare perfectă cu serviciile existente FriendsRide
-/// - Gemini AI pentru procesarea comenzilor vocale
+/// - Asistent vocal Nabour (NLP local + LLM opțional) pentru comenzi
 /// - Flow complet pentru ride sharing end-to-end
 /// - State management sincronizat cu UI-ul
 class FriendsRideVoiceIntegration extends ChangeNotifier {
@@ -317,6 +317,12 @@ class FriendsRideVoiceIntegration extends ChangeNotifier {
       }
       try {
         final state = _currentContext.processingState;
+        // RideFlow pornește singur STT la confirmare șofer / mesaje critice — nu suprapune listenOnce.
+        final rs = _voiceController!.rideState;
+        if (rs == RideFlowState.awaitingDriverAcceptance ||
+            rs == RideFlowState.driverFound) {
+          return;
+        }
         // CORECTAT: Verifică doar starea idle, nu waiting (care poate fi folosită pentru sincronizare)
         if (state == VoiceProcessingState.idle) {
           // CORECTAT: Verifică dacă VoiceOrchestrator nu este deja în proces de ascultare sau vorbire
@@ -360,6 +366,11 @@ class FriendsRideVoiceIntegration extends ChangeNotifier {
   bool get isSpeaking => _isSpeaking;
   String? get voiceDestination => _voiceDestination;
   String? get voicePickup => _voicePickup;
+  /// Coordonate deja rezolvate în RideFlow (evită Nominatim dublu în map_screen).
+  double? get voiceDestinationLatitude => _voiceController?.voiceDestinationLatitude;
+  double? get voiceDestinationLongitude => _voiceController?.voiceDestinationLongitude;
+  double? get voicePickupLatitude => _voiceController?.voicePickupLatitude;
+  double? get voicePickupLongitude => _voiceController?.voicePickupLongitude;
   bool get hasNewVoiceDestination => _hasNewVoiceDestination;
   bool get hasNewVoicePickup => _hasNewVoicePickup;
 

@@ -3812,6 +3812,24 @@ class AppLocalizationsEn extends AppLocalizations {
   String get drawerMenuMysteryBoxActivity => 'Mystery box activity';
 
   @override
+  String get drawerMenuTokenTransfer => 'Token transfer';
+
+  @override
+  String get drawerGroupAccountActivity => 'Account, history & activity';
+
+  @override
+  String get drawerGroupMapAddresses => 'Map & addresses';
+
+  @override
+  String get drawerGroupCommunityFeed => 'Community & discovery';
+
+  @override
+  String get drawerGroupSocialApp => 'Visibility & app';
+
+  @override
+  String get drawerGroupHelpLegal => 'Help & legal info';
+
+  @override
   String get drawerMenuMyGarage => 'My garage';
 
   @override

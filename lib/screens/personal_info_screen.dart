@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:nabour_app/models/ride_model.dart';
 import 'package:nabour_app/services/firestore_service.dart';
 import 'package:image_picker/image_picker.dart';
@@ -31,6 +32,10 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
   RideCategory _selectedCategory = RideCategory.standard;
   bool _isLoading = false;
 
+  /// Nu seta [TextEditingController.text] în [build] — declanșează notifyListeners în timpul layout-ului.
+  bool _formHydrated = false;
+  bool _hydrateScheduled = false;
+
   @override
   void dispose() {
     _nameController.dispose();
@@ -43,6 +48,33 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
     _yearController.dispose();
     _ageController.dispose();
     super.dispose();
+  }
+
+  void _hydrateControllersFromSnapshot(DocumentSnapshot<Map<String, dynamic>> doc) {
+    if (!mounted || _formHydrated) return;
+    final userData = doc.data();
+    final user = FirebaseAuth.instance.currentUser;
+    final bool isDriver = userData?['role'] == 'driver';
+
+    _nameController.text = userData?['displayName'] ?? user?.displayName ?? '';
+    _emailController.text = user?.email ?? 'N/A';
+    _phoneController.text = userData?['phoneNumber'] ?? '';
+
+    if (isDriver) {
+      _plateController.text = userData?['licensePlate'] ?? '';
+      _makeController.text = userData?['carMake'] ?? '';
+      _modelController.text = userData?['carModel'] ?? '';
+      _colorController.text = userData?['carColor'] ?? '';
+      _yearController.text = userData?['carYear'] ?? '';
+      _ageController.text = userData?['age'] ?? '';
+      _selectedCategory = RideCategory.values.firstWhere(
+        (e) => e.name == (userData?['driverCategory'] ?? 'standard'),
+        orElse: () => RideCategory.standard,
+      );
+    }
+
+    _formHydrated = true;
+    setState(() {});
   }
 
   // NOU: Funcție pentru a alege și încărca imaginea
@@ -148,35 +180,22 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
       body: StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
         stream: _firestoreService.getUserProfileStream(),
         builder: (context, snapshot) {
-          if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());
-          
-          final user = FirebaseAuth.instance.currentUser;
-          final userData = snapshot.data?.data();
-          final bool isDriver = userData?['role'] == 'driver';
-          final photoURL = userData?['photoURL'] as String?; // NOU
+          if (!snapshot.hasData) {
+            return const Center(child: CircularProgressIndicator());
+          }
 
-          // Inițializăm controlerele o singură dată pentru a nu suprascrie textul în timpul editării
-          if (_nameController.text.isEmpty) {
-            _nameController.text = userData?['displayName'] ?? user?.displayName ?? '';
-          }
-          if (_emailController.text.isEmpty) {
-            _emailController.text = user?.email ?? 'N/A';
-          }
-          if (_phoneController.text.isEmpty) {
-            _phoneController.text = userData?['phoneNumber'] ?? '';
-          }
-          
-          if(isDriver) {
-            if(_plateController.text.isEmpty) _plateController.text = userData?['licensePlate'] ?? '';
-            if(_makeController.text.isEmpty) _makeController.text = userData?['carMake'] ?? '';
-            if(_modelController.text.isEmpty) _modelController.text = userData?['carModel'] ?? '';
-            if(_colorController.text.isEmpty) _colorController.text = userData?['carColor'] ?? '';
-            if(_yearController.text.isEmpty) _yearController.text = userData?['carYear'] ?? '';
-            if(_ageController.text.isEmpty) _ageController.text = userData?['age'] ?? '';
-            _selectedCategory = RideCategory.values.firstWhere(
-              (e) => e.name == (userData?['driverCategory'] ?? 'standard'),
-              orElse: () => RideCategory.standard,
-            );
+          final doc = snapshot.data!;
+          final userData = doc.data();
+          final bool isDriver = userData?['role'] == 'driver';
+          final photoURL = userData?['photoURL'] as String?;
+
+          if (!_formHydrated && !_hydrateScheduled) {
+            _hydrateScheduled = true;
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (!mounted) return;
+              _hydrateControllersFromSnapshot(doc);
+              _hydrateScheduled = false;
+            });
           }
 
           return SingleChildScrollView(
@@ -233,6 +252,54 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
                     controller: _emailController,
                     decoration: const InputDecoration(labelText: 'Email', border: OutlineInputBorder()),
                     enabled: false,
+                  ),
+                  const SizedBox(height: 20),
+                  // NOU: Afișare ID Nabour (UID) pentru transferuri
+                  InkWell(
+                    onTap: () {
+                      final uid = FirebaseAuth.instance.currentUser?.uid;
+                      if (uid != null) {
+                        Clipboard.setData(ClipboardData(text: uid));
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('ID copiat!')),
+                        );
+                      }
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Colors.grey.shade400),
+                        borderRadius: BorderRadius.circular(4),
+                        color: Colors.grey.shade100,
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.badge, size: 20, color: Colors.grey),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  'ID-ul tău Nabour (pentru transferuri)',
+                                  style: TextStyle(fontSize: 12, color: Colors.grey),
+                                ),
+                                Text(
+                                  FirebaseAuth.instance.currentUser?.uid ?? 'N/A',
+                                  style: const TextStyle(
+                                    fontSize: 14, 
+                                    fontWeight: FontWeight.bold,
+                                    fontFamily: 'monospace',
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ],
+                            ),
+                          ),
+                          const Icon(Icons.copy_rounded, size: 20, color: Colors.blue),
+                        ],
+                      ),
+                    ),
                   ),
                   const SizedBox(height: 20),
                    TextFormField(
@@ -325,7 +392,9 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
                         value: c, 
                         child: Text(c.name[0].toUpperCase() + c.name.substring(1))
                       )).toList(),
-                      onChanged: (v) => setState(() => _selectedCategory = v!),
+                      onChanged: (v) {
+                        if (v != null) setState(() => _selectedCategory = v);
+                      },
                     ),
                   ],
 

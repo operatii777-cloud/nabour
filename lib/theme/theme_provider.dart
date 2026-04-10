@@ -1,5 +1,7 @@
 ﻿// lib/theme/theme_provider.dart
 
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:nabour_app/utils/logger.dart';
@@ -36,6 +38,9 @@ class ThemeProvider extends ChangeNotifier {
   bool _isHighContrast = false;
   bool _isInitialized = false;
 
+  /// La schimbări rapide de temă, doar ultima scriere în SharedPreferences trebuie să conteze.
+  int _prefsWriteGeneration = 0;
+
   bool get isDarkMode => _isDarkMode;
   ThemeMode get currentTheme => _isDarkMode ? ThemeMode.dark : ThemeMode.light;
   bool get isHighContrast => _isHighContrast;
@@ -55,41 +60,35 @@ class ThemeProvider extends ChangeNotifier {
     }
   }
 
+  Future<void> _persistThemePreferences() async {
+    final gen = ++_prefsWriteGeneration;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      if (gen != _prefsWriteGeneration) return;
+      await prefs.setBool(_darkModeKey, _isDarkMode);
+      await prefs.setBool(_highContrastKey, _isHighContrast);
+    } catch (e) {
+      Logger.error('Error saving theme preferences: $e', error: e);
+    }
+  }
+
   /// Comută între tema dark și light și notifică ascultătorii.
   Future<void> toggleTheme() async {
     _isDarkMode = !_isDarkMode;
     notifyListeners();
-    
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setBool(_darkModeKey, _isDarkMode);
-    } catch (e) {
-      Logger.error('Error saving theme preference: $e', error: e);
-    }
+    unawaited(_persistThemePreferences());
   }
 
   /// Set theme mode explicitly
   Future<void> setThemeMode(ThemeMode mode) async {
     _isDarkMode = mode == ThemeMode.dark;
     notifyListeners();
-    
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setBool(_darkModeKey, _isDarkMode);
-    } catch (e) {
-      Logger.error('Error saving theme preference: $e', error: e);
-    }
+    unawaited(_persistThemePreferences());
   }
 
   Future<void> toggleHighContrast() async {
     _isHighContrast = !_isHighContrast;
     notifyListeners();
-    
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setBool(_highContrastKey, _isHighContrast);
-    } catch (e) {
-      Logger.error('Error saving high contrast preference: $e', error: e);
-    }
+    unawaited(_persistThemePreferences());
   }
 }

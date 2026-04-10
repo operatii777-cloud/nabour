@@ -7,15 +7,19 @@ import '../config/cerebras_config.dart';
 import '../config/grok_config.dart';
 import 'gemini_voice_engine.dart';
 
-/// Router multi-provider AI — alege automat cel mai ieftin provider disponibil.
+/// Router multi-provider AI — alege automat cel mai bun provider disponibil.
 ///
-/// Ordinea de prioritate (cost crescător):
-///   1. Cerebras  (~$0.10/M tokens  — cel mai ieftin, cel mai rapid)
-///   2. Gemini    (~$0.50/M tokens  — fallback principal)
-///   3. Grok      (~$2.00/M tokens  — fallback final, capabilități avansate)
+/// Ordinea de prioritate:
+///   1. Cerebras  (cel mai rapid, cost minim)
+///   2. Grok      (fallback secundar, procesare avansată)
+///   3. Gemini    (fallback final)
 ///
 /// Dacă un provider returnează eroare sau nu e configurat, se trece automat
 /// la următorul. Răspunsul e întotdeauna un [GeminiVoiceResponse] (format unificat).
+///
+/// **On-device întâi:** NLP local din [GeminiVoiceEngine] rulează înainte de deducerea
+/// tokenilor, astfel încât asistentul rămâne util offline / fără sold / fără rețea
+/// pentru comenzile recunoscute local.
 class AIProviderRouter {
   static final AIProviderRouter _instance = AIProviderRouter._internal();
   factory AIProviderRouter() => _instance;
@@ -31,38 +35,46 @@ Ești asistentul vocal Nabour. Analizează input-ul utilizatorului și returneaz
   "confidence": <0.0-1.0>,
   "needsClarification": <true|false>,
   "clarificationQuestion": "<întrebare dacă needsClarification=true, altfel null>",
-  "destination": "<adresa destinației dacă e menționată, altfel null>",
+  "destination": "<adresa destinației dacă e menținută, altfel null>",
   "pickup": "<adresa de preluare dacă e menționată, altfel null>",
   "rideType": "<standard|premium|shared|null>"
 }
 ''';
 
-  /// Încearcă providerii în ordine de cost și returnează primul răspuns valid.
-  /// Verifică soldul de tokeni înainte de orice apel AI.
+  /// Încearcă mai întâi NLP on-device, apoi (dacă e nevoie de LLM în cloud) deduce tokeni
+  /// și încearcă Cerebras → Grok → Gemini.
   Future<GeminiVoiceResponse> route(
     String userInput,
     VoiceContext context, {
     String languageCode = 'ro',
   }) async {
-    // ── Verificare și deducere tokeni ─────────────────────────────────────
+    final engine = GeminiVoiceEngine();
+
+    // 1) NLP local + asistent on-device (fără API). Funcționează offline.
+    final onDevice = await engine.processVoiceInput(
+      userInput,
+      context,
+      languageCode: languageCode,
+      skipRemoteLLM: true,
+    );
+    if (_isSatisfiedByOnDeviceAssistant(onDevice)) {
+      Logger.info('Răspuns on-device (fără tokeni cloud)', tag: _tag);
+      return onDevice;
+    }
+
+    // 2) LLM cloud: tokeni obligatorii
     final tokenResult = await TokenService().spend(TokenTransactionType.aiQuery);
     if (!tokenResult.success) {
-      Logger.warning('Deducere tokeni eșuată: ${tokenResult.errorMessage}', tag: _tag);
-      final isInsufficient = tokenResult.errorMessage?.contains('insuficient') ?? false;
-      
-      return GeminiVoiceResponse(
-        type: 'token_limit',
-        message: isInsufficient 
-            ? 'Ai epuizat tokenii. Accesează Profilul → Tokeni pentru a cumpăra mai mulți sau așteaptă resetul lunar.'
-            : 'Contul tău de tokeni nu a putut fi accesat. Te rugăm să închizi și să redeschizi aplicația.',
-        confidence: 1.0,
-        needsClarification: false,
+      Logger.warning(
+        'Deducere tokeni eșuată: ${tokenResult.errorMessage} — păstrăm ghidajul on-device',
+        tag: _tag,
       );
+      return onDevice;
     }
 
     final prompt = _buildPrompt(userInput, context, languageCode);
 
-    // 1️⃣ Cerebras — cel mai ieftin
+    // 1️⃣ Cerebras — Prima opțiune
     if (CerebrasConfig.isValid) {
       final result = await _callOpenAICompatible(
         name: 'Cerebras',
@@ -75,26 +87,9 @@ Ești asistentul vocal Nabour. Analizează input-ul utilizatorului și returneaz
         Logger.info('Răspuns de la Cerebras', tag: _tag);
         return result;
       }
-    } else {
-      Logger.debug('Cerebras neconfigurat, se sare', tag: _tag);
     }
 
-    // 2️⃣ Gemini — fallback principal (gestionat de GeminiVoiceEngine)
-    try {
-      Logger.debug('Încerc Gemini...', tag: _tag);
-      final geminiEngine = GeminiVoiceEngine();
-      final geminiResp = await geminiEngine.processVoiceInput(
-        userInput,
-        context,
-        languageCode: languageCode,
-      );
-      Logger.info('Răspuns de la Gemini', tag: _tag);
-      return geminiResp;
-    } catch (e) {
-      Logger.warning('Gemini a eșuat: $e', tag: _tag);
-    }
-
-    // 3️⃣ Grok — fallback final
+    // 2️⃣ Grok (Groq) — Fallback secundar
     if (GrokConfig.isValid) {
       final result = await _callOpenAICompatible(
         name: 'Grok',
@@ -107,14 +102,34 @@ Ești asistentul vocal Nabour. Analizează input-ul utilizatorului și returneaz
         Logger.info('Răspuns de la Grok', tag: _tag);
         return result;
       }
-    } else {
-      Logger.debug('Grok neconfigurat, se sare', tag: _tag);
+    }
+
+    // 3️⃣ Gemini (API) — Fallback final (include rețea; NLP local deja încercat)
+    try {
+      Logger.debug('Încerc Gemini (fallback final)...', tag: _tag);
+      final geminiResp = await engine.processVoiceInput(
+        userInput,
+        context,
+        languageCode: languageCode,
+        skipRemoteLLM: false,
+      );
+      Logger.info('Răspuns de la Gemini', tag: _tag);
+      return geminiResp;
+    } catch (e) {
+      Logger.warning('Gemini a eșuat: $e', tag: _tag);
     }
 
     // Toți providerii au eșuat
-    Logger.error('Toți providerii AI au eșuat, răspuns fallback', tag: _tag);
-    return _fallbackResponse(userInput);
+    Logger.error('Toți providerii AI au eșuat', tag: _tag);
+    return onDevice;
   }
+
+  /// Dacă NLP-ul local a rezolvat clar, nu mai cheltuim tokeni pe cloud.
+  /// `offline_guidance` = doar mesaj de ajutor când NLP strict nu a clasificat — încercăm LLM dacă avem tokeni.
+  bool _isSatisfiedByOnDeviceAssistant(GeminiVoiceResponse r) {
+    return r.type != 'fallback' && r.type != 'offline_guidance';
+  }
+
 
   /// Apelează orice API OpenAI-compatibil și parsează răspunsul.
   Future<GeminiVoiceResponse?> _callOpenAICompatible({
@@ -187,14 +202,5 @@ Ești asistentul vocal Nabour. Analizează input-ul utilizatorului și returneaz
     }
     buffer.writeln('Input utilizator: $input');
     return buffer.toString();
-  }
-
-  GeminiVoiceResponse _fallbackResponse(String input) {
-    return GeminiVoiceResponse(
-      type: 'unknown',
-      message: 'Momentan nu pot procesa cererea. Încearcă din nou sau folosește butoanele.',
-      confidence: 0.0,
-      needsClarification: false,
-    );
   }
 }

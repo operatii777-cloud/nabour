@@ -7,6 +7,8 @@ import 'package:nabour_app/l10n/app_localizations.dart';
 import 'package:nabour_app/models/chat_message_model.dart';
 import 'package:nabour_app/services/firestore_service.dart';
 import 'package:nabour_app/services/translation_service.dart';
+import 'package:nabour_app/utils/logger.dart';
+import 'package:nabour_app/utils/firestore_error_ui.dart';
 import 'package:nabour_app/widgets/chat/whatsapp_message_bubble.dart';
 
 class DraggableChatWindow extends StatefulWidget {
@@ -293,6 +295,17 @@ class _DraggableChatWindowState extends State<DraggableChatWindow> {
           child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
             stream: FirestoreService().getChatMessages(widget.rideId),
             builder: (context, snapshot) {
+              if (snapshot.hasError) {
+                Logger.error(
+                  'DraggableChatWindow messages stream',
+                  error: snapshot.error,
+                  tag: 'DraggableChat',
+                );
+                return FirestoreStreamErrorCenter(
+                  error: snapshot.error,
+                  fallbackMessage: 'Nu s-au putut încărca mesajele cursei.',
+                );
+              }
               if (!snapshot.hasData) {
                 return const Center(child: CircularProgressIndicator());
               }

@@ -2,6 +2,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:nabour_app/l10n/app_localizations.dart';
+import 'package:nabour_app/core/ui/app_feedback.dart';
 
 class PrivacySettingsScreen extends StatefulWidget {
   const PrivacySettingsScreen({super.key});
@@ -56,12 +57,7 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
     } catch (e) {
       if (mounted) {
         final l10n = AppLocalizations.of(context)!;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(l10n.privacyLoadError(e)),
-            backgroundColor: Colors.red,
-          ),
-        );
+        AppFeedback.error(context, l10n.privacyLoadError(e));
       }
     } finally {
       if (mounted) setState(() => _isLoading = false);
@@ -87,22 +83,12 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
 
       if (mounted) {
         final l10n = AppLocalizations.of(context)!;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(l10n.privacySavedSuccess),
-            backgroundColor: Colors.green,
-          ),
-        );
+        AppFeedback.success(context, l10n.privacySavedSuccess);
       }
     } catch (e) {
       if (mounted) {
         final l10n = AppLocalizations.of(context)!;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(l10n.privacySaveError(e)),
-            backgroundColor: Colors.red,
-          ),
-        );
+        AppFeedback.error(context, l10n.privacySaveError(e));
       }
     } finally {
       if (mounted) setState(() => _isSaving = false);

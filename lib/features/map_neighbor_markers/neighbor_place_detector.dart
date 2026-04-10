@@ -18,7 +18,7 @@ class NeighborPlaceDetector {
     double bestDist = radiusM + 1;
 
     for (final a in addresses) {
-      final kind = _labelToKind(a.label);
+      final kind = _categoryToKind(a) ?? _labelToKind(a.label);
       if (kind == null) continue;
       final plat = a.coordinates.latitude;
       final plng = a.coordinates.longitude;
@@ -30,6 +30,20 @@ class NeighborPlaceDetector {
       }
     }
     return bestKind;
+  }
+
+  static String? _categoryToKind(SavedAddress a) {
+    switch (a.category) {
+      case SavedAddressCategory.home:
+        return 'home';
+      case SavedAddressCategory.work:
+        return 'work';
+      case SavedAddressCategory.school:
+        return 'school';
+      case SavedAddressCategory.gym:
+      case SavedAddressCategory.other:
+        return null;
+    }
   }
 
   static String? _labelToKind(String raw) {

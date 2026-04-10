@@ -9,14 +9,9 @@ import 'package:nabour_app/utils/logger.dart';
 import 'voice_barge_in_monitor.dart';
 import 'voice_turn_taking.dart';
 
-/// 🎤 Voice Orchestrator - Funcționează EXACT ca Gemini Voice
-/// 
-/// Caracteristici:
-/// - STT perfect (Speech-to-Text)
-/// - TTS natural (Text-to-Speech)
-/// - Integrare perfectă cu Gemini AI
-/// - Flow-ul conversației natural
-/// - 🚀 SINGLETON: O singură instanță pentru performanță optimă
+/// Orchestrare vocală Nabour: STT, TTS, sincronizare, barge-in, moduri de ascultare.
+///
+/// O singură instanță (singleton) partajată în aplicație.
 class VoiceOrchestrator {
   // 🚀 SINGLETON PATTERN - evită inițializări multiple
   static final VoiceOrchestrator _instance = VoiceOrchestrator._internal();
@@ -342,7 +337,7 @@ class VoiceOrchestrator {
     }
   }
   
-  /// 🗣️ Vorbește textul EXACT ca Gemini Voice
+  /// Sintetizează mesajul cu emoție opțională; activează barge-in pe durata redării.
   Future<void> speak(String text, {VoiceEmotion emotion = VoiceEmotion.confident}) async {
     if (!_isInitialized) {
       Logger.warning('Not initialized, initializing now...', tag: 'VOICE_ORCHESTRATOR');
