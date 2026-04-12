@@ -1,3 +1,6 @@
+import 'dart:async';
+
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -105,128 +108,10 @@ class AppDrawer extends StatelessWidget {
       child: SingleChildScrollView(
         child: Column(
           children: [
-            StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
-              stream: firestoreService.getUserProfileStream(),
-              builder: (context, snapshot) {
-                String displayName = l10n.drawerDefaultUserName;
-                final String email = FirebaseAuth.instance.currentUser?.email ?? '';
-                String phoneNumber = '';
-                ImageProvider? profileImage;
-
-                if (snapshot.connectionState == ConnectionState.active && snapshot.hasData) {
-                  final data = snapshot.data?.data();
-                  if (data != null) {
-                    displayName = data['displayName'] ?? displayName;
-                    phoneNumber = data['phoneNumber'] ?? '';
-                    final photoURL = data['photoURL'] as String?;
-                    if (photoURL != null && photoURL.isNotEmpty) {
-                      profileImage = NetworkImage(photoURL);
-                    }
-                  }
-                }
-
-                return Container(
-                  height: 140, // Înălțime redusă pentru a evita overflow-ul
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  decoration: const BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [Color(0xFF7C3AED), Color(0xFF9F5FF1)],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                  ),
-                  child: Row(
-                    children: [
-                      // Avatar
-                      CircleAvatar(
-                        radius: 25, // Redus și mai mult
-                        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-                        backgroundImage: profileImage,
-                        child: profileImage == null
-                            ? Text(
-                                displayName.isNotEmpty ? displayName[0].toUpperCase() : 'U',
-                                style: TextStyle(fontSize: 24.0, color: Theme.of(context).primaryColor),
-                              )
-                            : null,
-                      ),
-                      const SizedBox(width: 16),
-                      // Informații utilizator
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              displayName,
-                              style: AppTextStyles.menuHeader.copyWith(
-                                color: Colors.white,
-                              ),
-                              overflow: TextOverflow.ellipsis,
-                              maxLines: 1,
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              email,
-                              style: AppTextStyles.menuSubtitle.copyWith(
-                                color: Colors.white70,
-                              ),
-                              overflow: TextOverflow.ellipsis,
-                              maxLines: 1,
-                            ),
-                            if (phoneNumber.isNotEmpty) ...[
-                              const SizedBox(height: 2),
-                              Text(
-                                phoneNumber,
-                                style: AppTextStyles.menuSubtitle.copyWith(
-                                  color: Colors.white70,
-                                  fontSize: 12,
-                                ),
-                                overflow: TextOverflow.ellipsis,
-                                maxLines: 1,
-                              ),
-                            ],
-                            const SizedBox(height: 4),
-                            // NOU: Afișare ID (UID) pentru transferuri
-                            GestureDetector(
-                              onTap: () {
-                                final uid = FirebaseAuth.instance.currentUser?.uid;
-                                if (uid != null) {
-                                  Clipboard.setData(ClipboardData(text: uid));
-                                  AppFeedback.success(context, 'ID copiat în clipboard.');
-                                }
-                              },
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                decoration: BoxDecoration(
-                                  color: Colors.black.withValues(alpha: 0.2),
-                                  borderRadius: BorderRadius.circular(4),
-                                ),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    const Icon(Icons.badge, size: 10, color: Colors.white70),
-                                    const SizedBox(width: 4),
-                                    Text(
-                                      'ID: ${FirebaseAuth.instance.currentUser?.uid.substring(0, 8) ?? '...'}(...)',
-                                      style: const TextStyle(
-                                        fontSize: 10,
-                                        color: Colors.white,
-                                        fontFamily: 'monospace',
-                                      ),
-                                    ),
-                                    const SizedBox(width: 4),
-                                    const Icon(Icons.copy, size: 10, color: Colors.white70),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                );
-              },
+            _DrawerProfileHeader(
+              key: ValueKey('drawer_profile_${FirebaseAuth.instance.currentUser?.uid ?? ''}'),
+              firestoreService: firestoreService,
+              defaultUserName: l10n.drawerDefaultUserName,
             ),
 
             // ── Sold tokeni ──────────────────────────────────────────────
@@ -234,7 +119,7 @@ class AppDrawer extends StatelessWidget {
 
             // ── Informații Trial/Abonament (future memorat; key=uid evită cache greșit la schimb cont) ──
             _TrialBannerWidget(
-              key: ValueKey(FirebaseAuth.instance.currentUser?.uid ?? ''),
+              key: ValueKey('drawer_trial_${FirebaseAuth.instance.currentUser?.uid ?? ''}'),
             ),
 
             // ── Switch Șofer / Pasager ────────────────────────────────
@@ -1079,6 +964,241 @@ class _DrawerBusinessProfileSlotState extends State<_DrawerBusinessProfileSlot> 
           onTap: () => widget.navigateTo(context, const BusinessIntroScreen()),
         );
       },
+    );
+  }
+}
+
+/// Antet drawer cu poză și date cont: fără reconstruiri la fiecare emisie Firestore
+/// și fără reîncărcare repetată a imaginii de profil (cauză frecventă de flickering).
+class _DrawerProfileHeader extends StatefulWidget {
+  const _DrawerProfileHeader({
+    super.key,
+    required this.firestoreService,
+    required this.defaultUserName,
+  });
+
+  final FirestoreService firestoreService;
+  final String defaultUserName;
+
+  @override
+  State<_DrawerProfileHeader> createState() => _DrawerProfileHeaderState();
+}
+
+class _DrawerProfileHeaderState extends State<_DrawerProfileHeader> {
+  late String _displayName;
+  late String _email;
+  String _phone = '';
+  String? _photoUrl;
+  StreamSubscription<DocumentSnapshot<Map<String, dynamic>>>? _sub;
+
+  @override
+  void initState() {
+    super.initState();
+    final user = FirebaseAuth.instance.currentUser;
+    _email = user?.email ?? '';
+    _displayName = widget.defaultUserName;
+    if (user != null) {
+      final dn = user.displayName?.trim();
+      if (dn != null && dn.isNotEmpty) {
+        _displayName = dn;
+      }
+      final p = user.photoURL?.trim();
+      if (p != null && p.isNotEmpty) {
+        _photoUrl = p;
+      }
+    }
+
+    final stream = widget.firestoreService.getUserProfileStream();
+    _sub = stream.listen(_onProfileSnapshot, onError: (_) {});
+  }
+
+  void _onProfileSnapshot(DocumentSnapshot<Map<String, dynamic>> snap) {
+    if (!mounted) return;
+    final data = snap.data();
+    if (data == null) return;
+
+    final rawName = data['displayName'];
+    final displayName = (rawName != null && rawName.toString().trim().isNotEmpty)
+        ? rawName.toString().trim()
+        : widget.defaultUserName;
+
+    final rawPhone = data['phoneNumber'];
+    final phone = rawPhone == null ? '' : rawPhone.toString().trim();
+
+    String? photoUrl;
+    final rawPhoto = data['photoURL'];
+    if (rawPhoto is String && rawPhoto.trim().isNotEmpty) {
+      photoUrl = rawPhoto.trim();
+    } else {
+      final authUrl = FirebaseAuth.instance.currentUser?.photoURL?.trim();
+      if (authUrl != null && authUrl.isNotEmpty) {
+        photoUrl = authUrl;
+      }
+    }
+
+    if (displayName == _displayName &&
+        phone == _phone &&
+        photoUrl == _photoUrl) {
+      return;
+    }
+    setState(() {
+      _displayName = displayName;
+      _phone = phone;
+      _photoUrl = photoUrl;
+    });
+  }
+
+  @override
+  void dispose() {
+    _sub?.cancel();
+    super.dispose();
+  }
+
+  String get _initialLetter {
+    if (_displayName.isEmpty) return 'U';
+    return _displayName.characters.first.toUpperCase();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+
+    return RepaintBoundary(
+      child: Container(
+        height: 140,
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Color(0xFF7C3AED), Color(0xFF9F5FF1)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+        ),
+        child: Row(
+          children: [
+            CircleAvatar(
+              radius: 25,
+              backgroundColor: theme.scaffoldBackgroundColor,
+              child: _photoUrl != null && _photoUrl!.isNotEmpty
+                  ? ClipOval(
+                      child: CachedNetworkImage(
+                        imageUrl: _photoUrl!,
+                        width: 50,
+                        height: 50,
+                        fit: BoxFit.cover,
+                        fadeInDuration: Duration.zero,
+                        fadeOutDuration: Duration.zero,
+                        memCacheWidth: (50 * MediaQuery.devicePixelRatioOf(context))
+                            .round(),
+                        memCacheHeight: (50 * MediaQuery.devicePixelRatioOf(context))
+                            .round(),
+                        placeholder: (_, __) => ColoredBox(
+                          color: theme.scaffoldBackgroundColor,
+                          child: Center(
+                            child: Text(
+                              _initialLetter,
+                              style: TextStyle(
+                                fontSize: 24,
+                                color: theme.primaryColor,
+                              ),
+                            ),
+                          ),
+                        ),
+                        errorWidget: (_, __, ___) => Text(
+                          _initialLetter,
+                          style: TextStyle(
+                            fontSize: 24,
+                            color: theme.primaryColor,
+                          ),
+                        ),
+                      ),
+                    )
+                  : Text(
+                      _initialLetter,
+                      style: TextStyle(
+                        fontSize: 24,
+                        color: theme.primaryColor,
+                      ),
+                    ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    _displayName,
+                    style: AppTextStyles.menuHeader.copyWith(
+                      color: Colors.white,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    _email,
+                    style: AppTextStyles.menuSubtitle.copyWith(
+                      color: Colors.white70,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
+                  ),
+                  if (_phone.isNotEmpty) ...[
+                    const SizedBox(height: 2),
+                    Text(
+                      _phone,
+                      style: AppTextStyles.menuSubtitle.copyWith(
+                        color: Colors.white70,
+                        fontSize: 12,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
+                    ),
+                  ],
+                  const SizedBox(height: 4),
+                  GestureDetector(
+                    onTap: () {
+                      if (uid != null) {
+                        Clipboard.setData(ClipboardData(text: uid));
+                        AppFeedback.success(context, 'ID copiat în clipboard.');
+                      }
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 6,
+                        vertical: 2,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(Icons.badge, size: 10, color: Colors.white70),
+                          const SizedBox(width: 4),
+                          Text(
+                            'ID: ${uid != null && uid.length >= 8 ? uid.substring(0, 8) : '...'}(...)',
+                            style: const TextStyle(
+                              fontSize: 10,
+                              color: Colors.white,
+                              fontFamily: 'monospace',
+                            ),
+                          ),
+                          const SizedBox(width: 4),
+                          const Icon(Icons.copy, size: 10, color: Colors.white70),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

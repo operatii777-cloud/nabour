@@ -111,6 +111,7 @@ import 'package:flutter_tts/flutter_tts.dart';
 import 'package:geocoding/geocoding.dart' as geocoding;
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:nabour_app/features/mystery_box/community_mystery_box_map_manager.dart';
+import 'package:nabour_app/features/mystery_box/community_mystery_map_refresh.dart';
 import 'package:nabour_app/features/mystery_box/community_mystery_box_service.dart'
     show CommunityMysteryBoxService;
 import 'package:nabour_app/features/mystery_box/mystery_box_map_manager.dart';
@@ -542,6 +543,12 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
   /// Galaxy Garage: căi asset per slot — ambele active pe tot parcursul sesiunii (ex. ROBO pasager + OZN șofer).
   String? _garageAssetPathForPassengerSlot;
   String? _garageAssetPathForDriverSlot;
+  
+  // 3D Model Support
+
+  bool _isUsing3DUserModel = false;
+  bool _isUserModelInitialized = false;
+
   /// Semnătură id-uri slot garaj din ultimul snapshot `users` — pentru a reapela [_loadCustomCarAvatar] doar la schimbare reală.
   String? _profileGarageSlotIdsSig;
 
@@ -1051,6 +1058,17 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
     unawaited(_centerOnLocationOnMapReady());
   }
 
+  void _onCommunityMysteryMapRefreshRequested() {
+    if (!mounted) return;
+    final p = _currentPositionObject;
+    if (p == null) return;
+    unawaited(_communityMysteryManager?.updateBoxes(
+      p.latitude,
+      p.longitude,
+      force: true,
+    ));
+  }
+
   @override
   void initState() {
     super.initState();
@@ -1167,6 +1185,9 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
       if (!mounted) return;
       _startQuickActionBadgeListeners();
     });
+
+    CommunityMysteryMapRefresh.instance
+        .addListener(_onCommunityMysteryMapRefreshRequested);
   }
 
   void _runDeferredStartupAfterFirstFrame() {
@@ -1635,6 +1656,70 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
       _mapShowsDriverTransportIdentity
           ? _garageAssetPathForDriverSlot
           : _garageAssetPathForPassengerSlot;
+
+  CarAvatar? _getCurrentAvatarObject() {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) return null;
+    final avatarId = _currentRole == UserRole.driver
+        ? (_neighborCarAvatarDriverCache[uid] ?? 'default_car')
+        : (_neighborCarAvatarPassengerCache[uid] ?? 'default_car');
+    return CarAvatarService().getAvatarById(avatarId);
+  }
+
+  Future<void> _enable3DUserModel(String modelPath) async {
+    if (_mapboxMap == null || !mounted) return;
+    try {
+      final String uri = modelPath.startsWith('http') ? modelPath : 'asset://$modelPath';
+      
+      if (!_isUserModelInitialized) {
+        // În Mapbox v11 (mapbox_maps_flutter 2.x), adăugăm modelul în stil
+        // folosind addStyleModel.
+        await _mapboxMap!.style.addStyleModel('user-3d-model', uri);
+        _isUserModelInitialized = true;
+      }
+
+      if (!_isUsing3DUserModel) {
+        // Trecem la LocationComponent cu model 3D
+        await _mapboxMap!.location.updateSettings(
+          LocationComponentSettings(
+            enabled: true,
+            pulsingEnabled: false,
+            locationPuck: LocationPuck(
+              locationPuck3D: LocationPuck3D(
+                modelUri: 'user-3d-model',
+                modelScale: [28.0, 28.0, 28.0], // Ușoară mărire pentru vizibilitate
+                modelRotation: [0.0, 0.0, 0.0],
+              ),
+            ),
+          ),
+        );
+        
+        // Înclinăm camera pentru a vedea modelul 3D mai bine
+        await _mapboxMap?.setCamera(CameraOptions(pitch: 45.0));
+        
+        setState(() => _isUsing3DUserModel = true);
+        Logger.info('3D model enabled: $uri', tag: 'MAP_3D');
+      }
+    } catch (e) {
+      Logger.error('Error enabling 3D model: $e', tag: 'MAP_3D');
+    }
+  }
+
+  Future<void> _disable3DUserModel() async {
+    if (!_isUsing3DUserModel || _mapboxMap == null) return;
+    try {
+      // Resetăm flag-ul înainte de a apela _updateLocationPuck, altfel acesta ar putea returna anticipat.
+      if (mounted) {
+        setState(() {
+          _isUsing3DUserModel = false;
+        });
+      }
+      await _updateLocationPuck();
+      Logger.info('3D model disabled', tag: 'MAP_3D');
+    } catch (e) {
+      Logger.debug('Error disabling 3D model: $e');
+    }
+  }
 
   /// Pasager (sau cont fără profil șofer valid) fără skin de pasager deblocat → fără bitmap transport; Location Puck.
   bool get _usePassengerMapPuckOnly =>
@@ -2984,6 +3069,8 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
     
     Logger.debug('MapScreen dispose - cleaning up all resources');
 
+    CommunityMysteryMapRefresh.instance
+        .removeListener(_onCommunityMysteryMapRefreshRequested);
     widget.warmupOverlayVisible?.removeListener(_onWarmupOverlayChanged);
     PassengerRideServiceBus.pending.removeListener(_onPassengerRideBus);
     _passengerRideSessionSub?.cancel();
@@ -3483,6 +3570,8 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
 
   Future<void> _onMapCreated(MapboxMap mapboxMap) async {
     _mapboxMap = mapboxMap;
+    _isUserModelInitialized = false;
+    _isUsing3DUserModel = false;
     // Resetează managerii lazy înainte de orice await. Altfel [onStyleLoaded] poate rula
     // în timpul await-urilor de mai jos, creează markerul, iar codul vechi punea managerul
     // la null fără deleteAll nativ → pe unele dispozitive marker „creat OK” dar invizibil;
@@ -3650,6 +3739,8 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
   /// Aplică estetica "Premium Neon" / "Clean Tech" prin Mapbox Runtime Styling la fiecare încărcare de stil.
   Future<void> _onStyleLoaded(StyleLoadedEventData event) async {
     if (_mapboxMap == null) return;
+    _isUserModelInitialized = false;
+    _isUsing3DUserModel = false;
     Logger.info("Map style loaded. Applying Aesthetic Overlays dynamically...");
 
     try {
@@ -4489,6 +4580,32 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
       return;
     }
 
+    // ── 3D Model Support ──
+    final currentAvatar = _getCurrentAvatarObject();
+    final bool canShow3D = currentAvatar != null && currentAvatar.is3D && _mapZoomLevel >= 17.5;
+
+    if (canShow3D && currentAvatar.modelPath != null) {
+      // 1. Ștergem markerii 2D existenți (pentru a evita suprapunerea)
+      if (_userPointAnnotation != null || _androidUserMarkerOverlayImageBytes != null) {
+        if (_useAndroidFlutterUserMarkerOverlay) {
+          if (mounted) setState(_clearAndroidUserMarkerOverlayFields);
+        } else {
+          try { await _userPointAnnotationManager?.deleteAll(); } catch (_) {}
+          _userPointAnnotation = null;
+        }
+        _userMarkerVisualCacheKey = null;
+      }
+      
+      // 2. Activăm modelul 3D via LocationComponent (care se ocupă de interpolare)
+      await _enable3DUserModel(currentAvatar.modelPath!);
+      
+      // Nu continuăm cu randarea PointAnnotation (2D)
+      return;
+    } else {
+      // Revenim la comportamentul standard 2D
+      await _disable3DUserModel();
+    }
+
     // Pasageri / conturi fără profil șofer: doar Location Puck, fără berlină sau slot șofer.
     if (_usePassengerMapPuckOnly) {
       try {
@@ -4872,7 +4989,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
   /// Updates the Mapbox LocationPuck behavior.
   /// Puck activ când nu putem desena markerul personalizat în siguranță sau nu avem deloc poziție.
   Future<void> _updateLocationPuck() async {
-    if (_mapboxMap == null) return;
+    if (_mapboxMap == null || _isUsing3DUserModel) return;
     try {
       final pos = _positionForUserMapMarker();
       final canDrawCustom =
@@ -11466,10 +11583,22 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
     final lat = data.cameraState.center.coordinates.lat.toDouble();
     final zoom = data.cameraState.zoom;
     final w = MediaQuery.sizeOf(context).width;
+
+    // Actualizare text scară (metri vizibili pe sol)
     final next = _formatVisibleMapWidthLabel(lat, zoom, w);
     if (next != _scaleBarText) {
       setState(() => _scaleBarText = next);
     }
+
+    // Prag 3D: dacă trecem peste 17.5 sau sub 17.5, forțăm un marker update 
+    // ca să comutăm între model 3D și sprite 2D.
+    final bool wasAbove = _mapZoomLevel >= 17.5;
+    final bool isAbove = zoom >= 17.5;
+    if (wasAbove != isAbove) {
+      _mapZoomLevel = zoom;
+      unawaited(_updateUserMarker(centerCamera: false));
+    }
+
     _auraProjectDebounce?.cancel();
     _auraProjectDebounce = Timer(const Duration(milliseconds: 56), () {
       if (mounted) {
@@ -12705,9 +12834,13 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
       }
       return;
     }
+    await Future<void>.delayed(Duration.zero);
+    if (!mounted) return;
     final msgCtrl = TextEditingController();
     final ok = await showDialog<bool>(
       context: context,
+      useRootNavigator: true,
+      barrierDismissible: true,
       builder: (ctx) => AlertDialog(
         title: const Text('Mystery Box comunitar'),
         content: SingleChildScrollView(
@@ -14530,6 +14663,34 @@ class _MapUniversalSearchPlaceRow {
 }
 
 class _MapUniversalSearchOverlayState extends State<MapUniversalSearchOverlay> {
+  /// Panoul este sticlă întunecată; forțăm o temă dark locală ca TextField/ListTile
+  /// să nu moștenească [InputDecorationTheme] deschis din tema aplicației (light).
+  ThemeData _panelTheme(BuildContext context) {
+    final base = Theme.of(context);
+    final scheme = ColorScheme.fromSeed(
+      seedColor: base.colorScheme.primary,
+      brightness: Brightness.dark,
+    );
+    return base.copyWith(
+      brightness: Brightness.dark,
+      colorScheme: scheme,
+      dividerTheme: DividerThemeData(
+        color: Colors.white.withValues(alpha: 0.12),
+        space: 1,
+      ),
+      inputDecorationTheme: base.inputDecorationTheme.copyWith(
+        filled: true,
+        fillColor: Colors.white.withValues(alpha: 0.10),
+        border: InputBorder.none,
+        hintStyle: TextStyle(
+          color: scheme.onSurface.withValues(alpha: 0.50),
+          fontWeight: FontWeight.w500,
+          fontSize: 16,
+        ),
+      ),
+    );
+  }
+
   final TextEditingController _controller = TextEditingController();
   final FocusNode _focus = FocusNode();
   Timer? _debounce;
@@ -14883,7 +15044,9 @@ class _MapUniversalSearchOverlayState extends State<MapUniversalSearchOverlay> {
                         ),
                       ],
                     ),
-                    child: Column(
+                    child: Theme(
+                      data: _panelTheme(context),
+                      child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
                         Padding(
@@ -14891,20 +15054,27 @@ class _MapUniversalSearchOverlayState extends State<MapUniversalSearchOverlay> {
                           child: TextField(
                             controller: _controller,
                             focusNode: _focus,
-                            style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+                            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  color: Theme.of(context).colorScheme.onSurface,
+                                ),
+                            cursorColor: Theme.of(context).colorScheme.primary,
                             textInputAction: TextInputAction.search,
                             decoration: InputDecoration(
                               hintText: 'Caută prieteni și locuri...',
                               border: InputBorder.none,
                               isDense: true,
-                              hintStyle: TextStyle(
-                                color: Colors.white.withValues(alpha: 0.4),
-                                fontWeight: FontWeight.w500,
-                              ),
+                              hintStyle: Theme.of(context)
+                                  .inputDecorationTheme
+                                  .hintStyle,
                               suffixIcon: q.isNotEmpty
                                 ? IconButton(
-                                    icon: const Icon(Icons.close_rounded,
-                                        color: Colors.white70),
+                                    icon: Icon(Icons.close_rounded,
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .onSurface
+                                            .withValues(alpha: 0.65)),
                                     onPressed: () {
                                       _controller.clear();
                                       setState(() {
@@ -14914,8 +15084,13 @@ class _MapUniversalSearchOverlayState extends State<MapUniversalSearchOverlay> {
                                       _focus.requestFocus();
                                     },
                                   )
-                                : const Icon(Icons.search_rounded,
-                                    color: Colors.white38),
+                                : Icon(
+                                    Icons.search_rounded,
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .onSurface
+                                        .withValues(alpha: 0.38),
+                                  ),
                             ),
                             onChanged: (v) {
                               setState(() {});
@@ -14923,7 +15098,7 @@ class _MapUniversalSearchOverlayState extends State<MapUniversalSearchOverlay> {
                             },
                           ),
                     ),
-                    Divider(height: 1, color: Colors.grey.shade200),
+                    Divider(height: 1, color: Theme.of(context).dividerTheme.color),
                     Expanded(
                       child: ListView(
                         padding: const EdgeInsets.only(bottom: 12),
@@ -14937,7 +15112,9 @@ class _MapUniversalSearchOverlayState extends State<MapUniversalSearchOverlay> {
                                 style: TextStyle(
                                   fontSize: 12,
                                   fontWeight: FontWeight.w800,
-                                  color: Colors.grey.shade600,
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .onSurfaceVariant,
                                   letterSpacing: 0.6,
                                 ),
                               ),
@@ -14953,7 +15130,9 @@ class _MapUniversalSearchOverlayState extends State<MapUniversalSearchOverlay> {
                                   style: TextStyle(
                                     fontSize: 12,
                                     fontWeight: FontWeight.w800,
-                                    color: Colors.grey.shade600,
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .onSurfaceVariant,
                                     letterSpacing: 0.6,
                                   ),
                                 ),
@@ -14989,6 +15168,11 @@ class _MapUniversalSearchOverlayState extends State<MapUniversalSearchOverlay> {
                             ),
                           if (peopleTotal > peopleCap)
                             TextButton(
+                              style: TextButton.styleFrom(
+                                foregroundColor: Theme.of(context)
+                                    .colorScheme
+                                    .primary,
+                              ),
                               onPressed: () => setState(
                                   () => _peopleExpanded = !_peopleExpanded),
                               child: Row(
@@ -15021,20 +15205,26 @@ class _MapUniversalSearchOverlayState extends State<MapUniversalSearchOverlay> {
                                 style: TextStyle(
                                   fontSize: 12,
                                   fontWeight: FontWeight.w800,
-                                  color: Colors.grey.shade600,
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .onSurfaceVariant,
                                   letterSpacing: 0.6,
                                 ),
                               ),
                             ),
                             if (_placesLoading)
-                              const Padding(
-                                padding: EdgeInsets.all(20),
+                              Padding(
+                                padding: const EdgeInsets.all(20),
                                 child: Center(
                                   child: SizedBox(
                                     width: 28,
                                     height: 28,
                                     child: CircularProgressIndicator(
-                                        strokeWidth: 2.5),
+                                      strokeWidth: 2.5,
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .primary,
+                                    ),
                                   ),
                                 ),
                               )
@@ -15044,7 +15234,11 @@ class _MapUniversalSearchOverlayState extends State<MapUniversalSearchOverlay> {
                                     horizontal: 16),
                                 child: Text(
                                   'Nu am găsit locuri pentru „$q”.',
-                                  style: TextStyle(color: Colors.grey.shade600),
+                                  style: TextStyle(
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .onSurfaceVariant,
+                                  ),
                                 ),
                               ),
                             for (final row in _placeRows.take(12))
@@ -15063,9 +15257,12 @@ class _MapUniversalSearchOverlayState extends State<MapUniversalSearchOverlay> {
                                       .trim(),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     fontWeight: FontWeight.w700,
                                     fontSize: 15,
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .onSurface,
                                   ),
                                 ),
                                 subtitle: Text(
@@ -15080,7 +15277,9 @@ class _MapUniversalSearchOverlayState extends State<MapUniversalSearchOverlay> {
                                   overflow: TextOverflow.ellipsis,
                                   style: TextStyle(
                                     fontSize: 12,
-                                    color: Colors.grey.shade600,
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .onSurfaceVariant,
                                   ),
                                 ),
                                 onTap: () {
@@ -15102,6 +15301,7 @@ class _MapUniversalSearchOverlayState extends State<MapUniversalSearchOverlay> {
             ),
           ),
         ),
+      ),
       ),
     ],
   ),
@@ -15125,9 +15325,10 @@ class _MapUniversalSearchOverlayState extends State<MapUniversalSearchOverlay> {
               title,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
+              style: TextStyle(
                 fontWeight: FontWeight.w700,
                 fontSize: 15,
+                color: Theme.of(context).colorScheme.onSurface,
               ),
             ),
           ),
@@ -15156,7 +15357,10 @@ class _MapUniversalSearchOverlayState extends State<MapUniversalSearchOverlay> {
         subtitle,
         maxLines: 2,
         overflow: TextOverflow.ellipsis,
-        style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+        style: TextStyle(
+          fontSize: 12,
+          color: Theme.of(context).colorScheme.onSurfaceVariant,
+        ),
       ),
       trailing: showAdd && widget.onAddFriend != null
           ? Material(

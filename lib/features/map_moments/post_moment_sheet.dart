@@ -23,7 +23,17 @@ class _PostMomentSheetState extends State<PostMomentSheet> {
   bool _posting = false;
 
   static const _quickEmojis = [
-    '📍', '☕', '🎶', '🏋️', '🍕', '📸', '🎉', '💤', '🚀', '❤️',
+    '📍',
+    '🅿️', // loc de parcare disponibil — vizibil pe hartă ca marcaj
+    '☕',
+    '🎶',
+    '🏋️',
+    '🍕',
+    '📸',
+    '🎉',
+    '💤',
+    '🚀',
+    '❤️',
   ];
 
   @override
@@ -106,7 +116,8 @@ class _PostMomentSheetState extends State<PostMomentSheet> {
           ),
           const SizedBox(height: 6),
           Text(
-            'Vizibil pe hartă ~30 minute. O poți șterge oricând din tap pe marcaj.',
+            'Vizibil pe hartă ~30 minute. O poți șterge oricând din tap pe marcaj. '
+            'Alege 🅿️ dacă poți oferi loc de parcare în zonă.',
             style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
           ),
           const SizedBox(height: 16),

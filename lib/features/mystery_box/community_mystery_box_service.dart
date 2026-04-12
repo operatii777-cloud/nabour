@@ -1,3 +1,4 @@
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:nabour_app/services/nabour_functions.dart';
 import 'package:nabour_app/utils/logger.dart';
@@ -101,5 +102,27 @@ class CommunityMysteryBoxService {
       'claimLng': claimLng,
     });
     return (res.data['reward'] as num?)?.toInt() ?? 50;
+  }
+
+  /// Retrage o cutie comunitară încă [active]; rambursare garanție pe server.
+  Future<void> removeActiveBox(String boxId) async {
+    if (_uid == null) return;
+    await NabourFunctions.instance
+        .httpsCallable('nabourCommunityMysteryBoxRemove')
+        .call<Map<String, dynamic>>({'boxId': boxId});
+  }
+
+  /// Retrage toate cutiile comunitare active ale contului.
+  Future<int> removeAllActiveBoxes() async {
+    if (_uid == null) return 0;
+    try {
+      final res = await NabourFunctions.instance
+          .httpsCallable('nabourCommunityMysteryBoxRemoveAllActive')
+          .call<Map<String, dynamic>>({});
+      return (res.data['removed'] as num?)?.toInt() ?? 0;
+    } on FirebaseFunctionsException catch (e, st) {
+      Logger.error('removeAllActiveBoxes: ${e.message}', error: e, stackTrace: st);
+      rethrow;
+    }
   }
 }

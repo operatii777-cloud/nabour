@@ -188,9 +188,13 @@ class CommunityMysteryBoxMapManager {
       return;
     }
 
+    // După tap pe stratul Mapbox, amânăm dialogul ca să nu rămână bariera fără focus.
+    await Future<void>.delayed(Duration.zero);
     if (!context.mounted) return;
     final ok = await showDialog<bool>(
       context: context,
+      useRootNavigator: true,
+      barrierDismissible: true,
       builder: (ctx) => AlertDialog(
         title: const Text('Cutie comunitară'),
         content: Text(

@@ -1114,6 +1114,136 @@ export const nabourCommunityMysteryBoxClaim = onCall(async (request) => {
   return { ok: true, reward: txResult.reward };
 });
 
+/** Retrage o cutie comunitară încă activă: rambursare garanție, status cancelled. */
+export const nabourCommunityMysteryBoxRemove = onCall(async (request) => {
+  if (!request.auth?.uid) {
+    throw new HttpsError("unauthenticated", "Autentificare necesară.");
+  }
+  const uid = request.auth.uid;
+  const boxId = String(request.data?.boxId ?? "").trim();
+  if (!boxId) {
+    throw new HttpsError("invalid-argument", "boxId lipsă.");
+  }
+  const db = admin.firestore();
+  const boxRef = db.doc(`community_mystery_boxes/${boxId}`);
+
+  await db.runTransaction(async (tx) => {
+    const bSnap = await tx.get(boxRef);
+    if (!bSnap.exists) {
+      throw new HttpsError("not-found", "Cutia nu există.");
+    }
+    const b = bSnap.data()!;
+    if (String(b.placerUid ?? "") !== uid) {
+      throw new HttpsError("permission-denied", "Nu poți retrage cutiile altcuiva.");
+    }
+    if (String(b.status ?? "") !== "active") {
+      throw new HttpsError(
+        "failed-precondition",
+        "Poți retrage doar cutiile încă nedeschise."
+      );
+    }
+    const walletRef = db.doc(`users/${uid}/token_wallet/wallet`);
+    const wSnap = await tx.get(walletRef);
+    if (!wSnap.exists) {
+      throw new HttpsError("failed-precondition", "Wallet inexistent.");
+    }
+    const w = wSnap.data()!;
+    const plan = String(w.plan ?? "free");
+    const stake = COMMUNITY_MYSTERY_STAKE;
+    if (plan === "unlimited") {
+      tx.update(walletRef, {
+        totalSpent: admin.firestore.FieldValue.increment(-stake),
+      });
+    } else {
+      tx.update(walletRef, {
+        balance: admin.firestore.FieldValue.increment(stake),
+        totalSpent: admin.firestore.FieldValue.increment(-stake),
+      });
+    }
+    const tRef = db.collection(`users/${uid}/token_transactions`).doc();
+    tx.set(tRef, {
+      uid,
+      amount: stake,
+      type: "purchase",
+      description: "Retragere cutie comunitară (rambursare garanție)",
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+    tx.update(boxRef, {
+      status: "cancelled",
+      cancelledAt: admin.firestore.FieldValue.serverTimestamp(),
+      cancelledByUid: uid,
+    });
+  });
+
+  return { ok: true };
+});
+
+/** Retrage toate cutiile comunitare active ale utilizatorului (aceeași logică ca la una singură). */
+export const nabourCommunityMysteryBoxRemoveAllActive = onCall(async (request) => {
+  if (!request.auth?.uid) {
+    throw new HttpsError("unauthenticated", "Autentificare necesară.");
+  }
+  const uid = request.auth.uid;
+  const db = admin.firestore();
+  const snap = await db
+    .collection("community_mystery_boxes")
+    .where("placerUid", "==", uid)
+    .where("status", "==", "active")
+    .get();
+
+  let removed = 0;
+  for (const doc of snap.docs) {
+    const boxRef = doc.ref;
+    await db.runTransaction(async (tx) => {
+      const bSnap = await tx.get(boxRef);
+      if (!bSnap.exists) {
+        return;
+      }
+      const b = bSnap.data()!;
+      if (String(b.placerUid ?? "") !== uid) {
+        return;
+      }
+      if (String(b.status ?? "") !== "active") {
+        return;
+      }
+      const walletRef = db.doc(`users/${uid}/token_wallet/wallet`);
+      const wSnap = await tx.get(walletRef);
+      if (!wSnap.exists) {
+        throw new HttpsError("failed-precondition", "Wallet inexistent.");
+      }
+      const w = wSnap.data()!;
+      const plan = String(w.plan ?? "free");
+      const stake = COMMUNITY_MYSTERY_STAKE;
+      if (plan === "unlimited") {
+        tx.update(walletRef, {
+          totalSpent: admin.firestore.FieldValue.increment(-stake),
+        });
+      } else {
+        tx.update(walletRef, {
+          balance: admin.firestore.FieldValue.increment(stake),
+          totalSpent: admin.firestore.FieldValue.increment(-stake),
+        });
+      }
+      const tRef = db.collection(`users/${uid}/token_transactions`).doc();
+      tx.set(tRef, {
+        uid,
+        amount: stake,
+        type: "purchase",
+        description: "Retragere cutie comunitară (rambursare garanție)",
+        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      });
+      tx.update(boxRef, {
+        status: "cancelled",
+        cancelledAt: admin.firestore.FieldValue.serverTimestamp(),
+        cancelledByUid: uid,
+      });
+    });
+    removed += 1;
+  }
+
+  return { ok: true, removed };
+});
+
 /**
  * Aplică un abonament pe propriul wallet (free / basic / pro / unlimited).
  * Doar adresele din parametrul STAFF_SUBSCRIPTION_EMAILS (implicit operatii.777@gmail.com).

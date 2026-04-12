@@ -876,6 +876,35 @@ class _CarAvatarShopSheetState extends State<CarAvatarShopSheet> {
                           child: _carAvatarImage(avatar.assetPath, fit: BoxFit.contain),
                         ),
                       ),
+                      if (avatar.is3D)
+                        Positioned(
+                          top: 8,
+                          left: 8,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            decoration: BoxDecoration(
+                              gradient: const LinearGradient(
+                                colors: [Colors.cyanAccent, Colors.blueAccent],
+                              ),
+                              borderRadius: BorderRadius.circular(6),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.cyanAccent.withValues(alpha: 0.3),
+                                  blurRadius: 4,
+                                ),
+                              ],
+                            ),
+                            child: const Text(
+                              '3D',
+                              style: TextStyle(
+                                color: Colors.black,
+                                fontSize: 9,
+                                fontWeight: FontWeight.w900,
+                                letterSpacing: 0.5,
+                              ),
+                            ),
+                          ),
+                        ),
                       if (avatar.comingSoon)
                         Positioned(
                           top: 8,

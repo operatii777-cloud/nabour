@@ -62,12 +62,10 @@ Future<void> main() async {
 
   // Phase 2: Firebase (CRITICAL) - Initialize here so providers can access it
 
+  // Luminozitatea iconițelor din bara de stare urmează tema în [MyApp] (AnnotatedRegion).
   SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
     statusBarColor: Colors.transparent,
-    statusBarIconBrightness: Brightness.dark,
-    statusBarBrightness: Brightness.light,
     systemNavigationBarColor: Colors.transparent,
-    systemNavigationBarIconBrightness: Brightness.dark,
     systemNavigationBarDividerColor: Colors.transparent,
   ));
 
@@ -401,13 +399,31 @@ class _MyAppState extends State<MyApp> {
                 ? 1.06
                 : (shortest < 400 ? 1.12 : 1.18);
 
-            return MediaQuery(
-              data: mediaQuery.copyWith(
-                textScaler: TextScaler.linear(
-                  mediaQuery.textScaler.scale(1.0).clamp(0.9, maxScale),
+            final theme = Theme.of(context);
+            final isDark = theme.brightness == Brightness.dark;
+            // Iconițe vizibile pe fundal deschis (tema light) vs. iconițe deschise pe fundal închis (tema dark).
+            final systemUi = SystemUiOverlayStyle(
+              statusBarColor: Colors.transparent,
+              statusBarIconBrightness:
+                  isDark ? Brightness.light : Brightness.dark,
+              statusBarBrightness:
+                  isDark ? Brightness.dark : Brightness.light,
+              systemNavigationBarColor: Colors.transparent,
+              systemNavigationBarIconBrightness:
+                  isDark ? Brightness.light : Brightness.dark,
+              systemNavigationBarDividerColor: Colors.transparent,
+            );
+
+            return AnnotatedRegion<SystemUiOverlayStyle>(
+              value: systemUi,
+              child: MediaQuery(
+                data: mediaQuery.copyWith(
+                  textScaler: TextScaler.linear(
+                    mediaQuery.textScaler.scale(1.0).clamp(0.9, maxScale),
+                  ),
                 ),
+                child: child!,
               ),
-              child: child!,
             );
           },
         );

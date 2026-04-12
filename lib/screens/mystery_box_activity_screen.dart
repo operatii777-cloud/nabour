@@ -1,5 +1,8 @@
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:nabour_app/features/mystery_box/community_mystery_box_service.dart';
+import 'package:nabour_app/features/mystery_box/community_mystery_map_refresh.dart';
 import 'package:nabour_app/features/mystery_box/mystery_box_activity_service.dart';
 import 'package:nabour_app/models/token_wallet_model.dart';
 
@@ -206,50 +209,217 @@ class _SummaryTab extends StatelessWidget {
   }
 }
 
-class _PlacedTab extends StatelessWidget {
+class _PlacedTab extends StatefulWidget {
   const _PlacedTab({required this.svc, required this.df});
 
   final MysteryBoxActivityService svc;
   final DateFormat df;
 
   @override
+  State<_PlacedTab> createState() => _PlacedTabState();
+}
+
+class _PlacedTabState extends State<_PlacedTab> {
+  bool _bulkBusy = false;
+  String? _busyBoxId;
+
+  Future<void> _confirmRemoveAll(int activeCount) async {
+    if (activeCount <= 0 || _bulkBusy) return;
+    final ok = await showDialog<bool>(
+      context: context,
+      useRootNavigator: true,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Retrag toate cutiile active'),
+        content: Text(
+          'Se retrag $activeCount cutii de pe hartă. Primești înapoi câte '
+          '${TokenCost.mysteryBoxSlot} tokeni per cutie (garanție).',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Renunț'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Retrage tot'),
+          ),
+        ],
+      ),
+    );
+    if (ok != true || !mounted) return;
+    setState(() => _bulkBusy = true);
+    try {
+      final n =
+          await CommunityMysteryBoxService.instance.removeAllActiveBoxes();
+      CommunityMysteryMapRefresh.instance.notify();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              n == 0
+                  ? 'Nu mai existau cutii active.'
+                  : 'Retrase $n cutii. Tokenii au fost returnați.',
+            ),
+          ),
+        );
+      }
+    } on FirebaseFunctionsException catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(e.message ?? 'Eroare la retragere.')),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Eroare: $e')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _bulkBusy = false);
+    }
+  }
+
+  Future<void> _confirmRemoveOne(UserPlacedCommunityBox b) async {
+    if (b.status != 'active' || _busyBoxId != null || _bulkBusy) return;
+    final ok = await showDialog<bool>(
+      context: context,
+      useRootNavigator: true,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Retrage cutia de pe hartă'),
+        content: Text(
+          'Primești înapoi ${TokenCost.mysteryBoxSlot} tokeni (garanție). '
+          'Cutia nu va mai fi vizibilă altor utilizatori.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Renunț'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Retrage'),
+          ),
+        ],
+      ),
+    );
+    if (ok != true || !mounted) return;
+    setState(() => _busyBoxId = b.id);
+    try {
+      await CommunityMysteryBoxService.instance.removeActiveBox(b.id);
+      CommunityMysteryMapRefresh.instance.notify();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Cutia a fost retrasă de pe hartă.'),
+          ),
+        );
+      }
+    } on FirebaseFunctionsException catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(e.message ?? 'Nu s-a putut retrage.')),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Eroare: $e')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _busyBoxId = null);
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     return StreamBuilder<List<UserPlacedCommunityBox>>(
-      stream: svc.placedCommunityBoxesStream(),
+      stream: widget.svc.placedCommunityBoxesStream(),
       builder: (context, snap) {
         if (snap.connectionState == ConnectionState.waiting && !snap.hasData) {
           return const Center(child: CircularProgressIndicator());
         }
         final list = snap.data ?? [];
         if (list.isEmpty) {
-          return const Center(child: Text('Nu ai plasat inca cutii comunitare pe harta.'));
+          return const Center(
+            child: Text('Nu ai plasat inca cutii comunitare pe harta.'),
+          );
         }
-        return ListView.separated(
-          padding: const EdgeInsets.all(12),
-          itemCount: list.length,
-          separatorBuilder: (_, __) => const SizedBox(height: 8),
-          itemBuilder: (context, i) {
-            final b = list[i];
-            final statusLabel = b.status == 'active'
-                ? 'Activă'
-                : b.status == 'claimed'
-                    ? 'Deschisă'
-                    : b.status;
-            return Card(
-              child: ListTile(
-                title: Text(
-                  b.message.trim().isEmpty ? 'Cutie fara mesaj' : b.message,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
+        final active =
+            list.where((b) => b.status == 'active').length;
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            if (active > 0)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
+                child: FilledButton.tonalIcon(
+                  onPressed: _bulkBusy ? null : () => _confirmRemoveAll(active),
+                  icon: _bulkBusy
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Icon(Icons.inventory_2_outlined),
+                  label: Text(
+                    active == 1
+                        ? 'Retrage cutia activă de pe hartă'
+                        : 'Retrage toate cutiile active ($active)',
+                  ),
                 ),
-                subtitle: Text(
-                  '$statusLabel · ${TokenCost.mysteryBoxSlot} tok recompensa\n'
-                  '${b.createdAt != null ? df.format(b.createdAt!.toLocal()) : "—"}',
-                ),
-                isThreeLine: true,
               ),
-            );
-          },
+            Expanded(
+              child: ListView.separated(
+                padding: const EdgeInsets.all(12),
+                itemCount: list.length,
+                separatorBuilder: (_, __) => const SizedBox(height: 8),
+                itemBuilder: (context, i) {
+                  final b = list[i];
+                  final statusLabel = b.status == 'active'
+                      ? 'Activă'
+                      : b.status == 'claimed'
+                          ? 'Deschisă'
+                          : b.status;
+                  final busy = _busyBoxId == b.id;
+                  return Card(
+                    child: ListTile(
+                      title: Text(
+                        b.message.trim().isEmpty
+                            ? 'Cutie fara mesaj'
+                            : b.message,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      subtitle: Text(
+                        '$statusLabel · ${TokenCost.mysteryBoxSlot} tok recompensa\n'
+                        '${b.createdAt != null ? widget.df.format(b.createdAt!.toLocal()) : "—"}',
+                      ),
+                      isThreeLine: true,
+                      trailing: b.status == 'active'
+                          ? IconButton(
+                              tooltip: 'Retrage de pe hartă',
+                              onPressed: busy || _bulkBusy
+                                  ? null
+                                  : () => _confirmRemoveOne(b),
+                              icon: busy
+                                  ? const SizedBox(
+                                      width: 22,
+                                      height: 22,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                      ),
+                                    )
+                                  : const Icon(Icons.delete_outline_rounded),
+                            )
+                          : null,
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
         );
       },
     );

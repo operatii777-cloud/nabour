@@ -20,6 +20,8 @@ import 'package:nabour_app/models/voice_models.dart';
 // (PricingService import removed - rides now cost 0.0 except for 1 token)
 import 'package:nabour_app/services/active_ride_telemetry_rtdb_service.dart';
 import 'package:nabour_app/services/contacts_service.dart';
+import 'package:nabour_app/services/passenger_allowed_driver_uids.dart';
+import 'package:nabour_app/services/passenger_driver_search_config.dart';
 import 'package:nabour_app/services/push_notification_service.dart';
 import 'package:nabour_app/services/routing_service.dart';
 import 'package:nabour_app/services/token_service.dart';
@@ -849,15 +851,25 @@ _pendingUpdates.addAll(updates.map((e) => e as Map<String, dynamic>));
       }
     });
     
-    // Initial search
-    await _searchDriversInRadius(rideId, ride, 5.0);
+    // Căutare în rază mică, apoi extinsă (șoferi: contacte în app + comutator disponibil + poziție proaspătă).
+    await _searchDriversInRadius(
+      rideId,
+      ride,
+      PassengerDriverSearchConfig.initialRadiusKm,
+    );
     
     // Extended search after 30 seconds
     Timer(const Duration(seconds: 30), () async {
       final rideDoc = await _db.collection('ride_requests').doc(rideId).get();
       if (rideDoc.exists && rideDoc.data()?['status'] == 'pending') {
-        _addToBatch('ride_requests', rideId, {'searchRadius': 10.0});
-        await _searchDriversInRadius(rideId, ride, 10.0);
+        _addToBatch('ride_requests', rideId, {
+          'searchRadius': PassengerDriverSearchConfig.extendedRadiusKm,
+        });
+        await _searchDriversInRadius(
+          rideId,
+          ride,
+          PassengerDriverSearchConfig.extendedRadiusKm,
+        );
       }
     });
   }
@@ -874,6 +886,7 @@ _pendingUpdates.addAll(updates.map((e) => e as Map<String, dynamic>));
       final compatibleCategories = _getCompatibleCategories(ride.category);
       final List<Future<QuerySnapshot>> categoryQueries = [];
 
+      // isOnline = comutator „disponibil ca șofer” (vezi [updateDriverAvailability]).
       for (final category in compatibleCategories) {
         categoryQueries.add(
           _db.collection('driver_locations')
@@ -894,7 +907,7 @@ _pendingUpdates.addAll(updates.map((e) => e as Map<String, dynamic>));
           // ✅ Exclude șoferii care au refuzat sau au fost refuzați de pasager
           if (declinedByList.contains(driverDoc.id)) continue;
 
-          // ✅ RE-INTĂRIT: Filtru contacte - notifică doar șoferii din agenda pasagerului
+          // Doar UID-uri din rețeaua pasagerului (agendă + prieteni); lista e rezolvată la crearea cursei.
           if (ride.allowedDriverUids != null && !ride.allowedDriverUids!.contains(driverDoc.id)) continue;
 
           final driverData = driverDoc.data() as Map<String, dynamic>?;
@@ -949,17 +962,28 @@ _pendingUpdates.addAll(updates.map((e) => e as Map<String, dynamic>));
           // Create batch offer with top drivers
           await _createBatchOfferForDriver(best['driverId'] as String, rideId, ride, topDrivers);
         } else {
-          // ✅ FALLBACK: If no drivers found, try expanding radius
           Logger.warning('No drivers found, expanding search radius', tag: 'DriverMatching');
-          if (radiusKm < 15.0) {
-            await _searchDriversInRadius(rideId, ride, radiusKm + 5.0);
+          if (radiusKm <
+              PassengerDriverSearchConfig.maxRadiusKm -
+                  PassengerDriverSearchConfig.expandStepKm) {
+            await _searchDriversInRadius(
+              rideId,
+              ride,
+              radiusKm + PassengerDriverSearchConfig.expandStepKm,
+            );
           }
         }
       } else {
-        // ✅ FALLBACK: Expand search if no drivers found
-        if (radiusKm < 20.0) {
-          Logger.info('No drivers found in radius $radiusKm, expanding to ${radiusKm + 5.0}', tag: 'DriverMatching');
-          await _searchDriversInRadius(rideId, ride, radiusKm + 5.0);
+        if (radiusKm < PassengerDriverSearchConfig.maxRadiusKm) {
+          Logger.info(
+            'No drivers found in radius $radiusKm, expanding to ${radiusKm + PassengerDriverSearchConfig.expandStepKm}',
+            tag: 'DriverMatching',
+          );
+          await _searchDriversInRadius(
+            rideId,
+            ride,
+            radiusKm + PassengerDriverSearchConfig.expandStepKm,
+          );
         }
       }
     } catch (e) {
@@ -2110,6 +2134,22 @@ _pendingUpdates.addAll(updates.map((e) => e as Map<String, dynamic>));
     return doc.exists && doc.data()?['isAvailable'] == true;
   }
 
+  /// Lista de UID-uri către care are voie să notifice cursa: contacte din telefon cu cont Nabour + prieteni acceptați.
+  /// Fără intrări, cursa nu poate fi trimisă (aceeași regulă ca la rezervarea vocală).
+  Future<List<String>> _ensureAllowedDriverUidsOrThrow(List<String>? existing) async {
+    if (existing != null && existing.isNotEmpty) {
+      return existing;
+    }
+    final merged = await PassengerAllowedDriverUids.loadMergedUidList();
+    if (merged.isEmpty) {
+      throw Exception(
+        'Nabour trimite cererea doar către șoferii din contactele tale. '
+        'Adaugă în agendă numerele prietenilor cu cont Nabour sau acordă permisiunea la contacte.',
+      );
+    }
+    return merged;
+  }
+
   Future<String> requestRide(Ride ride) async {
     // ✅ ERROR HANDLING: Complete error handling pentru funcție critică
     try {
@@ -2150,6 +2190,8 @@ _pendingUpdates.addAll(updates.map((e) => e as Map<String, dynamic>));
         );
       }
   
+      final allowedDriverUids = await _ensureAllowedDriverUidsOrThrow(ride.allowedDriverUids);
+
       // Deducere token pentru postarea cursei (1 token)
       unawaited(TokenService().spend(TokenTransactionType.broadcastPost,
           customDescription: 'Post cursă: ${ride.startAddress} → ${ride.destinationAddress}'));
@@ -2157,7 +2199,8 @@ _pendingUpdates.addAll(updates.map((e) => e as Map<String, dynamic>));
       final rideData = ride.toMap();
       rideData['passengerId'] = _uid;  // ✅ MODIFICAT: userId → passengerId
       rideData['timestamp'] = FieldValue.serverTimestamp();
-      rideData['searchRadius'] = 5.0;
+      rideData['allowedDriverUids'] = allowedDriverUids;
+      rideData['searchRadius'] = PassengerDriverSearchConfig.initialRadiusKm;
       rideData['searchStartTime'] = FieldValue.serverTimestamp();
 
       Logger.info('Creating ride for user: $_uid', tag: 'FIRESTORE');
@@ -2173,9 +2216,15 @@ _pendingUpdates.addAll(updates.map((e) => e as Map<String, dynamic>));
       }
       
       Logger.info('Ride created with ID: ${docRef.id}', tag: 'FIRESTORE');
+
+      final rideForSearch = Ride.fromMap(
+        Map<String, dynamic>.from(ride.toMap())
+          ..['id'] = docRef.id
+          ..['allowedDriverUids'] = allowedDriverUids,
+      );
   
       // ✅ ERROR HANDLING: Start driver search în background (nu blochează)
-      unawaited(_startAutomaticDriverSearch(docRef.id, ride).catchError((e) {
+      unawaited(_startAutomaticDriverSearch(docRef.id, rideForSearch).catchError((e) {
         Logger.error('Error starting automatic driver search', error: e, tag: 'FIRESTORE');
       }));
   
@@ -2262,11 +2311,15 @@ _pendingUpdates.addAll(updates.map((e) => e as Map<String, dynamic>));
         Logger.warning('Distance too large: $distance km', tag: 'FIRESTORE');
         throw Exception('Distanța este prea mare. Distanța maximă este 200 km.');
       }
+
+      final allowedDriverUids =
+          await _ensureAllowedDriverUidsOrThrow(rideRequest.allowedDriverUids);
     
       final rideData = rideRequest.toMap();
       rideData['passengerId'] = _uid;
       rideData['timestamp'] = FieldValue.serverTimestamp();
-      rideData['searchRadius'] = 5.0;
+      rideData['allowedDriverUids'] = allowedDriverUids;
+      rideData['searchRadius'] = PassengerDriverSearchConfig.initialRadiusKm;
       rideData['searchStartTime'] = FieldValue.serverTimestamp();
       rideData['distance'] = distance;
       // Aliasuri canonice — câmpurile pe care Ride.fromFirestore() și
@@ -2325,7 +2378,7 @@ _pendingUpdates.addAll(updates.map((e) => e as Map<String, dynamic>));
           (e) => e.name == rideRequest.category,
           orElse: () => RideCategory.standard,
         ),
-        allowedDriverUids: rideRequest.allowedDriverUids,
+        allowedDriverUids: allowedDriverUids,
       );
 
       // Start driver search în background cu aceeași logică ca requestRide()

@@ -7,6 +7,7 @@ import 'package:nabour_app/models/ride_model.dart';
 import 'package:nabour_app/models/stop_location.dart';
 import 'package:nabour_app/screens/searching_for_driver_screen.dart';
 import 'package:nabour_app/services/firestore_service.dart';
+import 'package:nabour_app/services/passenger_allowed_driver_uids.dart';
 // PricingService removal handled in imports (none used anymore)
 import 'package:nabour_app/services/routing_service.dart';
 import 'package:nabour_app/widgets/address_input_view.dart';
@@ -80,6 +81,45 @@ class RideRequestPanelState extends State<RideRequestPanel> {
   }
 
   @override
+  void didUpdateWidget(RideRequestPanel oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.isNavigating != widget.isNavigating) {
+      _scheduleSheetExtentSync();
+    }
+  }
+
+  /// Înălțime țintă pentru [DraggableScrollableSheet] (trebuie să rămână în min/max configurate la build).
+  double _targetExtentForState() {
+    if (widget.isNavigating) return 0.15;
+    switch (_panelState) {
+      case PanelState.destinationPreview:
+        return 0.24;
+      case PanelState.rideConfirmation:
+        return 0.55;
+      case PanelState.addressInput:
+        return 0.48;
+    }
+  }
+
+  /// După schimbarea pasului (preview → confirmare etc.), ajustăm sheet-ul fără a recrea widget-ul
+  /// (evită: „Draggable scrollable controller is already attached to a sheet”).
+  void _scheduleSheetExtentSync() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final c = widget.draggableController;
+      if (c == null || !c.isAttached) return;
+      final target = _targetExtentForState();
+      unawaited(
+        c.animateTo(
+          target,
+          duration: const Duration(milliseconds: 280),
+          curve: Curves.easeOutCubic,
+        ),
+      );
+    });
+  }
+
+  @override
   void dispose() {
     _driverLocationSubscription?.cancel();
     super.dispose();
@@ -113,6 +153,7 @@ class RideRequestPanelState extends State<RideRequestPanel> {
     widget.onRouteCalculated(null);
 
     Logger.info('RideRequestPanel: Reset completed');
+    _scheduleSheetExtentSync();
   }
 
   /// Apelat de AddressInputView când userul selectează o destinație din sugestii.
@@ -131,6 +172,7 @@ class RideRequestPanelState extends State<RideRequestPanel> {
       _startAddress = startAddress;
       _panelState = PanelState.destinationPreview;
     });
+    _scheduleSheetExtentSync();
     // Notifică MapScreen să zboare camera și să arate pin-ul
     widget.onDestinationPreview?.call(endPoint, destAddress);
     Logger.info('RideRequestPanel: destination preview → $destAddress');
@@ -458,6 +500,7 @@ class RideRequestPanelState extends State<RideRequestPanel> {
         _panelState = PanelState.rideConfirmation;
         _isLoading = false;
       });
+      _scheduleSheetExtentSync();
       _listenForDriverUpdates();
     } catch (e) {
       if (mounted) {
@@ -523,6 +566,23 @@ class RideRequestPanelState extends State<RideRequestPanel> {
     
     Logger.info('Creating ride for user: $userId with ${_stops.length} stops', tag: 'RIDE');
     setState(() { _isLoading = true; });
+
+    final allowedDriverUids = await PassengerAllowedDriverUids.loadMergedUidList();
+    if (allowedDriverUids.isEmpty) {
+      if (mounted) {
+        setState(() { _isLoading = false; });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text(
+              'Nabour trimite cererea doar către șoferii din contactele tale. '
+              'Adaugă în agendă numerele prietenilor cu cont Nabour sau acordă permisiunea la contacte.',
+            ),
+            backgroundColor: Colors.orange.shade800,
+          ),
+        );
+      }
+      return;
+    }
     
     final ride = Ride(
       id: '', // Va fi generat de Firestore
@@ -544,6 +604,7 @@ class RideRequestPanelState extends State<RideRequestPanel> {
       timestamp: DateTime.now(), 
       status: 'pending', 
       category: _selectedCategory,
+      allowedDriverUids: allowedDriverUids,
       // ADĂUGAT: Includem opririle în ride
       stops: _stops.map((stop) => stop.toMap()).toList(),
     );
@@ -621,6 +682,7 @@ class RideRequestPanelState extends State<RideRequestPanel> {
       // Nu resetăm opririle când ne întoarcem la address input
       // Utilizatorul poate să-și păstreze opririle și să schimbe doar destinația
     });
+    _scheduleSheetExtentSync();
   }
 
   Widget _buildDestinationPreviewPanel(ScrollController scrollController) {
@@ -688,6 +750,7 @@ class RideRequestPanelState extends State<RideRequestPanel> {
                         _previewPoint = null;
                         _previewAddress = '';
                       });
+                      _scheduleSheetExtentSync();
                       // Curăță pin-ul de preview din hartă
                       widget.onRouteCalculated(null);
                     },
@@ -744,9 +807,10 @@ class RideRequestPanelState extends State<RideRequestPanel> {
     final isNavigating = widget.isNavigating;
     final isPreview = _panelState == PanelState.destinationPreview;
     final isConfirm = _panelState == PanelState.rideConfirmation;
+    // Nu folosi Key care depinde de _panelState: reconstruiește sheet-ul și poate reaplica
+    // același [DraggableScrollableController] înainte ca instanța veche să se detașeze → assert.
     return DraggableScrollableSheet(
       controller: widget.draggableController,
-      key: ValueKey('$_panelState-$isNavigating'),
       initialChildSize: isNavigating ? 0.15 : (isPreview ? 0.24 : (isConfirm ? 0.55 : 0.48)),
       minChildSize: isNavigating ? 0.15 : (isPreview ? 0.18 : (isConfirm ? 0.42 : 0.15)),
       maxChildSize: 0.92, // ✅ FIX: Permitem mereu expandarea panoului pană la 92% din ecran

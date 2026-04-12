@@ -15,6 +15,12 @@ enum BusinessCategory {
   pieseAuto,
   fitnessGym,
   supermarket,
+  /// Vânzări vehicule (auto, moto).
+  vanzariAutoMoto,
+  /// Imobiliare — vânzări.
+  imobiliareVanzari,
+  /// Imobiliare — închirieri.
+  imobiliareInchirieri,
   // Fallback pentru date legacy vechi; nu îl mai afișăm la selecție.
   altele;
 
@@ -35,6 +41,12 @@ enum BusinessCategory {
       case BusinessCategory.librarie: return isEnglish ? 'Bookstore' : 'Librarie';
       case BusinessCategory.pieseAuto: return isEnglish ? 'Auto Parts' : 'Piese auto';
       case BusinessCategory.fitnessGym: return 'Fitness/Gym';
+      case BusinessCategory.vanzariAutoMoto:
+        return isEnglish ? 'Auto / motorcycle sales' : 'Vânzări auto/moto';
+      case BusinessCategory.imobiliareVanzari:
+        return isEnglish ? 'Real estate — sales' : 'Vânzări imobiliare';
+      case BusinessCategory.imobiliareInchirieri:
+        return isEnglish ? 'Real estate — rentals' : 'Închirieri imobiliare';
       case BusinessCategory.altele: return isEnglish ? 'Other (legacy)' : 'Altele (legacy)';
     }
   }
@@ -57,6 +69,9 @@ enum BusinessCategory {
       case BusinessCategory.librarie: return '📚';
       case BusinessCategory.pieseAuto: return '🔧';
       case BusinessCategory.fitnessGym: return '🏋️';
+      case BusinessCategory.vanzariAutoMoto: return '🚗';
+      case BusinessCategory.imobiliareVanzari: return '🏠';
+      case BusinessCategory.imobiliareInchirieri: return '🔑';
       case BusinessCategory.altele: return '🏪';
     }
   }
@@ -76,6 +91,9 @@ enum BusinessCategory {
         BusinessCategory.librarie,
         BusinessCategory.pieseAuto,
         BusinessCategory.fitnessGym,
+        BusinessCategory.vanzariAutoMoto,
+        BusinessCategory.imobiliareVanzari,
+        BusinessCategory.imobiliareInchirieri,
       ];
 }
 

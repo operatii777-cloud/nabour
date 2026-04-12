@@ -14,6 +14,10 @@ class CarAvatar {
   /// Artă încă neîncărcată în bundle: afișăm „În curând” și blocăm cumpărarea.
   final bool comingSoon;
 
+  /// Suport pentru modele 3D (.glb)
+  final bool is3D;
+  final String? modelPath;
+
   CarAvatar({
     required this.id,
     required this.name,
@@ -22,6 +26,8 @@ class CarAvatar {
     this.isDefault = false,
     this.category = CarCategory.transport,
     this.comingSoon = false,
+    this.is3D = false,
+    this.modelPath,
   });
 
   factory CarAvatar.defaultCar() {
@@ -68,6 +74,8 @@ class CarAvatar {
       'isDefault': isDefault,
       'category': category.name,
       'comingSoon': comingSoon,
+      'is3D': is3D,
+      'modelPath': modelPath,
     };
   }
 }

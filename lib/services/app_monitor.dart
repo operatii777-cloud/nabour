@@ -132,15 +132,23 @@ class AppMonitor {
   
   /// 🔧 Setup crash detection
   Future<void> _setupCrashDetection() async {
-    // Setup Flutter error handler
+    // Păstrăm handler-ele existente (ex. [SentryFlutter] din `main`) — altfel le înlocuim
+    // complet și raportarea / presentError se pierd.
+    final FlutterExceptionHandler? previousFlutterError = FlutterError.onError;
     FlutterError.onError = (FlutterErrorDetails details) {
-      _handleFlutterError(details);
+      unawaited(_handleFlutterError(details));
+      if (previousFlutterError != null) {
+        previousFlutterError(details);
+      } else {
+        FlutterError.presentError(details);
+      }
     };
-    
-    // Setup platform dispatcher error handler
-    PlatformDispatcher.instance.onError = (error, stack) {
-      _handlePlatformError(error, stack);
-      return true;
+
+    final ErrorCallback? previousPlatformError =
+        PlatformDispatcher.instance.onError;
+    PlatformDispatcher.instance.onError = (Object error, StackTrace stack) {
+      unawaited(_handlePlatformError(error, stack));
+      return previousPlatformError?.call(error, stack) ?? true;
     };
     
     // Setup isolate error handler

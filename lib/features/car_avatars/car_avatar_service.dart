@@ -51,6 +51,11 @@ class CarAvatarService {
     // --- Characters (inclusiv ROBO — doar mod pasager pe hartă) ---
     /// Gratuit pentru orice utilizator ca pasager (inclus în [getPurchasedAvatarIds]).
     CarAvatar(id: 'robo', name: 'ROBO', assetPath: 'assets/images/avatars/ROBO.png', price: 0, category: CarCategory.characters),
+    CarAvatar(id: 'robo_3d', name: 'ROBO (Unitatea 3D)', assetPath: 'assets/images/avatars/ROBO.png', price: 0, category: CarCategory.characters, is3D: true, modelPath: 'assets/models/robo_3d.glb'),
+    CarAvatar(id: 'inspire_v4', name: 'Cyber Predator', assetPath: 'assets/images/avatars/rhino.png', price: 2500, category: CarCategory.transport, is3D: true, modelPath: 'assets/models/inspiration_4.glb'),
+    CarAvatar(id: 'inspire_v8', name: 'Neon Vanguard', assetPath: 'assets/images/avatars/ufo.png', price: 3000, category: CarCategory.transport, is3D: true, modelPath: 'assets/models/inspiration_8.glb'),
+    CarAvatar(id: 'zen_guardian', name: 'Zen Guardian', assetPath: 'assets/images/avatars/mythic.png', price: 3500, category: CarCategory.characters, is3D: true, modelPath: 'assets/models/f6718961-9b37-4e73-ab59-bed532d37754.glb'),
+    CarAvatar(id: 'cyber_sentinel', name: 'Cyber Sentinel', assetPath: 'assets/images/avatars/ufo.png', price: 2800, category: CarCategory.transport, is3D: true, modelPath: 'assets/models/74e46dd0-7d50-41d7-b856-c21c18ea538b.glb'),
     CarAvatar(id: 'unicorn', name: 'Unicorn Magic', assetPath: 'assets/images/avatars/unicorn.png', price: 5000, category: CarCategory.characters),
     CarAvatar(id: 'mythic', name: 'Erou Mitic', assetPath: 'assets/images/avatars/mythic.png', price: 3500, category: CarCategory.characters),
   ];
@@ -151,6 +156,7 @@ class CarAvatarService {
     ids.add('default_car');
     // Galaxy Garage — gratuite prin politică (fără tokeni / fără document achiziție).
     ids.add('robo');
+    ids.add('robo_3d');
     if (isRegisteredDriverProfile(userSnap.data())) {
       ids.add('ufo');
       ids.add('barbie');

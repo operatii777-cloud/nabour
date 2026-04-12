@@ -155,6 +155,7 @@ flutter:
     - assets/data/
     - assets/poi/
     - assets/sounds/
+    - assets/models/
     # Fonturi custom (opțional): decomentează după ce adaugi fișierele în assets/fonts/
     # - assets/fonts/
 

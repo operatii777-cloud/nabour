@@ -375,8 +375,12 @@ class MysteryBoxMapManager {
   }) {
     if (!context.mounted) return;
     final code = redemptionCode?.trim();
-    showDialog(
+    Future<void>.delayed(Duration.zero).then((_) {
+      if (!context.mounted) return;
+      showDialog<void>(
       context: context,
+      useRootNavigator: true,
+      barrierDismissible: true,
       builder: (ctx) => AlertDialog(
         backgroundColor: const Color(0xFF1E1B4B),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
@@ -500,6 +504,7 @@ class MysteryBoxMapManager {
         ],
       ),
     );
+    });
   }
 
   void dispose() {
