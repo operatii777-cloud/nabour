@@ -12,9 +12,10 @@ class NeighborDisplayCoords {
 class NeighborMarkerDisplayLayout {
   NeighborMarkerDisplayLayout._();
 
-  static const double mergeDistanceM = 20.0;
-  static const double baseRadiusM = 5.5;
-  static const double spiralStepM = 4.2;
+  /// Prietenii mai aproape decât această distanță sunt repoziționați pe spirală (nu se suprapun).
+  static const double mergeDistanceM = 50.0;
+  static const double baseRadiusM = 16.0;
+  static const double spiralStepM = 12.0;
 
   static final double _goldenAngle =
       math.pi * (3.0 - math.sqrt(5.0));

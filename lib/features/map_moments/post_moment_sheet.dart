@@ -84,6 +84,8 @@ class _PostMomentSheetState extends State<PostMomentSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final cs = theme.colorScheme;
     return Padding(
       padding: EdgeInsets.only(
         left: 20,
@@ -101,24 +103,26 @@ class _PostMomentSheetState extends State<PostMomentSheet> {
               height: 4,
               margin: const EdgeInsets.only(bottom: 16),
               decoration: BoxDecoration(
-                color: Colors.grey.shade300,
+                color: cs.outlineVariant,
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
           ),
           Text(
             'Postează un Moment',
-            style: TextStyle(
-              fontSize: 20,
+            style: theme.textTheme.titleLarge?.copyWith(
               fontWeight: FontWeight.w800,
-              color: Colors.grey.shade900,
+              color: cs.onSurface,
             ),
           ),
           const SizedBox(height: 6),
           Text(
             'Vizibil pe hartă ~30 minute. O poți șterge oricând din tap pe marcaj. '
             'Alege 🅿️ dacă poți oferi loc de parcare în zonă.',
-            style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: cs.onSurfaceVariant,
+              fontSize: 12,
+            ),
           ),
           const SizedBox(height: 16),
           Wrap(
@@ -132,12 +136,12 @@ class _PostMomentSheetState extends State<PostMomentSheet> {
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
                     color: selected
-                        ? const Color(0xFF7C3AED).withValues(alpha: 0.15)
-                        : Colors.grey.shade100,
+                        ? cs.primary.withValues(alpha: 0.18)
+                        : cs.surfaceContainerHighest,
                     borderRadius: BorderRadius.circular(12),
                     border: selected
-                        ? Border.all(color: const Color(0xFF7C3AED), width: 2)
-                        : null,
+                        ? Border.all(color: cs.primary, width: 2)
+                        : Border.all(color: cs.outlineVariant),
                   ),
                   child: Text(e, style: const TextStyle(fontSize: 26)),
                 ),
@@ -149,10 +153,13 @@ class _PostMomentSheetState extends State<PostMomentSheet> {
             controller: _captionCtl,
             maxLength: 120,
             autofocus: true,
+            style: TextStyle(color: cs.onSurface),
+            cursorColor: cs.primary,
             decoration: InputDecoration(
               hintText: 'Ce se întâmplă aici?',
+              hintStyle: TextStyle(color: cs.onSurface.withValues(alpha: 0.45)),
               filled: true,
-              fillColor: Colors.grey.shade50,
+              fillColor: cs.surfaceContainerHigh,
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(16),
                 borderSide: BorderSide.none,

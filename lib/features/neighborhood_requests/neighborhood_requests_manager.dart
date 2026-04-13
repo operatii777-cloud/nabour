@@ -736,6 +736,7 @@ class NeighborhoodRequestsManager {
     String? initialMessage,
     String? locationContext,
   }) {
+    final outerContext = context;
     final TextEditingController messageController =
         TextEditingController(text: initialMessage ?? '');
     String selectedType = 'ride';
@@ -747,6 +748,8 @@ class NeighborhoodRequestsManager {
       useSafeArea: true,
       builder: (ctx) {
         return StatefulBuilder(builder: (ctx, setState) {
+          final theme = Theme.of(ctx);
+          final cs = theme.colorScheme;
           final bottomInset = MediaQuery.of(ctx).viewInsets.bottom;
           final maxSheetH = MediaQuery.of(ctx).size.height * 0.92;
           return Padding(
@@ -761,8 +764,9 @@ class NeighborhoodRequestsManager {
               child: Container(
                 padding: const EdgeInsets.all(24),
                 decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.95),
+                    color: cs.surface.withValues(alpha: 0.98),
                     borderRadius: BorderRadius.circular(30),
+                    border: Border.all(color: cs.outlineVariant.withValues(alpha: 0.35)),
                     boxShadow: [
                       BoxShadow(
                           color: Colors.black.withValues(alpha: 0.15),
@@ -781,16 +785,16 @@ class NeighborhoodRequestsManager {
                           Expanded(
                             child: Text(
                               'Aruncă o cerere pe hartă 💧',
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 22,
                                 fontWeight: FontWeight.bold,
-                                color: Colors.indigo,
+                                color: cs.primary,
                               ),
                             ),
                           ),
                           IconButton(
                             visualDensity: VisualDensity.compact,
-                            icon: const Icon(Icons.close_rounded),
+                            icon: Icon(Icons.close_rounded, color: cs.onSurface),
                             tooltip: 'Închide',
                             onPressed: () => Navigator.pop(ctx),
                           ),
@@ -838,10 +842,20 @@ class NeighborhoodRequestsManager {
                       TextField(
                         controller: messageController,
                         maxLines: 3,
+                        style: TextStyle(
+                          color: cs.onSurface,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                        ),
+                        cursorColor: cs.primary,
                         decoration: InputDecoration(
                           hintText: 'Ex: Merg spre centru, are cineva loc?',
+                          hintStyle: TextStyle(
+                            color: cs.onSurfaceVariant,
+                            fontSize: 15,
+                          ),
                           filled: true,
-                          fillColor: Colors.grey.shade100,
+                          fillColor: cs.surfaceContainerHighest,
                           border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(16),
                               borderSide: BorderSide.none),
@@ -863,7 +877,7 @@ class NeighborhoodRequestsManager {
 
                             final user = FirebaseAuth.instance.currentUser;
                             if (user == null) {
-                              ScaffoldMessenger.of(context).showSnackBar(
+                              ScaffoldMessenger.of(outerContext).showSnackBar(
                                 const SnackBar(
                                   content: Text(
                                       'Autentifică-te ca să lași o cerere pe hartă.'),
@@ -872,11 +886,24 @@ class NeighborhoodRequestsManager {
                               return;
                             }
 
-                            final authorName = user.displayName?.trim();
-                            final resolvedName =
-                                (authorName != null && authorName.isNotEmpty)
-                                    ? authorName
-                                    : 'Vecin';
+                            String resolvedName =
+                                user.displayName?.trim() ?? '';
+                            if (resolvedName.isEmpty) {
+                              try {
+                                final doc = await FirebaseFirestore.instance
+                                    .collection('users')
+                                    .doc(user.uid)
+                                    .get();
+                                final dn = (doc.data()?['displayName'] as String?)
+                                    ?.trim();
+                                if (dn != null && dn.isNotEmpty) {
+                                  resolvedName = dn;
+                                }
+                              } catch (_) {}
+                            }
+                            if (resolvedName.isEmpty) {
+                              resolvedName = 'Utilizator';
+                            }
 
                             final req = NeighborhoodRequest(
                               id: const Uuid().v4(),
@@ -892,6 +919,7 @@ class NeighborhoodRequestsManager {
                             );
 
                             // Închidem foaia imediat; așteptarea rețelei înainte de pop făcea acțiunea „înghețată”.
+                            if (!ctx.mounted) return;
                             Navigator.pop(ctx);
 
                             try {
@@ -903,8 +931,8 @@ class NeighborhoodRequestsManager {
                                 lat: req.lat,
                                 lng: req.lng,
                               ));
-                              if (!context.mounted) return;
-                              ScaffoldMessenger.of(context).showSnackBar(
+                              if (!outerContext.mounted) return;
+                              ScaffoldMessenger.of(outerContext).showSnackBar(
                                 const SnackBar(
                                   content: Text(
                                       'Bula de cerere a fost lăsată pe hartă! 🫧'),
@@ -913,8 +941,8 @@ class NeighborhoodRequestsManager {
                             } catch (e) {
                               Logger.error('createNeighborhoodRequest failed',
                                   error: e, tag: 'NeighborhoodRequests');
-                              if (!context.mounted) return;
-                              ScaffoldMessenger.of(context).showSnackBar(
+                              if (!outerContext.mounted) return;
+                              ScaffoldMessenger.of(outerContext).showSnackBar(
                                 SnackBar(
                                   content: Text(
                                     'Nu am putut publica cererea. Ești online? ${e is FirebaseException ? e.message ?? '' : e}',

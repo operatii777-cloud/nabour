@@ -78,7 +78,7 @@ class ThemeProvider extends ChangeNotifier {
       // Fără notify dacă nimic nu s-a schimbat — evită un rebuild complet al MaterialApp
       // la primul frame (cauză frecventă de aserțiuni cu Navigator/Overlay la pornire).
       if (changed) {
-        notifyListeners();
+        scheduleMicrotask(() => notifyListeners());
       }
     } catch (e) {
       Logger.error('Error loading theme preferences: $e', error: e);
@@ -102,7 +102,9 @@ class ThemeProvider extends ChangeNotifier {
   Future<void> toggleTheme() async {
     _bumpUserThemeMutation();
     _isDarkMode = !_isDarkMode;
-    notifyListeners();
+    // Amânăm notificarea după ciclul curent (gest/build) — evită aserțiunea
+    // `_dependents.isEmpty` la rebuild sincron al [MaterialApp] din drawer/hartă.
+    scheduleMicrotask(() => notifyListeners());
     unawaited(_persistThemePreferences());
   }
 
@@ -110,14 +112,14 @@ class ThemeProvider extends ChangeNotifier {
   Future<void> setThemeMode(ThemeMode mode) async {
     _bumpUserThemeMutation();
     _isDarkMode = mode == ThemeMode.dark;
-    notifyListeners();
+    scheduleMicrotask(() => notifyListeners());
     unawaited(_persistThemePreferences());
   }
 
   Future<void> toggleHighContrast() async {
     _bumpUserThemeMutation();
     _isHighContrast = !_isHighContrast;
-    notifyListeners();
+    scheduleMicrotask(() => notifyListeners());
     unawaited(_persistThemePreferences());
   }
 }

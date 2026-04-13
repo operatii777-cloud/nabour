@@ -2614,7 +2614,24 @@ _pendingUpdates.addAll(updates.map((e) => e as Map<String, dynamic>));
     if (type == MessageType.voice && voiceUrl == null) return;
     if (type == MessageType.image && imageUrl == null) return;
     if (type == MessageType.gif && gifUrl == null) return;
-    
+
+    String? senderPhoto;
+    var senderEmoji = '🙂';
+    try {
+      final u = await _db.collection('users').doc(_uid!).get();
+      final d = u.data();
+      final raw = d?['photoURL'];
+      if (raw is String && raw.trim().isNotEmpty) senderPhoto = raw.trim();
+      final av = d?['avatar'];
+      if (av is String && av.trim().isNotEmpty) senderEmoji = av.trim();
+    } catch (_) {}
+    final authPhoto = _auth.currentUser?.photoURL?.trim();
+    if ((senderPhoto == null || senderPhoto.isEmpty) &&
+        authPhoto != null &&
+        authPhoto.isNotEmpty) {
+      senderPhoto = authPhoto;
+    }
+
     final message = ChatMessage(
       senderId: _uid!,
       text: type == MessageType.voice ? '🎤 Mesaj vocal' : text.trim(),
@@ -2627,6 +2644,8 @@ _pendingUpdates.addAll(updates.map((e) => e as Map<String, dynamic>));
       imageUrl: imageUrl,
       gifUrl: gifUrl,
       gifId: gifId,
+      senderPhotoUrl: senderPhoto,
+      senderAvatarEmoji: senderEmoji,
     );
     
     final messageRef = await _db

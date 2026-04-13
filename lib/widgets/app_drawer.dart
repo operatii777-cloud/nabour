@@ -44,6 +44,7 @@ import 'package:provider/provider.dart';
 import 'package:nabour_app/theme/theme_provider.dart';
 import 'package:nabour_app/core/ui/app_feedback.dart';
 import 'package:nabour_app/services/app_sound_service.dart';
+import 'package:nabour_app/services/assistant_voice_ui_prefs.dart';
 
 const int _kTrialDays = 7;
 
@@ -579,47 +580,68 @@ class AppDrawer extends StatelessWidget {
             ],
 
             // ==========================================
-            // 5. PREFERINȚE ȘI AI
+            // 5. PREFERINȚE ȘI ASISTENT VOCAL (opțional din setări)
             // ==========================================
-            const SizedBox(height: 8),
-            _buildSectionHeader(l10n.drawerSectionAiPerformance),
-            Theme(
-              data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
-              child: ExpansionTile(
-                initiallyExpanded: false,
-                tilePadding: const EdgeInsets.symmetric(horizontal: 16),
-                leading: Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [Color(0xFF00C6FF), Color(0xFF0072FF)],
+            ValueListenableBuilder<bool>(
+              valueListenable:
+                  AssistantVoiceUiPrefs.instance.visibilityNotifier,
+              builder: (context, showAssistant, _) {
+                if (!showAssistant) return const SizedBox.shrink();
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    const SizedBox(height: 8),
+                    _buildSectionHeader(l10n.drawerSectionAiPerformance),
+                    Theme(
+                      data: Theme.of(context)
+                          .copyWith(dividerColor: Colors.transparent),
+                      child: ExpansionTile(
+                        initiallyExpanded: false,
+                        tilePadding:
+                            const EdgeInsets.symmetric(horizontal: 16),
+                        leading: Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            gradient: const LinearGradient(
+                              colors: [Color(0xFF00C6FF), Color(0xFF0072FF)],
+                            ),
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                          child: const Icon(Icons.psychology_rounded,
+                              color: Colors.white, size: 22),
+                        ),
+                        iconColor: Theme.of(context)
+                            .colorScheme
+                            .onSurface
+                            .withValues(alpha: 0.5),
+                        collapsedIconColor: Theme.of(context)
+                            .colorScheme
+                            .onSurface
+                            .withValues(alpha: 0.5),
+                        title: Text(
+                          l10n.aiAssistant,
+                          style: TextStyle(
+                            fontWeight: FontWeight.w800,
+                            fontSize: 15,
+                            color: Theme.of(context).colorScheme.onSurface,
+                          ),
+                        ),
+                        children: [
+                          _buildMenuItem(
+                            context,
+                            icon: Icons.mic_rounded,
+                            color: Colors.blue,
+                            title: l10n.drawerVoiceAiSettingsTitle,
+                            onTap: () => _navigateTo(
+                                context, const VoiceSettingsScreen()),
+                            isSubItem: true,
+                          ),
+                        ],
+                      ),
                     ),
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                  child: const Icon(Icons.psychology_rounded, color: Colors.white, size: 22),
-                ),
-                iconColor: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
-                collapsedIconColor:
-                    Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
-                title: Text(
-                  l10n.aiAssistant,
-                  style: TextStyle(
-                    fontWeight: FontWeight.w800,
-                    fontSize: 15,
-                    color: Theme.of(context).colorScheme.onSurface,
-                  ),
-                ),
-                children: [
-                  _buildMenuItem(
-                    context,
-                    icon: Icons.mic_rounded,
-                    color: Colors.blue,
-                    title: l10n.drawerVoiceAiSettingsTitle,
-                    onTap: () => _navigateTo(context, const VoiceSettingsScreen()),
-                    isSubItem: true,
-                  ),
-                ],
-              ),
+                  ],
+                );
+              },
             ),
 
             // ==========================================

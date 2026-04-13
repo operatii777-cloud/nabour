@@ -54,6 +54,7 @@ import 'package:nabour_app/config/neighbor_telemetry_config.dart';
 import 'package:nabour_app/config/trial_policy_config.dart';
 import 'package:nabour_app/services/trial_config_service.dart';
 import 'package:nabour_app/services/app_audio_session.dart';
+import 'package:nabour_app/services/assistant_voice_ui_prefs.dart';
 
 Future<void> main() async {
   final widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
@@ -696,6 +697,8 @@ Future<void> _initializeBackground() async {
 
     await initializeDateFormatting('ro_RO');
     StartupTimer.instance.mark('intl.ready');
+
+    await AssistantVoiceUiPrefs.instance.load();
 
     // Configure font fallbacks to avoid Noto font errors
     await _configureFonts();

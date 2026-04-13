@@ -42,8 +42,10 @@ class _RadarGroupBroadcastSheetState extends State<RadarGroupBroadcastSheet> {
         SnackBar(
           content: Text(
             n >= a
-                ? 'Mesaj trimis către $n vecini.'
-                : 'Mesaj trimis către $n din $a vecini (ceilalți fără notificări push active).',
+                ? (a == 1
+                    ? 'Mesaj trimis.'
+                    : 'Mesaj trimis către $n persoane.')
+                : 'Mesaj trimis către $n din $a (ceilalți fără notificări push active).',
           ),
           backgroundColor: const Color(0xFF166534),
         ),
@@ -60,14 +62,16 @@ class _RadarGroupBroadcastSheetState extends State<RadarGroupBroadcastSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final cs = theme.colorScheme;
     final bottom = MediaQuery.viewInsetsOf(context).bottom;
     return Padding(
       padding: EdgeInsets.only(bottom: bottom),
       child: Container(
         padding: const EdgeInsets.all(24),
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
+        decoration: BoxDecoration(
+          color: cs.surface,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
         ),
         child: SafeArea(
           top: false,
@@ -78,7 +82,7 @@ class _RadarGroupBroadcastSheetState extends State<RadarGroupBroadcastSheet> {
                 width: 40,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: Colors.grey.shade300,
+                  color: cs.outlineVariant,
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -86,11 +90,13 @@ class _RadarGroupBroadcastSheetState extends State<RadarGroupBroadcastSheet> {
               const Icon(Icons.campaign_rounded, size: 44, color: Color(0xFF7C3AED)),
               const SizedBox(height: 12),
               Text(
-                'Mesaj pentru ${widget.neighbors.length} vecini',
-                style: const TextStyle(
+                widget.neighbors.length == 1
+                    ? 'Mesaj pentru ${widget.neighbors.first.displayName}'
+                    : 'Mesaj pentru ${widget.neighbors.length} persoane din zonă',
+                style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w800,
-                  color: Color(0xFF7C3AED),
+                  color: cs.primary,
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -98,7 +104,10 @@ class _RadarGroupBroadcastSheetState extends State<RadarGroupBroadcastSheet> {
               Text(
                 'Primește notificare push fiecare vecin care are aplicația și notificările activate.',
                 textAlign: TextAlign.center,
-                style: TextStyle(color: Colors.grey.shade600, fontSize: 13),
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: cs.onSurfaceVariant,
+                  fontSize: 13,
+                ),
               ),
               const SizedBox(height: 16),
               TextField(
@@ -106,10 +115,13 @@ class _RadarGroupBroadcastSheetState extends State<RadarGroupBroadcastSheet> {
                 maxLines: 4,
                 maxLength: 500,
                 textCapitalization: TextCapitalization.sentences,
+                style: TextStyle(color: cs.onSurface),
+                cursorColor: cs.primary,
                 decoration: InputDecoration(
                   hintText: 'Scrie mesajul aici…',
+                  hintStyle: TextStyle(color: cs.onSurface.withValues(alpha: 0.45)),
                   filled: true,
-                  fillColor: Colors.grey.shade100,
+                  fillColor: cs.surfaceContainerHighest,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(16),
                     borderSide: BorderSide.none,
@@ -147,7 +159,10 @@ class _RadarGroupBroadcastSheetState extends State<RadarGroupBroadcastSheet> {
               ),
               TextButton(
                 onPressed: _sending ? null : () => Navigator.of(context).pop(),
-                child: const Text('Anulează', style: TextStyle(color: Colors.grey)),
+                child: Text(
+                  'Anulează',
+                  style: TextStyle(color: cs.onSurfaceVariant),
+                ),
               ),
             ],
           ),

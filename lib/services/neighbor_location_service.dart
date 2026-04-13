@@ -29,8 +29,6 @@ class NeighborLocationService {
   static const Duration _firestoreVisibleMinGap = Duration(seconds: 60);
 
   static const Duration _staleThreshold = Duration(minutes: 5);
-  // Bounding box ~6km la latitudine medie Romania
-  static const double _boxDeg = 0.054;
 
   /// Publică locația curentă în `user_visible_locations/{uid}`.
   /// [hiddenFromUids] — lista de UID-uri care NU pot vedea această locație.
@@ -140,7 +138,8 @@ class NeighborLocationService {
     }
   }
 
-  /// Stream de vecini vizibili în raza de ~6km față de [centerLat]/[centerLng].
+  /// Stream de prieteni vizibili pe hartă (fără limită de distanță față de centru).
+  /// [centerLat]/[centerLng] rămân în semnătură pentru compatibilitate; nu se mai filtrează pe hartă după distanță.
   /// Returnează doar useri activi în ultimele 5 minute (fără userul curent).
   Stream<List<NeighborLocation>> nearbyNeighbors({
     required double centerLat,
@@ -161,9 +160,6 @@ class NeighborLocationService {
       for (final doc in snap.docs) {
         if (doc.id == myUid) continue;
         final n = NeighborLocation.fromMap(doc.id, doc.data());
-        // Filtru bounding box client-side (Firestore nu suportă range + array-contains bine în toate scenariile)
-        if ((n.lat - centerLat).abs() > _boxDeg) continue;
-        if ((n.lng - centerLng).abs() > _boxDeg) continue;
         neighbors.add(n);
       }
       return neighbors;

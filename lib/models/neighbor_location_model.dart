@@ -89,6 +89,24 @@ class NeighborLocation {
       );
 
   /// Snapshot RTDB `/telemetry/locations/{h3}/{uid}` ([updatedAt] server millis).
+  /// Ancoră lângă tine când apare în proximitate dar nu există încă nod pe hartă (ex. semnal apropiat).
+  factory NeighborLocation.stubForProximity({
+    required String uid,
+    required String displayName,
+    String avatar = '👤',
+    required double anchorLat,
+    required double anchorLng,
+  }) {
+    return NeighborLocation(
+      uid: uid,
+      lat: anchorLat,
+      lng: anchorLng,
+      avatar: avatar,
+      displayName: displayName,
+      lastUpdate: DateTime.now(),
+    );
+  }
+
   factory NeighborLocation.fromRtdb(String uid, Map<Object?, Object?> raw) {
     final m = raw.map((k, v) => MapEntry(k.toString(), v));
     final lat = (m['lat'] as num?)?.toDouble() ?? 0;

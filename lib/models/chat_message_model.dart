@@ -38,6 +38,10 @@ class ChatMessage {
   final String? replyToText;       // textul mesajului la care se răspunde
   final String? replyToSenderId;   // uid-ul expeditorului mesajului citat
   final Map<String, String> reactions; // uid -> emoji
+  /// URL poză profil la trimitere (opțional).
+  final String? senderPhotoUrl;
+  /// Emoji avatar aplicație la trimitere (fallback vizual).
+  final String? senderAvatarEmoji;
 
   ChatMessage({
     required this.senderId,
@@ -60,6 +64,8 @@ class ChatMessage {
     this.replyToText,
     this.replyToSenderId,
     this.reactions = const {},
+    this.senderPhotoUrl,
+    this.senderAvatarEmoji,
   });
 
   Map<String, dynamic> toMap() {
@@ -84,6 +90,10 @@ class ChatMessage {
       if (replyToText != null) 'replyToText': replyToText,
       if (replyToSenderId != null) 'replyToSenderId': replyToSenderId,
       if (reactions.isNotEmpty) 'reactions': reactions,
+      if (senderPhotoUrl != null && senderPhotoUrl!.trim().isNotEmpty)
+        'senderPhotoUrl': senderPhotoUrl!.trim(),
+      if (senderAvatarEmoji != null && senderAvatarEmoji!.trim().isNotEmpty)
+        'senderAvatarEmoji': senderAvatarEmoji!.trim(),
     };
   }
 
@@ -117,6 +127,8 @@ class ChatMessage {
       replyToText: map['replyToText'] as String?,
       replyToSenderId: map['replyToSenderId'] as String?,
       reactions: Map<String, String>.from(map['reactions'] ?? {}),
+      senderPhotoUrl: map['senderPhotoUrl'] as String?,
+      senderAvatarEmoji: map['senderAvatarEmoji'] as String?,
     );
   }
 
@@ -141,6 +153,8 @@ class ChatMessage {
     String? replyToText,
     String? replyToSenderId,
     Map<String, String>? reactions,
+    String? senderPhotoUrl,
+    String? senderAvatarEmoji,
   }) {
     return ChatMessage(
       senderId: senderId ?? this.senderId,
@@ -163,6 +177,8 @@ class ChatMessage {
       replyToText: replyToText ?? this.replyToText,
       replyToSenderId: replyToSenderId ?? this.replyToSenderId,
       reactions: reactions ?? this.reactions,
+      senderPhotoUrl: senderPhotoUrl ?? this.senderPhotoUrl,
+      senderAvatarEmoji: senderAvatarEmoji ?? this.senderAvatarEmoji,
     );
   }
 }

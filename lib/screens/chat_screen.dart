@@ -5,6 +5,7 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:nabour_app/models/chat_message_model.dart';
 import 'package:nabour_app/services/firestore_service.dart';
 import 'package:nabour_app/services/giphy_service.dart';
@@ -68,6 +69,11 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
   /// Mesaje text trimise, afișate imediat până vine snapshot-ul Firestore.
   final List<ChatMessage> _pendingOutgoing = [];
 
+  String? _myPhotoUrl;
+  String? _otherPhotoUrl;
+  String _myAvatarEmoji = '🙂';
+  String _otherAvatarEmoji = '🙂';
+
   bool get _supportsRichAttachments =>
       widget.collectionName == 'ride_requests' ||
       widget.collectionName == 'private_chats';
@@ -92,6 +98,67 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
     _myUid = _auth.currentUser?.uid;
     _subscribeTyping();
     _markAllRead();
+    unawaited(_loadChatParticipantProfiles());
+  }
+
+  static String? _profilePhotoFromUserData(Map<String, dynamic>? data) {
+    if (data == null) return null;
+    final raw = data['photoURL'];
+    if (raw is String && raw.trim().isNotEmpty) return raw.trim();
+    return null;
+  }
+
+  static String _avatarEmojiFromUserData(Map<String, dynamic>? data) {
+    final a = data?['avatar'];
+    if (a is String && a.trim().isNotEmpty) return a.trim();
+    return '🙂';
+  }
+
+  Future<void> _loadChatParticipantProfiles() async {
+    final myId = _myUid;
+    if (myId == null) return;
+    final otherId = widget.otherUserId;
+    try {
+      final snaps = await Future.wait([
+        _db.collection('users').doc(myId).get(),
+        _db.collection('users').doc(otherId).get(),
+      ]);
+      if (!mounted) return;
+      final myData = snaps[0].data();
+      final otherData = snaps[1].data();
+      setState(() {
+        _myPhotoUrl = _profilePhotoFromUserData(myData) ??
+            _auth.currentUser?.photoURL?.trim();
+        _otherPhotoUrl = _profilePhotoFromUserData(otherData);
+        _myAvatarEmoji = _avatarEmojiFromUserData(myData);
+        _otherAvatarEmoji = _avatarEmojiFromUserData(otherData);
+      });
+    } catch (_) {}
+  }
+
+  ChatMessage _withSenderUiFields(ChatMessage m) {
+    final my = _myUid;
+    final hasPhoto =
+        m.senderPhotoUrl != null && m.senderPhotoUrl!.trim().isNotEmpty;
+    final hasEmoji = m.senderAvatarEmoji != null &&
+        m.senderAvatarEmoji!.trim().isNotEmpty;
+    String? photo = hasPhoto ? m.senderPhotoUrl!.trim() : null;
+    String emoji = hasEmoji ? m.senderAvatarEmoji!.trim() : '🙂';
+
+    if (my != null && m.senderId == my) {
+      photo ??= _myPhotoUrl?.trim();
+      if (!hasEmoji) emoji = _myAvatarEmoji;
+    } else if (m.senderId == widget.otherUserId) {
+      photo ??= _otherPhotoUrl?.trim();
+      if (!hasEmoji) emoji = _otherAvatarEmoji;
+    } else if (!hasEmoji) {
+      emoji = '🙂';
+    }
+
+    final samePhoto = (photo ?? '') == (m.senderPhotoUrl?.trim() ?? '');
+    final sameEmoji = emoji == (m.senderAvatarEmoji?.trim() ?? '');
+    if (samePhoto && sameEmoji) return m;
+    return m.copyWith(senderPhotoUrl: photo, senderAvatarEmoji: emoji);
   }
 
   @override
@@ -120,8 +187,8 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
       return FirestoreService().getChatMessages(widget.rideId).map((snap) {
         final msgs = snap.docs
             .map((d) => ChatMessage.fromMap(d.data()))
-            .toList();
-        msgs.sort((a, b) => a.timestamp.compareTo(b.timestamp));
+            .toList()
+          ..sort((a, b) => a.timestamp.compareTo(b.timestamp));
         return msgs;
       });
     }
@@ -234,6 +301,8 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
       text: trimmed,
       timestamp: Timestamp.now(),
       status: MessageStatus.sending,
+      senderPhotoUrl: _myPhotoUrl,
+      senderAvatarEmoji: _myAvatarEmoji,
       replyToText: replyRef == null
           ? null
           : (replyRef.type == MessageType.voice
@@ -316,7 +385,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
     }
     final merged = [...server, ...stillPending]
       ..sort((a, b) => a.timestamp.compareTo(b.timestamp));
-    return merged;
+    return merged.map(_withSenderUiFields).toList();
   }
 
   String? _chatMediaStoragePrefix() {
@@ -410,6 +479,8 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
       type: MessageType.image,
       status: MessageStatus.sending,
       imageUrl: downloadUrl,
+      senderPhotoUrl: _myPhotoUrl,
+      senderAvatarEmoji: _myAvatarEmoji,
       replyToText: replyRef == null
           ? null
           : (replyRef.type == MessageType.voice
@@ -478,6 +549,8 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
       type: MessageType.gif,
       status: MessageStatus.sending,
       gifUrl: gifUrl,
+      senderPhotoUrl: _myPhotoUrl,
+      senderAvatarEmoji: _myAvatarEmoji,
       replyToText: replyRef == null
           ? null
           : (replyRef.type == MessageType.voice
@@ -670,6 +743,47 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
     );
   }
 
+  Widget _buildOtherUserAppBarAvatar() {
+    final url = _otherPhotoUrl?.trim();
+    if (url != null && url.isNotEmpty) {
+      return CircleAvatar(
+        radius: 18,
+        backgroundColor: Colors.teal.shade200,
+        child: ClipOval(
+          child: CachedNetworkImage(
+            imageUrl: url,
+            width: 36,
+            height: 36,
+            fit: BoxFit.cover,
+            placeholder: (_, __) => const SizedBox(
+              width: 36,
+              height: 36,
+              child: Center(
+                child: SizedBox(
+                  width: 18,
+                  height: 18,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                ),
+              ),
+            ),
+            errorWidget: (_, __, ___) => Text(
+              _otherAvatarEmoji,
+              style: const TextStyle(fontSize: 20),
+            ),
+          ),
+        ),
+      );
+    }
+    return CircleAvatar(
+      radius: 18,
+      backgroundColor: Colors.teal.shade200,
+      child: Text(
+        _otherAvatarEmoji,
+        style: const TextStyle(fontSize: 22),
+      ),
+    );
+  }
+
   PreferredSizeWidget _buildAppBar(bool isDark) {
     return AppBar(
       backgroundColor: isDark ? const Color(0xFF1F2C34) : const Color(0xFF075E54),
@@ -677,17 +791,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
       titleSpacing: 0,
       title: Row(
         children: [
-          CircleAvatar(
-            radius: 18,
-            backgroundColor: Colors.teal.shade200,
-            child: Text(
-              widget.otherUserName.isNotEmpty
-                  ? widget.otherUserName[0].toUpperCase()
-                  : '?',
-              style: const TextStyle(
-                  color: Colors.white, fontWeight: FontWeight.bold),
-            ),
-          ),
+          _buildOtherUserAppBarAvatar(),
           const SizedBox(width: 10),
           Expanded(
             child: Column(
@@ -1002,6 +1106,8 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
                           status: MessageStatus.sending,
                           voiceUrl: url,
                           voiceDuration: duration,
+                          senderPhotoUrl: _myPhotoUrl,
+                          senderAvatarEmoji: _myAvatarEmoji,
                         );
                         _scrollToBottom();
                         try {

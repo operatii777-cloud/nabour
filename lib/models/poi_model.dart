@@ -148,7 +148,10 @@ extension PoiCategoryExtension on PoiCategory {
   }
 
   static String generateImageUrl(PoiCategory category, String name) {
-    final encodedName = Uri.encodeComponent(name);
+    // URL-uri foarte lungi (ex. adresă folosită greșit ca „nume”) rupe încărcarea / placeholder-ul.
+    final short =
+        name.length > 48 ? '${name.substring(0, 45)}…' : name;
+    final encodedName = Uri.encodeComponent(short);
     final color = _getCategoryColor(category);
     return 'https://placehold.co/600x400/$color/FFFFFF?text=${category.emoji}+$encodedName';
   }

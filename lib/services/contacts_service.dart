@@ -204,16 +204,21 @@ class ContactsService {
           final data = entry.value;
           final p = data['phoneNumber'] as String? ?? '';
           final e164 = data['phoneE164'] as String? ?? '';
-          final firestoreName = data['displayName'] as String? ?? '';
-          final deviceName = phoneToName[p] ??
-              phoneToName[e164] ??
-              phoneToName[normalizePhoneNumber(p) ?? ''] ??
-              phoneToName[normalizePhoneNumber(e164) ?? ''] ??
-              '';
+          final firestoreName = (data['displayName'] as String? ?? '').trim();
+          final deviceName = (phoneToName[p] ??
+                  phoneToName[e164] ??
+                  phoneToName[normalizePhoneNumber(p) ?? ''] ??
+                  phoneToName[normalizePhoneNumber(e164) ?? ''] ??
+                  '')
+              .trim();
           final phone = p.isNotEmpty ? p : e164;
+          // Numele din agenda are prioritate pentru persoanele găsite în contacte.
+          final displayName = deviceName.isNotEmpty
+              ? deviceName
+              : (firestoreName.isNotEmpty ? firestoreName : 'Utilizator');
           result.add(ContactAppUser(
             uid: entry.key,
-            displayName: firestoreName.isNotEmpty ? firestoreName : deviceName,
+            displayName: displayName,
             phoneNumber: phone,
           ));
         }

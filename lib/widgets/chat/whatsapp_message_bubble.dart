@@ -25,22 +25,81 @@ class WhatsAppMessageBubble extends StatelessWidget {
     this.onTranslate,
   });
 
+  Widget _buildSenderFace() {
+    const size = 32.0;
+    final url = message.senderPhotoUrl?.trim();
+    if (url != null && url.isNotEmpty) {
+      return ClipOval(
+        child: CachedNetworkImage(
+          imageUrl: url,
+          width: size,
+          height: size,
+          fit: BoxFit.cover,
+          placeholder: (_, __) => Container(
+            width: size,
+            height: size,
+            color: Colors.grey.shade300,
+            alignment: Alignment.center,
+            child: const SizedBox(
+              width: 16,
+              height: 16,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            ),
+          ),
+          errorWidget: (_, __, ___) => _buildSenderEmojiFallback(size),
+        ),
+      );
+    }
+    return _buildSenderEmojiFallback(size);
+  }
+
+  Widget _buildSenderEmojiFallback(double size) {
+    final em = (message.senderAvatarEmoji != null &&
+            message.senderAvatarEmoji!.trim().isNotEmpty)
+        ? message.senderAvatarEmoji!.trim()
+        : '🙂';
+    return Container(
+      width: size,
+      height: size,
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        color: Colors.grey.shade200,
+        shape: BoxShape.circle,
+      ),
+      child: Text(em, style: const TextStyle(fontSize: 18)),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Align(
       alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
-      child: GestureDetector(
-        onLongPress: onLongPress,
-        child: Column(
-          crossAxisAlignment: isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 4),
+        child: Row(
+          mainAxisAlignment:
+              isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.end,
           children: [
-            Container(
+            if (!isMe) ...[
+              _buildSenderFace(),
+              const SizedBox(width: 6),
+            ],
+            Flexible(
+              child: GestureDetector(
+                onLongPress: onLongPress,
+                child: Column(
+                  crossAxisAlignment: isMe
+                      ? CrossAxisAlignment.end
+                      : CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
               margin: EdgeInsets.only(
                 top: 4,
                 bottom: message.reactions.isNotEmpty ? 0 : 4,
-                left: isMe ? 50 : 8,
-                right: isMe ? 8 : 50,
+                left: isMe ? 44 : 0,
+                right: isMe ? 0 : 8,
               ),
               constraints: BoxConstraints(
                 maxWidth: MediaQuery.of(context).size.width * 0.75,
@@ -177,6 +236,14 @@ class WhatsAppMessageBubble extends StatelessWidget {
               ),
             ),
             if (message.reactions.isNotEmpty) _buildReactionsRow(context),
+                  ],
+                ),
+              ),
+            ),
+            if (isMe) ...[
+              const SizedBox(width: 6),
+              _buildSenderFace(),
+            ],
           ],
         ),
       ),
@@ -230,10 +297,10 @@ class WhatsAppMessageBubble extends StatelessWidget {
         right: isMe ? 12 : 0,
         bottom: 4,
       ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
+      child: Wrap(
+        spacing: 4,
+        runSpacing: 4,
         children: counts.entries.map((e) => Container(
-          margin: const EdgeInsets.only(right: 4),
           padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
           decoration: BoxDecoration(
             color: Colors.white,
@@ -283,28 +350,36 @@ class WhatsAppMessageBubble extends StatelessWidget {
   }
 
   Widget _buildGifMessage(String gifUrl) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(8),
-      child: CachedNetworkImage(
-        imageUrl: gifUrl,
-        fit: BoxFit.cover,
-        width: 200,
-        height: 200,
-        placeholder: (context, url) => Container(
-          width: 200,
-          height: 200,
-          color: Colors.grey.shade200,
-          child: const Center(
-            child: CircularProgressIndicator(strokeWidth: 2),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final side = (constraints.maxWidth.isFinite
+                ? constraints.maxWidth.clamp(120.0, 220.0)
+                : 200.0)
+            .toDouble();
+        return ClipRRect(
+          borderRadius: BorderRadius.circular(8),
+          child: CachedNetworkImage(
+            imageUrl: gifUrl,
+            fit: BoxFit.cover,
+            width: side,
+            height: side,
+            placeholder: (context, url) => Container(
+              width: side,
+              height: side,
+              color: Colors.grey.shade200,
+              child: const Center(
+                child: CircularProgressIndicator(strokeWidth: 2),
+              ),
+            ),
+            errorWidget: (context, url, error) => Container(
+              width: side,
+              height: side,
+              color: Colors.grey.shade200,
+              child: const Icon(Icons.error),
+            ),
           ),
-        ),
-        errorWidget: (context, url, error) => Container(
-          width: 200,
-          height: 200,
-          color: Colors.grey.shade200,
-          child: const Icon(Icons.error),
-        ),
-      ),
+        );
+      },
     );
   }
 

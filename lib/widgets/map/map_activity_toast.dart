@@ -153,13 +153,14 @@ class _ToastWidgetState extends State<_ToastWidget>
                           style: const TextStyle(
                             fontWeight: FontWeight.w800,
                             fontSize: 14,
+                            color: Color(0xFF1C1B1F),
                           ),
                         ),
                         Text(
                           widget.message,
-                          style: TextStyle(
+                          style: const TextStyle(
                             fontSize: 13,
-                            color: Colors.grey.shade600,
+                            color: Color(0xFF49454F),
                           ),
                         ),
                       ],
@@ -175,7 +176,7 @@ class _ToastWidgetState extends State<_ToastWidget>
                         color: Colors.grey.shade100,
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(Icons.close, size: 16, color: Colors.grey),
+                      child: const Icon(Icons.close, size: 16, color: Color(0xFF49454F)),
                     ),
                   ),
                 ],

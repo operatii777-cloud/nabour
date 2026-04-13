@@ -78,9 +78,19 @@ class _FriendSuggestionsScreenState extends State<FriendSuggestionsScreen>
         final d = doc.data();
         final dn = (d?['displayName'] as String?)?.trim();
         final av = (d?['avatar'] as String?)?.trim();
+        String? agendaName;
+        for (final c in widget.contacts) {
+          if (c.uid == uid) {
+            agendaName = c.displayName.trim();
+            break;
+          }
+        }
+        final name = (agendaName != null && agendaName.isNotEmpty)
+            ? agendaName
+            : ((dn != null && dn.isNotEmpty) ? dn : 'Utilizator');
         setState(() {
           _friendPeerProfileCache[uid] = (
-            displayName: (dn != null && dn.isNotEmpty) ? dn : 'Utilizator',
+            displayName: name,
             avatar: (av != null && av.isNotEmpty) ? av : '🙂',
           );
         });
@@ -98,9 +108,19 @@ class _FriendSuggestionsScreenState extends State<FriendSuggestionsScreen>
         final d = doc.data();
         final dn = (d?['displayName'] as String?)?.trim();
         final av = (d?['avatar'] as String?)?.trim();
+        String? agendaName;
+        for (final c in widget.contacts) {
+          if (c.uid == r.fromUid) {
+            agendaName = c.displayName.trim();
+            break;
+          }
+        }
+        final name = (agendaName != null && agendaName.isNotEmpty)
+            ? agendaName
+            : ((dn != null && dn.isNotEmpty) ? dn : 'Utilizator');
         setState(() {
           _senderProfileCache[r.fromUid] = (
-            displayName: (dn != null && dn.isNotEmpty) ? dn : 'Utilizator',
+            displayName: name,
             avatar: (av != null && av.isNotEmpty) ? av : '🙂',
           );
         });
@@ -366,8 +386,10 @@ class _FriendSuggestionsScreenState extends State<FriendSuggestionsScreen>
       return (_mutualCounts[b.uid] ?? 0).compareTo(_mutualCounts[a.uid] ?? 0);
     });
 
+    final scheme = Theme.of(context).colorScheme;
+    final onSurface = scheme.onSurface;
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: scheme.surface,
       body: SafeArea(
         child: Column(
           children: [
@@ -382,18 +404,19 @@ class _FriendSuggestionsScreenState extends State<FriendSuggestionsScreen>
                       width: 40,
                       height: 40,
                       decoration: BoxDecoration(
-                        color: Colors.grey.shade100,
+                        color: scheme.surfaceContainerHighest.withValues(alpha: 0.65),
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(Icons.arrow_back_rounded, size: 22),
+                      child: Icon(Icons.arrow_back_rounded,
+                          size: 22, color: onSurface),
                     ),
                   ),
                   Expanded(
                     child: TabBar(
                       controller: _tabController,
-                      labelColor: Colors.deepPurple.shade800,
-                      unselectedLabelColor: Colors.grey,
-                      indicatorColor: Colors.deepPurple.shade600,
+                      labelColor: scheme.primary,
+                      unselectedLabelColor: scheme.onSurfaceVariant,
+                      indicatorColor: scheme.primary,
                       labelStyle: const TextStyle(
                         fontWeight: FontWeight.w800,
                         fontSize: 14,
@@ -439,16 +462,21 @@ class _FriendSuggestionsScreenState extends State<FriendSuggestionsScreen>
           padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
           child: Container(
             decoration: BoxDecoration(
-              color: Colors.grey.shade100,
+              color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.45),
               borderRadius: BorderRadius.circular(14),
             ),
             child: TextField(
               onChanged: (v) => setState(() => _search = v),
-              decoration: const InputDecoration(
+              style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
+              decoration: InputDecoration(
                 hintText: 'Caută în agendă...',
-                prefixIcon: Icon(Icons.search_rounded, color: Colors.grey),
+                hintStyle: TextStyle(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+                prefixIcon: Icon(Icons.search_rounded,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant),
                 border: InputBorder.none,
-                contentPadding: EdgeInsets.symmetric(vertical: 14),
+                contentPadding: const EdgeInsets.symmetric(vertical: 14),
               ),
             ),
           ),
@@ -508,6 +536,7 @@ class _FriendSuggestionsScreenState extends State<FriendSuggestionsScreen>
 
   Widget _buildMyFriendsTab() {
     if (_friendPeerUids.isEmpty) {
+      final scheme = Theme.of(context).colorScheme;
       return Center(
         child: Padding(
           padding: const EdgeInsets.all(32),
@@ -516,7 +545,7 @@ class _FriendSuggestionsScreenState extends State<FriendSuggestionsScreen>
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 15,
-              color: Colors.grey.shade600,
+              color: scheme.onSurfaceVariant,
               height: 1.4,
             ),
           ),
@@ -548,10 +577,11 @@ class _FriendSuggestionsScreenState extends State<FriendSuggestionsScreen>
         final busy = _removeFriendInFlight.contains(uid);
         final online = widget.onlineUids.contains(uid);
 
+        final scheme = Theme.of(context).colorScheme;
         return Padding(
           padding: const EdgeInsets.only(bottom: 10),
           child: Material(
-            color: Colors.grey.shade50,
+            color: scheme.surfaceContainerHighest.withValues(alpha: 0.35),
             borderRadius: BorderRadius.circular(16),
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
@@ -562,7 +592,7 @@ class _FriendSuggestionsScreenState extends State<FriendSuggestionsScreen>
                     height: 48,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: Colors.white,
+                      color: scheme.surface,
                       border: Border.all(
                         color: online
                             ? const Color(0xFF22C55E)
@@ -581,9 +611,10 @@ class _FriendSuggestionsScreenState extends State<FriendSuggestionsScreen>
                       children: [
                         Text(
                           name,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w800,
+                            color: scheme.onSurface,
                           ),
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -593,7 +624,7 @@ class _FriendSuggestionsScreenState extends State<FriendSuggestionsScreen>
                             fontSize: 12,
                             color: online
                                 ? const Color(0xFF22C55E)
-                                : Colors.grey.shade600,
+                                : scheme.onSurfaceVariant,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
@@ -628,6 +659,7 @@ class _FriendSuggestionsScreenState extends State<FriendSuggestionsScreen>
   }
 
   Widget _buildIncomingRequestTile(FriendRequestEntry r) {
+    final scheme = Theme.of(context).colorScheme;
     ContactAppUser? fromContact;
     for (final c in widget.contacts) {
       if (c.uid == r.fromUid) {
@@ -648,7 +680,7 @@ class _FriendSuggestionsScreenState extends State<FriendSuggestionsScreen>
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
       child: Material(
-        color: Colors.deepPurple.shade50,
+        color: scheme.primaryContainer.withValues(alpha: 0.45),
         borderRadius: BorderRadius.circular(16),
         child: Padding(
           padding: const EdgeInsets.all(12),
@@ -662,8 +694,8 @@ class _FriendSuggestionsScreenState extends State<FriendSuggestionsScreen>
                     height: 48,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: Colors.white,
-                      border: Border.all(color: Colors.deepPurple.shade100),
+                      color: scheme.surface,
+                      border: Border.all(color: scheme.outlineVariant),
                     ),
                     child: Center(
                       child: Text(emoji, style: const TextStyle(fontSize: 26)),
@@ -676,9 +708,10 @@ class _FriendSuggestionsScreenState extends State<FriendSuggestionsScreen>
                       children: [
                         Text(
                           name,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w800,
+                            color: scheme.onSurface,
                           ),
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -686,7 +719,7 @@ class _FriendSuggestionsScreenState extends State<FriendSuggestionsScreen>
                           'îți trimite o cerere de prietenie',
                           style: TextStyle(
                             fontSize: 13,
-                            color: Colors.grey.shade700,
+                            color: scheme.onSurfaceVariant,
                           ),
                         ),
                       ],
@@ -738,6 +771,7 @@ class _FriendSuggestionsScreenState extends State<FriendSuggestionsScreen>
   }
 
   Widget _buildFriendRow(ContactAppUser contact) {
+    final scheme = Theme.of(context).colorScheme;
     final isOnline = widget.onlineUids.contains(contact.uid);
     final friendCount = _friendCounts[contact.uid] ?? 0;
     final mutualCount = _mutualCounts[contact.uid] ?? 0;
@@ -797,9 +831,10 @@ class _FriendSuggestionsScreenState extends State<FriendSuggestionsScreen>
                     Flexible(
                       child: Text(
                         contact.displayName,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w700,
+                          color: scheme.onSurface,
                         ),
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -908,6 +943,7 @@ class _FriendSuggestionsScreenState extends State<FriendSuggestionsScreen>
   }
 
   Widget _buildBottomToast() {
+    final scheme = Theme.of(context).colorScheme;
     final myUid = FirebaseAuth.instance.currentUser?.uid;
     final onlineContacts = widget.contacts
         .where((c) =>
@@ -923,7 +959,7 @@ class _FriendSuggestionsScreenState extends State<FriendSuggestionsScreen>
       margin: const EdgeInsets.fromLTRB(16, 0, 16, 24),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: scheme.surface,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -940,7 +976,7 @@ class _FriendSuggestionsScreenState extends State<FriendSuggestionsScreen>
             height: 36,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: Colors.grey.shade100,
+              color: scheme.surfaceContainerHighest.withValues(alpha: 0.5),
             ),
             child: Center(
               child: Text(avatar, style: const TextStyle(fontSize: 20)),
@@ -954,13 +990,16 @@ class _FriendSuggestionsScreenState extends State<FriendSuggestionsScreen>
               children: [
                 Text(
                   latest.displayName,
-                  style: const TextStyle(
-                      fontWeight: FontWeight.w700, fontSize: 14),
+                  style: TextStyle(
+                    fontWeight: FontWeight.w700,
+                    fontSize: 14,
+                    color: scheme.onSurface,
+                  ),
                 ),
                 Text(
                   'este din nou pe hartă',
-                  style:
-                      TextStyle(fontSize: 13, color: Colors.grey.shade600),
+                  style: TextStyle(
+                      fontSize: 13, color: scheme.onSurfaceVariant),
                 ),
               ],
             ),

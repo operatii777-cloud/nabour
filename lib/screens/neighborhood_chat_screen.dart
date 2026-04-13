@@ -17,6 +17,7 @@ import 'package:cloud_functions/cloud_functions.dart';
 import 'package:nabour_app/services/walkie_talkie_service.dart';
 import 'package:nabour_app/core/ui/app_feedback.dart';
 import 'package:shimmer/shimmer.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 class NeighborhoodChatScreen extends StatefulWidget {
   const NeighborhoodChatScreen({super.key});
@@ -47,6 +48,7 @@ class _NeighborhoodChatScreenState extends State<NeighborhoodChatScreen> {
   // Profilul userului curent (cached)
   String _myAvatar = '🙂';
   String _myName = 'Vecin';
+  String? _myPhotoUrl;
 
   @override
   void initState() {
@@ -165,6 +167,8 @@ class _NeighborhoodChatScreenState extends State<NeighborhoodChatScreen> {
         setState(() {
           _myAvatar = data['avatar'] as String? ?? '🙂';
           _myName = data['displayName'] as String? ?? 'Vecin';
+          final p = (data['photoURL'] as String?)?.trim();
+          _myPhotoUrl = (p != null && p.isNotEmpty) ? p : null;
         });
       }
     } catch (_) {}
@@ -279,7 +283,12 @@ class _NeighborhoodChatScreenState extends State<NeighborhoodChatScreen> {
 
     try {
       await _messagesRef.add({
-        'uid': uid, 'avatar': _myAvatar, 'displayName': _myName, 'text': text, 'createdAt': FieldValue.serverTimestamp(),
+        'uid': uid,
+        'avatar': _myAvatar,
+        'displayName': _myName,
+        if (_myPhotoUrl != null) 'photoURL': _myPhotoUrl,
+        'text': text,
+        'createdAt': FieldValue.serverTimestamp(),
       });
       _scrollToBottom();
     } catch (e) { Logger.error('NeighborhoodChat: send error: $e'); }
@@ -297,8 +306,15 @@ class _NeighborhoodChatScreenState extends State<NeighborhoodChatScreen> {
 
     try {
       await _messagesRef.add({
-        'uid': uid, 'avatar': _myAvatar, 'displayName': _myName, 'text': '🚗 Sunt pe drum!', 'type': 'omw',
-        if (pos != null) 'lat': pos.latitude, if (pos != null) 'lng': pos.longitude, 'createdAt': FieldValue.serverTimestamp(),
+        'uid': uid,
+        'avatar': _myAvatar,
+        'displayName': _myName,
+        if (_myPhotoUrl != null) 'photoURL': _myPhotoUrl,
+        'text': '🚗 Sunt pe drum!',
+        'type': 'omw',
+        if (pos != null) 'lat': pos.latitude,
+        if (pos != null) 'lng': pos.longitude,
+        'createdAt': FieldValue.serverTimestamp(),
       });
       _scrollToBottom();
     } catch (_) {}
@@ -318,8 +334,15 @@ class _NeighborhoodChatScreenState extends State<NeighborhoodChatScreen> {
 
     try {
       await _messagesRef.add({
-        'uid': uid, 'avatar': _myAvatar, 'displayName': _myName, 'text': '📍 Am marcat o locație pe hartă', 'type': 'location',
-        'lat': pos.latitude, 'lng': pos.longitude, 'createdAt': FieldValue.serverTimestamp(),
+        'uid': uid,
+        'avatar': _myAvatar,
+        'displayName': _myName,
+        if (_myPhotoUrl != null) 'photoURL': _myPhotoUrl,
+        'text': '📍 Am marcat o locație pe hartă',
+        'type': 'location',
+        'lat': pos.latitude,
+        'lng': pos.longitude,
+        'createdAt': FieldValue.serverTimestamp(),
       });
       _scrollToBottom();
     } catch (_) {}
@@ -385,8 +408,14 @@ class _NeighborhoodChatScreenState extends State<NeighborhoodChatScreen> {
     final url = await _walkieTalkieService.stopRecordingAndUpload(_roomId!);
     if (url != null) {
       await _messagesRef.add({
-        'uid': _auth.currentUser?.uid, 'avatar': _myAvatar, 'displayName': _myName, 'text': '🎤 Mesaj vocal instant',
-        'type': 'voice', 'voiceUrl': url, 'createdAt': FieldValue.serverTimestamp(),
+        'uid': _auth.currentUser?.uid,
+        'avatar': _myAvatar,
+        'displayName': _myName,
+        if (_myPhotoUrl != null) 'photoURL': _myPhotoUrl,
+        'text': '🎤 Mesaj vocal instant',
+        'type': 'voice',
+        'voiceUrl': url,
+        'createdAt': FieldValue.serverTimestamp(),
       });
       _scrollToBottom();
     }
@@ -409,10 +438,34 @@ class _NeighborhoodChatScreenState extends State<NeighborhoodChatScreen> {
 
   Future<void> _editMessage(String docId, String currentText) async {
     final controller = TextEditingController(text: currentText);
-    final result = await showDialog<String>(context: context, builder: (ctx) => AlertDialog(
-      title: const Text('Editează'), content: TextField(controller: controller),
-      actions: [TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Anulează')), FilledButton(onPressed: () => Navigator.pop(ctx, controller.text), child: const Text('Salvează'))],
-    ));
+    final result = await showDialog<String>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: Colors.grey.shade100,
+        title: const Text('Editează', style: TextStyle(color: Color(0xFF111111))),
+        content: TextField(
+          controller: controller,
+          style: const TextStyle(color: Color(0xFF111111), fontSize: 16),
+          cursorColor: const Color(0xFF7C3AED),
+          decoration: InputDecoration(
+            filled: true,
+            fillColor: Colors.white,
+            hintStyle: TextStyle(color: Colors.grey.shade600),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
+        ),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('Anulează')),
+          FilledButton(
+              onPressed: () => Navigator.pop(ctx, controller.text),
+              child: const Text('Salvează')),
+        ],
+      ),
+    );
     if (result != null && result != currentText) {
       await _messagesRef.doc(docId).update({'text': result.trim(), 'edited': true});
     }
@@ -433,6 +486,7 @@ class _NeighborhoodChatScreenState extends State<NeighborhoodChatScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: true,
       appBar: AppBar(
         title: const Text('Chat cartier', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
         backgroundColor: const Color(0xFF7C3AED),
@@ -529,6 +583,7 @@ class _NeighborhoodChatScreenState extends State<NeighborhoodChatScreen> {
                   return _MessageBubble(
                     docId: docs[i].id,
                     avatar: data['avatar'] ?? '🙂',
+                    photoUrl: data['photoURL'] as String?,
                     displayName: data['displayName'] ?? 'Vecin',
                     text: data['text'] ?? '',
                     timestamp: (data['createdAt'] as Timestamp?)?.toDate(),
@@ -562,14 +617,16 @@ class _NeighborhoodChatScreenState extends State<NeighborhoodChatScreen> {
   }
 
   Widget _buildInputBar() {
-    final bottomInset = MediaQuery.viewInsetsOf(context).bottom;
+    final mq = MediaQuery.of(context);
+    // Tastatură (viewInsets) + bară sistem / gesture (padding) — evită suprapunerea cu navigația Android.
+    final bottomPad = mq.viewInsets.bottom + mq.padding.bottom;
     final compact = _compactIconBtn();
     return Material(
       elevation: 8,
       shadowColor: Colors.black26,
       color: Theme.of(context).colorScheme.surface,
       child: Padding(
-        padding: EdgeInsets.fromLTRB(2, 6, 2, 6 + bottomInset),
+        padding: EdgeInsets.fromLTRB(2, 6, 2, 6 + bottomPad),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
@@ -607,10 +664,15 @@ class _NeighborhoodChatScreenState extends State<NeighborhoodChatScreen> {
             ),
             Tooltip(
               message: 'Ține apăsat pentru mesaj vocal',
-              child: GestureDetector(
-                onLongPressStart: (_) => _startRecording(),
-                onLongPressEnd: (_) => _stopAndSendRecording(),
+              child: Semantics(
+                button: true,
+                label:
+                    'Mesaj vocal. Ține apăsat pentru a înregistra; la eliberare se trimite automat.',
+                child: Listener(
                 behavior: HitTestBehavior.opaque,
+                onPointerDown: (_) => _startRecording(),
+                onPointerUp: (_) => _stopAndSendRecording(),
+                onPointerCancel: (_) => _stopAndSendRecording(),
                 child: SizedBox(
                   width: 44,
                   height: 44,
@@ -620,20 +682,31 @@ class _NeighborhoodChatScreenState extends State<NeighborhoodChatScreen> {
                       width: _isRecording ? 42 : 38,
                       height: _isRecording ? 42 : 38,
                       decoration: BoxDecoration(
-                        color: _isRecording ? Colors.red.shade600 : Colors.blue.shade50,
+                        color: _isRecording
+                            ? Colors.red.shade600
+                            : Colors.blue.shade50,
                         shape: BoxShape.circle,
                         boxShadow: _isRecording
-                            ? [BoxShadow(color: Colors.red.withValues(alpha: 0.35), blurRadius: 8)]
+                            ? [
+                                BoxShadow(
+                                    color: Colors.red.withValues(alpha: 0.35),
+                                    blurRadius: 8)
+                              ]
                             : null,
                       ),
                       child: Icon(
-                        _isRecording ? Icons.graphic_eq_rounded : Icons.mic_rounded,
-                        color: _isRecording ? Colors.white : Colors.blue.shade700,
+                        _isRecording
+                            ? Icons.graphic_eq_rounded
+                            : Icons.mic_rounded,
+                        color: _isRecording
+                            ? Colors.white
+                            : Colors.blue.shade700,
                         size: 20,
                       ),
                     ),
                   ),
                 ),
+              ),
               ),
             ),
             IconButton(
@@ -674,7 +747,7 @@ class _NeighborhoodChatScreenState extends State<NeighborhoodChatScreen> {
             const SizedBox(height: 16),
             const Text('Acesta este un spațiu efemer pentru vecinii din aceeași zonă H3 (aprox. 1km²).', textAlign: TextAlign.center),
             const SizedBox(height: 8),
-            const Text('• Mesajele dispar automat după 30 de minute.\n• Poți trimite locația sau un Walkie-Talkie (apasă lung pe microfon).\n• Respectă vecinii și păstrează comunitatea curată!', textAlign: TextAlign.left),
+            const Text('• Mesajele dispar automat după 30 de minute.\n• Poți trimite locația sau un mesaj vocal: ține apăsat pe microfon și eliberează pentru a trimite (min. ~0,5 s).\n• Respectă vecinii și păstrează comunitatea curată!', textAlign: TextAlign.left),
             const SizedBox(height: 24),
             FilledButton(onPressed: () => Navigator.pop(ctx), child: const Text('Am înțeles')),
           ],
@@ -742,6 +815,7 @@ class _NeighborhoodChatScreenState extends State<NeighborhoodChatScreen> {
 class _MessageBubble extends StatelessWidget {
   final String docId;
   final String avatar;
+  final String? photoUrl;
   final String displayName;
   final String text;
   final DateTime? timestamp;
@@ -755,10 +829,32 @@ class _MessageBubble extends StatelessWidget {
   final VoidCallback? onAvatarTap;
 
   const _MessageBubble({
-    required this.docId, required this.avatar, required this.displayName, required this.text, required this.timestamp,
-    required this.isMe, this.isOmw = false, this.isLocation = false, this.isVoice = false,
-    this.onLongPress, this.onLocationTap, this.onPlayVoice, this.onAvatarTap,
+    required this.docId,
+    required this.avatar,
+    this.photoUrl,
+    required this.displayName,
+    required this.text,
+    required this.timestamp,
+    required this.isMe,
+    this.isOmw = false,
+    this.isLocation = false,
+    this.isVoice = false,
+    this.onLongPress,
+    this.onLocationTap,
+    this.onPlayVoice,
+    this.onAvatarTap,
   });
+
+  Widget _leadingAvatar() {
+    final url = photoUrl?.trim();
+    if (url != null && url.startsWith('http')) {
+      return CircleAvatar(
+        radius: 16,
+        backgroundImage: CachedNetworkImageProvider(url),
+      );
+    }
+    return Text(avatar, style: const TextStyle(fontSize: 24));
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -768,10 +864,10 @@ class _MessageBubble extends StatelessWidget {
         mainAxisAlignment: isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
-          if (!isMe) 
+          if (!isMe)
             GestureDetector(
               onTap: onAvatarTap,
-              child: Text(avatar, style: const TextStyle(fontSize: 24)),
+              child: _leadingAvatar(),
             ),
           const SizedBox(width: 8),
           Flexible(
@@ -886,7 +982,7 @@ class _MessageBubble extends StatelessWidget {
           ),
           if (isMe) ...[
             const SizedBox(width: 8),
-            Text(avatar, style: const TextStyle(fontSize: 24)),
+            _leadingAvatar(),
           ],
         ],
       ),

@@ -909,14 +909,16 @@ PointOfInterest? _poiFromSearchboxFeature(Map<String, dynamic> feature) {
 
   final double lng = (coords[0] as num).toDouble();
   final double lat = (coords[1] as num).toDouble();
-  final String name = (feature['name'] ??
-          properties?['name'] ??
-          properties?['full_address'] ??
-          'POI')
-      .toString();
   final String address =
       (properties?['full_address'] ?? properties?['place_formatted'] ?? '')
           .toString();
+  // Nu folosi adresa completă ca titlu: apare ca „poză” doar textul din placeholder și pare defect UI.
+  final String rawTitle = (feature['name'] ?? properties?['name'] ?? '')
+      .toString()
+      .trim();
+  final String name = rawTitle.isNotEmpty
+      ? rawTitle
+      : (address.isNotEmpty ? 'Loc din zonă' : 'POI');
   final String id = (feature['id'] ??
           properties?['mapbox_id'] ??
           'poi_${DateTime.now().millisecondsSinceEpoch}')

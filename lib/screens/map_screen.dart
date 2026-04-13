@@ -89,6 +89,7 @@ import 'package:nabour_app/services/walkie_talkie_service.dart';
 import 'package:nabour_app/services/open_meteo_service.dart';
 import 'package:nabour_app/services/local_notifications_service.dart'
     show LocalNotificationsService;
+import 'package:nabour_app/services/assistant_voice_ui_prefs.dart';
 import 'package:nabour_app/screens/neighborhood_chat_screen.dart';
 import 'package:nabour_app/widgets/radar_group_broadcast_sheet.dart';
 import 'package:nabour_app/screens/chat_screen.dart';
@@ -513,6 +514,10 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
   bool _showCerereButton = true;
   Timer? _locationUpdateTimer;
   Timer? _visibilityPublishTimer;
+  /// Publicare socială când aplicația e în fundal (stream-ul GPS e oprit la pause).
+  Timer? _pausedSocialPublishTimer;
+  /// Evită toast-uri repetate la același utilizator după refresh/reconectare markeri.
+  final Set<String> _neighborMapActivityToastOnceUids = {};
   Timer? _ghostModeTimer;
   final Map<String, PointAnnotation> _neighborAnnotations = {};
   final Map<String, String> _neighborAnnotationIdToUid = {};
@@ -624,7 +629,22 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
   
   StreamSubscription<geolocator.Position>? _positionSubscription;
   StreamSubscription<geolocator.Position>? _passengerWarmupSubscription;
-  StreamSubscription? _neighborsSubscription;
+  /// Telemetrie locală (celulă H3) — poziții proaspete pentru cine e în aceeași zonă.
+  StreamSubscription<List<NeighborLocation>>? _neighborRtdbSubscription;
+  /// Prieteni vizibili din Firestore, oriunde în lume (fără filtru distanță).
+  StreamSubscription<List<NeighborLocation>>? _neighborFirestoreSubscription;
+  List<NeighborLocation> _neighborFsSnapshot = [];
+  List<NeighborLocation> _neighborRtdbSnapshot = [];
+  /// Zoom curent al camerei (actualizat la fiecare mișcare) — scalare markere sociali.
+  double _liveCameraZoom = 14.0;
+  Timer? _neighborZoomDebounce;
+  Timer? _emojiAvoidanceDebounce;
+  /// Mărime icon vecin înainte de factorul de zoom (reaplicat la schimbare zoom).
+  final Map<String, double> _neighborIconSizeBaseByUid = {};
+  /// Puncte avatar / mașină contact pentru a îndepărta emoji-urile plasate pe hartă.
+  List<({double lat, double lng})> _avatarPinsForEmojiAvoidance = [];
+  List<NeighborLocation> _lastFilteredNeighborsForMap = [];
+  Map<String, NeighborDisplayCoords> _lastNeighborDisplayByUid = {};
   DateTime? _lastUpdateTime;
   final int _standingInterval = 15;
   final int _slowSpeedInterval = 7;
@@ -796,9 +816,16 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
 
   // Methods & Getters
   bool get canShowVoiceAI {
+    if (!AssistantVoiceUiPrefs.instance.visibilityNotifier.value) {
+      return false;
+    }
     if (_currentRole == UserRole.passenger) return true;
     if (_currentRole == UserRole.driver && !_isDriverAvailable) return true;
     return false;
+  }
+
+  void _onAssistantVoiceUiPrefChanged() {
+    if (mounted) setState(() {});
   }
 
   Future<void> _prewarmTiles() async {
@@ -836,7 +863,10 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
   /// Dacă abonarea vecini a eșuat la start (fără GPS încă), o repornim când avem poziție.
   void _ensureNeighborsListeningAfterPosition() {
     if (!mounted) return;
-    if (_neighborsSubscription != null) return;
+    if (_neighborRtdbSubscription != null ||
+        _neighborFirestoreSubscription != null) {
+      return;
+    }
     if (_isInitializingNeighbors) return;
     if (_positionForUserMapMarker() == null) return;
     _listenForNeighbors();
@@ -1080,6 +1110,9 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
     });
 
     WidgetsBinding.instance.addObserver(this);
+    unawaited(AssistantVoiceUiPrefs.instance.load());
+    AssistantVoiceUiPrefs.instance.visibilityNotifier
+        .addListener(_onAssistantVoiceUiPrefChanged);
     // Stage heavy startup work so first frame can render quickly.
     _runDeferredStartupAfterFirstFrame();
 
@@ -1272,7 +1305,128 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
       b.write(e.lng.toStringAsFixed(5));
       b.write(';');
     }
+    b.write('|av:');
+    for (final p in _avatarPinsForEmojiAvoidance) {
+      b.write(p.lat.toStringAsFixed(3));
+      b.write(',');
+      b.write(p.lng.toStringAsFixed(3));
+      b.write(';');
+    }
     return b.toString();
+  }
+
+  static const double _kNeighborAvatarHalfSizeZoomThreshold = 14.0;
+  static const double _kEmojiClearOfAvatarM = 22.0;
+  static const double _kEmojiPushAwayM = 28.0;
+
+  double _neighborAvatarZoomFactor() =>
+      _liveCameraZoom < _kNeighborAvatarHalfSizeZoomThreshold ? 0.5 : 1.0;
+
+  /// Mută ușor coordonatele emoji-ului plasat ca să nu stea peste avatarul unui user.
+  ({double lat, double lng}) _offsetMapEmojiFromAvatarPins(
+    double lat,
+    double lng,
+    String stableId,
+  ) {
+    var la = lat;
+    var ln = lng;
+    if (_avatarPinsForEmojiAvoidance.isEmpty) {
+      return (lat: la, lng: ln);
+    }
+    for (var it = 0; it < 6; it++) {
+      var need = false;
+      var sumNorth = 0.0;
+      var sumEast = 0.0;
+      for (final p in _avatarPinsForEmojiAvoidance) {
+        final d = geolocator.Geolocator.distanceBetween(la, ln, p.lat, p.lng);
+        if (d >= _kEmojiClearOfAvatarM) continue;
+        need = true;
+        if (d < 0.6) {
+          final a = 2 * math.pi * ((stableId.hashCode & 0xffff) / 65536.0);
+          sumNorth += math.cos(a);
+          sumEast += math.sin(a);
+        } else {
+          final bearDeg = geolocator.Geolocator.bearingBetween(
+            p.lat, p.lng, la, ln,
+          );
+          final bear = bearDeg * math.pi / 180.0;
+          sumNorth += math.cos(bear);
+          sumEast += math.sin(bear);
+        }
+      }
+      if (!need) break;
+      final mag = math.sqrt(sumNorth * sumNorth + sumEast * sumEast);
+      if (mag < 1e-8) break;
+      final nrmN = sumNorth / mag * _kEmojiPushAwayM;
+      final nrmE = sumEast / mag * _kEmojiPushAwayM;
+      final cosL =
+          math.cos(la * math.pi / 180.0).abs().clamp(0.25, 1.0);
+      la += nrmN / 111320.0;
+      ln += nrmE / (111320.0 * cosL);
+    }
+    return (lat: la, lng: ln);
+  }
+
+  void _recomputeAvatarPinsForEmojiAvoidance() {
+    final filteredNeighbors = _lastFilteredNeighborsForMap;
+    final displayByUid = _lastNeighborDisplayByUid;
+    final pins = <({double lat, double lng})>[];
+    final my = _positionForUserMapMarker();
+    if (my != null) {
+      pins.add((lat: my.latitude, lng: my.longitude));
+    }
+    for (final n in filteredNeighbors) {
+      if (_nearbyDriverAnnotations.containsKey(n.uid)) continue;
+      final disp = displayByUid[n.uid];
+      if (disp != null) {
+        pins.add((lat: disp.lat, lng: disp.lng));
+      } else {
+        pins.add((lat: n.lat, lng: n.lng));
+      }
+    }
+    for (final ann in _nearbyDriverAnnotations.values) {
+      try {
+        final g = ann.geometry;
+        final c = g.coordinates;
+        pins.add((lat: c.lat.toDouble(), lng: c.lng.toDouble()));
+      } catch (_) {}
+    }
+    _avatarPinsForEmojiAvoidance = pins;
+    _scheduleEmojiAvoidanceRebuildDebounced();
+  }
+
+  void _scheduleEmojiAvoidanceRebuildDebounced() {
+    _emojiAvoidanceDebounce?.cancel();
+    _emojiAvoidanceDebounce = Timer(const Duration(milliseconds: 220), () {
+      if (!mounted) return;
+      _lastMapEmojiLayerSig = null;
+      unawaited(_updateEmojiMarkers(_lastReceivedEmojis));
+    });
+  }
+
+  Future<void> _applyUserAvatarLayersZoomScale() async {
+    if (!mounted) return;
+    final zf = _neighborAvatarZoomFactor();
+    if (_neighborsAnnotationManager != null) {
+      for (final e in _neighborAnnotations.entries) {
+        final base = _neighborIconSizeBaseByUid[e.key];
+        if (base == null) continue;
+        final ann = e.value;
+        ann.iconSize = base * zf;
+        try {
+          await _neighborsAnnotationManager?.update(ann);
+        } catch (_) {}
+      }
+    }
+    if (_driversAnnotationManager != null) {
+      const baseDriver = 0.72;
+      for (final ann in _nearbyDriverAnnotations.values) {
+        ann.iconSize = baseDriver * zf;
+        try {
+          await _driversAnnotationManager?.update(ann);
+        } catch (_) {}
+      }
+    }
   }
 
   Future<void> _updateEmojiMarkers(List<MapEmoji> emojis) async {
@@ -1298,7 +1452,8 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
 
       for (final e in emojis) {
         final label = normalizeMapEmojiForEngine(e.emoji);
-        final point = MapboxUtils.createPoint(e.lat, e.lng);
+        final adj = _offsetMapEmojiFromAvatarPins(e.lat, e.lng, e.id);
+        final point = MapboxUtils.createPoint(adj.lat, adj.lng);
         final png = await _generateMapReactionMarkerPng(label);
         final options = PointAnnotationOptions(
           geometry: point,
@@ -3061,6 +3216,8 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
   void dispose() {
     _accelerometerSubscription?.cancel();
     WidgetsBinding.instance.removeObserver(this);
+    AssistantVoiceUiPrefs.instance.visibilityNotifier
+        .removeListener(_onAssistantVoiceUiPrefChanged);
     
     if (_flashlightOn) {
       TorchLight.disableTorch().catchError((_) {});
@@ -3121,7 +3278,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
     _nearbyDriversSubscription?.cancel();
     _chatMessagesSubscription?.cancel();
     _emergencyAlertsSubscription?.cancel();
-    _neighborsSubscription?.cancel();
+    _cancelNeighborLocationSubscriptions();
     _honkSubscription?.cancel();
     _emojiSubscription?.cancel();
     _ghostModeTimer?.cancel();
@@ -3131,6 +3288,8 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
     BleBumpService.instance.stop();
     BleBumpBridge.instance.stop();
     _smartPlacesClusterTimer?.cancel();
+    _pausedSocialPublishTimer?.cancel();
+    _pausedSocialPublishTimer = null;
     _momentsSubscription?.cancel();
     _momentsExpiryTimer?.cancel();
     _activityFeedSubscription?.cancel();
@@ -3142,6 +3301,8 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
     _communityMysteryManager?.dispose();
     _magicEventPollTimer?.cancel();
     _auraProjectDebounce?.cancel();
+    _neighborZoomDebounce?.cancel();
+    _emojiAvoidanceDebounce?.cancel();
 
     _disposeQuickActionBadgeListeners();
 
@@ -3168,6 +3329,15 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
     if (state == AppLifecycleState.resumed) {
       _mapSurfaceSafeForUserMarker = true;
       Logger.info('App resumed - checking if we need to reset route state');
+
+      _pausedSocialPublishTimer?.cancel();
+      _pausedSocialPublishTimer = null;
+      unawaited(AssistantVoiceUiPrefs.instance.load());
+      if (_isDriverAvailable && _currentRole == UserRole.driver) {
+        _startDriverLocationUpdates();
+      } else {
+        _ensurePassiveLocationWarmupIfNeeded();
+      }
 
       unawaited(_updateLocationPuck());
       unawaited(_updateUserMarker(centerCamera: false));
@@ -3197,6 +3367,37 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
       }
       Logger.debug('💤 App paused - stopping location updates');
       _stopLocationUpdates();
+      if (_wantsNeighborSocialPublish) {
+        _pausedSocialPublishTimer?.cancel();
+        _pausedSocialPublishTimer =
+            Timer.periodic(const Duration(seconds: 45), (_) {
+          unawaited(_backgroundSocialMapPublishTick());
+        });
+        unawaited(_backgroundSocialMapPublishTick());
+      }
+    }
+  }
+
+  /// Menține Firestore + RTDB când utilizatorul e vizibil dar aplicația e în fundal.
+  Future<void> _backgroundSocialMapPublishTick() async {
+    if (!_wantsNeighborSocialPublish) return;
+    try {
+      final p = await geolocator.Geolocator.getCurrentPosition(
+        locationSettings: DeprecatedAPIsFix.createLocationSettings(
+          accuracy: geolocator.LocationAccuracy.medium,
+          timeLimit: const Duration(seconds: 8),
+        ),
+      );
+      LocationCacheService.instance.record(p);
+      if (mounted) {
+        setState(() {
+          _currentPositionObject = p;
+          _freezeMapWidgetCameraIfNeeded();
+        });
+      }
+      await _publishNeighborSocialMapFresh(p, forceNeighborTelemetry: true);
+    } catch (e) {
+      Logger.debug('Background social publish tick: $e', tag: 'MAP');
     }
   }
 
@@ -4695,7 +4896,9 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
         if (rawHeading < 0) rawHeading += 360;
       }
 
-      final moving = !headingSrc.speed.isNaN && headingSrc.speed >= 0.5;
+      final kmh = headingSrc.speed.isNaN ? 0.0 : headingSrc.speed * 3.6;
+      final moving = !headingSrc.speed.isNaN &&
+          (headingSrc.speed >= 0.35 || kmh >= 12.0);
       // În mers: fără lag de interpolare — același țint ca GPS-ul folosit și de puck (Geolocator).
       final snapToLivePosition = moving;
       final double posLerp =
@@ -5097,7 +5300,8 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
             final annotation = _nearbyDriverAnnotations[driverDoc.id]!;
             annotation.geometry = MapboxUtils.createPoint(pos.latitude, pos.longitude);
             annotation.iconRotate = correctedBearing;
-            annotation.iconSize = 0.72; // vizibilitate pe hartă (contacte / șoferi disponibili)
+            annotation.iconSize =
+                0.72 * _neighborAvatarZoomFactor(); // vizibilitate + zoom out
             try {
               await _driversAnnotationManager?.update(annotation);
             } catch (_) {
@@ -5112,7 +5316,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
             final options = PointAnnotationOptions(
               geometry: MapboxUtils.createPoint(pos.latitude, pos.longitude), 
               image: imageList,
-              iconSize: 0.72,
+              iconSize: 0.72 * _neighborAvatarZoomFactor(),
               iconAnchor: IconAnchor.BOTTOM,
               iconRotate: correctedBearing,
             );
@@ -5128,6 +5332,9 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
             }
           }
         }
+      }
+      if (mounted) {
+        _recomputeAvatarPinsForEmojiAvoidance();
       }
     } catch (e) {
       Logger.error('Non-fatal error during _updateNearbyDrivers: $e', error: e);
@@ -5505,7 +5712,11 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
         _radarCenter!.coordinates.lat.toDouble(), cameraState.zoom);
     final radiusMeters = _radarRadius * metersPerPix;
 
-    for (final neighbor in _neighborData.values) {
+    final myUid = FirebaseAuth.instance.currentUser?.uid;
+    final contacts = _contactUids;
+    for (final neighbor in _lastRawNeighborsForMap) {
+      if (myUid != null && neighbor.uid == myUid) continue;
+      if (contacts != null && !contacts.contains(neighbor.uid)) continue;
       final neighborPt = Point(coordinates: Position(neighbor.lng, neighbor.lat));
       final dist = MapboxUtils.calculateDistance(_radarCenter!, neighborPt);
       
@@ -5518,7 +5729,10 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
       HapticService.instance.success();
       _onRadarSelectionCompleted(selected); // Reutilizăm logica de grup-chat/broadcast
     } else {
-      _showSafeSnackBar('Niciun vecin găsit în radar 🕸️', Colors.blueGrey);
+      _showSafeSnackBar(
+        'Nimeni din contactele tale cu poziție în zonă nu e în cercul de scanare acum.',
+        Colors.blueGrey,
+      );
     }
     setState(() { _isRadarMode = false; });
   }
@@ -5567,12 +5781,50 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
     }
   }
 
+  void _cancelNeighborLocationSubscriptions() {
+    _neighborRtdbSubscription?.cancel();
+    _neighborRtdbSubscription = null;
+    _neighborFirestoreSubscription?.cancel();
+    _neighborFirestoreSubscription = null;
+    _neighborFsSnapshot = [];
+    _neighborRtdbSnapshot = [];
+  }
+
+  void _mergeNeighborStreamsAndUpdateAnnotations() {
+    if (!mounted) return;
+    final merged = <String, NeighborLocation>{};
+    for (final n in _neighborFsSnapshot) {
+      merged[n.uid] = n;
+    }
+    for (final n in _neighborRtdbSnapshot) {
+      merged[n.uid] = n;
+    }
+    unawaited(_updateNeighborAnnotations(merged.values.toList()));
+  }
+
+  void _startNeighborFirestoreFriendsStream(geolocator.Position pos) {
+    _neighborFirestoreSubscription?.cancel();
+    _neighborFirestoreSubscription =
+        NeighborLocationService().nearbyNeighbors(
+      centerLat: pos.latitude,
+      centerLng: pos.longitude,
+    ).listen(
+      (list) {
+        _neighborFsSnapshot = list;
+        _mergeNeighborStreamsAndUpdateAnnotations();
+      },
+      onError: (e) {
+        Logger.error('Neighbors Firestore stream error: $e',
+            tag: 'MAP', error: e);
+      },
+    );
+  }
+
   void _listenForNeighbors() {
     if (!mounted || _isInitializingNeighbors) return;
     _isInitializingNeighbors = true;
     
-    _neighborsSubscription?.cancel();
-    _neighborsSubscription = null;
+    _cancelNeighborLocationSubscriptions();
 
     final pos = _positionForUserMapMarker();
     if (pos == null) {
@@ -5619,8 +5871,8 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
       if (room != null && room.isNotEmpty) {
         // ✅ WALKIE-TALKIE BACKGROUND AUTO-PLAY
         WalkieTalkieService().listenToRoom(room);
-        
-        _neighborsSubscription = NeighborTelemetryRtdbService.instance
+
+        _neighborRtdbSubscription = NeighborTelemetryRtdbService.instance
             .listenLocationsInRoom(room)
             .map((list) {
           const stale = Duration(minutes: 5);
@@ -5628,7 +5880,8 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
           return list.where((n) => n.lastUpdate.isAfter(cutoff)).toList();
         }).listen(
           (neighbors) {
-            if (mounted) unawaited(_updateNeighborAnnotations(neighbors));
+            _neighborRtdbSnapshot = neighbors;
+            _mergeNeighborStreamsAndUpdateAnnotations();
           },
           onError: (e) {
             Logger.error('Neighbors RTDB stream error: $e',
@@ -5636,6 +5889,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
             if (mounted) _listenForNeighborsFirestoreOnly(pos);
           },
         );
+        _startNeighborFirestoreFriendsStream(pos);
         return;
       }
     } catch (e) {
@@ -5646,17 +5900,9 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
   }
 
   void _listenForNeighborsFirestoreOnly(geolocator.Position pos) {
-    _neighborsSubscription?.cancel();
-    _neighborsSubscription = NeighborLocationService()
-        .nearbyNeighbors(centerLat: pos.latitude, centerLng: pos.longitude)
-        .listen(
-      (neighbors) {
-        if (mounted) unawaited(_updateNeighborAnnotations(neighbors));
-      },
-      onError: (e) {
-        Logger.error('Neighbors stream error: $e', tag: 'MAP', error: e);
-      },
-    );
+    _cancelNeighborLocationSubscriptions();
+    _neighborRtdbSnapshot = [];
+    _startNeighborFirestoreFriendsStream(pos);
   }
 
   bool _isUpdatingNeighbors = false;
@@ -5698,6 +5944,9 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
     if (_neighborsAnnotationManager == null) {
       _isUpdatingNeighbors = false;
       NeighborMapFeedController.instance.setNeighbors([]);
+      _lastFilteredNeighborsForMap = [];
+      _lastNeighborDisplayByUid = {};
+      _recomputeAvatarPinsForEmojiAvoidance();
       return;
     }
 
@@ -5731,6 +5980,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
             final ann = _neighborAnnotations[uid]!;
             _neighborAnnotationIdToUid.remove(ann.id);
             _neighborData.remove(uid);
+            _neighborIconSizeBaseByUid.remove(uid);
             await _neighborsAnnotationManager?.delete(ann);
           } catch (_) {}
           _neighborAnnotations.remove(uid);
@@ -5792,6 +6042,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
       // ✅ FIX: Dacă userul este deja afișat ca Mașină (strat Șoferi), eliminăm
       // eventualul Emoticon rămas în urmă pentru a evita suprapunerea.
       if (_nearbyDriverAnnotations.containsKey(neighbor.uid)) {
+        _neighborIconSizeBaseByUid.remove(neighbor.uid);
         final staleAnn = _neighborAnnotations.remove(neighbor.uid);
         if (staleAnn != null) {
           _neighborAnnotationIdToUid.remove(staleAnn.id);
@@ -5817,6 +6068,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
       // nearbyCount=0 → full size; ≥4 → minimum size (55% din original)
       final densityFactor = 1.0 - (nearbyCount.clamp(0, 4) / 4.0) * 0.45;
 
+      final double iconSizeBase;
       final double iconSize;
 
       final bool isDriving = neighbor.isDriver || neighbor.activityStatus == 'driving';
@@ -5830,10 +6082,10 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
         } else {
           icon = await _generateNeighborCarMarker();
         }
-        iconSize = 1.98 * densityFactor;
+        iconSizeBase = 1.98 * densityFactor;
       } else if (garagePath != null) {
         icon = await _generateMarkerIcon(isPassenger: true, customAssetPath: garagePath);
-        iconSize = 1.72 * densityFactor;
+        iconSizeBase = 1.72 * densityFactor;
       } else if (hasPhoto) {
         icon = await NeighborFriendMarkerIcons.buildPhotoMarker(
           photoURL: neighbor.photoURL!,
@@ -5841,7 +6093,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
           batteryLevel: neighbor.batteryLevel,
           isCharging: neighbor.isCharging,
         );
-        iconSize = 1.55 * densityFactor;
+        iconSizeBase = 1.55 * densityFactor;
       } else {
         icon = await NeighborFriendMarkerIcons.buildEmojiMarker(
           emoji: neighbor.avatar,
@@ -5853,8 +6105,10 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
           placeKind: neighbor.placeKind,
           stationarySinceMs: neighbor.stationarySinceMs,
         );
-        iconSize = 1.55 * densityFactor;
+        iconSizeBase = 1.55 * densityFactor;
       }
+      _neighborIconSizeBaseByUid[neighbor.uid] = iconSizeBase;
+      iconSize = iconSizeBase * _neighborAvatarZoomFactor();
 
       String? textField;
 
@@ -5898,7 +6152,8 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
       }
 
       final List<double> tOffset = isDriving ? [0, 2.45] : [0, 2.65];
-      final int tColor = isDriving ? 0xFF1A237E : 0xFF7C3AED;
+      // Contrast pe hărți întunecate: text deschis + contur închis.
+      final int tColor = isDriving ? 0xFFE8EAF6 : 0xFFE1BEE7;
       final double tSize = isDriving ? 11.5 : 12.5;
 
         final disp = displayByUid[neighbor.uid];
@@ -5931,7 +6186,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
             textSize: tSize,
             textOffset: tOffset,
             textColor: tColor,
-            textHaloColor: 0xFFFFFFFF,
+            textHaloColor: 0xFF000000,
             textHaloWidth: 2.0,
           );
           try {
@@ -5940,12 +6195,15 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
               _neighborAnnotations[neighbor.uid] = annotation;
               _neighborAnnotationIdToUid[annotation.id] = neighbor.uid;
               _neighborData[neighbor.uid] = neighbor;
-              _showMapActivityToast(
-                neighbor.avatar,
-                neighbor.displayName,
-                'este din nou pe hartă',
-                onTap: () => _onNeighborClicked(neighbor.uid),
-              );
+              if (!_neighborMapActivityToastOnceUids.contains(neighbor.uid)) {
+                _neighborMapActivityToastOnceUids.add(neighbor.uid);
+                _showMapActivityToast(
+                  neighbor.avatar,
+                  neighbor.displayName,
+                  'e acum pe hartă',
+                  onTap: () => _onNeighborClicked(neighbor.uid),
+                );
+              }
             }
           } catch (_) {
           } finally {
@@ -5953,6 +6211,12 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
           }
         }
       }
+
+      _lastFilteredNeighborsForMap =
+          List<NeighborLocation>.from(filteredNeighbors);
+      _lastNeighborDisplayByUid =
+          Map<String, NeighborDisplayCoords>.from(displayByUid);
+      _recomputeAvatarPinsForEmojiAvoidance();
     } finally {
       _isUpdatingNeighbors = false;
     }
@@ -6289,11 +6553,36 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
     BleBumpBridge.instance.onBump = (peerUid) {
       if (!mounted) return;
       if (_recentlyBumpedUids.contains(peerUid)) return;
-      final neighbor = _neighborData[peerUid];
-      if (neighbor != null) {
-        _triggerNeighborBump(neighbor);
-        unawaited(ActivityFeedWriter.hitWith(neighbor.displayName));
+      var neighbor = _neighborData[peerUid];
+      if (neighbor == null) {
+        for (final n in _lastRawNeighborsForMap) {
+          if (n.uid == peerUid) {
+            neighbor = n;
+            break;
+          }
+        }
       }
+      if (neighbor == null) {
+        final anchor = _currentPositionObject;
+        if (anchor == null) return;
+        String name = 'Contact apropiat';
+        String avatar = '👤';
+        for (final c in _contactUsers) {
+          if (c.uid == peerUid) {
+            name = c.displayName;
+            break;
+          }
+        }
+        neighbor = NeighborLocation.stubForProximity(
+          uid: peerUid,
+          displayName: name,
+          avatar: avatar,
+          anchorLat: anchor.latitude,
+          anchorLng: anchor.longitude,
+        );
+      }
+      _triggerNeighborBump(neighbor);
+      unawaited(ActivityFeedWriter.hitWith(neighbor.displayName));
     };
     BleBumpBridge.instance.start();
   }
@@ -7217,14 +7506,15 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
   Future<void> _deactivateVisibility() async {
     _ghostModeTimer?.cancel();
     _ghostModeTimer = null;
+    _pausedSocialPublishTimer?.cancel();
+    _pausedSocialPublishTimer = null;
     _visibilityPublishTimer?.cancel();
     _visibilityPublishTimer = null;
     setState(() {
       _isVisibleToNeighbors = false;
       _neighborActivityFeedDismissed = false;
     });
-    _neighborsSubscription?.cancel();
-    _neighborsSubscription = null;
+    _cancelNeighborLocationSubscriptions();
     await NeighborLocationService().setInvisible();
     NeighborStationaryTracker.instance.reset();
     NeighborSavedPlacesCache.instance.dispose();
@@ -9072,6 +9362,9 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
           unawaited(_maybePollMagicEventsThrottled());
           _ensureNeighborsListeningAfterPosition();
           _refreshNeighborhoodRequestBubbles();
+          if (_useAndroidFlutterUserMarkerOverlay) {
+            unawaited(_projectAndroidUserMarkerOverlay());
+          }
         },
         onError: (Object e) {
           Logger.warning('Passive GPS warmup: $e', tag: 'MAP');
@@ -10614,7 +10907,6 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
                       final hasMine = _hasMyMapEmojiPlaced(myUid);
                       final screenW = MediaQuery.sizeOf(context).width;
                       final panelMaxW = (screenW - 48).clamp(220.0, 288.0);
-                      final gridMaxH = (MediaQuery.sizeOf(context).height * 0.32).clamp(140.0, 210.0);
                       return Column(
                         crossAxisAlignment: CrossAxisAlignment.end,
                         mainAxisSize: MainAxisSize.min,
@@ -10669,11 +10961,10 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
                                 boxShadow: const [BoxShadow(color: Colors.black26, blurRadius: 10)],
                               ),
                               child: Column(
-                                mainAxisSize: MainAxisSize.min,
+                                mainAxisSize: MainAxisSize.max,
                                 crossAxisAlignment: CrossAxisAlignment.stretch,
                                 children: [
-                                  ConstrainedBox(
-                                    constraints: BoxConstraints(maxHeight: gridMaxH),
+                                  Expanded(
                                     child: SingleChildScrollView(
                                       child: Wrap(
                                         alignment: WrapAlignment.end,
@@ -11211,7 +11502,8 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
                   statusProvider.setStatus(AssistantWorkStatus.idle);
                 }
               });
-              
+
+              if (!canShowVoiceAI) return const SizedBox.shrink();
               if (!voiceIntegration.isVoiceActive) return const SizedBox.shrink();
               
               return MapVoiceOverlay(
@@ -11229,8 +11521,8 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
             },
           ),
           
-          // ✅ NOU: Assistant Status Overlay - Indicator mic în colțul din dreapta sus
-          const AssistantStatusOverlay(),
+          // Indicator asistent — doar dacă UI vocal e activat în setări
+          if (canShowVoiceAI) const AssistantStatusOverlay(),
 
           // Banner offline — apare sub AppBar când nu există conexiune
           Consumer<ConnectivityService>(
@@ -11581,7 +11873,14 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
   void _onCameraChanged(CameraChangedEventData data) {
     if (!mounted) return;
     final lat = data.cameraState.center.coordinates.lat.toDouble();
-    final zoom = data.cameraState.zoom;
+    final zoom = data.cameraState.zoom.toDouble();
+    _liveCameraZoom = zoom;
+    _neighborZoomDebounce?.cancel();
+    _neighborZoomDebounce = Timer(const Duration(milliseconds: 90), () {
+      if (mounted) {
+        unawaited(_applyUserAvatarLayersZoomScale());
+      }
+    });
     final w = MediaQuery.sizeOf(context).width;
 
     // Actualizare text scară (metri vizibili pe sol)
@@ -11594,8 +11893,8 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
     // ca să comutăm între model 3D și sprite 2D.
     final bool wasAbove = _mapZoomLevel >= 17.5;
     final bool isAbove = zoom >= 17.5;
+    _mapZoomLevel = zoom;
     if (wasAbove != isAbove) {
-      _mapZoomLevel = zoom;
       unawaited(_updateUserMarker(centerCamera: false));
     }
 
@@ -13018,10 +13317,13 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
         maxHeight: MediaQuery.of(context).size.height * 0.6,
       ),
       builder: (ctx) {
+        final sheetH = MediaQuery.sizeOf(ctx).height * 0.6;
         return SafeArea(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
+          child: SizedBox(
+            height: sheetH,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
               const SizedBox(height: 12),
               Container(
                 width: 36,
@@ -13044,7 +13346,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
                 ),
               ),
               const Divider(height: 1),
-              Flexible(
+              Expanded(
                 child: ListView.separated(
                   padding: const EdgeInsets.symmetric(vertical: 8),
                   itemCount: pois.length,
@@ -13108,6 +13410,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
                 ),
               ),
             ],
+            ),
           ),
         );
       },
@@ -14678,12 +14981,25 @@ class _MapUniversalSearchOverlayState extends State<MapUniversalSearchOverlay> {
         color: Colors.white.withValues(alpha: 0.12),
         space: 1,
       ),
+      listTileTheme: ListTileThemeData(
+        iconColor: Colors.white.withValues(alpha: 0.88),
+        textColor: Colors.white.withValues(alpha: 0.94),
+        titleTextStyle: TextStyle(
+          color: Colors.white.withValues(alpha: 0.95),
+          fontWeight: FontWeight.w700,
+          fontSize: 15,
+        ),
+        subtitleTextStyle: TextStyle(
+          color: Colors.white.withValues(alpha: 0.72),
+          fontSize: 12,
+        ),
+      ),
       inputDecorationTheme: base.inputDecorationTheme.copyWith(
         filled: true,
         fillColor: Colors.white.withValues(alpha: 0.10),
         border: InputBorder.none,
         hintStyle: TextStyle(
-          color: scheme.onSurface.withValues(alpha: 0.50),
+          color: Colors.white.withValues(alpha: 0.55),
           fontWeight: FontWeight.w500,
           fontSize: 16,
         ),
@@ -15050,52 +15366,88 @@ class _MapUniversalSearchOverlayState extends State<MapUniversalSearchOverlay> {
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
                         Padding(
-                          padding: const EdgeInsets.fromLTRB(14, 12, 8, 8),
-                          child: TextField(
-                            controller: _controller,
-                            focusNode: _focus,
-                            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                  color: Theme.of(context).colorScheme.onSurface,
-                                ),
-                            cursorColor: Theme.of(context).colorScheme.primary,
-                            textInputAction: TextInputAction.search,
-                            decoration: InputDecoration(
-                              hintText: 'Caută prieteni și locuri...',
-                              border: InputBorder.none,
-                              isDense: true,
-                              hintStyle: Theme.of(context)
-                                  .inputDecorationTheme
-                                  .hintStyle,
-                              suffixIcon: q.isNotEmpty
-                                ? IconButton(
-                                    icon: Icon(Icons.close_rounded,
+                          padding: const EdgeInsets.fromLTRB(10, 10, 6, 8),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Expanded(
+                                child: TextField(
+                                  controller: _controller,
+                                  focusNode: _focus,
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .bodyLarge
+                                      ?.copyWith(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
                                         color: Theme.of(context)
                                             .colorScheme
-                                            .onSurface
-                                            .withValues(alpha: 0.65)),
-                                    onPressed: () {
-                                      _controller.clear();
-                                      setState(() {
-                                        _placeRows = [];
-                                        _placesLoading = false;
-                                      });
-                                      _focus.requestFocus();
-                                    },
-                                  )
-                                : Icon(
-                                    Icons.search_rounded,
-                                    color: Theme.of(context)
-                                        .colorScheme
-                                        .onSurface
-                                        .withValues(alpha: 0.38),
+                                            .onSurface,
+                                      ),
+                                  cursorColor:
+                                      Theme.of(context).colorScheme.primary,
+                                  textInputAction: TextInputAction.search,
+                                  decoration: InputDecoration(
+                                    hintText: 'Caută prieteni și locuri...',
+                                    filled: true,
+                                    fillColor: Colors.white.withValues(alpha: 0.12),
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(14),
+                                      borderSide: BorderSide.none,
+                                    ),
+                                    isDense: true,
+                                    contentPadding: const EdgeInsets.symmetric(
+                                      horizontal: 12,
+                                      vertical: 10,
+                                    ),
+                                    hintStyle: Theme.of(context)
+                                        .inputDecorationTheme
+                                        .hintStyle,
+                                    suffixIcon: q.isNotEmpty
+                                        ? IconButton(
+                                            icon: Icon(
+                                              Icons.close_rounded,
+                                              color: Theme.of(context)
+                                                  .colorScheme
+                                                  .onSurface
+                                                  .withValues(alpha: 0.65),
+                                            ),
+                                            onPressed: () {
+                                              _controller.clear();
+                                              setState(() {
+                                                _placeRows = [];
+                                                _placesLoading = false;
+                                              });
+                                              _focus.requestFocus();
+                                            },
+                                          )
+                                        : Icon(
+                                            Icons.search_rounded,
+                                            color: Theme.of(context)
+                                                .colorScheme
+                                                .onSurface
+                                                .withValues(alpha: 0.45),
+                                          ),
                                   ),
-                            ),
-                            onChanged: (v) {
-                              setState(() {});
-                              _schedulePlacesSearch(v);
-                            },
+                                  onChanged: (v) {
+                                    setState(() {});
+                                    _schedulePlacesSearch(v);
+                                  },
+                                ),
+                              ),
+                              IconButton(
+                                tooltip: 'Închide',
+                                visualDensity: VisualDensity.compact,
+                                onPressed: widget.onClose,
+                                icon: Icon(
+                                  Icons.close_rounded,
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .onSurface
+                                      .withValues(alpha: 0.85),
+                                ),
+                              ),
+                            ],
                           ),
                     ),
                     Divider(height: 1, color: Theme.of(context).dividerTheme.color),
@@ -15119,6 +15471,44 @@ class _MapUniversalSearchOverlayState extends State<MapUniversalSearchOverlay> {
                                 ),
                               ),
                             ),
+                            if (_savedAddresses.isNotEmpty) ...[
+                              Padding(
+                                padding:
+                                    const EdgeInsets.fromLTRB(16, 4, 16, 6),
+                                child: Text(
+                                  'Locuri salvate',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w800,
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .onSurfaceVariant,
+                                    letterSpacing: 0.6,
+                                  ),
+                                ),
+                              ),
+                              for (final addr in _savedAddresses.take(12))
+                                ListTile(
+                                  leading: const Icon(
+                                    Icons.bookmark_rounded,
+                                    color: Color(0xFF00E5FF),
+                                  ),
+                                  title: Text(addr.label),
+                                  subtitle: Text(
+                                    savedAddressDisplayLine(addr),
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  onTap: () {
+                                    widget.onPlaceChosen(
+                                      addr.coordinates.latitude,
+                                      addr.coordinates.longitude,
+                                      savedAddressDisplayLine(addr),
+                                    );
+                                    widget.onClose();
+                                  },
+                                ),
+                            ],
                           ] else ...[
                             if (contactsShown.isNotEmpty ||
                                 neighborsShown.isNotEmpty)

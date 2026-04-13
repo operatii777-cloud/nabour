@@ -144,6 +144,14 @@ class PushNotificationService {
           channelId: 'chat_messages',
         );
         break;
+      case 'private_chat_message':
+        LocalNotificationsService().showSimple(
+          title: title.isEmpty ? 'Mesaj privat' : title,
+          body: body,
+          payload: message.data.toString(),
+          channelId: 'chat_messages',
+        );
+        break;
       case 'emergency':
         _handleEmergency(message);
         LocalNotificationsService().showSimple(title: title, body: body, payload: message.data.toString());

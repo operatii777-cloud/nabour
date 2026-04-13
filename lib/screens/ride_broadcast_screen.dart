@@ -8,6 +8,7 @@ import 'package:nabour_app/models/neighborhood_request_model.dart';
 import 'package:nabour_app/screens/chat_screen.dart';
 import 'package:nabour_app/services/firestore_service.dart';
 import 'package:nabour_app/services/map_quick_action_badge_prefs.dart';
+import 'package:nabour_app/features/neighborhood_requests/neighborhood_requests_manager.dart';
 import 'package:nabour_app/utils/logger.dart';
 import 'package:nabour_app/widgets/nabour_nametag_widget.dart';
 import 'package:nabour_app/services/contacts_service.dart';
@@ -353,46 +354,74 @@ class _RideBroadcastFeedScreenState extends State<RideBroadcastFeedScreen>
           ],
         ),
       ),
-      floatingActionButton: _tabController.index == 0
+      floatingActionButton: (_tabController.index == 0 ||
+              _tabController.index == 1)
           ? FloatingActionButton.extended(
-        onPressed: () async {
-          final result = await Navigator.push<RideBroadcastPostResult?>(
-            context,
-            MaterialPageRoute(builder: (_) => const NewRideBroadcastScreen()),
-          );
-          if (!context.mounted) return;
-          if (result == null) return;
-          if (result.warnNoNabourContacts) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: const Text(
-                  'Cererea e vizibilă doar pentru tine: în agendă nu am găsit alți utilizatori Nabour cu numărul din profilul lor.',
-                ),
-                backgroundColor: Colors.orange.shade800,
-                behavior: SnackBarBehavior.floating,
-                duration: const Duration(seconds: 6),
-              ),
-            );
-          } else if (result.nabourContactsInAgenda > 0) {
-            final n = result.nabourContactsInAgenda;
-            final people = n == 1 ? '1 contact Nabour' : '$n contacte Nabour';
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(
-                  'Cererea e vizibilă pentru tine și pentru încă $people din agendă.',
-                ),
-                backgroundColor: Colors.green.shade800,
-                behavior: SnackBarBehavior.floating,
-                duration: const Duration(seconds: 5),
-              ),
-            );
-          }
-        },
-        icon: const Icon(Icons.directions_car_rounded),
-        label: const Text('Cer o cursă'),
-        backgroundColor: const Color(0xFF7C3AED),
-        foregroundColor: Colors.white,
-      )
+              onPressed: () async {
+                if (_tabController.index == 0) {
+                  final result = await Navigator.push<RideBroadcastPostResult?>(
+                    context,
+                    MaterialPageRoute(
+                        builder: (_) => const NewRideBroadcastScreen()),
+                  );
+                  if (!context.mounted) return;
+                  if (result == null) return;
+                  if (result.warnNoNabourContacts) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: const Text(
+                          'Cererea e vizibilă doar pentru tine: în agendă nu am găsit alți utilizatori Nabour cu numărul din profilul lor.',
+                        ),
+                        backgroundColor: Colors.orange.shade800,
+                        behavior: SnackBarBehavior.floating,
+                        duration: const Duration(seconds: 6),
+                      ),
+                    );
+                  } else if (result.nabourContactsInAgenda > 0) {
+                    final n = result.nabourContactsInAgenda;
+                    final people =
+                        n == 1 ? '1 contact Nabour' : '$n contacte Nabour';
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          'Cererea e vizibilă pentru tine și pentru încă $people din agendă.',
+                        ),
+                        backgroundColor: Colors.green.shade800,
+                        behavior: SnackBarBehavior.floating,
+                        duration: const Duration(seconds: 5),
+                      ),
+                    );
+                  }
+                  return;
+                }
+                await _loadUserPosition();
+                final p = _userPosition;
+                if (!context.mounted) return;
+                if (p == null) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text(
+                        'Activează locația ca să plasezi o cerere pe hartă.',
+                      ),
+                    ),
+                  );
+                  return;
+                }
+                NeighborhoodRequestsManager.showCreateRequestSheet(
+                  context,
+                  p.latitude,
+                  p.longitude,
+                );
+              },
+              icon: Icon(_tabController.index == 0
+                  ? Icons.directions_car_rounded
+                  : Icons.water_drop_rounded),
+              label: Text(_tabController.index == 0
+                  ? 'Cer o cursă'
+                  : 'Cerere pe hartă'),
+              backgroundColor: const Color(0xFF7C3AED),
+              foregroundColor: Colors.white,
+            )
           : null,
       body: TabBarView(
         controller: _tabController,
@@ -1544,6 +1573,8 @@ class _ReplyItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final cs = theme.colorScheme;
     final isMe = reply.uid == FirebaseAuth.instance.currentUser?.uid;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
@@ -1556,16 +1587,34 @@ class _ReplyItem extends StatelessWidget {
             child: Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: isMe ? const Color(0xFF7C3AED).withValues(alpha: 0.05) : Colors.grey.shade50,
+                color: isMe
+                    ? cs.primary.withValues(alpha: 0.12)
+                    : cs.surfaceContainerHigh,
                 borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: isMe ? const Color(0xFF7C3AED).withValues(alpha: 0.2) : Colors.grey.shade200),
+                border: Border.all(
+                  color: isMe
+                      ? cs.primary.withValues(alpha: 0.35)
+                      : cs.outlineVariant,
+                ),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(reply.displayName, style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.grey.shade700)),
+                  Text(
+                    reply.displayName,
+                    style: theme.textTheme.labelSmall?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: cs.onSurfaceVariant,
+                    ),
+                  ),
                   const SizedBox(height: 2),
-                  Text(reply.text, style: const TextStyle(fontSize: 13)),
+                  Text(
+                    reply.text,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      fontSize: 13,
+                      color: cs.onSurface,
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -1588,13 +1637,14 @@ class _OfferTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Container(
       margin: const EdgeInsets.fromLTRB(14, 4, 14, 4),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.grey.shade50,
+        color: cs.surfaceContainerHigh,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey.shade200),
+        border: Border.all(color: cs.outlineVariant),
       ),
       child: Row(
         children: [
@@ -1607,7 +1657,7 @@ class _OfferTile extends StatelessWidget {
           Expanded(
             child: Text(
               '${offer.carInfo} · ~${offer.etaMinutes} min',
-              style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+              style: TextStyle(fontSize: 12, color: cs.onSurfaceVariant),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
@@ -1668,6 +1718,8 @@ class _HistoryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final cs = theme.colorScheme;
     final local = request.createdAt.toLocal();
     final date = '${local.day.toString().padLeft(2, '0')}.'
         '${local.month.toString().padLeft(2, '0')}.'
@@ -1678,10 +1730,16 @@ class _HistoryCard extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: cs.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.grey.shade200),
-        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 8, offset: const Offset(0, 2))],
+        border: Border.all(color: cs.outlineVariant),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: theme.brightness == Brightness.dark ? 0.2 : 0.06),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1697,7 +1755,10 @@ class _HistoryCard extends StatelessWidget {
                 child: Text(_statusLabel(), style: TextStyle(fontSize: 12, color: _statusColor(), fontWeight: FontWeight.w700)),
               ),
               const Spacer(),
-              Text(date, style: TextStyle(fontSize: 11, color: Colors.grey.shade500)),
+              Text(
+                date,
+                style: theme.textTheme.labelSmall?.copyWith(color: cs.onSurfaceVariant),
+              ),
               const SizedBox(width: 8),
               GestureDetector(
                 onTap: onDelete,
@@ -1706,13 +1767,25 @@ class _HistoryCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 8),
-          Text(request.message, style: const TextStyle(fontSize: 14), maxLines: 2, overflow: TextOverflow.ellipsis),
+          Text(
+            request.message,
+            style: theme.textTheme.bodyMedium?.copyWith(color: cs.onSurface),
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
           if (request.destination != null && request.destination!.isNotEmpty) ...[
             const SizedBox(height: 4),
             Row(children: [
-              Icon(Icons.location_on_rounded, size: 13, color: Colors.grey.shade500),
+              Icon(Icons.location_on_rounded, size: 13, color: cs.onSurfaceVariant),
               const SizedBox(width: 4),
-              Expanded(child: Text(request.destination!, style: TextStyle(fontSize: 12, color: Colors.grey.shade600), maxLines: 1, overflow: TextOverflow.ellipsis)),
+              Expanded(
+                child: Text(
+                  request.destination!,
+                  style: theme.textTheme.bodySmall?.copyWith(color: cs.onSurfaceVariant),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
             ]),
           ],
           if (request.acceptedDriverName != null) ...[
@@ -1916,6 +1989,7 @@ class _NewRideBroadcastScreenState
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final cs = theme.colorScheme;
 
     return Scaffold(
       appBar: AppBar(
@@ -1927,12 +2001,15 @@ class _NewRideBroadcastScreenState
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ── Hint ──────────────────────────────────────────────
+            // ── Hint (contrast sigur light + dark) ────────────────
             Container(
               padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
-                color: const Color(0xFF7C3AED).withValues(alpha: 0.07),
+                color: cs.primary.withValues(alpha: 0.12),
                 borderRadius: BorderRadius.circular(14),
+                border: Border.all(
+                  color: cs.primary.withValues(alpha: 0.28),
+                ),
               ),
               child: Row(
                 children: [
@@ -1941,8 +2018,10 @@ class _NewRideBroadcastScreenState
                   Expanded(
                     child: Text(
                       'Cererea ta va fi vizibilă persoanelor din agenda ta timp de 30 de minute.',
-                      style: theme.textTheme.bodySmall
-                          ?.copyWith(color: Colors.grey.shade700, height: 1.4),
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: cs.onSurface.withValues(alpha: 0.92),
+                        height: 1.4,
+                      ),
                     ),
                   ),
                 ],
@@ -1951,10 +2030,12 @@ class _NewRideBroadcastScreenState
 
             const SizedBox(height: 22),
 
-            // ── Quick chips ───────────────────────────────────────
-            Text('Selectează rapid sau scrie',
-                style: theme.textTheme.titleSmall
-                    ?.copyWith(fontWeight: FontWeight.w800)),
+            // ── Quick chips: inverseSurface + onInverseSurface (pilule citibile mereu) ──
+            Text(
+              'Selectează rapid sau scrie',
+              style: theme.textTheme.titleSmall
+                  ?.copyWith(fontWeight: FontWeight.w800, color: cs.onSurface),
+            ),
             const SizedBox(height: 10),
             Wrap(
               spacing: 8,
@@ -1967,12 +2048,20 @@ class _NewRideBroadcastScreenState
                     padding: const EdgeInsets.symmetric(
                         horizontal: 12, vertical: 8),
                     decoration: BoxDecoration(
-                      color: Colors.grey.shade100,
+                      color: cs.inverseSurface,
                       borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: Colors.grey.shade300),
+                      border: Border.all(
+                        color: cs.outline.withValues(alpha: 0.35),
+                      ),
                     ),
-                    child: Text(msg,
-                        style: const TextStyle(fontSize: 12)),
+                    child: Text(
+                      msg,
+                      style: theme.textTheme.labelMedium?.copyWith(
+                        color: cs.onInverseSurface,
+                        fontSize: 12,
+                        height: 1.25,
+                      ),
+                    ),
                   ),
                 );
               }).toList(),
@@ -1985,9 +2074,13 @@ class _NewRideBroadcastScreenState
               controller: _messageController,
               maxLines: 3,
               maxLength: 200,
+              style: TextStyle(color: cs.onSurface),
+              cursorColor: cs.primary,
               decoration: InputDecoration(
                 labelText: 'Mesajul tău *',
                 hintText: 'Unde vrei să mergi? Orice detaliu util...',
+                labelStyle: TextStyle(color: cs.onSurface.withValues(alpha: 0.85)),
+                hintStyle: TextStyle(color: cs.onSurface.withValues(alpha: 0.45)),
                 border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(14)),
                 alignLabelWithHint: true,
@@ -1999,10 +2092,14 @@ class _NewRideBroadcastScreenState
             // ── Destinație (opțional) ─────────────────────────────
             TextField(
               controller: _destinationController,
+              style: TextStyle(color: cs.onSurface),
+              cursorColor: cs.primary,
               decoration: InputDecoration(
                 labelText: 'Destinație (opțional)',
                 hintText: 'ex: Kaufland Titan, Stația Iancului...',
-                prefixIcon: const Icon(Icons.location_on_outlined),
+                labelStyle: TextStyle(color: cs.onSurface.withValues(alpha: 0.85)),
+                hintStyle: TextStyle(color: cs.onSurface.withValues(alpha: 0.45)),
+                prefixIcon: Icon(Icons.location_on_outlined, color: cs.onSurfaceVariant),
                 border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(14)),
               ),
@@ -2042,8 +2139,9 @@ class _NewRideBroadcastScreenState
             Center(
               child: Text(
                 'Cererea expiră automat după 30 de minute.',
-                style: theme.textTheme.bodySmall
-                    ?.copyWith(color: Colors.grey.shade500),
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: cs.onSurfaceVariant,
+                ),
               ),
             ),
           ],

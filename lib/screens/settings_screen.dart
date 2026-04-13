@@ -11,6 +11,7 @@ import 'package:nabour_app/services/community_mode_service.dart';
 import 'package:nabour_app/services/movement_history_preferences_service.dart';
 import 'package:nabour_app/services/movement_history_service.dart';
 import 'package:nabour_app/services/nearby_social_notifications_prefs.dart';
+import 'package:nabour_app/services/assistant_voice_ui_prefs.dart';
 import 'package:nabour_app/services/now_playing_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -38,6 +39,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
   String _npTitle = '';
   String _npArtist = '';
   bool _fuzzyLocationEnabled = false;
+  bool _assistantVoiceUiVisible = false;
+  bool _assistantVoiceUiLoaded = false;
 
   @override
   void initState() {
@@ -46,6 +49,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
     _loadNearbySocialPrefs();
     _loadSocialProfileFields();
     _loadFuzzyLocationPref();
+    _loadAssistantVoiceUiPref();
+  }
+
+  Future<void> _loadAssistantVoiceUiPref() async {
+    await AssistantVoiceUiPrefs.instance.load();
+    if (!mounted) return;
+    setState(() {
+      _assistantVoiceUiVisible =
+          AssistantVoiceUiPrefs.instance.visibilityNotifier.value;
+      _assistantVoiceUiLoaded = true;
+    });
   }
 
   Future<void> _loadFuzzyLocationPref() async {
@@ -161,7 +175,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
               },
             ),
           ),
-
+          _buildSwitchTile(
+            context,
+            icon: Icons.graphic_eq_rounded,
+            color: const Color(0xFF6366F1),
+            title: 'Asistent vocal pe hartă',
+            subtitle: 'Buton pe hartă și secțiunea din meniu (în curs de îmbunătățiri)',
+            value: _assistantVoiceUiLoaded ? _assistantVoiceUiVisible : false,
+            onChanged: !_assistantVoiceUiLoaded
+                ? (_) {}
+                : (val) async {
+                    setState(() => _assistantVoiceUiVisible = val);
+                    await AssistantVoiceUiPrefs.instance.setVisible(val);
+                  },
+          ),
 
           const Divider(height: 1),
 
@@ -393,6 +420,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     required IconData icon,
     required Color color,
     required String title,
+    String? subtitle,
     required bool value,
     required ValueChanged<bool> onChanged,
   }) {
@@ -404,6 +432,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
         overflow: TextOverflow.ellipsis,
         style: const TextStyle(fontWeight: FontWeight.w600),
       ),
+      subtitle: subtitle == null
+          ? null
+          : Text(
+              subtitle,
+              maxLines: 3,
+              overflow: TextOverflow.ellipsis,
+            ),
       minVerticalPadding: 8,
       trailing: Switch(
         value: value,
