@@ -2,7 +2,7 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:nabour_app/models/neighbor_location_model.dart';
-import 'package:nabour_app/services/neighbor_telemetry_rtdb_service.dart';
+import 'package:nabour_app/services/nbr_telem_rtdb_service.dart';
 import 'package:nabour_app/utils/logger.dart';
 
 /// Serviciu pentru social map — opt-in vizibilitate vecini.
@@ -74,8 +74,10 @@ class NeighborLocationService {
           'licensePlate': licensePlate ?? '',
           'allowedUids': allowedUids,
           'carAvatarId': cid,
+          'charging': charging,
           if (placeKind != null) 'placeKind': placeKind,
           if (stationarySince != null) 'stationarySince': stationarySince,
+          if (battery != null) 'battery': battery,
         };
         // Șofer disponibil: nu lăsăm `photoURL` vechi în document (merge îl păstra altfel).
         if (isDriver) {
@@ -145,6 +147,8 @@ class NeighborLocationService {
     required double centerLat,
     required double centerLng,
   }) {
+    // Filtru server-side inițial (reduce volume), dar păstrăm și filtru client-side
+    // pe fiecare snapshot pentru "rolling cutoff" fără restart app.
     final cutoff = Timestamp.fromDate(
         DateTime.now().subtract(_staleThreshold));
     final myUid = _auth.currentUser?.uid;
@@ -156,10 +160,12 @@ class NeighborLocationService {
         .where('allowedUids', arrayContains: myUid) // ✅ Server-side filter
         .snapshots()
         .map((snap) {
+      final rollingCutoff = DateTime.now().subtract(_staleThreshold);
       final neighbors = <NeighborLocation>[];
       for (final doc in snap.docs) {
         if (doc.id == myUid) continue;
         final n = NeighborLocation.fromMap(doc.id, doc.data());
+        if (!n.lastUpdate.isAfter(rollingCutoff)) continue;
         neighbors.add(n);
       }
       return neighbors;

@@ -42,6 +42,8 @@ class ChatMessage {
   final String? senderPhotoUrl;
   /// Emoji avatar aplicație la trimitere (fallback vizual).
   final String? senderAvatarEmoji;
+  /// ID local unic (UUID) pentru potrivire optimistic UI ↔ Firestore; opțional în document.
+  final String? clientMessageId;
 
   ChatMessage({
     required this.senderId,
@@ -66,6 +68,7 @@ class ChatMessage {
     this.reactions = const {},
     this.senderPhotoUrl,
     this.senderAvatarEmoji,
+    this.clientMessageId,
   });
 
   Map<String, dynamic> toMap() {
@@ -94,6 +97,8 @@ class ChatMessage {
         'senderPhotoUrl': senderPhotoUrl!.trim(),
       if (senderAvatarEmoji != null && senderAvatarEmoji!.trim().isNotEmpty)
         'senderAvatarEmoji': senderAvatarEmoji!.trim(),
+      if (clientMessageId != null && clientMessageId!.trim().isNotEmpty)
+        'clientMessageId': clientMessageId!.trim(),
     };
   }
 
@@ -129,6 +134,7 @@ class ChatMessage {
       reactions: Map<String, String>.from(map['reactions'] ?? {}),
       senderPhotoUrl: map['senderPhotoUrl'] as String?,
       senderAvatarEmoji: map['senderAvatarEmoji'] as String?,
+      clientMessageId: map['clientMessageId'] as String?,
     );
   }
 
@@ -155,6 +161,7 @@ class ChatMessage {
     Map<String, String>? reactions,
     String? senderPhotoUrl,
     String? senderAvatarEmoji,
+    String? clientMessageId,
   }) {
     return ChatMessage(
       senderId: senderId ?? this.senderId,
@@ -179,6 +186,7 @@ class ChatMessage {
       reactions: reactions ?? this.reactions,
       senderPhotoUrl: senderPhotoUrl ?? this.senderPhotoUrl,
       senderAvatarEmoji: senderAvatarEmoji ?? this.senderAvatarEmoji,
+      clientMessageId: clientMessageId ?? this.clientMessageId,
     );
   }
 }

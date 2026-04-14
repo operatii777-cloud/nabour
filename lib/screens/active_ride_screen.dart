@@ -11,7 +11,7 @@ import 'package:wakelock_plus/wakelock_plus.dart';
 import 'package:share_plus/share_plus.dart';
 
 import 'package:nabour_app/models/ride_model.dart';
-import 'package:nabour_app/services/active_ride_telemetry_rtdb_service.dart';
+import 'package:nabour_app/services/active_ride_telem_rtdb.dart';
 import 'package:nabour_app/services/firestore_service.dart';
 import 'package:nabour_app/services/routing_service.dart';
 import 'package:nabour_app/utils/external_maps_launcher.dart';

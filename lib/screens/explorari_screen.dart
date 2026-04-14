@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:nabour_app/features/explorari/explorari_firestore_sync.dart';
 import 'package:nabour_app/features/explorari/explorari_service.dart';
-import 'package:nabour_app/screens/explorari_leaderboard_screen.dart';
-import 'package:nabour_app/services/explorari_home_widget_bridge.dart';
+import 'package:nabour_app/screens/explorari_ldrboard_screen.dart';
+import 'package:nabour_app/services/explorari_home_bridge.dart';
 
 /// Rezumat Explorări: zone locale, sync Firebase, widget Android.
 class ExplorariScreen extends StatefulWidget {

@@ -13,9 +13,10 @@ class NeighborMarkerDisplayLayout {
   NeighborMarkerDisplayLayout._();
 
   /// Prietenii mai aproape decât această distanță sunt repoziționați pe spirală (nu se suprapun).
-  static const double mergeDistanceM = 50.0;
-  static const double baseRadiusM = 16.0;
-  static const double spiralStepM = 12.0;
+  /// GPS-ul poate împrăștia puncte „aceeași locație” pe zeci de metri — prag mai mare = grupare mai sigură.
+  static const double mergeDistanceM = 95.0;
+  static const double baseRadiusM = 28.0;
+  static const double spiralStepM = 18.0;
 
   static final double _goldenAngle =
       math.pi * (3.0 - math.sqrt(5.0));

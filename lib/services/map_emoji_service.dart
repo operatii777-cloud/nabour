@@ -110,7 +110,12 @@ class MapEmojiService {
   /// Fără `orderBy` pe server — evită index compus; sortăm local după timestamp.
   Stream<List<MapEmoji>> listenToRecentEmojis() {
     final now = Timestamp.fromDate(DateTime.now());
-    return _db.where(expireAtField, isGreaterThan: now).snapshots().map((snap) {
+    // orderBy pe același câmp ca inegalitatea — cerință Firestore; altfel query-ul poate eșua.
+    return _db
+        .where(expireAtField, isGreaterThan: now)
+        .orderBy(expireAtField)
+        .snapshots()
+        .map((snap) {
       final bySender = <String, MapEmoji>{};
       for (final doc in snap.docs) {
         try {

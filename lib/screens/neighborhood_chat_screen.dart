@@ -9,7 +9,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/services.dart';
 import 'package:nabour_app/utils/logger.dart';
 import 'package:nabour_app/utils/firestore_error_ui.dart';
-import 'package:nabour_app/services/map_quick_action_badge_prefs.dart';
+import 'package:nabour_app/services/map_qa_badge_prefs.dart';
 import 'package:nabour_app/screens/chat_screen.dart';
 import 'package:nabour_app/utils/content_filter.dart';
 import 'package:nabour_app/services/nabour_functions.dart';
@@ -18,6 +18,7 @@ import 'package:nabour_app/services/walkie_talkie_service.dart';
 import 'package:nabour_app/core/ui/app_feedback.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:nabour_app/l10n/app_localizations.dart';
 
 class NeighborhoodChatScreen extends StatefulWidget {
   const NeighborhoodChatScreen({super.key});
@@ -40,10 +41,6 @@ class _NeighborhoodChatScreenState extends State<NeighborhoodChatScreen> {
   StreamSubscription? _msgSoundSub;
   Timer? _expireTimer;
   final _walkieTalkieService = WalkieTalkieService();
-  bool _isRecording = false;
-  /// Degetul e încă pe microfon (evită upload dacă s-a eliberat înainte să pornească înregistrarea).
-  bool _fingerOnMic = false;
-  DateTime? _recordingStartTime;
 
   // Profilul userului curent (cached)
   String _myAvatar = '🙂';
@@ -109,11 +106,14 @@ class _NeighborhoodChatScreenState extends State<NeighborhoodChatScreen> {
 
   Future<void> _loadMuteState() async {
     final prefs = await SharedPreferences.getInstance();
+    if (!mounted) return;
     setState(() => _isMuted = prefs.getBool('chat_muted_$_roomId') ?? false);
   }
 
   Future<void> _toggleMute() async {
+    final l10n = AppLocalizations.of(context)!;
     final prefs = await SharedPreferences.getInstance();
+    if (!mounted) return;
     setState(() {
       _isMuted = !_isMuted;
       prefs.setBool('chat_muted_$_roomId', _isMuted);
@@ -121,7 +121,7 @@ class _NeighborhoodChatScreenState extends State<NeighborhoodChatScreen> {
     if (!mounted) return;
     AppFeedback.info(
       context,
-      _isMuted ? 'Chat silențios' : 'Sunet activat',
+      _isMuted ? l10n.neighborhoodChatMuted : l10n.neighborhoodChatSoundOn,
       duration: const Duration(seconds: 2),
     );
   }
@@ -175,13 +175,14 @@ class _NeighborhoodChatScreenState extends State<NeighborhoodChatScreen> {
   }
 
   Future<void> _resolveRoom() async {
+    final l10n = AppLocalizations.of(context)!;
     try {
       final bool serviceEnabled = await geo.Geolocator.isLocationServiceEnabled();
       if (!serviceEnabled) {
         if (mounted) {
           setState(() {
             _locating = false;
-            _locationError = 'GPS dezactivat. Activează locația pentru chat.';
+            _locationError = l10n.neighborhoodChatGpsDisabled;
           });
         }
         return;
@@ -195,7 +196,7 @@ class _NeighborhoodChatScreenState extends State<NeighborhoodChatScreen> {
         if (mounted) {
           setState(() {
             _locating = false;
-            _locationError = 'Permisiune GPS refuzată.';
+            _locationError = l10n.neighborhoodChatGpsPermissionDenied;
           });
         }
         return;
@@ -221,8 +222,7 @@ class _NeighborhoodChatScreenState extends State<NeighborhoodChatScreen> {
           if (mounted) {
             setState(() {
               _locating = false;
-              _locationError =
-                  'Chat cartier: răspuns invalid de la server (roomId H3).';
+              _locationError = l10n.neighborhoodChatInvalidServerResponse;
             });
           }
           return;
@@ -233,7 +233,7 @@ class _NeighborhoodChatScreenState extends State<NeighborhoodChatScreen> {
         if (mounted) {
           setState(() {
             _locating = false;
-            _locationError = 'Chat cartier: Functions indisponibile (${e.code}).';
+            _locationError = l10n.neighborhoodChatFunctionsUnavailable(e.code);
           });
         }
         return;
@@ -242,7 +242,7 @@ class _NeighborhoodChatScreenState extends State<NeighborhoodChatScreen> {
         if (mounted) {
           setState(() {
             _locating = false;
-            _locationError = 'Nu s-a putut activa chat-ul.';
+            _locationError = l10n.neighborhoodChatActivationFailed;
           });
         }
         return;
@@ -260,7 +260,7 @@ class _NeighborhoodChatScreenState extends State<NeighborhoodChatScreen> {
       }
     } catch (e) {
       Logger.error('NeighborhoodChat: location error: $e', error: e);
-      if (mounted) setState(() { _locating = false; _locationError = 'Nu s-a putut determina locația.'; });
+      if (mounted) setState(() { _locating = false; _locationError = l10n.neighborhoodChatLocationResolveFailed; });
     }
   }
 
@@ -268,12 +268,13 @@ class _NeighborhoodChatScreenState extends State<NeighborhoodChatScreen> {
       _firestore.collection('neighborhood_chats').doc(_roomId!).collection('messages');
 
   Future<void> _sendMessage() async {
+    final l10n = AppLocalizations.of(context)!;
     final text = _textController.text.trim();
     if (text.isEmpty || _roomId == null) return;
 
     final filterResult = ContentFilter.check(text);
     if (!filterResult.isClean) {
-      AppFeedback.warning(context, filterResult.message ?? 'Mesaj inadecvat.');
+      AppFeedback.warning(context, filterResult.message ?? l10n.neighborhoodChatInappropriateMessage);
       return;
     }
 
@@ -295,6 +296,7 @@ class _NeighborhoodChatScreenState extends State<NeighborhoodChatScreen> {
   }
 
   Future<void> _sendOmw() async {
+    final onMyWayText = AppLocalizations.of(context)!.neighborhoodChatOnMyWay;
     if (_roomId == null) return;
     final uid = _auth.currentUser?.uid;
     if (uid == null) return;
@@ -310,7 +312,7 @@ class _NeighborhoodChatScreenState extends State<NeighborhoodChatScreen> {
         'avatar': _myAvatar,
         'displayName': _myName,
         if (_myPhotoUrl != null) 'photoURL': _myPhotoUrl,
-        'text': '🚗 Sunt pe drum!',
+        'text': '🚗 $onMyWayText',
         'type': 'omw',
         if (pos != null) 'lat': pos.latitude,
         if (pos != null) 'lng': pos.longitude,
@@ -321,6 +323,8 @@ class _NeighborhoodChatScreenState extends State<NeighborhoodChatScreen> {
   }
 
   Future<void> _sendLocation() async {
+    final markedLocationText =
+        AppLocalizations.of(context)!.neighborhoodChatMarkedLocation;
     if (_roomId == null) return;
     final uid = _auth.currentUser?.uid;
     if (uid == null) return;
@@ -338,7 +342,7 @@ class _NeighborhoodChatScreenState extends State<NeighborhoodChatScreen> {
         'avatar': _myAvatar,
         'displayName': _myName,
         if (_myPhotoUrl != null) 'photoURL': _myPhotoUrl,
-        'text': '📍 Am marcat o locație pe hartă',
+        'text': '📍 $markedLocationText',
         'type': 'location',
         'lat': pos.latitude,
         'lng': pos.longitude,
@@ -348,88 +352,16 @@ class _NeighborhoodChatScreenState extends State<NeighborhoodChatScreen> {
     } catch (_) {}
   }
 
-  Future<void> _startRecording() async {
-    _fingerOnMic = true;
-    HapticFeedback.mediumImpact();
-    final ok = await _walkieTalkieService.startRecording();
-    if (!mounted) return;
-    if (!_fingerOnMic) {
-      await _walkieTalkieService.discardRecording();
-      return;
-    }
-    if (!ok) {
-      if (mounted) {
-        AppFeedback.warning(
-          context,
-          'Permisiune microfon necesară pentru mesaj vocal.',
-        );
-      }
-      return;
-    }
-    setState(() {
-      _isRecording = true;
-      _recordingStartTime = DateTime.now();
-    });
-  }
-
-  Future<void> _stopAndSendRecording() async {
-    _fingerOnMic = false;
-    await _walkieTalkieService.waitForStartSettled();
-    if (!mounted) return;
-
-    if (!_walkieTalkieService.isRecording) {
-      if (mounted) setState(() => _isRecording = false);
-      return;
-    }
-
-    // Eliberare rapidă: nativ a pornit dar UI nu marcă încă — nu trimitem.
-    if (!_isRecording) {
-      await _walkieTalkieService.discardRecording();
-      if (mounted) setState(() => _isRecording = false);
-      return;
-    }
-
-    final start = _recordingStartTime ?? DateTime.now();
-    if (mounted) setState(() => _isRecording = false);
-    final duration = DateTime.now().difference(start);
-
-    if (duration.inMilliseconds < 500) {
-      await _walkieTalkieService.discardRecording();
-      if (mounted) {
-        AppFeedback.info(
-          context,
-          'Ține apăsat mai mult (0,5s) pentru mesaj vocal.',
-          duration: const Duration(seconds: 2),
-        );
-      }
-      return;
-    }
-
-    final url = await _walkieTalkieService.stopRecordingAndUpload(_roomId!);
-    if (url != null) {
-      await _messagesRef.add({
-        'uid': _auth.currentUser?.uid,
-        'avatar': _myAvatar,
-        'displayName': _myName,
-        if (_myPhotoUrl != null) 'photoURL': _myPhotoUrl,
-        'text': '🎤 Mesaj vocal instant',
-        'type': 'voice',
-        'voiceUrl': url,
-        'createdAt': FieldValue.serverTimestamp(),
-      });
-      _scrollToBottom();
-    }
-  }
-
   void _showMessageOptions(String docId, String currentText) {
+    final l10n = AppLocalizations.of(context)!;
     showModalBottomSheet(
       context: context,
       builder: (ctx) => SafeArea(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            ListTile(leading: const Icon(Icons.edit), title: const Text('Editează'), onTap: () { Navigator.pop(ctx); _editMessage(docId, currentText); }),
-            ListTile(leading: const Icon(Icons.delete, color: Colors.red), title: const Text('Șterge'), onTap: () { Navigator.pop(ctx); _deleteMessage(docId); }),
+            ListTile(leading: const Icon(Icons.edit), title: Text(l10n.editMessage), onTap: () { Navigator.pop(ctx); _editMessage(docId, currentText); }),
+            ListTile(leading: const Icon(Icons.delete, color: Colors.red), title: Text(l10n.delete), onTap: () { Navigator.pop(ctx); _deleteMessage(docId); }),
           ],
         ),
       ),
@@ -437,12 +369,13 @@ class _NeighborhoodChatScreenState extends State<NeighborhoodChatScreen> {
   }
 
   Future<void> _editMessage(String docId, String currentText) async {
+    final l10n = AppLocalizations.of(context)!;
     final controller = TextEditingController(text: currentText);
     final result = await showDialog<String>(
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: Colors.grey.shade100,
-        title: const Text('Editează', style: TextStyle(color: Color(0xFF111111))),
+        title: Text(l10n.editMessage, style: const TextStyle(color: Color(0xFF111111))),
         content: TextField(
           controller: controller,
           style: const TextStyle(color: Color(0xFF111111), fontSize: 16),
@@ -459,10 +392,10 @@ class _NeighborhoodChatScreenState extends State<NeighborhoodChatScreen> {
         actions: [
           TextButton(
               onPressed: () => Navigator.pop(ctx),
-              child: const Text('Anulează')),
+              child: Text(l10n.cancel)),
           FilledButton(
               onPressed: () => Navigator.pop(ctx, controller.text),
-              child: const Text('Salvează')),
+              child: Text(l10n.save)),
         ],
       ),
     );
@@ -485,16 +418,17 @@ class _NeighborhoodChatScreenState extends State<NeighborhoodChatScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       resizeToAvoidBottomInset: true,
       appBar: AppBar(
-        title: const Text('Chat cartier', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
+        title: Text(l10n.neighborhoodChatTitle, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
         backgroundColor: const Color(0xFF7C3AED),
         foregroundColor: Colors.white,
         actions: [
           if (_roomId != null) ...[
             IconButton(icon: Icon(_isMuted ? Icons.notifications_off : Icons.notifications_active), onPressed: _toggleMute),
-            IconButton(icon: const Icon(Icons.person_add_rounded, size: 20), tooltip: 'Invită vecini', onPressed: _shareInvite),
+            IconButton(icon: const Icon(Icons.person_add_rounded, size: 20), tooltip: l10n.neighborhoodChatInviteNeighbors, onPressed: _shareInvite),
           ],
           IconButton(icon: const Icon(Icons.info_outline), onPressed: _showInfoSheet),
         ],
@@ -504,6 +438,7 @@ class _NeighborhoodChatScreenState extends State<NeighborhoodChatScreen> {
   }
 
   Widget _buildBody() {
+    final l10n = AppLocalizations.of(context)!;
     if (_locating) return _buildSkeleton();
     if (_locationError != null) {
       return Center(
@@ -542,9 +477,9 @@ class _NeighborhoodChatScreenState extends State<NeighborhoodChatScreen> {
                 );
                 return FirestoreStreamErrorCenter(
                   error: snap.error,
-                  fallbackMessage: 'Nu s-au putut încărca mesajele.',
+                  fallbackMessage: l10n.chatMessagesLoadFailed,
                   permissionDeniedMessage:
-                      'Nu ai acces la acest chat sau regulile de securitate s-au schimbat. Reîncearcă după ce te autentifici din nou.',
+                      l10n.neighborhoodChatNoAccessOrRulesChanged,
                 );
               }
               if (!snap.hasData) return _buildSkeleton();
@@ -559,13 +494,13 @@ class _NeighborhoodChatScreenState extends State<NeighborhoodChatScreen> {
                         Icon(Icons.chat_bubble_outline_rounded, size: 56, color: Colors.grey.shade400),
                         const SizedBox(height: 16),
                         Text(
-                          'Niciun mesaj recent',
+                          l10n.neighborhoodChatNoRecentMessages,
                           style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700, color: Colors.grey.shade700),
                           textAlign: TextAlign.center,
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          'Spune „Bună” vecinilor sau trimite o locație. Mesajele dispar după 30 minute.',
+                          l10n.neighborhoodChatEmptyHint,
                           style: TextStyle(fontSize: 14, color: Colors.grey.shade600, height: 1.35),
                           textAlign: TextAlign.center,
                         ),
@@ -617,6 +552,7 @@ class _NeighborhoodChatScreenState extends State<NeighborhoodChatScreen> {
   }
 
   Widget _buildInputBar() {
+    final l10n = AppLocalizations.of(context)!;
     final mq = MediaQuery.of(context);
     // Tastatură (viewInsets) + bară sistem / gesture (padding) — evită suprapunerea cu navigația Android.
     final bottomPad = mq.viewInsets.bottom + mq.padding.bottom;
@@ -632,7 +568,7 @@ class _NeighborhoodChatScreenState extends State<NeighborhoodChatScreen> {
           children: [
             IconButton(
               style: compact,
-              tooltip: 'Sunt pe drum',
+              tooltip: l10n.neighborhoodChatOnMyWay,
               icon: const Icon(Icons.directions_car_rounded, color: Colors.deepOrange, size: 22),
               onPressed: () {
                 HapticFeedback.lightImpact();
@@ -641,7 +577,7 @@ class _NeighborhoodChatScreenState extends State<NeighborhoodChatScreen> {
             ),
             IconButton(
               style: compact,
-              tooltip: 'Trimite locația ta',
+              tooltip: l10n.neighborhoodChatSendLocationTooltip,
               icon: const Icon(Icons.location_on_rounded, color: Colors.blue, size: 22),
               onPressed: () {
                 HapticFeedback.lightImpact();
@@ -654,64 +590,17 @@ class _NeighborhoodChatScreenState extends State<NeighborhoodChatScreen> {
                 textCapitalization: TextCapitalization.sentences,
                 minLines: 1,
                 maxLines: 5,
-                decoration: const InputDecoration(
-                  hintText: 'Scrie un mesaj…',
+                decoration: InputDecoration(
+                  hintText: l10n.writeMessage,
                   border: InputBorder.none,
                   isDense: true,
-                  contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
                 ),
-              ),
-            ),
-            Tooltip(
-              message: 'Ține apăsat pentru mesaj vocal',
-              child: Semantics(
-                button: true,
-                label:
-                    'Mesaj vocal. Ține apăsat pentru a înregistra; la eliberare se trimite automat.',
-                child: Listener(
-                behavior: HitTestBehavior.opaque,
-                onPointerDown: (_) => _startRecording(),
-                onPointerUp: (_) => _stopAndSendRecording(),
-                onPointerCancel: (_) => _stopAndSendRecording(),
-                child: SizedBox(
-                  width: 44,
-                  height: 44,
-                  child: Center(
-                    child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 180),
-                      width: _isRecording ? 42 : 38,
-                      height: _isRecording ? 42 : 38,
-                      decoration: BoxDecoration(
-                        color: _isRecording
-                            ? Colors.red.shade600
-                            : Colors.blue.shade50,
-                        shape: BoxShape.circle,
-                        boxShadow: _isRecording
-                            ? [
-                                BoxShadow(
-                                    color: Colors.red.withValues(alpha: 0.35),
-                                    blurRadius: 8)
-                              ]
-                            : null,
-                      ),
-                      child: Icon(
-                        _isRecording
-                            ? Icons.graphic_eq_rounded
-                            : Icons.mic_rounded,
-                        color: _isRecording
-                            ? Colors.white
-                            : Colors.blue.shade700,
-                        size: 20,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
               ),
             ),
             IconButton(
               style: compact,
-              tooltip: 'Trimite',
+              tooltip: l10n.send,
               icon: const Icon(Icons.send_rounded, color: Color(0xFF7C3AED), size: 22),
               onPressed: () {
                 HapticFeedback.lightImpact();
@@ -725,16 +614,18 @@ class _NeighborhoodChatScreenState extends State<NeighborhoodChatScreen> {
   }
 
   void _shareInvite() async {
+    final l10n = AppLocalizations.of(context)!;
     if (_roomId == null) return;
     await SharePlus.instance.share(
       ShareParams(
         text:
-            'Vino în chat-ul cartierului Nabour! Suntem vecini în zona H3: $_roomId',
+            l10n.neighborhoodChatInviteText(_roomId ?? ''),
       ),
     );
   }
 
   void _showInfoSheet() {
+    final l10n = AppLocalizations.of(context)!;
     showModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
@@ -743,13 +634,13 @@ class _NeighborhoodChatScreenState extends State<NeighborhoodChatScreen> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text('🏡 Chat de Cartier', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            Text('🏡 ${l10n.neighborhoodChatTitle}', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             const SizedBox(height: 16),
-            const Text('Acesta este un spațiu efemer pentru vecinii din aceeași zonă H3 (aprox. 1km²).', textAlign: TextAlign.center),
+            Text(l10n.neighborhoodChatInfoBody1, textAlign: TextAlign.center),
             const SizedBox(height: 8),
-            const Text('• Mesajele dispar automat după 30 de minute.\n• Poți trimite locația sau un mesaj vocal: ține apăsat pe microfon și eliberează pentru a trimite (min. ~0,5 s).\n• Respectă vecinii și păstrează comunitatea curată!', textAlign: TextAlign.left),
+            Text(l10n.neighborhoodChatInfoBody2, textAlign: TextAlign.left),
             const SizedBox(height: 24),
-            FilledButton(onPressed: () => Navigator.pop(ctx), child: const Text('Am înțeles')),
+            FilledButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.disclaimerUnderstood)),
           ],
         ),
       ),
@@ -858,6 +749,7 @@ class _MessageBubble extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
       child: Row(
@@ -898,7 +790,7 @@ class _MessageBubble extends StatelessWidget {
                         children: [
                           Icon(Icons.play_circle_fill, color: isMe ? Colors.white : const Color(0xFF7C3AED), size: 24),
                           const SizedBox(width: 8),
-                          Text('Mesaj vocal', style: TextStyle(color: isMe ? Colors.white70 : Colors.black54, fontSize: 12, fontStyle: FontStyle.italic)),
+                          Text(l10n.chatVoiceMessageLabel, style: TextStyle(color: isMe ? Colors.white70 : Colors.black54, fontSize: 12, fontStyle: FontStyle.italic)),
                           if (timestamp != null) ...[
                             const SizedBox(width: 8),
                             Text(
@@ -925,7 +817,7 @@ class _MessageBubble extends StatelessWidget {
                               const SizedBox(width: 8),
                               const Expanded(
                                 child: Text(
-                                  'Locație pe hartă',
+                                  'Location on map',
                                   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
                                 ),
                               ),
@@ -937,8 +829,8 @@ class _MessageBubble extends StatelessWidget {
                             ],
                           ),
                           const SizedBox(height: 12),
-                          const Text(
-                            'Apasă pentru animația "FlyTo" către punctul marcat de vecin.',
+                          Text(
+                            l10n.neighborhoodChatFlyToHint,
                             style: TextStyle(fontSize: 11, color: Colors.black54),
                           ),
                           const SizedBox(height: 8),
@@ -947,7 +839,7 @@ class _MessageBubble extends StatelessWidget {
                               const Icon(Icons.touch_app, size: 14, color: Colors.blue),
                               const SizedBox(width: 4),
                               Text(
-                                'VEZI PE HARTĂ',
+                                l10n.neighborhoodChatSeeOnMap,
                                 style: TextStyle(
                                   fontSize: 10,
                                   fontWeight: FontWeight.w900,

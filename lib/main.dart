@@ -1,8 +1,9 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_app_check/firebase_app_check.dart';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/foundation.dart' show kDebugMode, kIsWeb;
 import 'package:nabour_app/firebase_options.dart';
 import 'package:nabour_app/screens/token_shop_screen.dart';
 import 'package:nabour_app/screens/neighborhood_chat_screen.dart';
@@ -25,9 +26,9 @@ import 'package:nabour_app/services/token_service.dart';
 import 'package:nabour_app/providers/assistant_status_provider.dart';
 
 // Voice AI providers
-import 'package:nabour_app/voice/integration/friendsride_voice_integration.dart';
+import 'package:nabour_app/voice/integration/friends_voice_integration.dart';
 import 'package:nabour_app/voice/passenger/passenger_voice_controller.dart';
-import 'package:nabour_app/voice/passenger/passenger_voice_controller_adapter.dart';
+import 'package:nabour_app/voice/passenger/pax_voice_ctrl_adapter.dart';
 import 'package:nabour_app/voice/driver/driver_voice_controller.dart';
 
 import 'package:nabour_app/screens/splash_screen.dart';
@@ -36,6 +37,7 @@ import 'package:nabour_app/services/passenger_ride_session_bus.dart';
 import 'package:nabour_app/screens/driver_ride_pickup_screen.dart';
 import 'package:nabour_app/services/app_initializer.dart';
 import 'package:nabour_app/services/push_notification_service.dart';
+import 'package:nabour_app/services/local_notifications_service.dart';
 
 import 'package:nabour_app/config/environment.dart';
 import 'package:nabour_app/screens/safety_screen.dart';
@@ -103,6 +105,19 @@ Future<void> main() async {
     }
   } catch (e) {
     Logger.error('Firebase initialization error in main: $e', error: e);
+  }
+
+  // App Check debug provider pentru build-uri de dezvoltare (elimină warning-urile repetate
+  // "No AppCheckProvider installed" când proiectul are App Check activ în Firebase Console).
+  if (!kIsWeb && kDebugMode) {
+    try {
+      await FirebaseAppCheck.instance.activate(
+        providerAndroid: const AndroidDebugProvider(),
+      );
+      Logger.info('App Check debug provider activated', tag: 'APP_CHECK');
+    } catch (e) {
+      Logger.warning('App Check debug activation failed: $e', tag: 'APP_CHECK');
+    }
   }
 
   unawaited(
@@ -249,6 +264,7 @@ void _setupNotificationNavigation() {
     (String messageType, Map<String, dynamic> data) {
       final navigator = navigatorKey.currentState;
       if (navigator == null) return;
+      final appL10n = l10n.AppLocalizations.of(navigator.context);
 
       final rideId = data['rideId'] as String?;
 
@@ -302,12 +318,38 @@ void _setupNotificationNavigation() {
                   builder: (_) => ChatScreen(
                     rideId: rideId,
                     otherUserId: otherUid,
-                    otherUserName: 'Chat cursă',
+                    otherUserName: appL10n?.chat ?? 'Chat',
                     collectionName: 'ride_requests',
                   ),
                 ),
               );
             }());
+          }
+          break;
+        case 'private_chat_message':
+          {
+            final resolvedChatId = (data['chatId'] as String?)?.trim() ??
+                (data['rideId'] as String?)?.trim();
+            final senderUid = data['senderUid'] as String?;
+            final rawName = (data['senderName'] as String?)?.trim();
+            if (resolvedChatId != null &&
+                resolvedChatId.isNotEmpty &&
+                senderUid != null &&
+                senderUid.isNotEmpty) {
+              navigator.push(
+                MaterialPageRoute(
+                  builder: (_) => ChatScreen(
+                    rideId: resolvedChatId,
+                    otherUserId: senderUid,
+                    otherUserName:
+                        (rawName != null && rawName.isNotEmpty)
+                            ? rawName
+                            : (appL10n?.message ?? 'Message'),
+                    collectionName: 'private_chats',
+                  ),
+                ),
+              );
+            }
           }
           break;
         case 'emergency':
@@ -326,6 +368,9 @@ void _setupNotificationNavigation() {
       }
     },
   );
+  LocalNotificationsService().setTapHandler((payload) {
+    PushNotificationService().navigateFromJsonPayload(payload);
+  });
 }
 
 // 🚀 PERFORMANȚĂ: Funcție helper pentru inițializări în fundal
@@ -378,6 +423,9 @@ class _MyAppState extends State<MyApp> {
               ? AppTheme.highContrastDark
               : AppTheme.darkTheme,
           themeMode: themeProvider.currentTheme,
+          // Fără animație la schimbarea temei: ThemeData.lerp + TextStyle.lerp pot eșua
+          // (inherit diferit între light/dark), în special pe ExpansionTile / ListTile.
+          themeAnimationDuration: Duration.zero,
 
           // MODIFICAT: Aplicația pornește acum cu SplashScreen
           home: const SplashScreen(),

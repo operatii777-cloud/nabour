@@ -159,10 +159,12 @@ class _VoiceRecordButtonState extends State<VoiceRecordButton> {
 
       // Upload la Firebase Storage
       final timestamp = DateTime.now().millisecondsSinceEpoch;
+      // Path: voice_messages/{rideId}/{file} — necesar pentru reguli Storage (participant la chat).
       final storageRef = FirebaseStorage.instance
           .ref()
           .child('voice_messages')
-          .child('${widget.rideId}_$timestamp.m4a');
+          .child(widget.rideId)
+          .child('$timestamp.m4a');
 
       final uploadTask = await storageRef.putFile(
         file,

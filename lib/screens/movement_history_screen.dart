@@ -11,7 +11,7 @@ import 'package:latlong2/latlong.dart';
 import 'package:nabour_app/models/movement_history_models.dart';
 import 'package:nabour_app/services/movement_history_service.dart';
 import 'package:nabour_app/utils/deprecated_apis_fix.dart';
-import 'package:nabour_app/widgets/movement_recap_globe_overlay.dart';
+import 'package:nabour_app/widgets/mov_recap_globe_overlay.dart';
 import 'package:nabour_app/services/movement_recap_audio.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';

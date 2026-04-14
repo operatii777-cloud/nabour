@@ -14,6 +14,7 @@ import 'package:nabour_app/services/startup_timer.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:nabour_app/utils/logger.dart';
 import 'package:nabour_app/core/animations/app_transitions.dart';
+import 'package:nabour_app/l10n/app_localizations.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -189,6 +190,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       backgroundColor: const Color(0xFF7C3AED),
       body: SafeArea(
@@ -231,8 +233,8 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                               children: [
                                 const Icon(Icons.error_outline, color: Colors.orange, size: 32),
                                 const SizedBox(height: 12),
-                                const Text(
-                                  'A apărut o eroare la pornire.\nVerifică internetul și încearcă din nou.',
+                                Text(
+                                  l10n.splashStartupError,
                                   style: TextStyle(color: Colors.white, fontSize: 13),
                                   textAlign: TextAlign.center,
                                 ),
@@ -243,7 +245,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                                     foregroundColor: Colors.white,
                                     backgroundColor: Colors.white24,
                                   ),
-                                  child: const Text('REÎNCEARCĂ'),
+                                  child: Text(l10n.splashRetry),
                                 ),
                               ],
                             );
@@ -254,8 +256,8 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                             return Column(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                const Text(
-                                  'Pornirea durează mai mult...',
+                                Text(
+                                  l10n.splashTakingLonger,
                                   style: TextStyle(color: Colors.white70, fontSize: 11),
                                 ),
                                 const SizedBox(height: 8),
@@ -275,7 +277,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                                     foregroundColor: Colors.white,
                                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                                   ),
-                                  child: const Text('CONTINUĂ ORICUM'),
+                                  child: Text(l10n.splashContinueAnyway),
                                 ),
                               ],
                             );
@@ -296,7 +298,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                   ),
                 ),
 
-                const Positioned(
+                Positioned(
                   bottom: 30,
                   left: 0,
                   right: 0,
@@ -304,7 +306,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
-                        'Fabricat în România',
+                        l10n.splashMadeInRomania,
                         style: TextStyle(
                           fontSize: 16,
                           color: Colors.white,

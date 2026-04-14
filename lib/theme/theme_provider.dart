@@ -37,6 +37,7 @@ class ThemeProvider extends ChangeNotifier {
   bool _isDarkMode = false; // Tema implicită este 'light'
   bool _isHighContrast = false;
   bool _isInitialized = false;
+  bool _disposed = false;
 
   /// Crește la orice schimbare făcută de utilizator. Dacă [initialize] încă citește prefs,
   /// nu suprascriem tema după `await` — evită cursă + reconstruiri suprapuse la pornire.
@@ -44,6 +45,20 @@ class ThemeProvider extends ChangeNotifier {
 
   /// La schimbări rapide de temă, doar ultima scriere în SharedPreferences trebuie să conteze.
   int _prefsWriteGeneration = 0;
+
+  /// După încheierea frame-ului curent — mai sigur decât [scheduleMicrotask] pentru
+  /// [notifyListeners] (evită aserțiuni `_dependents.isEmpty` / rebuild sincron problematic).
+  void _notifyListenersAfterFrame() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!_disposed && hasListeners) notifyListeners();
+    });
+  }
+
+  @override
+  void dispose() {
+    _disposed = true;
+    super.dispose();
+  }
 
   void _bumpUserThemeMutation() {
     _userThemeMutationGen++;
@@ -78,7 +93,7 @@ class ThemeProvider extends ChangeNotifier {
       // Fără notify dacă nimic nu s-a schimbat — evită un rebuild complet al MaterialApp
       // la primul frame (cauză frecventă de aserțiuni cu Navigator/Overlay la pornire).
       if (changed) {
-        scheduleMicrotask(() => notifyListeners());
+        _notifyListenersAfterFrame();
       }
     } catch (e) {
       Logger.error('Error loading theme preferences: $e', error: e);
@@ -102,9 +117,8 @@ class ThemeProvider extends ChangeNotifier {
   Future<void> toggleTheme() async {
     _bumpUserThemeMutation();
     _isDarkMode = !_isDarkMode;
-    // Amânăm notificarea după ciclul curent (gest/build) — evită aserțiunea
-    // `_dependents.isEmpty` la rebuild sincron al [MaterialApp] din drawer/hartă.
-    scheduleMicrotask(() => notifyListeners());
+    // După frame — evită aserțiuni `_dependents.isEmpty` la rebuild [MaterialApp] din drawer/hartă.
+    _notifyListenersAfterFrame();
     unawaited(_persistThemePreferences());
   }
 
@@ -112,14 +126,14 @@ class ThemeProvider extends ChangeNotifier {
   Future<void> setThemeMode(ThemeMode mode) async {
     _bumpUserThemeMutation();
     _isDarkMode = mode == ThemeMode.dark;
-    scheduleMicrotask(() => notifyListeners());
+    _notifyListenersAfterFrame();
     unawaited(_persistThemePreferences());
   }
 
   Future<void> toggleHighContrast() async {
     _bumpUserThemeMutation();
     _isHighContrast = !_isHighContrast;
-    scheduleMicrotask(() => notifyListeners());
+    _notifyListenersAfterFrame();
     unawaited(_persistThemePreferences());
   }
 }

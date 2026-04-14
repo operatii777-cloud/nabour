@@ -3,7 +3,9 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:nabour_app/l10n/app_localizations.dart';
 import 'package:nabour_app/services/contacts_service.dart';
+import 'package:nabour_app/screens/private_chat_inbox_tab.dart';
 import 'package:nabour_app/services/friend_request_service.dart';
 import 'package:nabour_app/utils/logger.dart';
 
@@ -39,17 +41,21 @@ class _FriendSuggestionsScreenState extends State<FriendSuggestionsScreen>
   StreamSubscription<Set<String>>? _friendPeersSub;
   Set<String> _friendPeerUids = {};
   final Map<String, ({String displayName, String avatar})> _senderProfileCache = {};
-  final Map<String, ({String displayName, String avatar})> _friendPeerProfileCache = {};
+  final Map<String, ({String displayName, String avatar, String? photoURL})>
+      _friendPeerProfileCache = {};
   final Set<String> _incomingActionInFlight = {};
   final Set<String> _removeFriendInFlight = {};
   String _search = '';
   bool _loading = true;
   late TabController _tabController;
+  final GlobalKey<PrivateChatInboxTabState> _privateChatInboxKey =
+      GlobalKey<PrivateChatInboxTabState>();
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
+    _tabController = TabController(length: 3, vsync: this);
+    _tabController.addListener(_onTabControllerTick);
     _loadFriendCounts();
     _incomingSub =
         FriendRequestService.instance.incomingPendingStream().listen((list) {
@@ -78,6 +84,7 @@ class _FriendSuggestionsScreenState extends State<FriendSuggestionsScreen>
         final d = doc.data();
         final dn = (d?['displayName'] as String?)?.trim();
         final av = (d?['avatar'] as String?)?.trim();
+        final photo = (d?['photoURL'] as String?)?.trim();
         String? agendaName;
         for (final c in widget.contacts) {
           if (c.uid == uid) {
@@ -87,11 +94,14 @@ class _FriendSuggestionsScreenState extends State<FriendSuggestionsScreen>
         }
         final name = (agendaName != null && agendaName.isNotEmpty)
             ? agendaName
-            : ((dn != null && dn.isNotEmpty) ? dn : 'Utilizator');
+            : ((dn != null && dn.isNotEmpty)
+                ? dn
+                : AppLocalizations.of(context)!.friendSuggestionsUserFallback);
         setState(() {
           _friendPeerProfileCache[uid] = (
             displayName: name,
             avatar: (av != null && av.isNotEmpty) ? av : '🙂',
+            photoURL: (photo != null && photo.isNotEmpty) ? photo : null,
           );
         });
       });
@@ -117,7 +127,9 @@ class _FriendSuggestionsScreenState extends State<FriendSuggestionsScreen>
         }
         final name = (agendaName != null && agendaName.isNotEmpty)
             ? agendaName
-            : ((dn != null && dn.isNotEmpty) ? dn : 'Utilizator');
+            : ((dn != null && dn.isNotEmpty)
+                ? dn
+                : AppLocalizations.of(context)!.friendSuggestionsUserFallback);
         setState(() {
           _senderProfileCache[r.fromUid] = (
             displayName: name,
@@ -128,8 +140,16 @@ class _FriendSuggestionsScreenState extends State<FriendSuggestionsScreen>
     }
   }
 
+  void _onTabControllerTick() {
+    if (_tabController.indexIsChanging) return;
+    if (_tabController.index == 2) {
+      _privateChatInboxKey.currentState?.reloadThreads();
+    }
+  }
+
   @override
   void dispose() {
+    _tabController.removeListener(_onTabControllerTick);
     _incomingSub?.cancel();
     _outgoingSub?.cancel();
     _friendPeersSub?.cancel();
@@ -169,14 +189,15 @@ class _FriendSuggestionsScreenState extends State<FriendSuggestionsScreen>
   }
 
   Future<void> _addFriend(String uid) async {
+    final l10n = AppLocalizations.of(context)!;
     final myUid = FirebaseAuth.instance.currentUser?.uid;
     if (myUid == null || uid.isEmpty || uid == myUid) return;
 
     if (_friendPeerUids.contains(uid)) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Sunteți deja prieteni în Nabour.'),
+        SnackBar(
+          content: Text(l10n.friendSuggestionsAlreadyFriends),
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -188,7 +209,7 @@ class _FriendSuggestionsScreenState extends State<FriendSuggestionsScreen>
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Text('Ai trimis deja o cerere către această persoană.'),
+          content: Text(l10n.friendSuggestionsRequestAlreadySent),
           backgroundColor: Colors.orange.shade800,
           behavior: SnackBarBehavior.floating,
           shape:
@@ -210,7 +231,7 @@ class _FriendSuggestionsScreenState extends State<FriendSuggestionsScreen>
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Text('Cerere de prietenie trimisă!'),
+          content: Text(l10n.friendSuggestionsRequestSent),
           backgroundColor: const Color(0xFF22C55E),
           behavior: SnackBarBehavior.floating,
           shape:
@@ -226,8 +247,8 @@ class _FriendSuggestionsScreenState extends State<FriendSuggestionsScreen>
             content: Text(
               (e.toString().contains('permission-denied') ||
                       e.toString().contains('PERMISSION_DENIED'))
-                  ? 'Nu avem voie să scriem cererea (reguli Firebase). Contactează suportul.'
-                  : 'Nu am putut trimite cererea. Încearcă din nou.',
+                  ? l10n.friendSuggestionsRequestPermissionDenied
+                  : l10n.friendSuggestionsRequestFailed,
             ),
             backgroundColor: const Color(0xFFB71C1C),
             behavior: SnackBarBehavior.floating,
@@ -240,6 +261,7 @@ class _FriendSuggestionsScreenState extends State<FriendSuggestionsScreen>
   }
 
   Future<void> _onAcceptRequest(FriendRequestEntry r) async {
+    final l10n = AppLocalizations.of(context)!;
     if (_incomingActionInFlight.contains(r.id)) return;
     setState(() => _incomingActionInFlight.add(r.id));
     try {
@@ -248,7 +270,10 @@ class _FriendSuggestionsScreenState extends State<FriendSuggestionsScreen>
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            'Ai acceptat cererea de la ${_senderProfileCache[r.fromUid]?.displayName ?? 'prieten'}! ✓',
+            l10n.friendSuggestionsAcceptedFrom(
+              _senderProfileCache[r.fromUid]?.displayName ??
+                  l10n.friendSuggestionsFriendFallback,
+            ),
           ),
           backgroundColor: const Color(0xFF22C55E),
           behavior: SnackBarBehavior.floating,
@@ -262,8 +287,8 @@ class _FriendSuggestionsScreenState extends State<FriendSuggestionsScreen>
           SnackBar(
             content: Text(
               e.toString().contains('permission') || e.toString().contains('PERMISSION')
-                  ? 'Nu avem voie să acceptăm (reguli Firebase).'
-                  : 'Nu am putut accepta cererea. Încearcă din nou.',
+                  ? l10n.friendSuggestionsPermissionAcceptDenied
+                  : l10n.friendSuggestionsAcceptFailed,
             ),
             backgroundColor: const Color(0xFFB71C1C),
             behavior: SnackBarBehavior.floating,
@@ -278,14 +303,15 @@ class _FriendSuggestionsScreenState extends State<FriendSuggestionsScreen>
   }
 
   Future<void> _onRejectRequest(FriendRequestEntry r) async {
+    final l10n = AppLocalizations.of(context)!;
     if (_incomingActionInFlight.contains(r.id)) return;
     setState(() => _incomingActionInFlight.add(r.id));
     try {
       await FriendRequestService.instance.rejectRequest(r.id);
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Cererea a fost refuzată.'),
+        SnackBar(
+          content: Text(l10n.friendSuggestionsRejected),
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -293,7 +319,7 @@ class _FriendSuggestionsScreenState extends State<FriendSuggestionsScreen>
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: const Text('Nu am putut refuza cererea. Încearcă din nou.'),
+            content: Text(l10n.friendSuggestionsRejectFailed),
             backgroundColor: const Color(0xFFB71C1C),
             behavior: SnackBarBehavior.floating,
           ),
@@ -307,6 +333,7 @@ class _FriendSuggestionsScreenState extends State<FriendSuggestionsScreen>
   }
 
   Future<void> _confirmRemoveFriend(String peerUid) async {
+    final l10n = AppLocalizations.of(context)!;
     ContactAppUser? contact;
     for (final c in widget.contacts) {
       if (c.uid == peerUid) {
@@ -317,25 +344,24 @@ class _FriendSuggestionsScreenState extends State<FriendSuggestionsScreen>
     final prof = _friendPeerProfileCache[peerUid];
     final name = contact?.displayName ??
         prof?.displayName ??
-        'acest utilizator';
+        l10n.friendSuggestionsThisUser;
 
     final ok = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Elimină din prieteni'),
+        title: Text(l10n.friendSuggestionsRemoveTitle),
         content: Text(
-          'Sigur vrei să îl elimini pe $name din lista ta? '
-          'Nu vei mai vedea reciproc pe hartă ca prieteni Nabour până nu retrimiteți cereri.',
+          l10n.friendSuggestionsRemoveConfirm(name),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Anulează'),
+            child: Text(l10n.friendSuggestionsCancel),
           ),
           FilledButton(
             style: FilledButton.styleFrom(backgroundColor: Colors.red.shade700),
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Elimină'),
+            child: Text(l10n.friendSuggestionsRemove),
           ),
         ],
       ),
@@ -349,7 +375,7 @@ class _FriendSuggestionsScreenState extends State<FriendSuggestionsScreen>
       _friendPeerProfileCache.remove(peerUid);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('$name a fost eliminat din lista ta.'),
+          content: Text(l10n.friendSuggestionsRemovedFromList(name)),
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -357,7 +383,7 @@ class _FriendSuggestionsScreenState extends State<FriendSuggestionsScreen>
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: const Text('Nu am putut elimina. Încearcă din nou.'),
+            content: Text(l10n.friendSuggestionsRemoveFailed),
             backgroundColor: const Color(0xFFB71C1C),
             behavior: SnackBarBehavior.floating,
           ),
@@ -372,6 +398,7 @@ class _FriendSuggestionsScreenState extends State<FriendSuggestionsScreen>
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final myUid = FirebaseAuth.instance.currentUser?.uid;
     final filtered = widget.contacts.where((c) {
       if (myUid != null && c.uid == myUid) return false;
@@ -414,24 +441,27 @@ class _FriendSuggestionsScreenState extends State<FriendSuggestionsScreen>
                   Expanded(
                     child: TabBar(
                       controller: _tabController,
+                      isScrollable: true,
+                      tabAlignment: TabAlignment.start,
                       labelColor: scheme.primary,
                       unselectedLabelColor: scheme.onSurfaceVariant,
                       indicatorColor: scheme.primary,
                       labelStyle: const TextStyle(
                         fontWeight: FontWeight.w800,
-                        fontSize: 14,
+                        fontSize: 13,
                       ),
                       tabs: [
                         Tab(
                           text: _incomingRequests.isEmpty
-                              ? 'Sugestii'
-                              : 'Sugestii (${_incomingRequests.length})',
+                              ? l10n.friendSuggestionsTabSuggestions
+                              : '${l10n.friendSuggestionsTabSuggestions} (${_incomingRequests.length})',
                         ),
                         Tab(
                           text: _friendPeerUids.isEmpty
-                              ? 'Prietenii mei'
-                              : 'Prietenii mei (${_friendPeerUids.length})',
+                              ? l10n.friendSuggestionsTabMyFriends
+                              : '${l10n.friendSuggestionsTabMyFriends} (${_friendPeerUids.length})',
                         ),
+                        Tab(text: l10n.friendSuggestionsTabPrivateChat),
                       ],
                     ),
                   ),
@@ -444,6 +474,20 @@ class _FriendSuggestionsScreenState extends State<FriendSuggestionsScreen>
                 children: [
                   _buildSuggestionsTab(filtered),
                   _buildMyFriendsTab(),
+                  PrivateChatInboxTab(
+                    key: _privateChatInboxKey,
+                    contacts: widget.contacts,
+                    onlineUids: widget.onlineUids,
+                    avatarCache: widget.avatarCache,
+                    friendPeerUids: _friendPeerUids,
+                    friendPeerProfileCache: Map<
+                            String,
+                            ({
+                              String displayName,
+                              String avatar,
+                              String? photoURL
+                            })>.from(_friendPeerProfileCache),
+                  ),
                 ],
               ),
             ),
@@ -455,6 +499,7 @@ class _FriendSuggestionsScreenState extends State<FriendSuggestionsScreen>
   }
 
   Widget _buildSuggestionsTab(List<ContactAppUser> filtered) {
+    final l10n = AppLocalizations.of(context)!;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -469,7 +514,7 @@ class _FriendSuggestionsScreenState extends State<FriendSuggestionsScreen>
               onChanged: (v) => setState(() => _search = v),
               style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
               decoration: InputDecoration(
-                hintText: 'Caută în agendă...',
+                hintText: l10n.friendSuggestionsSearchHint,
                 hintStyle: TextStyle(
                   color: Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
@@ -498,7 +543,9 @@ class _FriendSuggestionsScreenState extends State<FriendSuggestionsScreen>
                                 color: Colors.deepPurple.shade600),
                             const SizedBox(width: 8),
                             Text(
-                              'Cereri primite (${_incomingRequests.length})',
+                              l10n.friendSuggestionsIncomingRequests(
+                                _incomingRequests.length,
+                              ),
                               style: TextStyle(
                                 fontSize: 15,
                                 fontWeight: FontWeight.w800,
@@ -517,7 +564,7 @@ class _FriendSuggestionsScreenState extends State<FriendSuggestionsScreen>
                       Padding(
                         padding: const EdgeInsets.only(left: 16, bottom: 4),
                         child: Text(
-                          'Sugestii din agendă',
+                          l10n.friendSuggestionsAddressBookSuggestions,
                           style: TextStyle(
                             fontSize: 13,
                             fontWeight: FontWeight.w700,
@@ -535,13 +582,14 @@ class _FriendSuggestionsScreenState extends State<FriendSuggestionsScreen>
   }
 
   Widget _buildMyFriendsTab() {
+    final l10n = AppLocalizations.of(context)!;
     if (_friendPeerUids.isEmpty) {
       final scheme = Theme.of(context).colorScheme;
       return Center(
         child: Padding(
           padding: const EdgeInsets.all(32),
           child: Text(
-            'Nu ai încă prieteni confirmați.\nAcceptă cereri în tab-ul Sugestii sau trimite tu o cerere.',
+            l10n.friendSuggestionsNoConfirmedFriends,
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 15,
@@ -569,7 +617,7 @@ class _FriendSuggestionsScreenState extends State<FriendSuggestionsScreen>
         final prof = _friendPeerProfileCache[uid];
         final name = contact?.displayName ??
             prof?.displayName ??
-            'Se încarcă…';
+            l10n.friendSuggestionsLoading;
         final emoji =
             (contact != null ? widget.avatarCache[contact.uid] : null) ??
                 prof?.avatar ??
@@ -619,7 +667,9 @@ class _FriendSuggestionsScreenState extends State<FriendSuggestionsScreen>
                           overflow: TextOverflow.ellipsis,
                         ),
                         Text(
-                          online ? 'Pe hartă acum' : 'Prieten Nabour',
+                          online
+                              ? l10n.friendSuggestionsOnMapNow
+                              : l10n.friendSuggestionsNabourFriend,
                           style: TextStyle(
                             fontSize: 12,
                             color: online
@@ -642,7 +692,7 @@ class _FriendSuggestionsScreenState extends State<FriendSuggestionsScreen>
                         : Icon(Icons.person_remove_outlined,
                             size: 18, color: Colors.red.shade700),
                     label: Text(
-                      'Elimină',
+                      l10n.friendSuggestionsRemove,
                       style: TextStyle(
                         color: Colors.red.shade700,
                         fontWeight: FontWeight.w700,
@@ -659,6 +709,7 @@ class _FriendSuggestionsScreenState extends State<FriendSuggestionsScreen>
   }
 
   Widget _buildIncomingRequestTile(FriendRequestEntry r) {
+    final l10n = AppLocalizations.of(context)!;
     final scheme = Theme.of(context).colorScheme;
     ContactAppUser? fromContact;
     for (final c in widget.contacts) {
@@ -670,7 +721,7 @@ class _FriendSuggestionsScreenState extends State<FriendSuggestionsScreen>
     final prof = _senderProfileCache[r.fromUid];
     final name = fromContact?.displayName ??
         prof?.displayName ??
-        'Se încarcă…';
+        l10n.friendSuggestionsLoading;
     final emoji =
         (fromContact != null ? widget.avatarCache[fromContact.uid] : null) ??
             prof?.avatar ??
@@ -716,7 +767,7 @@ class _FriendSuggestionsScreenState extends State<FriendSuggestionsScreen>
                           overflow: TextOverflow.ellipsis,
                         ),
                         Text(
-                          'îți trimite o cerere de prietenie',
+                          l10n.friendSuggestionsSendsRequest,
                           style: TextStyle(
                             fontSize: 13,
                             color: scheme.onSurfaceVariant,
@@ -738,7 +789,7 @@ class _FriendSuggestionsScreenState extends State<FriendSuggestionsScreen>
                         side: BorderSide(color: Colors.grey.shade400),
                         padding: const EdgeInsets.symmetric(vertical: 12),
                       ),
-                      child: const Text('Refuză'),
+                      child: Text(l10n.friendSuggestionsReject),
                     ),
                   ),
                   const SizedBox(width: 10),
@@ -758,7 +809,7 @@ class _FriendSuggestionsScreenState extends State<FriendSuggestionsScreen>
                                 color: Colors.white,
                               ),
                             )
-                          : const Text('Acceptă'),
+                          : Text(l10n.friendSuggestionsAccept),
                     ),
                   ),
                 ],
@@ -771,6 +822,7 @@ class _FriendSuggestionsScreenState extends State<FriendSuggestionsScreen>
   }
 
   Widget _buildFriendRow(ContactAppUser contact) {
+    final l10n = AppLocalizations.of(context)!;
     final scheme = Theme.of(context).colorScheme;
     final isOnline = widget.onlineUids.contains(contact.uid);
     final friendCount = _friendCounts[contact.uid] ?? 0;
@@ -849,7 +901,9 @@ class _FriendSuggestionsScreenState extends State<FriendSuggestionsScreen>
                           borderRadius: BorderRadius.circular(10),
                         ),
                         child: Text(
-                          '$mutualCount ${mutualCount == 1 ? 'INTRODUCERE' : 'INTRODUCERI'}',
+                          mutualCount == 1
+                              ? l10n.friendSuggestionsIntroOne(mutualCount)
+                              : l10n.friendSuggestionsIntroMany(mutualCount),
                           style: const TextStyle(
                             color: Colors.white,
                             fontSize: 9,
@@ -864,8 +918,8 @@ class _FriendSuggestionsScreenState extends State<FriendSuggestionsScreen>
                 const SizedBox(height: 2),
                 Text(
                   friendCount > 50
-                      ? '50+ DE PRIETENI'
-                      : '$friendCount DE PRIETENI',
+                      ? l10n.friendSuggestionsFriendsCount50Plus
+                      : l10n.friendSuggestionsFriendsCount(friendCount),
                   style: TextStyle(
                     fontSize: 12,
                     color: Colors.grey.shade500,
@@ -890,7 +944,7 @@ class _FriendSuggestionsScreenState extends State<FriendSuggestionsScreen>
                   Icon(Icons.verified_rounded, size: 16, color: Colors.indigo.shade700),
                   const SizedBox(width: 4),
                   Text(
-                    'Prieten',
+                    l10n.friendSuggestionsFriendBadge,
                     style: TextStyle(
                       color: Colors.indigo.shade800,
                       fontSize: 13,
@@ -926,7 +980,9 @@ class _FriendSuggestionsScreenState extends State<FriendSuggestionsScreen>
                     ),
                     const SizedBox(width: 4),
                     Text(
-                      isAdded ? 'Adăugat' : 'Adaugă',
+                      isAdded
+                          ? l10n.friendSuggestionsAdded
+                          : l10n.friendSuggestionsAdd,
                       style: TextStyle(
                         color: isAdded ? Colors.grey : Colors.white,
                         fontSize: 13,
@@ -943,6 +999,7 @@ class _FriendSuggestionsScreenState extends State<FriendSuggestionsScreen>
   }
 
   Widget _buildBottomToast() {
+    final l10n = AppLocalizations.of(context)!;
     final scheme = Theme.of(context).colorScheme;
     final myUid = FirebaseAuth.instance.currentUser?.uid;
     final onlineContacts = widget.contacts
@@ -997,7 +1054,7 @@ class _FriendSuggestionsScreenState extends State<FriendSuggestionsScreen>
                   ),
                 ),
                 Text(
-                  'este din nou pe hartă',
+                  l10n.friendSuggestionsBackOnMap,
                   style: TextStyle(
                       fontSize: 13, color: scheme.onSurfaceVariant),
                 ),

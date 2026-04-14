@@ -13,13 +13,6 @@
  *   firebase params:set ALLOW_UNVERIFIED_WALLET_CREDIT true
  * (sau din consola Firebase — Parameters)
  */
-export {
-  createTokenDirectTransfer,
-  createTokenPaymentRequest,
-  respondToTokenPaymentRequest,
-  cancelTokenPaymentRequest,
-  expireTokenPaymentRequests,
-} from "./token_transfers";
 import * as admin from "firebase-admin";
 import * as functionsV1 from "firebase-functions/v1";
 import { randomBytes } from "node:crypto";
@@ -28,6 +21,21 @@ import { defineString } from "firebase-functions/params";
 import { setGlobalOptions } from "firebase-functions/v2";
 import { HttpsError, onCall } from "firebase-functions/v2/https";
 import { onDocumentCreated, onDocumentWritten } from "firebase-functions/v2/firestore";
+import {
+  createTokenDirectTransfer,
+  createTokenPaymentRequest,
+  respondToTokenPaymentRequest,
+  cancelTokenPaymentRequest,
+  expireTokenPaymentRequests,
+} from "./token_transfers";
+
+export {
+  createTokenDirectTransfer,
+  createTokenPaymentRequest,
+  respondToTokenPaymentRequest,
+  cancelTokenPaymentRequest,
+  expireTokenPaymentRequests,
+};
 
 admin.initializeApp();
 
@@ -1000,6 +1008,13 @@ export const nabourCommunityMysteryBoxClaim = onCall(async (request) => {
   }
 
   const uid = request.auth.uid;
+  const openerNameRaw = String(
+    request.auth.token.name ??
+      request.auth.token.display_name ??
+      request.auth.token.email ??
+      ""
+  ).trim();
+  const openerName = openerNameRaw || "Utilizator";
   const boxId = String(request.data?.boxId ?? "").trim();
   const claimLat = request.data?.claimLat;
   const claimLng = request.data?.claimLng;
@@ -1067,6 +1082,7 @@ export const nabourCommunityMysteryBoxClaim = onCall(async (request) => {
       type: "opened",
       boxId,
       openerUid: uid,
+      openerName,
       rewardTokens: reward,
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
     });

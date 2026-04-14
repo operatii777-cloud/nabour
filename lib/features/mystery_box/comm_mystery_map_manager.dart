@@ -6,7 +6,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart' as geolocator;
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
-import 'package:nabour_app/features/mystery_box/community_mystery_box_service.dart';
+import 'package:nabour_app/features/mystery_box/comm_mystery_box_service.dart';
 import 'package:nabour_app/features/mystery_box/mystery_box_marker_painter.dart';
 import 'package:nabour_app/utils/logger.dart';
 import 'package:nabour_app/utils/mapbox_utils.dart';

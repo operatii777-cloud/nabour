@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:nabour_app/models/ride_model.dart';
 import 'package:nabour_app/models/stop_location.dart';
 import 'package:nabour_app/services/firestore_service.dart';
-import 'package:nabour_app/widgets/enhanced_price_estimate_widget.dart';
+import 'package:nabour_app/widgets/enh_price_estimate_widget.dart';
 
 class RideConfirmationView extends StatelessWidget {
   final ScrollController scrollController;

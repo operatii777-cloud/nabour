@@ -153,7 +153,7 @@ class _CarAvatarShopSheetState extends State<CarAvatarShopSheet> {
     if (avatar.price <= 0) {
       ScaffoldMessenger.maybeOf(context)?.showSnackBar(
         const SnackBar(
-          content: Text('Acest vehicul e gratuit — apasă pe el pentru a-l selecta, fără tokeni.'),
+          content: Text('This vehicle is free - tap it to select it, no tokens required.'),
           backgroundColor: Colors.teal,
         ),
       );
@@ -163,7 +163,7 @@ class _CarAvatarShopSheetState extends State<CarAvatarShopSheet> {
       ScaffoldMessenger.maybeOf(context)?.showSnackBar(
         SnackBar(
           content: const Text(
-            'Nu poți aplica acest personaj la volan — doar ca pasager. Comută pe „CA PASAGER”.',
+            'You cannot apply this character as driver - passenger only. Switch to "PASSENGER".',
           ),
           backgroundColor: Colors.orange.shade800,
           duration: const Duration(seconds: 4),
@@ -175,7 +175,7 @@ class _CarAvatarShopSheetState extends State<CarAvatarShopSheet> {
       ScaffoldMessenger.maybeOf(context)?.showSnackBar(
         SnackBar(
           content: const Text(
-            'Salupa e doar pentru la volan (șofer). Comută pe „LA VOLAN” sau alege alt vehicul pentru pasager.',
+            'The speedboat is driver-only. Switch to "DRIVER" or choose another passenger vehicle.',
           ),
           backgroundColor: Colors.orange.shade800,
           duration: const Duration(seconds: 4),
@@ -188,7 +188,7 @@ class _CarAvatarShopSheetState extends State<CarAvatarShopSheet> {
     final unlimited = wallet?.isUnlimited ?? false;
     if (!unlimited && _userTokens < avatar.price) {
       ScaffoldMessenger.maybeOf(context)?.showSnackBar(
-        const SnackBar(content: Text('Nu ai suficienți tokeni! 🪙'), backgroundColor: Colors.red),
+        const SnackBar(content: Text('You do not have enough tokens! 🪙'), backgroundColor: Colors.red),
       );
       return;
     }
@@ -214,14 +214,14 @@ class _CarAvatarShopSheetState extends State<CarAvatarShopSheet> {
         try {
           widget.onInventoryChanged?.call(avatar, _mapSlot, null);
         } catch (e, st) {
-          Logger.error('Garaj → hartă (după cumpărare): $e', error: e, stackTrace: st);
+          Logger.error('Garage -> map (after purchase): $e', error: e, stackTrace: st);
         }
       });
       await _loadData();
       if (mounted) {
         ScaffoldMessenger.maybeOf(context)?.showSnackBar(
           SnackBar(
-            content: Text('Felicitări! Ai deblocat ${avatar.name}! 🚀'),
+            content: Text('Congratulations! You unlocked ${avatar.name}! 🚀'),
             backgroundColor: Colors.green.shade700,
           ),
         );
@@ -231,8 +231,8 @@ class _CarAvatarShopSheetState extends State<CarAvatarShopSheet> {
         SnackBar(
           content: Text(
             unlimited
-                ? 'Nu s-a putut finaliza cumpărarea (rețea sau reguli). Încearcă din nou.'
-                : 'Cumpărarea a eșuat — verifică soldul sau conexiunea.',
+                ? 'Could not complete purchase (network or rules). Try again.'
+                : 'Purchase failed - check your balance or connection.',
           ),
           backgroundColor: Colors.red.shade800,
         ),
@@ -246,7 +246,7 @@ class _CarAvatarShopSheetState extends State<CarAvatarShopSheet> {
       ScaffoldMessenger.maybeOf(context)?.showSnackBar(
         SnackBar(
           content: const Text(
-            'Acest personaj e doar pentru pasager. Pentru la volan alege un vehicul din transport.',
+            'This character is passenger-only. For driver slot, choose a transport vehicle.',
           ),
           backgroundColor: Colors.orange.shade800,
           duration: const Duration(seconds: 4),
@@ -258,7 +258,7 @@ class _CarAvatarShopSheetState extends State<CarAvatarShopSheet> {
       ScaffoldMessenger.maybeOf(context)?.showSnackBar(
         SnackBar(
           content: const Text(
-            'Salupa se folosește doar ca șofer (la volan), nu ca pasager pe hartă.',
+            'The speedboat can only be used as driver, not as passenger on the map.',
           ),
           backgroundColor: Colors.orange.shade800,
           duration: const Duration(seconds: 4),
@@ -292,7 +292,7 @@ class _CarAvatarShopSheetState extends State<CarAvatarShopSheet> {
           ScaffoldMessenger.maybeOf(context)?.showSnackBar(
             SnackBar(
               content: const Text(
-                'Nu s-a putut salva mașina la volan. Verifică rețeaua sau App Check (mod debug).',
+                'Could not save the driver vehicle. Check network or App Check (debug mode).',
               ),
               backgroundColor: Colors.red.shade800,
               duration: const Duration(seconds: 5),
@@ -311,7 +311,7 @@ class _CarAvatarShopSheetState extends State<CarAvatarShopSheet> {
           ScaffoldMessenger.maybeOf(context)?.showSnackBar(
             SnackBar(
               content: const Text(
-                'Nu s-a putut salva mașina ca pasager. Verifică rețeaua sau App Check (mod debug).',
+                'Could not save the passenger vehicle. Check network or App Check (debug mode).',
               ),
               backgroundColor: Colors.red.shade800,
               duration: const Duration(seconds: 5),
@@ -336,14 +336,14 @@ class _CarAvatarShopSheetState extends State<CarAvatarShopSheet> {
         try {
           widget.onInventoryChanged?.call(null, null, batch);
         } catch (e, st) {
-          Logger.error('Garaj → hartă (aplicare): $e', error: e, stackTrace: st);
+          Logger.error('Garage -> map (apply): $e', error: e, stackTrace: st);
         }
       });
 
       if (mounted) {
         ScaffoldMessenger.maybeOf(context)?.showSnackBar(
           SnackBar(
-            content: const Text('Modificările au fost aplicate pe profil și hartă.'),
+            content: const Text('Changes were applied to profile and map.'),
             backgroundColor: Colors.green.shade800,
             duration: const Duration(seconds: 2),
           ),
@@ -454,7 +454,7 @@ class _CarAvatarShopSheetState extends State<CarAvatarShopSheet> {
               )
             : const Icon(Icons.check_circle_outline_rounded),
         label: Text(
-          _applyInFlight ? 'Se aplică…' : 'Aplică pe profil și hartă',
+          _applyInFlight ? 'Applying...' : 'Apply to profile and map',
           style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 15),
         ),
       ),
@@ -488,7 +488,7 @@ class _CarAvatarShopSheetState extends State<CarAvatarShopSheet> {
               ),
               const SizedBox(height: 4),
               Text(
-                'Alege din listă, apoi Aplică — modificările merg pe profil și pe hartă.',
+                'Choose from the list, then Apply - changes go to profile and map.',
                 style: TextStyle(color: Colors.white.withValues(alpha: 0.65), fontSize: 13),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
@@ -601,9 +601,9 @@ class _CarAvatarShopSheetState extends State<CarAvatarShopSheet> {
 
     return Row(
       children: [
-        chip(CarAvatarMapSlot.driver, 'LA VOLAN', Icons.drive_eta_rounded),
+        chip(CarAvatarMapSlot.driver, 'DRIVER', Icons.drive_eta_rounded),
         const SizedBox(width: 12),
-        chip(CarAvatarMapSlot.passenger, 'CA PASAGER', Icons.person_rounded),
+        chip(CarAvatarMapSlot.passenger, 'PASSENGER', Icons.person_rounded),
       ],
     );
   }
@@ -632,7 +632,7 @@ class _CarAvatarShopSheetState extends State<CarAvatarShopSheet> {
           IconData icon = Icons.directions_car_rounded;
           
           if (cat == CarCategory.animals) {
-            label = 'ANIMĂLUȚE';
+            label = 'ANIMALS';
             icon = Icons.pets_rounded;
           } else if (cat == CarCategory.characters) {
             label = 'CARACTERE';
@@ -691,11 +691,11 @@ class _CarAvatarShopSheetState extends State<CarAvatarShopSheet> {
     final selected = _avatarService.getAvatarById(_activeSlotDraftId);
     final slotHint = _mapSlot == CarAvatarMapSlot.driver
         ? (_hasUnappliedChanges && _draftDriverId != _selectedDriverId
-            ? 'Previzualizare — apasă Aplică pentru volan'
-            : 'Pe hartă când ești șofer disponibil')
+            ? 'Preview - tap Apply for driver slot'
+            : 'On map when you are available as driver')
         : (_hasUnappliedChanges && _draftPassengerId != _selectedPassengerId
-            ? 'Previzualizare — apasă Aplică pentru pasager'
-            : 'Pe hartă ca pasager (sau șofer indisponibil)');
+            ? 'Preview - tap Apply for passenger slot'
+            : 'On map as passenger (or unavailable driver)');
     return Container(
       height: 140,
       width: double.infinity,
@@ -788,8 +788,8 @@ class _CarAvatarShopSheetState extends State<CarAvatarShopSheet> {
             const SizedBox(height: 12),
             Text(
               driverNoVehicles
-                  ? 'La volan sunt doar vehicule (transport). Animalele și personajele sunt pentru pasager.'
-                  : 'În curând în garaj...',
+                  ? 'Only transport vehicles are available for driver slot. Animals and characters are passenger-only.'
+                  : 'Coming soon in the garage...',
               textAlign: TextAlign.center,
               style: TextStyle(
                 color: Colors.white24,
@@ -824,7 +824,7 @@ class _CarAvatarShopSheetState extends State<CarAvatarShopSheet> {
               if (avatar.comingSoon) {
                 ScaffoldMessenger.maybeOf(context)?.showSnackBar(
                   SnackBar(
-                    content: Text('${avatar.name} — desenele profesionale vin în curând în bundle. 🌌'),
+                    content: Text('${avatar.name} - professional artwork is coming soon in the bundle. 🌌'),
                     backgroundColor: Colors.indigo.shade800,
                     duration: const Duration(seconds: 3),
                   ),
@@ -837,7 +837,7 @@ class _CarAvatarShopSheetState extends State<CarAvatarShopSheet> {
                 ScaffoldMessenger.maybeOf(context)?.showSnackBar(
                   SnackBar(
                     content: const Text(
-                      'OZN și mașinuța roz sunt gratuite la volan după ce completezi profilul de șofer (date mașină în cont).',
+                      'UFO and the pink mini car are free for driver slot after completing your driver profile (car details in account).',
                     ),
                     backgroundColor: Colors.orange.shade800,
                     duration: const Duration(seconds: 5),
@@ -917,7 +917,7 @@ class _CarAvatarShopSheetState extends State<CarAvatarShopSheet> {
                               border: Border.all(color: Colors.amber.withValues(alpha: 0.5)),
                             ),
                             child: const Text(
-                              'ÎN CURÂND',
+                              'COMING SOON',
                               style: TextStyle(
                                 color: Colors.amber,
                                 fontSize: 8,
@@ -943,7 +943,7 @@ class _CarAvatarShopSheetState extends State<CarAvatarShopSheet> {
                 const SizedBox(height: 6),
                 if (avatar.comingSoon)
                   Text(
-                    'Artă în curs',
+                    'Artwork in progress',
                     style: TextStyle(
                       color: Colors.cyanAccent.withValues(alpha: 0.85),
                       fontSize: 10,
@@ -953,8 +953,8 @@ class _CarAvatarShopSheetState extends State<CarAvatarShopSheet> {
                 else if (unlocked) ...[
                   Text(
                     isPendingApply
-                        ? 'APASĂ APLICĂ'
-                        : (isSelected ? 'SELECTAT' : 'DEBLOCAT'),
+                        ? 'TAP APPLY'
+                        : (isSelected ? 'SELECTED' : 'UNLOCKED'),
                     style: TextStyle(
                       color: isPendingApply
                           ? Colors.cyanAccent
@@ -967,8 +967,8 @@ class _CarAvatarShopSheetState extends State<CarAvatarShopSheet> {
                   if (avatar.price <= 0)
                     Text(
                       (avatar.id == 'ufo' || avatar.id == 'barbie')
-                          ? 'Profil șofer'
-                          : 'Gratuit',
+                          ? 'Driver profile'
+                          : 'Free',
                       style: TextStyle(
                         color: Colors.orange.shade200,
                         fontSize: 10,
@@ -1006,21 +1006,21 @@ class _CarAvatarShopSheetState extends State<CarAvatarShopSheet> {
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: const Color(0xFF1E293B),
-        title: Text('Deblochează ${avatar.name}?', style: const TextStyle(color: Colors.white)),
+        title: Text('Unlock ${avatar.name}?', style: const TextStyle(color: Colors.white)),
         content: Text(
-          'Ești sigur că vrei să cheltuiești ${avatar.price} tokeni?\n'
-          'Se aplică pentru ${_mapSlot == CarAvatarMapSlot.driver ? 'LA VOLAN' : 'CA PASAGER'}.',
+          'Are you sure you want to spend ${avatar.price} tokens?\n'
+          'Applies to ${_mapSlot == CarAvatarMapSlot.driver ? 'DRIVER' : 'PASSENGER'}.',
           style: const TextStyle(color: Colors.white70),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Anulează')),
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
           ElevatedButton(
             onPressed: () {
               Navigator.pop(ctx);
               _handlePurchase(avatar);
             },
             style: ElevatedButton.styleFrom(backgroundColor: Colors.amber),
-            child: const Text('Cumpără', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
+            child: const Text('Buy', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
           ),
         ],
       ),

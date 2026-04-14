@@ -122,26 +122,25 @@ class _DriverDashboardScreenState extends State<DriverDashboardScreen> {
   }
 
   void _showHoursWarningDialog(double hours) {
+    final l10n = AppLocalizations.of(context)!;
     final remaining = _maxHours - hours;
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Row(
+        title: Row(
           children: [
-            Icon(Icons.warning_amber, color: Colors.orange),
-            SizedBox(width: 8),
-            Text('Limită ore condus'),
+            const Icon(Icons.warning_amber, color: Colors.orange),
+            const SizedBox(width: 8),
+            Text(l10n.driverHoursLimit),
           ],
         ),
         content: Text(
-          'Ai condus ${hours.toStringAsFixed(1)} ore astăzi.\n'
-          'Mai ai ${remaining.toStringAsFixed(1)} ore disponibile.\n\n'
-          'Consideră o pauză pentru siguranța ta și a pasagerilor.',
+          l10n.driverHoursWarningBody(hours.toStringAsFixed(1), remaining.toStringAsFixed(1)),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Continuă'),
+            child: Text(l10n.confirmButton),
           ),
           ElevatedButton(
             onPressed: () {
@@ -149,7 +148,7 @@ class _DriverDashboardScreenState extends State<DriverDashboardScreen> {
               _setDriverOffline();
             },
             style: ElevatedButton.styleFrom(backgroundColor: Colors.orange),
-            child: const Text('Ieși offline', style: TextStyle(color: Colors.white)),
+            child: Text(l10n.goOffline, style: const TextStyle(color: Colors.white)),
           ),
         ],
       ),
@@ -157,6 +156,7 @@ class _DriverDashboardScreenState extends State<DriverDashboardScreen> {
   }
 
   Future<void> _forceDriverOffline() async {
+    final l10n = AppLocalizations.of(context)!;
     await _firestoreService.updateDriverAvailability(false);
     if (mounted) {
       setState(() => _isDriverAvailable = false);
@@ -164,18 +164,14 @@ class _DriverDashboardScreenState extends State<DriverDashboardScreen> {
         context: context,
         barrierDismissible: false,
         builder: (ctx) => AlertDialog(
-          title: const Row(
+          title: Row(
             children: [
-              Icon(Icons.timer_off, color: Colors.red),
-              SizedBox(width: 8),
-              Text('Limită de 10 ore atinsă'),
+              const Icon(Icons.timer_off, color: Colors.red),
+              const SizedBox(width: 8),
+              Text(l10n.driverHoursReachedLimitTitle),
             ],
           ),
-          content: const Text(
-            'Ai condus 10 ore consecutive.\n'
-            'Din motive de siguranță ai fost deconectat automat.\n\n'
-            'Te poți reconecta după o perioadă de odihnă.',
-          ),
+          content: Text(l10n.driverHoursReachedLimitBody),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(ctx),
@@ -280,7 +276,7 @@ class _DriverDashboardScreenState extends State<DriverDashboardScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('${todayRides.length} curse finalizate azi.'),
+            content: Text(l10n.ridesCompletedToday(todayRides.length)),
             backgroundColor: Colors.green,
           ),
         );
@@ -509,7 +505,7 @@ class _DriverDashboardScreenState extends State<DriverDashboardScreen> {
                   onPressed: () {
                     // Navigate to full history screen - to be implemented
                   },
-                  child: Text('Vezi toate ${filteredRides.length} curse'),
+                  child: Text(l10n.viewAllRides(filteredRides.length)),
                 ),
               ),
             const SizedBox(height: 16),
@@ -689,6 +685,7 @@ class _DriverDashboardScreenState extends State<DriverDashboardScreen> {
 
   /// Feature: Driver hours limit — shows a banner with session driving hours.
   Widget _buildSessionHoursBanner() {
+    final l10n = AppLocalizations.of(context)!;
     final isWarning = _sessionHours >= _warnHours;
     final isCritical = _sessionHours >= _maxHours;
     final color = isCritical ? Colors.red : isWarning ? Colors.orange : Colors.green;
@@ -705,10 +702,10 @@ class _DriverDashboardScreenState extends State<DriverDashboardScreen> {
           Expanded(
             child: Text(
               isCritical
-                  ? 'Limită de 10 ore atinsă. Te rog ieși offline.'
+                  ? l10n.driverSessionBannerCritical
                   : isWarning
-                      ? 'Sesiune: ${_sessionHours.toStringAsFixed(1)}h  •  Rămân ${remaining.toStringAsFixed(1)}h'
-                      : 'Sesiune: ${_sessionHours.toStringAsFixed(1)}h',
+                      ? l10n.driverSessionBannerWarning(_sessionHours.toStringAsFixed(1), remaining.toStringAsFixed(1))
+                      : l10n.driverSessionBannerNormal(_sessionHours.toStringAsFixed(1)),
               style: TextStyle(
                 color: color,
                 fontWeight: FontWeight.w600,
@@ -720,7 +717,7 @@ class _DriverDashboardScreenState extends State<DriverDashboardScreen> {
             TextButton(
               onPressed: _setDriverOffline,
               style: TextButton.styleFrom(foregroundColor: color),
-              child: const Text('Offline'),
+              child: Text(l10n.goOffline),
             ),
         ],
       ),
@@ -736,7 +733,7 @@ class _DriverDashboardScreenState extends State<DriverDashboardScreen> {
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
           _buildStatCard(
-            'Ajutor Azi',
+            l10n.helpToday,
             _ridesToday.toString(),
             Icons.favorite_border,
             onTap: () {
@@ -746,7 +743,7 @@ class _DriverDashboardScreenState extends State<DriverDashboardScreen> {
             },
           ),
           _buildStatCard(
-            'Tokens',
+            l10n.tokens,
             _ridesToday.toString(), // 1 token per ride
             Icons.generating_tokens_outlined,
             onTap: () {

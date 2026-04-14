@@ -38,6 +38,7 @@ class FirebaseService {
   // Stream subscriptions for memory leak prevention
   StreamSubscription<RemoteMessage>? _foregroundMessageSubscription;
   StreamSubscription<RemoteMessage>? _appOpenedSubscription;
+  static bool _appCheckInitialized = false;
 
   // Getters
   FirebaseAuth get auth => _auth;
@@ -80,21 +81,19 @@ class FirebaseService {
 
   /// Initialize core Firebase services (fast operations only)
   Future<void> _initializeCoreServices() async {
-    // App Check: în **debug** nu activăm deloc SDK-ul — tokenul de debug cere UUID
-    // în Console; altfel 403 + „Too many attempts” și Callable-urile par UNAUTHENTICATED.
-    // În consolă: pentru dev, enforcement OFF pe Firestore/Functions SAU testezi cu release.
-    // **Release**: Play Integrity (Android).
+    // App Check este inițializat în `main.dart` pentru debug.
+    // Aici păstrăm doar activarea pentru release, o singură dată pe sesiune.
     try {
       if (kDebugMode) {
         Logger.info(
-          'App Check oprit în debug (fără 403/spam). Release: Play Integrity.',
+          'App Check debug este gestionat în main.dart (debug provider).',
           tag: 'APP_CHECK',
         );
-      } else {
+      } else if (!_appCheckInitialized) {
         await FirebaseAppCheck.instance.activate(
-          // ignore: deprecated_member_use
-          androidProvider: AndroidProvider.playIntegrity,
+          providerAndroid: const AndroidPlayIntegrityProvider(),
         );
+        _appCheckInitialized = true;
         Logger.info('Firebase App Check: Play Integrity activ', tag: 'APP_CHECK');
       }
     } catch (e) {

@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -123,38 +125,38 @@ class PushNotificationService {
     // Handle different message types
     final messageType = message.data['type'];
     final notification = message.notification;
-    final title = notification?.title ?? 'Notificare';
-    final body = notification?.body ?? 'Actualizare nouă';
+    final title = notification?.title ?? 'Notification';
+    final body = notification?.body ?? 'New update';
 
     switch (messageType) {
       case 'ride_assignment':
         _handleRideAssignment(message);
-        LocalNotificationsService().showSimple(title: title, body: body, payload: message.data.toString());
+        LocalNotificationsService().showSimple(title: title, body: body, payload: jsonEncode(message.data));
         break;
       case 'ride_update':
         _handleRideUpdate(message);
-        LocalNotificationsService().showSimple(title: title, body: body, payload: message.data.toString());
+        LocalNotificationsService().showSimple(title: title, body: body, payload: jsonEncode(message.data));
         break;
       case 'chat_message':
         _handleChatMessage(message);
         LocalNotificationsService().showSimple(
           title: title,
           body: body,
-          payload: message.data.toString(),
+          payload: jsonEncode(message.data),
           channelId: 'chat_messages',
         );
         break;
       case 'private_chat_message':
         LocalNotificationsService().showSimple(
-          title: title.isEmpty ? 'Mesaj privat' : title,
+          title: title.isEmpty ? 'Private message' : title,
           body: body,
-          payload: message.data.toString(),
+          payload: jsonEncode(message.data),
           channelId: 'chat_messages',
         );
         break;
       case 'emergency':
         _handleEmergency(message);
-        LocalNotificationsService().showSimple(title: title, body: body, payload: message.data.toString());
+        LocalNotificationsService().showSimple(title: title, body: body, payload: jsonEncode(message.data));
         break;
       case 'neighborhood_chat':
         // Ignoră notificarea dacă e propriul mesaj (sender == current user)
@@ -164,7 +166,7 @@ class PushNotificationService {
         LocalNotificationsService().showSimple(
           title: title,
           body: body,
-          payload: message.data.toString(),
+          payload: jsonEncode(message.data),
           channelId: 'chat_messages',
         );
         break;
@@ -172,7 +174,7 @@ class PushNotificationService {
         LocalNotificationsService().showSimple(
           title: title,
           body: body,
-          payload: message.data.toString(),
+          payload: jsonEncode(message.data),
           channelId: 'chat_messages',
         );
         break;
@@ -180,11 +182,11 @@ class PushNotificationService {
         LocalNotificationsService().showSimple(
           title: title,
           body: body,
-          payload: message.data.toString(),
+          payload: jsonEncode(message.data),
         );
         break;
       default:
-        LocalNotificationsService().showSimple(title: title, body: body, payload: message.data.toString());
+        LocalNotificationsService().showSimple(title: title, body: body, payload: jsonEncode(message.data));
         Logger.debug('Unknown message type: $messageType', tag: 'PushNotifications');
     }
   }
@@ -208,6 +210,24 @@ class PushNotificationService {
   void setNavigationCallback(Function(String messageType, Map<String, dynamic> data) callback) {
     onNavigate = callback;
   }
+
+  /// Tap pe notificare locală (JSON din [jsonEncode] pe `message.data`).
+  void navigateFromJsonPayload(String? payload) {
+    if (payload == null || payload.isEmpty) return;
+    try {
+      final decoded = jsonDecode(payload);
+      if (decoded is! Map) return;
+      final data = Map<String, dynamic>.from(decoded);
+      final t = data['type']?.toString() ?? 'unknown';
+      Logger.info('Local payload navigation: $t', tag: 'PushNotifications');
+      if (onNavigate != null) {
+        onNavigate!(t, data);
+      }
+    } catch (e) {
+      Logger.debug('Local payload parse: $e', tag: 'PushNotifications');
+    }
+  }
+
 
   /// Handle initial message
   void _handleInitialMessage(RemoteMessage message) {
@@ -261,8 +281,8 @@ class PushNotificationService {
         'rideId': rideId,
         'type': 'ride_assignment',
         'distanceKm': distanceKm,
-        'title': 'Nouă ofertă de cursă',
-        'body': 'Ai primit o ofertă de cursă la ${distanceKm.toStringAsFixed(1)} km distanță',
+        'title': 'New ride offer',
+        'body': 'You received a ride offer at ${distanceKm.toStringAsFixed(1)} km distance',
       });
 
       Logger.info('Driver assignment notification sent: $driverId for ride $rideId', tag: 'PushNotifications');
@@ -282,6 +302,8 @@ class PushNotificationService {
     required String senderName,
     required String messageText,
     required String rideId,
+    bool isPrivateChat = false,
+    String? senderUid,
   }) async {
     try {
       final instance = PushNotificationService();
@@ -292,11 +314,15 @@ class PushNotificationService {
       final fcmToken = userDoc.data()?['fcmToken'] as String?;
       if (fcmToken == null || fcmToken.isEmpty) return;
 
+      final uid = senderUid ?? instance._auth.currentUser?.uid ?? '';
+
       final callable = instance._functions.httpsCallable('sendChatNotification');
       await callable.call({
         'token': fcmToken,
         'rideId': rideId,
         'senderName': senderName,
+        'senderUid': uid,
+        'isPrivateChat': isPrivateChat,
         'messageText': messageText.length > 100
             ? '${messageText.substring(0, 97)}...'
             : messageText,
@@ -325,8 +351,8 @@ class PushNotificationService {
         'driverId': driverId,
         'rideId': rideId,
         'type': 'ride_timeout',
-        'title': 'Ofertă expirată',
-        'body': 'Timpul pentru acceptarea ofertei a expirat',
+        'title': 'Offer expired',
+        'body': 'The time to accept the offer has expired',
       });
 
       Logger.info('Driver timeout notification sent: $driverId for ride $rideId', tag: 'PushNotifications');
@@ -352,15 +378,15 @@ class PushNotificationService {
         'passengerId': passengerId,
         'rideId': rideId,
         'type': 'no_driver',
-        'title': 'Căutăm șofer',
-        'body': 'Căutăm un șofer disponibil pentru cursa ta',
+        'title': 'Searching for driver',
+        'body': 'Searching for an available driver for your ride',
       });
 
       Logger.info('Passenger no driver notification sent: $passengerId for ride $rideId', tag: 'PushNotifications');
     } catch (e) {
       Logger.error('Error sending passenger notification', error: e, tag: 'PushNotifications');
       Logger.debug(
-        '[PUSH] Passenger $passengerId ride $rideId — căutare alt șofer',
+        '[PUSH] Passenger $passengerId ride $rideId - searching alternate driver',
         tag: 'PushNotifications',
       );
     }

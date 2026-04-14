@@ -182,16 +182,13 @@ class GeocodingService {
     );
 
     final bool nearBucharest = distanceToBucharest < 50000; // 50km
-    final String contextualQuery = nearBucharest
-        ? '$normalizedQuery, București, România'
-        : '$normalizedQuery, România';
+    final String contextualQuery = normalizedQuery;
 
     final Map<String, String> params = <String, String>{
       'q': contextualQuery,
       'format': 'json',
       'addressdetails': '1',
       'limit': '10',
-      'countrycodes': 'ro',
     };
 
     // Viewbox pentru București (lon,lat order: left, top, right, bottom)
@@ -269,10 +266,6 @@ class GeocodingService {
 
         final double lon = (coords[0] as num).toDouble();
         final double lat = (coords[1] as num).toDouble();
-
-        // Filtrare doar România
-        final String country = (props['country'] as String?) ?? '';
-        if (!country.toLowerCase().contains('rom')) continue;
 
         final String name = (props['name'] as String?) ?? '';
         final String street = (props['street'] as String?) ?? '';

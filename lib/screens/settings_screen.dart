@@ -8,9 +8,9 @@ import 'package:nabour_app/l10n/app_localizations.dart';
 import 'package:nabour_app/widgets/update_banner_widget.dart';
 import 'package:nabour_app/widgets/app_drawer.dart'; // Pentru lowDataMode static
 import 'package:nabour_app/services/community_mode_service.dart';
-import 'package:nabour_app/services/movement_history_preferences_service.dart';
+import 'package:nabour_app/services/mhist_prefs_service.dart';
 import 'package:nabour_app/services/movement_history_service.dart';
-import 'package:nabour_app/services/nearby_social_notifications_prefs.dart';
+import 'package:nabour_app/services/nearby_social_notif_prefs.dart';
 import 'package:nabour_app/services/assistant_voice_ui_prefs.dart';
 import 'package:nabour_app/services/now_playing_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -89,17 +89,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   String _communitySubtitle() {
+    final l10n = AppLocalizations.of(context)!;
     final m = CommunityModeService.instance.mode;
     if (m == 'school') {
       final s = CommunityModeService.instance.schoolLabel;
-      return s.isEmpty ? 'Mod școală / liceu' : s;
+      return s.isEmpty ? l10n.settingsCommunityModeSchool : s;
     }
-    return 'Standard (fără etichetă comunitate)';
+    return l10n.settingsCommunityModeStandard;
   }
 
   String _nowPlayingSubtitle() {
+    final l10n = AppLocalizations.of(context)!;
     if (_npTitle.isEmpty && _npArtist.isEmpty) {
-      return 'Nu e setat — vizibil în profil pentru prieteni';
+      return l10n.settingsNowPlayingNotSet;
     }
     return '$_npTitle · $_npArtist'.trim();
   }
@@ -179,8 +181,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
             context,
             icon: Icons.graphic_eq_rounded,
             color: const Color(0xFF6366F1),
-            title: 'Asistent vocal pe hartă',
-            subtitle: 'Buton pe hartă și secțiunea din meniu (în curs de îmbunătățiri)',
+            title: l10n.settingsVoiceAssistantOnMap,
+            subtitle: l10n.settingsVoiceAssistantOnMapSubtitle,
             value: _assistantVoiceUiLoaded ? _assistantVoiceUiVisible : false,
             onChanged: !_assistantVoiceUiLoaded
                 ? (_) {}
@@ -210,9 +212,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
           ListTile(
             leading: _buildIconContainer(Icons.visibility_off_rounded, Colors.deepPurple),
-            title: const Text('Mod fantomă (hartă socială)'),
-            subtitle: const Text(
-              'Activezi „Invizibil” din meniul hărții sociale; oprește RTDB și marchează ghostMode în cont.',
+            title: Text(l10n.settingsGhostModeTitle),
+            subtitle: Text(
+              l10n.settingsGhostModeSubtitle,
               maxLines: 4,
               overflow: TextOverflow.ellipsis,
             ),
@@ -221,7 +223,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             context,
             icon: Icons.blur_circular_rounded,
             color: const Color(0xFF6366F1),
-            title: 'Locație aproximativă (hartă socială)',
+            title: l10n.settingsApproximateLocationTitle,
             value: _fuzzyLocationEnabled,
             onChanged: (val) async {
               setState(() => _fuzzyLocationEnabled = val);
@@ -229,12 +231,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
               await prefs.setBool('fuzzy_location', val);
             },
           ),
-          _buildSectionHeader(context, 'Hartă socială'),
+          _buildSectionHeader(context, l10n.settingsSocialMapSection),
           _buildSwitchTile(
             context,
             icon: Icons.place_rounded,
             color: const Color(0xFF7C3AED),
-            title: 'Notificări „aproape de mine”',
+            title: l10n.settingsNearbyNotificationsTitle,
             value: _nearbyPrefsLoaded ? _nearbyNotifyEnabled : true,
             onChanged: !_nearbyPrefsLoaded
                 ? (_) {}
@@ -245,15 +247,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
           ListTile(
             leading: _buildIconContainer(Icons.straighten_rounded, Colors.indigo.shade700),
-            title: const Text('Rază alertă apropiere'),
-            subtitle: Text('$_nearbyRadiusM m (contacte pe hartă)'),
+            title: Text(l10n.settingsNearbyAlertRadiusTitle),
+            subtitle: Text(l10n.settingsNearbyAlertRadiusSubtitle(_nearbyRadiusM)),
             trailing: const Icon(Icons.chevron_right_rounded),
             onTap: !_nearbyPrefsLoaded ? null : () => _pickNearbyRadius(context),
           ),
           ListTile(
             leading: _buildIconContainer(Icons.music_note_rounded, Colors.green.shade700),
-            title: const Text('Muzică (Spotify / Apple Music)'),
-            subtitle: const Text('Deschide Spotify sau Apple Music'),
+            title: Text(l10n.settingsMusicTitle),
+            subtitle: Text(l10n.settingsMusicSubtitle),
             trailing: const Icon(Icons.open_in_new_rounded),
             onTap: () async {
               final u = Uri.parse('https://open.spotify.com');
@@ -264,14 +266,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
           ListTile(
             leading: _buildIconContainer(Icons.graphic_eq_rounded, Colors.purple.shade600),
-            title: const Text('Ce ascult acum (profil)'),
+            title: Text(l10n.settingsNowPlayingTitle),
             subtitle: Text(_nowPlayingSubtitle()),
             trailing: const Icon(Icons.chevron_right_rounded),
             onTap: () => _openNowPlayingSheet(context),
           ),
           ListTile(
             leading: _buildIconContainer(Icons.groups_rounded, Colors.deepOrange.shade600),
-            title: const Text('Mod comunitate / școală'),
+            title: Text(l10n.settingsCommunityModeTitle),
             subtitle: Text(_communitySubtitle()),
             trailing: const Icon(Icons.chevron_right_rounded),
             onTap: () => _openCommunitySheet(context),
@@ -280,7 +282,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             context,
             icon: Icons.timeline_rounded,
             color: const Color(0xFF7C3AED),
-            title: 'Istoric locație (Timeline)',
+            title: l10n.settingsLocationHistoryTitle,
             value: _movementHistoryEnabled,
             onChanged: _movementHistoryLoaded
                 ? (val) async {
@@ -295,7 +297,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         setState(() => _movementHistoryEnabled = false);
                         AppFeedback.error(
                           context,
-                          'Nu s-a putut porni înregistrarea. Acordă acces la locație și, pe Android, „Permite tot timpul” pentru înregistrare când aplicația nu e deschisă.',
+                          l10n.settingsLocationHistoryStartFailed,
                         );
                         return;
                       }
@@ -306,10 +308,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     if (val) {
                       AppFeedback.success(
                         context,
-                        'Istoricul locației a fost activat (vezi notificarea pe Android când rulează în fundal).',
+                        l10n.settingsLocationHistoryEnabled,
                       );
                     } else {
-                      AppFeedback.info(context, 'Istoricul locației a fost dezactivat.');
+                      AppFeedback.info(context, l10n.settingsLocationHistoryDisabled);
                     }
                   }
                 : (_) {},
@@ -317,13 +319,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ListTile(
             leading: _buildIconContainer(Icons.auto_delete_rounded, Colors.deepPurple),
             title: Text(
-              'Retenție istoric local',
+              l10n.settingsLocalHistoryRetentionTitle,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: TextStyle(fontWeight: FontWeight.w600, fontSize: isSmall ? 14 : null),
             ),
             subtitle: Text(
-              'Păstrează datele locale $_movementRetentionDays zile',
+              l10n.settingsLocalHistoryRetentionSubtitle(_movementRetentionDays),
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
             ),
@@ -332,14 +334,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
           ListTile(
             leading: _buildIconContainer(Icons.delete_forever_rounded, Colors.red.shade600),
-            title: const Text(
-              'Șterge istoricul local',
+            title: Text(
+              l10n.settingsDeleteLocalHistoryTitle,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: TextStyle(fontWeight: FontWeight.w600),
             ),
-            subtitle: const Text(
-              'Șterge recap, cache și timeline local pentru acest cont',
+            subtitle: Text(
+              l10n.settingsDeleteLocalHistorySubtitle,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
             ),
@@ -356,6 +358,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Future<void> _pickNearbyRadius(BuildContext context) async {
+    final l10n = AppLocalizations.of(context)!;
     final choices = [200, 400, 500, 800, 1200, 2000];
     final picked = await showModalBottomSheet<int>(
       context: context,
@@ -366,10 +369,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Padding(
+            Padding(
               padding: EdgeInsets.all(16),
               child: Text(
-                'Rază notificare apropiere',
+                l10n.settingsNearbyNotificationRadiusTitle,
                 style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
               ),
             ),
@@ -470,7 +473,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           children: [
             Flexible(
               child: Text(
-                isRo ? 'Română' : 'English',
+                isRo ? l10n.romanian : l10n.english,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withAlpha(150)),
               ),
@@ -521,6 +524,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Future<void> _pickRetentionDays() async {
+    final l10n = AppLocalizations.of(context)!;
     final options = <int>[30, 60, 90, 180, 365];
     final selected = await showModalBottomSheet<int>(
       context: context,
@@ -532,8 +536,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
           mainAxisSize: MainAxisSize.min,
           children: [
             const SizedBox(height: 8),
-            const Text(
-              'Retenție istoric local',
+            Text(
+              l10n.settingsLocalHistoryRetentionTitle,
               style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800),
             ),
             const SizedBox(height: 12),
@@ -555,10 +559,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
     await MovementHistoryService.instance.pruneLocalRetention(retentionDays: selected);
     if (!mounted) return;
     setState(() => _movementRetentionDays = selected);
-    AppFeedback.success(context, 'Retenția locală a fost setată la $selected zile.');
+    AppFeedback.success(context, l10n.settingsLocalHistoryRetentionSet(selected));
   }
 
   Future<void> _openNowPlayingSheet(BuildContext context) async {
+    final l10n = AppLocalizations.of(context)!;
     final tCtrl = TextEditingController(text: _npTitle);
     final aCtrl = TextEditingController(text: _npArtist);
     await showModalBottomSheet<void>(
@@ -578,14 +583,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const Text(
-              'Ce ascult acum',
+            Text(
+              l10n.settingsNowPlayingSheetTitle,
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
             ),
             const SizedBox(height: 12),
             TextField(
               controller: tCtrl,
-              decoration: const InputDecoration(labelText: 'Piesă / titlu'),
+              decoration: InputDecoration(labelText: l10n.settingsNowPlayingSongLabel),
             ),
             const SizedBox(height: 8),
             TextField(
@@ -605,9 +610,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   _npTitle = tCtrl.text.trim();
                   _npArtist = aCtrl.text.trim();
                 });
-                AppFeedback.success(this.context, 'Profil muzical actualizat.');
+                AppFeedback.success(this.context, l10n.settingsMusicProfileUpdated);
               },
-              child: const Text('Salvează în cont'),
+              child: Text(l10n.settingsSaveToAccount),
             ),
             TextButton(
               onPressed: () async {
@@ -619,7 +624,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   _npArtist = '';
                 });
               },
-              child: const Text('Șterge din profil'),
+              child: Text(l10n.settingsDeleteFromProfile),
             ),
           ],
         ),
@@ -630,6 +635,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Future<void> _openCommunitySheet(BuildContext context) async {
+    final l10n = AppLocalizations.of(context)!;
     String sheetMode =
         CommunityModeService.instance.mode == 'school' ? 'school' : 'none';
     final schoolCtrl =
@@ -652,8 +658,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const Text(
-                'Comunitate',
+              Text(
+                l10n.settingsCommunitySheetTitle,
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
               ),
               const SizedBox(height: 12),
@@ -692,10 +698,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   if (context.mounted) Navigator.pop(ctx);
                   if (mounted) setState(() {});
                   if (context.mounted) {
-                    AppFeedback.success(context, 'Mod comunitate salvat.');
+                    AppFeedback.success(context, l10n.settingsCommunityModeSaved);
                   }
                 },
-                child: const Text('Salvează'),
+                child: Text(l10n.save),
               ),
             ],
           ),
@@ -706,21 +712,22 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Future<void> _confirmAndClearLocalHistory() async {
+    final l10n = AppLocalizations.of(context)!;
     final ok = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Ștergi istoricul local?'),
-        content: const Text(
-          'Această acțiune șterge recap-ul și cache-ul local Week in Review pentru contul curent.',
+        title: Text(l10n.settingsDeleteLocalHistoryConfirmTitle),
+        content: Text(
+          l10n.settingsDeleteLocalHistoryConfirmContent,
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(false),
-            child: const Text('Anulează'),
+            child: Text(l10n.cancel),
           ),
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(true),
-            child: const Text('Șterge', style: TextStyle(color: Colors.red)),
+            child: Text(l10n.delete, style: const TextStyle(color: Colors.red)),
           ),
         ],
       ),
@@ -728,6 +735,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
     if (ok != true) return;
     await MovementHistoryService.instance.clearLocalHistoryForCurrentUser();
     if (!mounted) return;
-    AppFeedback.success(context, 'Istoricul local a fost șters.');
+    AppFeedback.success(context, l10n.settingsLocalHistoryDeleted);
   }
 }

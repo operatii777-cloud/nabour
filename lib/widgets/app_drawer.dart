@@ -12,7 +12,6 @@ import 'package:nabour_app/screens/driver_application_screen.dart';
 import 'package:nabour_app/screens/help_screen.dart';
 import 'package:nabour_app/screens/legal_screen.dart';
 import 'package:nabour_app/screens/safety_screen.dart';
-import 'package:nabour_app/screens/join_team_screen.dart';
 import 'package:nabour_app/services/firestore_service.dart';
 import 'package:nabour_app/screens/driver_dashboard_screen.dart';
 import 'package:nabour_app/screens/personal_info_screen.dart';
@@ -35,6 +34,7 @@ import 'package:nabour_app/screens/week_review_screen.dart';
 import 'package:nabour_app/services/movement_history_service.dart';
 import 'package:nabour_app/screens/favorite_addresses_screen.dart';
 import 'package:nabour_app/screens/places_hub_screen.dart';
+import 'package:nabour_app/screens/agenda_visible_contacts_screen.dart';
 import 'package:nabour_app/screens/explorari_screen.dart';
 import 'package:nabour_app/screens/mystery_box_activity_screen.dart';
 import 'package:nabour_app/screens/token_transfer_screen.dart';
@@ -377,7 +377,7 @@ class AppDrawer extends StatelessWidget {
                   context,
                   icon: Icons.home_filled,
                   color: const Color(0xFF22C55E),
-                  title: 'Afișează Acasă (favorite) pe hartă\n(doar pentru tine)',
+                  title: l10n.drawerShowHomeOnMap,
                   onTap: () {
                     Navigator.pop(context);
                     onEnableSavedHomePinOnMap?.call();
@@ -388,7 +388,7 @@ class AppDrawer extends StatelessWidget {
                   context,
                   icon: Icons.home_work_rounded,
                   color: const Color(0xFF38BDF8),
-                  title: 'Reper orientare pe hartă\n(ține apăsat pe hartă după activare)',
+                  title: l10n.drawerOrientationMarkerOnMap,
                   onTap: () {
                     Navigator.pop(context);
                     onPlaceMapOrientationPin?.call();
@@ -399,7 +399,7 @@ class AppDrawer extends StatelessWidget {
                   context,
                   icon: Icons.visibility_off_outlined,
                   color: Colors.orange.shade700,
-                  title: 'Ascunde Acasă de pe hartă\n(doar markerul favorite)',
+                  title: l10n.drawerHideHomeOnMap,
                   onTap: () {
                     Navigator.pop(context);
                     onHideSavedHomePinOnMap?.call();
@@ -410,7 +410,7 @@ class AppDrawer extends StatelessWidget {
                   context,
                   icon: Icons.pin_drop_outlined,
                   color: const Color(0xFF15803D),
-                  title: 'Ascunde reper orientare\n(elimină acul de pe hartă)',
+                  title: l10n.drawerHideOrientationMarker,
                   onTap: () {
                     Navigator.pop(context);
                     onRemoveOrientationReperFromMap?.call();
@@ -445,6 +445,17 @@ class AppDrawer extends StatelessWidget {
                   color: const Color(0xFF7C3AED),
                   title: l10n.neighborhoodChat,
                   onTap: () => _navigateTo(context, const NeighborhoodChatScreen()),
+                  isSubItem: true,
+                ),
+                _buildMenuItem(
+                  context,
+                  icon: Icons.contact_phone_outlined,
+                  color: const Color(0xFF7C3AED),
+                  title: l10n.drawerActiveContactsOnMap,
+                  onTap: () => _navigateTo(
+                    context,
+                    const AgendaVisibleContactsScreen(),
+                  ),
                   isSubItem: true,
                 ),
                 _buildMenuItem(
@@ -557,30 +568,7 @@ class AppDrawer extends StatelessWidget {
             ),
 
             // ==========================================
-            // 4. IMPLICARE (pasageri)
-            // ==========================================
-            if (currentRole == UserRole.passenger) ...[
-              const SizedBox(height: 8),
-              _buildDrawerGroup(
-                context,
-                title: l10n.drawerSectionGetInvolved,
-                icon: Icons.front_hand_outlined,
-                accentColor: const Color(0xFFF9A826),
-                children: [
-                  _buildMenuItem(
-                    context,
-                    icon: Icons.group_add_rounded,
-                    color: const Color(0xFFF9A826),
-                    title: l10n.joinTeam,
-                    onTap: () => _navigateTo(context, const JoinTeamScreen()),
-                    isSubItem: true,
-                  ),
-                ],
-              ),
-            ],
-
-            // ==========================================
-            // 5. PREFERINȚE ȘI ASISTENT VOCAL (opțional din setări)
+            // 4. PREFERINȚE ȘI ASISTENT VOCAL (opțional din setări)
             // ==========================================
             ValueListenableBuilder<bool>(
               valueListenable:
@@ -620,11 +608,15 @@ class AppDrawer extends StatelessWidget {
                             .withValues(alpha: 0.5),
                         title: Text(
                           l10n.aiAssistant,
-                          style: TextStyle(
-                            fontWeight: FontWeight.w800,
-                            fontSize: 15,
-                            color: Theme.of(context).colorScheme.onSurface,
-                          ),
+                          style: Theme.of(context)
+                              .textTheme
+                              .titleMedium!
+                              .copyWith(
+                                inherit: false,
+                                fontWeight: FontWeight.w800,
+                                fontSize: 15,
+                                color: Theme.of(context).colorScheme.onSurface,
+                              ),
                         ),
                         children: [
                           _buildMenuItem(
@@ -645,7 +637,7 @@ class AppDrawer extends StatelessWidget {
             ),
 
             // ==========================================
-            // 6. SUPORT ȘI LEGAL
+            // 5. SUPORT ȘI LEGAL
             // ==========================================
             const SizedBox(height: 8),
             _buildSectionHeader(l10n.drawerSectionSupportInfo),
@@ -697,7 +689,7 @@ class AppDrawer extends StatelessWidget {
             ),
 
             // ==========================================
-            // 7. LOGOUT
+            // 6. LOGOUT
             // ==========================================
             const SizedBox(height: 24),
             Padding(
@@ -788,11 +780,12 @@ class AppDrawer extends StatelessWidget {
         collapsedIconColor: scheme.onSurface.withValues(alpha: 0.45),
         title: Text(
           title,
-          style: TextStyle(
-            fontWeight: FontWeight.w800,
-            fontSize: 15,
-            color: scheme.onSurface,
-          ),
+          style: Theme.of(context).textTheme.titleMedium!.copyWith(
+                inherit: false,
+                fontWeight: FontWeight.w800,
+                fontSize: 15,
+                color: scheme.onSurface,
+              ),
         ),
         children: children,
       ),
@@ -1184,7 +1177,10 @@ class _DrawerProfileHeaderState extends State<_DrawerProfileHeader> {
                     onTap: () {
                       if (uid != null) {
                         Clipboard.setData(ClipboardData(text: uid));
-                        AppFeedback.success(context, 'ID copiat în clipboard.');
+                        AppFeedback.success(
+                          context,
+                          AppLocalizations.of(context)!.drawerIdCopied,
+                        );
                       }
                     },
                     child: Container(

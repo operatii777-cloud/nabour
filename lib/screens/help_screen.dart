@@ -91,51 +91,43 @@ class _HelpScreenState extends State<HelpScreen> {
       case 'howToUseChat':
       case 'Cum folosești chatul': {
         return [
-          const Text(
-            'Ghid utilizare Chat Cartier',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          Text(
+            l10n.helpChatGuideTitle,
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 16),
-          const Text(
-            'Chat-ul de cartier este conceput să te conecteze instantaneu cu vecinii aflați în proximitatea ta.',
-            style: TextStyle(fontSize: 15),
+          Text(
+            l10n.helpChatGuideIntro,
+            style: const TextStyle(fontSize: 15),
           ),
           const SizedBox(height: 20),
-          const Text(
-            'Cine vede mesajele?',
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF7C3AED)),
+          Text(
+            l10n.helpChatWhoSeesTitle,
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF7C3AED)),
           ),
           const SizedBox(height: 8),
-          const Text(
-            'Mesajele trimise sunt vizibile pentru toți utilizatorii care se află în aceeași zonă geografică cu tine în momentul utilizării.',
-          ),
+          Text(l10n.helpChatWhoSeesBody),
           const SizedBox(height: 16),
-          const Text(
-            'Raza și Aria de acoperire',
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF7C3AED)),
+          Text(
+            l10n.helpChatCoverageTitle,
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF7C3AED)),
           ),
           const SizedBox(height: 8),
-          const Text(
-            'Sistemul împarte orașul în hexagoane cu latura de aproximativ 3.2 km (o suprafață de circa 36 km²). Este o zonă vastă, ideală pentru a acoperi un cartier întreg sau un sector.',
-          ),
+          Text(l10n.helpChatCoverageBody),
           const SizedBox(height: 16),
-          const Text(
-            'Persistența mesajelor',
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF7C3AED)),
+          Text(
+            l10n.helpChatPersistenceTitle,
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF7C3AED)),
           ),
           const SizedBox(height: 8),
-          const Text(
-            'Pentru a păstra conversațiile proaspete și relevante, mesajele dispar automat după 30 de minute. Nu există un istoric permanent, chat-ul fiind destinat interacțiunilor imediate.',
-          ),
+          Text(l10n.helpChatPersistenceBody),
           const SizedBox(height: 16),
-          const Text(
-            'Confidențialitate și Siguranță',
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF7C3AED)),
+          Text(
+            l10n.helpChatPrivacyTitle,
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF7C3AED)),
           ),
           const SizedBox(height: 8),
-          const Text(
-            'Accesul la chat este validat pe baza locației tale GPS actuale. Dacă te muți într-o altă parte a orașului, aplicația te va conecta automat la chat-ul specific acelei zone.',
-          ),
+          Text(l10n.helpChatPrivacyBody),
           const SizedBox(height: 24),
           Container(
             padding: const EdgeInsets.all(16),
@@ -144,14 +136,14 @@ class _HelpScreenState extends State<HelpScreen> {
               borderRadius: BorderRadius.circular(12),
               border: Border.all(color: const Color(0xFF7C3AED).withValues(alpha: 0.3)),
             ),
-            child: const Row(
+            child: Row(
               children: [
-                Icon(Icons.tips_and_updates_rounded, color: Color(0xFF7C3AED)),
-                SizedBox(width: 12),
+                const Icon(Icons.tips_and_updates_rounded, color: Color(0xFF7C3AED)),
+                const SizedBox(width: 12),
                 Expanded(
                   child: Text(
-                    'Sfat: Folosește butonul OMW pentru a anunța rapid vecinii că ești în drum spre ei sau ești disponibil în zonă.',
-                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
+                    l10n.helpChatTipOMW,
+                    style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
                   ),
                 ),
               ],
@@ -1051,30 +1043,23 @@ class _HelpScreenState extends State<HelpScreen> {
       case 'lassoTool':
       case 'Instrumentul Lasso':
       case 'Lasso Tool': {
-        final isEn = (Localizations.maybeLocaleOf(context)?.languageCode ?? 'ro') == 'en';
         return [
           Text(
-            isEn ? 'Lasso Tool (Magic Wand)' : 'Instrumentul Lasso (Bagheta Magică)',
+            l10n.helpLassoTitle,
             style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 16),
           Text(
-            isEn 
-              ? 'The Lasso tool allows you to select multiple neighbors on the map by drawing a circle around them.'
-              : 'Instrumentul Lasso îți permite să selectezi mai mulți vecini de pe hartă dintr-o singură mișcare, prin încercuirea lor.',
+            l10n.helpLassoBody,
             style: const TextStyle(fontSize: 15),
           ),
           const SizedBox(height: 20),
           Text(
-            isEn ? 'How to use it?' : 'Cum se folosește?',
+            l10n.helpLassoHowToTitle,
             style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF7C3AED)),
           ),
           const SizedBox(height: 8),
-          Text(
-            isEn
-              ? '1. Tap the "Magic Wand" icon in the top right of the map.\n2. Draw a circle around the neighbors you want to contact.\n3. A menu will appear showing the captured group and options to send a broadcast request.'
-              : '1. Apasă pe pictograma "Baghetă Magică" din colțul dreapta-sus al hărții.\n2. Desenează un cerc cu degetul în jurul vecinilor pe care vrei să îi contactezi.\n3. Se va deschide un meniu cu grupul capturat și opțiuni pentru a le trimite o cerere de tip "Broadcast".',
-          ),
+          Text(l10n.helpLassoHowToBody),
           const SizedBox(height: 24),
           Container(
             padding: const EdgeInsets.all(16),
@@ -1089,9 +1074,7 @@ class _HelpScreenState extends State<HelpScreen> {
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(
-                    isEn 
-                      ? 'Tip: Use Lasso to quickly find a neighbor team for a common activity or a shared ride request!'
-                      : 'Sfat: Folosește Lasso pentru a găsi rapid o echipă de vecini pentru o activitate comună sau o cerere de transport partajat!',
+                    l10n.helpLassoTip,
                     style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
                   ),
                 ),
@@ -1103,55 +1086,37 @@ class _HelpScreenState extends State<HelpScreen> {
       case 'radarScan':
       case 'Butonul Scanează (radar vecini)':
       case 'Scan button (neighbor radar)': {
-        final isEn = (Localizations.maybeLocaleOf(context)?.languageCode ?? 'ro') == 'en';
         return [
           Text(
-            isEn ? 'Scan button (neighbor radar)' : 'Butonul Scanează (radar vecini)',
+            l10n.helpRadarTitle,
             style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 16),
           Text(
-            isEn
-                ? 'The Scan button runs the radar overlay for about 5 seconds, then closes automatically. During this time you cannot resize the circle.'
-                : 'Butonul Scanează pornește scanarea în overlay-ul radar timp de aproximativ 5 secunde, apoi se închide automat. În acest interval nu poți redimensiona cercul.',
+            l10n.helpRadarBody,
             style: const TextStyle(fontSize: 15),
           ),
           const SizedBox(height: 20),
           Text(
-            isEn ? 'What does it scan?' : 'Ce „scanează”?',
+            l10n.helpRadarWhatTitle,
             style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF7C3AED)),
           ),
           const SizedBox(height: 8),
-          Text(
-            isEn
-                ? 'It does not scan Bluetooth, Wi‑Fi, or new devices. It lists neighbors who are already shown on the map and whose position falls inside your radar circle (distance is computed from the circle center and radius).'
-                : 'Nu este scanare Bluetooth, Wi‑Fi sau de dispozitive noi. Aplicația listează vecinii care sunt deja afișați pe hartă și se află în interiorul cercului radar (distanța se calculează față de centrul și raza cercului).',
-            style: const TextStyle(fontSize: 15),
-          ),
+          Text(l10n.helpRadarWhatBody, style: const TextStyle(fontSize: 15)),
           const SizedBox(height: 20),
           Text(
-            isEn ? 'Where do results appear?' : 'Unde apar rezultatele?',
+            l10n.helpRadarResultsTitle,
             style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF7C3AED)),
           ),
           const SizedBox(height: 8),
-          Text(
-            isEn
-                ? 'If at least one neighbor is in the circle, a bottom sheet opens with the list. If there is no one, you will see a short message that no neighbors were found in the radar.'
-                : 'Dacă există cel puțin un vecin în cerc, se deschide o foaie de jos cu lista. Dacă nu e nimeni, vei vedea un mesaj scurt că nu s-a găsit niciun vecin în radar.',
-            style: const TextStyle(fontSize: 15),
-          ),
+          Text(l10n.helpRadarResultsBody, style: const TextStyle(fontSize: 15)),
           const SizedBox(height: 20),
           Text(
-            isEn ? 'What can you do next?' : 'Ce poți face după?',
+            l10n.helpRadarNextTitle,
             style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF7C3AED)),
           ),
           const SizedBox(height: 8),
-          Text(
-            isEn
-                ? 'From the sheet you can use the group action (e.g. broadcast request) when that feature is fully enabled; until then the app may show a notice that it is being rolled out.'
-                : 'Din foaia de jos poți folosi acțiunea de grup (ex. cerere broadcast) când funcția este complet activă; până atunci aplicația poate afișa un mesaj că este în curs de activare.',
-            style: const TextStyle(fontSize: 15),
-          ),
+          Text(l10n.helpRadarNextBody, style: const TextStyle(fontSize: 15)),
           const SizedBox(height: 24),
           Container(
             padding: const EdgeInsets.all(16),
@@ -1167,9 +1132,7 @@ class _HelpScreenState extends State<HelpScreen> {
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(
-                    isEn
-                        ? 'Tip: Move or resize the circle before tapping Scan so it covers the area you care about—only neighbors already visible on the map can appear in the results.'
-                        : 'Sfat: Mută sau mărește cercul înainte de Scanează, ca să acoperi zona care te interesează—în rezultate pot apărea doar vecinii deja vizibili pe hartă.',
+                    l10n.helpRadarTip,
                     style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
                   ),
                 ),
@@ -1180,62 +1143,48 @@ class _HelpScreenState extends State<HelpScreen> {
       }
       case 'mapDrops':
       case 'Interactive Map Drops': {
-        final isEn = (Localizations.maybeLocaleOf(context)?.languageCode ?? 'ro') == 'en';
         return [
           Text(
-            isEn ? 'Interactive Map Drops' : 'Interactive Map Drops (Locații în Chat)',
+            l10n.helpMapDropsTitle,
             style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 16),
           Text(
-            isEn 
-              ? 'Map Drops are special location markers shared in the neighborhood chat that let you travel through the map instantly.'
-              : 'Map Drops sunt marcaje de locație partajate în chat-ul de cartier, care îți permit să călătorești instantaneu pe hartă.',
+            l10n.helpMapDropsBody,
             style: const TextStyle(fontSize: 15),
           ),
           const SizedBox(height: 20),
           Text(
-            isEn ? 'The "FlyTo" Animation' : 'Animația Cinematică "FlyTo"',
+            l10n.helpMapDropsFlyTitle,
             style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.blue),
           ),
           const SizedBox(height: 8),
-          Text(
-            isEn
-              ? 'When a neighbor shares a location, tap on the interactive card in the chat. The app will close the chat and perform a cinematic flight directly to that exact spot on the map.'
-              : 'Atunci când un vecin partajează o locație, apasă pe cardul interactiv din chat. Aplicația va închide chat-ul și va executa un zbor cinematic direct către acel punct exact pe hartă.',
-          ),
+          Text(l10n.helpMapDropsFlyBody),
           const SizedBox(height: 16),
           Text(
-            isEn ? 'Transient Pins' : 'Pini Temporari',
+            l10n.helpMapDropsPinsTitle,
             style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.blue),
           ),
           const SizedBox(height: 8),
-          Text(
-            isEn
-              ? 'After the flight, you will see a pulsing pin on the map. This helps you identify exactly where the "drop" was made, providing precise visual context for the neighbor\'s message.'
-              : 'După finalizarea zborului, vei vedea un pin pulsatoriu pe hartă. Acesta te ajută să identifici exact locul unde a fost făcut "drop-ul", oferind context vizual precis pentru mesajul vecinului.',
-          ),
+          Text(l10n.helpMapDropsPinsBody),
         ];
       }
       case 'mysteryBoxesGuide':
       case 'Cutii pe hartă și tokeni':
       case 'Map boxes & tokens': {
-        final isEn = (Localizations.maybeLocaleOf(context)?.languageCode ?? 'ro') == 'en';
         return [
           Text(
-            isEn ? 'Purpose' : 'La ce servesc',
+            l10n.helpBoxesPurposeTitle,
             style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 12),
           Text(
-            isEn
-                ? 'On the map you can use two related features tied to Nabour tokens: (1) boxes at business offers — the merchant can set an optional limit; you open them near the store and get tokens plus a discount code for the shop. (2) Community boxes — any user can place a box at their current location; someone else opens it on the spot and gets tokens; the placer is notified when it is opened.'
-                : 'Pe hartă există două tipuri de cutii legate de tokenii Nabour: (1) cutii la oferte business — comerciantul poate seta un plafon opțional; le deschizi lângă magazin și primești tokeni plus un cod de reducere la acel magazin. (2) cutii comunitare — orice utilizator poate plasa o cutie la locația sa curentă; altcineva o deschide la fața locului și primește tokeni; plasatorul este informat când cutia e deschisă.',
+            l10n.helpBoxesPurposeBody,
             style: const TextStyle(fontSize: 15, height: 1.35),
           ),
           const SizedBox(height: 20),
           Text(
-            isEn ? 'Tokens — how they move' : 'Tokeni — cum se colectează și cheltuiesc',
+            l10n.helpBoxesTokensTitle,
             style: const TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
@@ -1244,20 +1193,12 @@ class _HelpScreenState extends State<HelpScreen> {
           ),
           const SizedBox(height: 10),
           Text(
-            isEn
-                ? '• Placing a community box: 50 tokens are reserved via the server (stake) and recorded in your wallet history.\n'
-                    '• Opening a community box (as another user, within about 100 m): you receive 50 tokens; the box is marked as opened.\n'
-                    '• Opening a business-offer box: you receive 50 tokens and a discount code, subject to daily-per-store rules and any cap the merchant set.\n'
-                    '• Amounts may follow app settings; if server policy blocks crediting until payments are enabled, opening may fail with that message.'
-                : '• Plasare cutie comunitară: 50 de tokeni sunt reținuți prin server (garanție) și apar în istoricul portofelului.\n'
-                    '• Deschidere cutie comunitară (alt utilizator, la aprox. 100 m): primești 50 de tokeni; cutia este marcată deschisă.\n'
-                    '• Deschidere cutie la ofertă business: primești 50 de tokeni și un cod de reducere, cu respectarea regulii o deschidere pe zi per magazin și a plafonului setat de comerciant.\n'
-                    '• Dacă politica serverului blochează creditarea până la integrarea plăților, deschiderea poate eșua cu mesajul corespunzător.',
+            l10n.helpBoxesTokensBody,
             style: const TextStyle(fontSize: 15, height: 1.4),
           ),
           const SizedBox(height: 20),
           Text(
-            isEn ? 'Community boxes — user flow' : 'Cutii comunitare — pașii',
+            l10n.helpBoxesCommunityStepsTitle,
             style: const TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
@@ -1266,22 +1207,12 @@ class _HelpScreenState extends State<HelpScreen> {
           ),
           const SizedBox(height: 10),
           Text(
-            isEn
-                ? '1) From the map, place a box at your current position (you need enough tokens). Up to 20 active boxes per account.\n'
-                    '2) Nearby users see community boxes on the map; your own boxes are not shown to you as boxes to open.\n'
-                    '3) Tap a box, get close (~100 m), confirm — the server checks distance and identity.\n'
-                    '4) The placer receives an in-app notification entry and a push when someone opens their box.\n'
-                    '5) Under Menu → “Box activity” you can see summaries, your placed boxes, your opens, and opens of your boxes.'
-                : '1) De pe hartă, plasezi o cutie la poziția curentă (ai nevoie de tokeni suficienți). Limită: până la 20 de cutii active per cont.\n'
-                    '2) Utilizatorii din apropiere văd cutiile pe hartă; propriile tale cutii nu îți apar ca să le deschizi tu.\n'
-                    '3) Apeși pe cutie, te apropii (aprox. 100 m), confirmi — serverul verifică distanța și identitatea.\n'
-                    '4) Plasatorul primește înregistrare în notificări și o notificare push când cineva deschide cutia.\n'
-                    '5) Din meniu → „Activitate cutii” vezi rezumatul, cutiile plasate, deschiderile tale și deschiderile la cutiile tale.',
+            l10n.helpBoxesCommunityStepsBody,
             style: const TextStyle(fontSize: 15, height: 1.4),
           ),
           const SizedBox(height: 20),
           Text(
-            isEn ? 'Business-offer boxes — user & merchant flow' : 'Cutii la oferte business — utilizator și comerciant',
+            l10n.helpBoxesBusinessStepsTitle,
             style: const TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
@@ -1290,14 +1221,12 @@ class _HelpScreenState extends State<HelpScreen> {
           ),
           const SizedBox(height: 10),
           Text(
-            isEn
-                ? 'The merchant publishes an offer and may attach a mystery-box cap (extra token cost when creating or increasing the cap). You open the box from the map near the location; you get tokens and a redemption code. At the store, the merchant opens the business panel and uses “Validate box code” so the code is marked used. Codes are stored securely; only cloud functions create or validate them.'
-                : 'Comerciantul publică o ofertă și poate atașa un plafon de cutii (cost suplimentar în tokeni la publicare sau la mărirea plafonului). Deschizi cutia de pe hartă, lângă locație; primești tokeni și un cod de reducere. În magazin, comerciantul deschide panoul business și folosește „Validează cod” astfel încât codul să fie marcat folosit. Codurile sunt păstrate securizat; doar funcțiile cloud le creează sau validează.',
+            l10n.helpBoxesBusinessStepsBody,
             style: const TextStyle(fontSize: 15, height: 1.35),
           ),
           const SizedBox(height: 20),
           Text(
-            isEn ? 'Activity screen (menu)' : 'Ecranul „Activitate cutii” (meniu)',
+            l10n.helpBoxesActivityScreenTitle,
             style: const TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
@@ -1306,14 +1235,12 @@ class _HelpScreenState extends State<HelpScreen> {
           ),
           const SizedBox(height: 10),
           Text(
-            isEn
-                ? 'Tabs: Summary (estimated tokens from opens and stake from placements), Placed community boxes, Your opens (community + business log), Notifications when others open your community boxes. Redemption codes are shown masked for safety.'
-                : 'File: Rezumat (estimări tokeni din deschideri și din plasări), Plasate (comunitate), Deschise de tine (comunitate + business), Deschideri la cutiile tale (notificări). Codurile de reducere sunt afișate parțial mascate.',
+            l10n.helpBoxesActivityScreenBody,
             style: const TextStyle(fontSize: 15, height: 1.35),
           ),
           const SizedBox(height: 20),
           Text(
-            isEn ? 'Privacy & rules' : 'Confidențialitate și reguli',
+            l10n.helpBoxesPrivacyRulesTitle,
             style: const TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
@@ -1322,14 +1249,12 @@ class _HelpScreenState extends State<HelpScreen> {
           ),
           const SizedBox(height: 10),
           Text(
-            isEn
-                ? 'Sensitive collections (redemption codes, box writes) are handled on the server. Firestore rules prevent clients from forging opens or codes; reads follow authentication rules.'
-                : 'Operațiile sensibile (coduri de reducere, deschideri) se fac pe server. Regulile Firestore împiedică falsificarea din aplicație; citirile respectă autentificarea.',
+            l10n.helpBoxesPrivacyRulesBody,
             style: const TextStyle(fontSize: 15, height: 1.35),
           ),
           const SizedBox(height: 20),
           Text(
-            isEn ? 'Who does what' : 'Cine ce face',
+            l10n.helpBoxesWhoTitle,
             style: const TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
@@ -1338,18 +1263,12 @@ class _HelpScreenState extends State<HelpScreen> {
           ),
           const SizedBox(height: 10),
           Text(
-            isEn
-                ? '• Any user: browse the map, place community boxes if they have tokens, open community or business boxes when conditions are met, review “Box activity”.\n'
-                    '• Placer: gets notified when a community box is opened.\n'
-                    '• Merchant: configures offers and caps, validates discount codes after a customer opens a box.'
-                : '• Orice utilizator: hartă, plasare cutii comunitare dacă are tokeni, deschidere cutii când distanța și regulile permit, meniul „Activitate cutii”.\n'
-                    '• Plasator: primește notificări la deschiderea cutiilor comunitare.\n'
-                    '• Comerciant: configurează oferte și plafon, validează codurile după ce clientul a deschis cutia.',
+            l10n.helpBoxesWhoBody,
             style: const TextStyle(fontSize: 15, height: 1.4),
           ),
           const SizedBox(height: 20),
           Text(
-            isEn ? 'Notes' : 'Note',
+            l10n.helpBoxesNotesTitle,
             style: const TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
@@ -1358,9 +1277,7 @@ class _HelpScreenState extends State<HelpScreen> {
           ),
           const SizedBox(height: 10),
           Text(
-            isEn
-                ? 'Listing many boxes around you is optimized for moderate scale; very large usage may need stronger geo indexing later. Automatic refund or expiry of community stakes if nobody opens a box is not described here and may be added later.'
-                : 'Listarea cutiilor din jur este potrivită pentru volum moderat; la scară foarte mare poate fi nevoie de indexare geografică mai strictă. Expirarea sau returnarea automată a garanției dacă nimeni nu deschide o cutie comunitară nu este inclusă aici și poate fi adăugată ulterior.',
+            l10n.helpBoxesNotesBody,
             style: const TextStyle(fontSize: 15, height: 1.35),
           ),
           const SizedBox(height: 24),
@@ -1378,9 +1295,7 @@ class _HelpScreenState extends State<HelpScreen> {
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(
-                    isEn
-                        ? 'Tip: If opening fails, check GPS accuracy, internet, wallet balance, and whether credits are enabled on the server for your environment.'
-                        : 'Sfat: Dacă deschiderea eșuează, verifică precizia GPS, conexiunea, soldul tokenilor și dacă creditarea este activă pe server în mediul tău.',
+                    l10n.helpBoxesTip,
                     style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
                   ),
                 ),
@@ -1392,23 +1307,19 @@ class _HelpScreenState extends State<HelpScreen> {
       case 'tokenPeerTransferHelp':
       case 'Transfer de tokeni între utilizatori':
       case 'Token transfers between users': {
-        final isEn =
-            (Localizations.maybeLocaleOf(context)?.languageCode ?? 'ro') == 'en';
         return [
           Text(
-            isEn ? 'What it is' : 'Despre funcție',
+            l10n.helpTransfersP2PTitle,
             style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 12),
           Text(
-            isEn
-                ? 'From the side menu, open “Token transfer” to move Nabour tokens to another account or to ask someone to send you tokens. Balances and ledger entries are updated on the server; you need the other person’s user ID (Firebase UID).'
-                : 'Din meniul lateral, deschide „Transfer tokeni” pentru a trimite tokeni Nabour către alt cont sau pentru a cere cuiva să îți trimită tokeni. Soldurile și înregistrările din jurnal sunt actualizate pe server; ai nevoie de ID-ul de utilizator al celeilalte persoane (UID Firebase).',
+            l10n.helpTransfersP2PAboutBody,
             style: const TextStyle(fontSize: 15, height: 1.35),
           ),
           const SizedBox(height: 20),
           Text(
-            isEn ? 'Transferable wallet' : 'Portofel transferabil',
+            l10n.helpTransfersP2PWalletTitle,
             style: const TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
@@ -1417,14 +1328,12 @@ class _HelpScreenState extends State<HelpScreen> {
           ),
           const SizedBox(height: 8),
           Text(
-            isEn
-                ? 'This screen shows the transferable token balance (not the same view as the monthly usage bar at the top of the menu). If the wallet is frozen or missing, transfers and requests will be blocked until the account is eligible.'
-                : 'Acest ecran arată soldul de tokeni transferabili (nu este același indicator ca bara de utilizare lunară din partea de sus a meniului). Dacă portofelul lipsește sau este înghețat, transferurile și cererile sunt blocate până când contul este eligibil.',
+            l10n.helpTransfersP2PWalletBody,
             style: const TextStyle(fontSize: 15, height: 1.35),
           ),
           const SizedBox(height: 20),
           Text(
-            isEn ? 'Direct transfer' : 'Transfer direct',
+            l10n.helpTransfersP2PDirectTitle,
             style: const TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
@@ -1433,14 +1342,12 @@ class _HelpScreenState extends State<HelpScreen> {
           ),
           const SizedBox(height: 8),
           Text(
-            isEn
-                ? 'You send tokens immediately to the recipient’s user ID. You cannot transfer to yourself. Amounts must be a whole number of tokens within the allowed range. An optional note can be attached.'
-                : 'Trimite tokeni imediat către ID-ul destinatarului. Nu poți transfera către propriul cont. Suma trebuie să fie un număr întreg de tokeni, în intervalul permis. Poți adăuga o notă opțională.',
+            l10n.helpTransfersP2PDirectBody,
             style: const TextStyle(fontSize: 15, height: 1.35),
           ),
           const SizedBox(height: 20),
           Text(
-            isEn ? 'Payment request' : 'Cerere de plată',
+            l10n.helpTransfersP2PRequestTitle,
             style: const TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
@@ -1449,14 +1356,12 @@ class _HelpScreenState extends State<HelpScreen> {
           ),
           const SizedBox(height: 8),
           Text(
-            isEn
-                ? 'You ask another user (the payer) to send you tokens. They receive a pending request and can accept or decline. If they accept, tokens move from their transferable wallet to yours. Requests expire after a limited time if not answered.'
-                : 'Ceri altui utilizator (plătitorul) să îți trimită tokeni. Acesta primește o cerere în așteptare și poate accepta sau refuza. La acceptare, tokenii se mută din portofelul său transferabil în al tău. Cererile pot expira dacă nu primesc răspuns la timp.',
+            l10n.helpTransfersP2PRequestBody,
             style: const TextStyle(fontSize: 15, height: 1.35),
           ),
           const SizedBox(height: 20),
           Text(
-            isEn ? 'Requests tab' : 'Filă „Cereri”',
+            l10n.helpTransfersP2PRequestsTabTitle,
             style: const TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
@@ -1465,16 +1370,12 @@ class _HelpScreenState extends State<HelpScreen> {
           ),
           const SizedBox(height: 8),
           Text(
-            isEn
-                ? '• As payer: you can accept or decline incoming requests; you may add an optional reason when declining.\n'
-                    '• As requester: you can cancel a request you created while it is still pending.'
-                : '• Ca plătitor: poți accepta sau refuza cererile primite; la refuz poți adăuga un motiv opțional.\n'
-                    '• Ca inițiator al cererii: poți anula o cerere creată de tine cât timp este în așteptare.',
+            l10n.helpTransfersP2PRequestsTabBody,
             style: const TextStyle(fontSize: 15, height: 1.4),
           ),
           const SizedBox(height: 20),
           Text(
-            isEn ? 'History tab' : 'Filă „Istoric”',
+            l10n.helpTransfersP2PHistoryTabTitle,
             style: const TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
@@ -1483,9 +1384,7 @@ class _HelpScreenState extends State<HelpScreen> {
           ),
           const SizedBox(height: 8),
           Text(
-            isEn
-                ? 'Shows recent direct transfers and resolved payment requests. Pull down to refresh.'
-                : 'Afișează transferurile directe recente și cererile de plată rezolvate. Trage în jos pentru reîmprospătare.',
+            l10n.helpTransfersP2PHistoryTabBody,
             style: const TextStyle(fontSize: 15, height: 1.35),
           ),
           const SizedBox(height: 24),
@@ -1505,9 +1404,7 @@ class _HelpScreenState extends State<HelpScreen> {
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(
-                    isEn
-                        ? 'Only share your user ID with people you trust. Double-check the ID before confirming a transfer or request.'
-                        : 'Distribuie ID-ul de utilizator doar persoanelor în care ai încredere. Verifică din nou ID-ul înainte de a confirma un transfer sau o cerere.',
+                    l10n.helpTransfersP2PTip,
                     style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
                   ),
                 ),
@@ -1527,53 +1424,54 @@ class _HelpScreenState extends State<HelpScreen> {
   }
 
   void _showDriverActivationProcedure(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Cum activez modul șofer partener Nabour'),
+        title: Text(l10n.howToActivateDriverMode),
         content: SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text(
-                'Pentru a deveni șofer partener Nabour, urmează acești pași:',
-                style: TextStyle(fontWeight: FontWeight.bold),
+              Text(
+                l10n.toBecomeDriverPartner,
+                style: const TextStyle(fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 16),
-              _buildStep('1', 'Verifică condițiile',
-                'Trebuie să ai permis de conducere valabil, experiență de minim 2 ani și vârsta de minim 21 de ani.'),
-              _buildStep('2', 'Pregătește documentele',
-                'Ai nevoie de: permis de conducere, carte de identitate, certificat de înmatriculare auto, ITP valabil și asigurarea RCA.'),
-              _buildStep('3', 'Completează aplicația',
-                'Accesează secțiunea "Carieră" din meniul principal și completează formularul online cu datele tale.'),
-              _buildStep('4', 'Transmite documentele',
-                'Încarcă fotografii clare cu toate documentele necesare prin platforma online.'),
-              _buildStep('5', 'Verificarea aplicației',
-                'Echipa noastră va verifica documentele în maxim 48 de ore lucrătoare.'),
-              _buildStep('6', 'Primește codul de activare',
-                'După aprobare, vei primi un cod unic prin email/SMS pentru activarea contului de șofer.'),
-              _buildStep('7', 'Activează contul',
-                'Introdu codul în aplicație și începe să câștigi bani conducând!'),
+              _buildStep('1', l10n.helpDriverActivationStepCheckConditions,
+                l10n.helpDriverActivationStepCheckConditionsBody),
+              _buildStep('2', l10n.helpDriverActivationStepPrepareDocs,
+                l10n.helpDriverActivationStepPrepareDocsBody),
+              _buildStep('3', l10n.helpDriverActivationStepCompleteApp,
+                l10n.helpDriverActivationStepCompleteAppBody),
+              _buildStep('4', l10n.helpDriverActivationStepSubmitDocs,
+                l10n.helpDriverActivationStepSubmitDocsBody),
+              _buildStep('5', l10n.helpDriverActivationStepVerification,
+                l10n.helpDriverActivationStepVerificationBody),
+              _buildStep('6', l10n.helpDriverActivationStepReceiveCode,
+                l10n.helpDriverActivationStepReceiveCodeBody),
+              _buildStep('7', l10n.helpDriverActivationStepActivateAccount,
+                l10n.helpDriverActivationStepActivateAccountBody),
               const SizedBox(height: 16),
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: Colors.blue.shade50,
+                  color: Colors.blue.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.blue.shade200),
+                  border: Border.all(color: Colors.blue.withValues(alpha: 0.3)),
                 ),
-                child: const Column(
+                child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      '💡 Sfat util:',
-                      style: TextStyle(fontWeight: FontWeight.bold, color: Colors.blue),
+                      l10n.helpDriverActivationTipHeader,
+                      style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.blue),
                     ),
-                    SizedBox(height: 4),
+                    const SizedBox(height: 4),
                     Text(
-                      'Asigură-te că toate documentele sunt valabile și fotografiile sunt clare pentru o procesare rapidă.',
-                      style: TextStyle(color: Colors.blue),
+                      l10n.helpDriverActivationTipBody,
+                      style: const TextStyle(color: Colors.blue),
                     ),
                   ],
                 ),
@@ -1584,7 +1482,7 @@ class _HelpScreenState extends State<HelpScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text('Închide'),
+            child: Text(l10n.close),
           ),
           ElevatedButton(
             onPressed: () {
@@ -1594,7 +1492,7 @@ class _HelpScreenState extends State<HelpScreen> {
                 MaterialPageRoute(builder: (context) => const CareerScreen())
               );
             },
-            child: const Text('Aplică acum'),
+            child: Text(l10n.applyNow),
           ),
         ],
       ),
@@ -1854,7 +1752,11 @@ class _HelpScreenState extends State<HelpScreen> {
           ),
           title: Text(
             title,
-            style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
+            style: const TextStyle(
+              inherit: false,
+              fontWeight: FontWeight.w700,
+              fontSize: 14,
+            ),
           ),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
           children: children,
@@ -1866,7 +1768,6 @@ class _HelpScreenState extends State<HelpScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final isEn = (Localizations.maybeLocaleOf(context)?.languageCode ?? 'ro') == 'en';
 
     return Scaffold(
       backgroundColor: const Color(0xFFF8F9FF),
@@ -1884,7 +1785,7 @@ class _HelpScreenState extends State<HelpScreen> {
             child: TextField(
               controller: _searchController,
               decoration: InputDecoration(
-                hintText: isEn ? 'Search help articles...' : 'Caută în articole...',
+                hintText: l10n.helpSearchHint,
                 prefixIcon: const Icon(Icons.search_rounded, color: Color(0xFF7C3AED)),
                 suffixIcon: _searchQuery.isNotEmpty
                     ? IconButton(
@@ -1913,20 +1814,20 @@ class _HelpScreenState extends State<HelpScreen> {
 
           // ── Categorie: Probleme de cursă ────────────────────────────────────
           _buildCategory(
-            title: isEn ? 'Ride Issues' : 'Probleme de cursă',
+            title: l10n.helpCategoryRideIssues,
             headerIcon: Icons.directions_car_rounded,
             headerColor: Colors.orange,
             children: [
-              _buildHelpTopic(context, icon: Icons.block_rounded,         title: isEn ? 'Cannot request a ride' : l10n.cannotRequestRide,     iconColor: Colors.orange),
-              _buildHelpTopic(context, icon: Icons.cancel_outlined,        title: isEn ? 'Ride did not happen'   : l10n.rideDidNotHappen,       iconColor: Colors.red),
-              _buildHelpTopic(context, icon: Icons.work_outline,           title: isEn ? 'Lost items'            : l10n.lostItems,              iconColor: Colors.brown),
-              _buildHelpTopic(context, icon: Icons.cleaning_services_outlined, title: isEn ? 'Cleaning or damage fee' : l10n.cleaningOrDamageFee, iconColor: Colors.deepOrange),
+              _buildHelpTopic(context, icon: Icons.block_rounded,         title: l10n.cannotRequestRide,     iconColor: Colors.orange),
+              _buildHelpTopic(context, icon: Icons.cancel_outlined,        title: l10n.rideDidNotHappen,       iconColor: Colors.red),
+              _buildHelpTopic(context, icon: Icons.work_outline,           title: l10n.lostItems,              iconColor: Colors.brown),
+              _buildHelpTopic(context, icon: Icons.cleaning_services_outlined, title: l10n.cleaningOrDamageFee, iconColor: Colors.deepOrange),
             ],
           ),
 
           // ── Categorie: Siguranță & SOS ─────────────────────────────────────
           _buildCategory(
-            title: isEn ? 'Safety & SOS' : 'Siguranță & SOS',
+            title: l10n.helpCategorySafetySOS,
             headerIcon: Icons.shield_outlined,
             headerColor: Colors.red,
             children: [
@@ -1937,38 +1838,38 @@ class _HelpScreenState extends State<HelpScreen> {
 
           // ── Categorie: Funcții Nabour ───────────────────────────────────────
           _buildCategory(
-            title: isEn ? 'Nabour Features' : 'Funcții Nabour',
+            title: l10n.helpCategoryNabourFeatures,
             headerIcon: Icons.star_outline_rounded,
             headerColor: const Color(0xFF7C3AED),
             children: [
               _buildHelpTopic(
                 context,
                 icon: Icons.chat_bubble_outline_rounded,
-                title: 'Cum folosești chatul',
+                title: l10n.helpChatGuideTitle,
                 iconColor: const Color(0xFF7C3AED),
                 onTap: () {
                   final content = _buildHelpArticle('howToUseChat', l10n);
                   Navigator.push(context, MaterialPageRoute(
-                    builder: (ctx) => HelpArticleScreen(articleTitle: 'Cum folosești chatul', contentWidgets: content)));
+                    builder: (ctx) => HelpArticleScreen(articleTitle: l10n.helpChatGuideTitle, contentWidgets: content)));
                 },
               ),
               _buildHelpTopic(
                 context,
                 icon: Icons.auto_fix_high_rounded,
-                title: isEn ? 'Lasso Tool (Magic Wand)' : 'Instrumentul Lasso (Bagheta Magică)',
+                title: l10n.helpLassoTitle,
                 iconColor: Colors.deepPurple,
                 onTap: () {
                   final content = _buildHelpArticle('lassoTool', l10n);
                   Navigator.push(context, MaterialPageRoute(
                     builder: (ctx) => HelpArticleScreen(
-                      articleTitle: isEn ? 'Lasso Tool' : 'Instrumentul Lasso',
+                      articleTitle: l10n.helpLassoTitle,
                       contentWidgets: content)));
                 },
               ),
               _buildHelpTopic(
                 context,
                 icon: Icons.radar,
-                title: isEn ? 'Scan button (neighbor radar)' : 'Butonul Scanează (radar vecini)',
+                title: l10n.helpRadarTitle,
                 iconColor: const Color(0xFF7C3AED),
                 onTap: () {
                   final content = _buildHelpArticle('radarScan', l10n);
@@ -1976,7 +1877,7 @@ class _HelpScreenState extends State<HelpScreen> {
                     context,
                     MaterialPageRoute(
                       builder: (ctx) => HelpArticleScreen(
-                        articleTitle: isEn ? 'Scan button (neighbor radar)' : 'Butonul Scanează (radar vecini)',
+                        articleTitle: l10n.helpRadarTitle,
                         contentWidgets: content,
                       ),
                     ),
@@ -1986,27 +1887,26 @@ class _HelpScreenState extends State<HelpScreen> {
               _buildHelpTopic(
                 context,
                 icon: Icons.location_on_outlined,
-                title: 'Interactive Map Drops',
+                title: l10n.helpMapDropsTitle,
                 iconColor: Colors.blue,
                 onTap: () {
                   final content = _buildHelpArticle('mapDrops', l10n);
                   Navigator.push(context, MaterialPageRoute(
-                    builder: (ctx) => HelpArticleScreen(articleTitle: 'Interactive Map Drops', contentWidgets: content)));
+                    builder: (ctx) => HelpArticleScreen(articleTitle: l10n.helpMapDropsTitle, contentWidgets: content)));
                 },
               ),
               _buildHelpTopic(
                 context,
                 icon: Icons.inventory_2_outlined,
-                title: isEn ? 'Map boxes & tokens' : 'Cutii pe hartă și tokeni',
+                title: l10n.helpBoxesPurposeTitle,
                 iconColor: const Color(0xFF0D9488),
                 onTap: () {
                   final content = _buildHelpArticle('mysteryBoxesGuide', l10n);
-                  final articleTitle = isEn ? 'Map boxes & tokens' : 'Cutii pe hartă și tokeni';
                   Navigator.push(
                     context,
                     MaterialPageRoute(
                       builder: (ctx) => HelpArticleScreen(
-                        articleTitle: articleTitle,
+                        articleTitle: l10n.helpBoxesPurposeTitle,
                         contentWidgets: content,
                       ),
                     ),
@@ -2024,21 +1924,21 @@ class _HelpScreenState extends State<HelpScreen> {
 
           // ── Categorie: Plăți & Portofel ────────────────────────────────────
           _buildCategory(
-            title: isEn ? 'Payments & Wallet' : 'Plăți & Portofel',
+            title: l10n.helpCategoryPaymentsWallet,
             headerIcon: Icons.account_balance_wallet_outlined,
             headerColor: Colors.green,
             children: [
-              _buildHelpTopic(context, icon: Icons.credit_card_rounded,    title: isEn ? 'Payment methods' : l10n.paymentMethods,  iconColor: Colors.green),
-              _buildHelpTopic(context, icon: Icons.redeem_rounded,          title: isEn ? 'Vouchers'        : l10n.vouchers,        iconColor: Colors.orange),
-              _buildHelpTopic(context, icon: Icons.wallet_rounded,          title: isEn ? 'Wallet'          : l10n.wallet,          iconColor: Colors.teal),
-              _buildHelpTopic(context, icon: Icons.sell_outlined,           title: isEn ? 'Rates & Payments': l10n.ratesAndPayments,iconColor: Colors.blue),
-              _buildHelpTopic(context, icon: Icons.subscriptions_rounded,   title: isEn ? 'Subscriptions'   : l10n.subscriptions,   iconColor: Colors.indigo),
-              _buildHelpTopic(context, icon: Icons.group_outlined,          title: isEn ? 'Split Payment'   : l10n.splitPayment,    iconColor: Colors.cyan),
-              _buildHelpTopic(context, icon: Icons.share_rounded,           title: isEn ? 'Ride Sharing'    : 'Curse Partajate',     iconColor: Colors.lightGreen),
+              _buildHelpTopic(context, icon: Icons.credit_card_rounded,    title: l10n.paymentMethods,  iconColor: Colors.green),
+              _buildHelpTopic(context, icon: Icons.redeem_rounded,          title: l10n.vouchers,        iconColor: Colors.orange),
+              _buildHelpTopic(context, icon: Icons.wallet_rounded,          title: l10n.wallet,          iconColor: Colors.teal),
+              _buildHelpTopic(context, icon: Icons.sell_outlined,           title: l10n.ratesAndPayments,iconColor: Colors.blue),
+              _buildHelpTopic(context, icon: Icons.subscriptions_rounded,   title: l10n.subscriptions,   iconColor: Colors.indigo),
+              _buildHelpTopic(context, icon: Icons.group_outlined,          title: l10n.splitPayment,    iconColor: Colors.cyan),
+              _buildHelpTopic(context, icon: Icons.share_rounded,           title: l10n.helpRideSharingTitle,     iconColor: Colors.lightGreen),
               _buildHelpTopic(
                 context,
                 icon: Icons.swap_horiz_rounded,
-                title: isEn ? 'Token transfers between users' : 'Transfer de tokeni între utilizatori',
+                title: l10n.helpTransfersP2PTitle,
                 iconColor: const Color(0xFF0D9488),
                 onTap: () {
                   final content = _buildHelpArticle('tokenPeerTransferHelp', l10n);
@@ -2046,9 +1946,7 @@ class _HelpScreenState extends State<HelpScreen> {
                     context,
                     MaterialPageRoute(
                       builder: (ctx) => HelpArticleScreen(
-                        articleTitle: isEn
-                            ? 'Token transfers between users'
-                            : 'Transfer de tokeni între utilizatori',
+                        articleTitle: l10n.helpTransfersP2PTitle,
                         contentWidgets: content,
                       ),
                     ),
@@ -2060,7 +1958,7 @@ class _HelpScreenState extends State<HelpScreen> {
 
           // ── Categorie: Setări & Cont ───────────────────────────────────────
           _buildCategory(
-            title: isEn ? 'Settings & Account' : 'Setări & Cont',
+            title: l10n.helpCategorySettingsAccount,
             headerIcon: Icons.settings_outlined,
             headerColor: Colors.grey.shade700,
             children: [
@@ -2114,11 +2012,11 @@ class _HelpScreenState extends State<HelpScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          isEn ? 'Still need help?' : 'Ai nevoie de ajutor?',
+                          l10n.helpStillNeedHelp,
                           style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 15),
                         ),
                         Text(
-                          isEn ? 'Contact our support team' : 'Contactează echipa de suport',
+                          l10n.helpContactSupport,
                           style: const TextStyle(color: Colors.white70, fontSize: 13),
                         ),
                       ],
@@ -2130,7 +2028,7 @@ class _HelpScreenState extends State<HelpScreen> {
                       Navigator.push(context, MaterialPageRoute(builder: (_) => const ReportFormScreen(reportType: 'general')));
                     },
                     style: TextButton.styleFrom(backgroundColor: Colors.white.withAlpha(40), foregroundColor: Colors.white),
-                    child: Text(isEn ? 'Contact' : 'Contactează'),
+                    child: Text(l10n.helpContactButton),
                   ),
                 ],
               ),

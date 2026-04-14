@@ -16,7 +16,7 @@ import 'package:geocoding/geocoding.dart';
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
 import 'package:nabour_app/widgets/voice_input_button.dart';
 import 'package:provider/provider.dart';
-import 'package:nabour_app/voice/integration/friendsride_voice_integration.dart';
+import 'package:nabour_app/voice/integration/friends_voice_integration.dart';
 import 'package:flutter/services.dart';
 import 'package:nabour_app/l10n/app_localizations.dart';
 import 'package:nabour_app/utils/logger.dart';

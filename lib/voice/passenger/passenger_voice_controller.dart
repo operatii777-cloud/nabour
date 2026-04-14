@@ -14,7 +14,7 @@ import '../../models/voice_models.dart';
 import '../../widgets/address_confirmation_screen.dart';
 import '../../screens/searching_for_driver_screen.dart';
 import 'package:nabour_app/utils/logger.dart';
-import 'package:nabour_app/services/passenger_allowed_driver_uids.dart';
+import 'package:nabour_app/services/pax_allowed_drv_uids.dart';
 import 'package:nabour_app/services/passenger_ride_session_bus.dart';
 
 /// ✅ Helper: Obține limba curentă din SharedPreferences

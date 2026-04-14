@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:cron/cron.dart';
 import 'voice_analytics.dart';
-import 'ecosystem_integration_service.dart';
+import 'eco_integration_service.dart';
 
 /// Proactive AI Service for Nabour
 /// Anticipates user needs and provides proactive transportation suggestions

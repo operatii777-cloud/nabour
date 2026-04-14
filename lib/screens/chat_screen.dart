@@ -12,21 +12,12 @@ import 'package:nabour_app/services/giphy_service.dart';
 import 'package:nabour_app/services/push_notification_service.dart';
 import 'package:nabour_app/services/translation_service.dart';
 import 'package:nabour_app/services/voip_service.dart';
+import 'package:nabour_app/l10n/app_localizations.dart';
 import 'package:nabour_app/utils/logger.dart';
 import 'package:nabour_app/utils/firestore_error_ui.dart';
 import 'package:nabour_app/widgets/chat/whatsapp_message_bubble.dart';
 import 'package:nabour_app/widgets/chat/voice_record_button.dart';
 import 'package:uuid/uuid.dart';
-
-/// Quick reply options contextualizate pentru curse
-const _kQuickReplies = [
-  'Sunt aici 👋',
-  'Vin în 2 min ⏱️',
-  'Vin în 5 min ⏱️',
-  'Ai ajuns? 📍',
-  'Mulțumesc! 🙏',
-  'OK 👍',
-];
 
 class ChatScreen extends StatefulWidget {
   final String rideId;
@@ -64,8 +55,8 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
   String? _myUid;
   ChatMessage? _replyingTo;
   int _lastMessageCount = 0;
-  bool _didMarkReadOnOpen = false;
   bool _uploadingMedia = false;
+  Timer? _markReadDebounce;
   /// Mesaje text trimise, afișate imediat până vine snapshot-ul Firestore.
   final List<ChatMessage> _pendingOutgoing = [];
 
@@ -97,7 +88,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
     WidgetsBinding.instance.addObserver(this);
     _myUid = _auth.currentUser?.uid;
     _subscribeTyping();
-    _markAllRead();
+    unawaited(_markAllRead());
     unawaited(_loadChatParticipantProfiles());
   }
 
@@ -166,6 +157,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
     WidgetsBinding.instance.removeObserver(this);
     _typingSub?.cancel();
     _typingTimer?.cancel();
+    _markReadDebounce?.cancel();
     _textController.dispose();
     _scrollController.dispose();
     _focusNode.dispose();
@@ -175,7 +167,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed) _markAllRead();
+    if (state == AppLifecycleState.resumed) unawaited(_markAllRead());
   }
 
   // ── Firestore listeners ──────────────────────────────────────────────────
@@ -244,6 +236,14 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
     }, onError: (_) {});
   }
 
+  /// Debounce: stream-ul se reemis des; evită batch-uri Firestore în serie la fiecare frame.
+  void _scheduleMarkAllRead() {
+    _markReadDebounce?.cancel();
+    _markReadDebounce = Timer(const Duration(milliseconds: 420), () {
+      if (mounted) unawaited(_markAllRead());
+    });
+  }
+
   Future<void> _markAllRead() async {
     if (_myUid == null) return;
     final unread = await _messagesRef
@@ -287,30 +287,48 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
     ).catchError((_) {});
   }
 
+  void _notifyRecipientOutgoingChat(String messagePreview) {
+    final l10n = AppLocalizations.of(context)!;
+    final senderName = _auth.currentUser?.displayName ??
+        _auth.currentUser?.email ??
+        l10n.drawerDefaultUserName;
+    unawaited(PushNotificationService.sendChatMessageNotification(
+      recipientId: widget.otherUserId,
+      senderName: senderName,
+      messageText: messagePreview,
+      rideId: widget.rideId,
+      isPrivateChat: widget.collectionName == 'private_chats',
+      senderUid: _myUid,
+    ));
+  }
+
   // ── Send message ─────────────────────────────────────────────────────────
 
   Future<void> _sendMessage(String text) async {
+    final l10n = AppLocalizations.of(context)!;
     final trimmed = text.trim();
     if (trimmed.isEmpty || _myUid == null) return;
     final replyRef = _replyingTo;
     _textController.clear();
     _isTyping = false;
     _setTyping(false);
+    final localId = const Uuid().v4();
     final msg = ChatMessage(
       senderId: _myUid!,
       text: trimmed,
       timestamp: Timestamp.now(),
       status: MessageStatus.sending,
+      clientMessageId: localId,
       senderPhotoUrl: _myPhotoUrl,
       senderAvatarEmoji: _myAvatarEmoji,
       replyToText: replyRef == null
           ? null
           : (replyRef.type == MessageType.voice
-              ? '🎤 Mesaj vocal'
+              ? '🎤 ${l10n.chatVoiceMessageLabel}'
               : replyRef.type == MessageType.image
-                  ? '📷 Fotografie'
+                  ? '📷 ${l10n.chatPhotoLabel}'
                   : replyRef.type == MessageType.gif
-                      ? '🎬 GIF'
+                      ? '🎬 ${l10n.chatGifLabel}'
                       : replyRef.text),
       replyToSenderId: replyRef?.senderId,
     );
@@ -330,34 +348,31 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
         'timestamp': FieldValue.serverTimestamp(),
       });
       // Push notification for recipient (fire-and-forget)
-      final senderName = _auth.currentUser?.displayName ??
-          _auth.currentUser?.email ??
-          'Utilizator';
-      unawaited(PushNotificationService.sendChatMessageNotification(
-        recipientId: widget.otherUserId,
-        senderName: senderName,
-        messageText: trimmed,
-        rideId: widget.rideId,
-      ));
+      _notifyRecipientOutgoingChat(trimmed);
     } catch (e) {
       if (mounted) {
         setState(() {
           _pendingOutgoing.removeWhere(
-            (m) =>
-                m.senderId == _myUid &&
-                m.text == trimmed &&
-                m.type == MessageType.text &&
-                m.replyToText == msg.replyToText,
+            (m) => m.clientMessageId == localId,
           );
         });
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Mesajul nu a putut fi trimis.')),
+          SnackBar(content: Text(l10n.chatMessageSendFailed)),
         );
       }
     }
   }
 
   bool _messageMatchesPending(ChatMessage server, ChatMessage pending) {
+    final pid = pending.clientMessageId?.trim();
+    final sid = server.clientMessageId?.trim();
+    if (pid != null &&
+        pid.isNotEmpty &&
+        sid != null &&
+        sid.isNotEmpty &&
+        pid == sid) {
+      return true;
+    }
     if (server.senderId != pending.senderId ||
         server.text != pending.text ||
         server.type != pending.type) {
@@ -399,6 +414,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
   }
 
   Future<void> _showAttachmentOptions() async {
+    final l10n = AppLocalizations.of(context)!;
     await showModalBottomSheet<void>(
       context: context,
       builder: (ctx) => SafeArea(
@@ -407,7 +423,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
           children: [
             ListTile(
               leading: const Icon(Icons.image_rounded),
-              title: const Text('Fotografie din galerie'),
+              title: Text(l10n.chatGalleryPhoto),
               onTap: () {
                 Navigator.pop(ctx);
                 unawaited(_pickAndSendImage());
@@ -415,7 +431,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
             ),
             ListTile(
               leading: const Icon(Icons.gif_box_rounded),
-              title: const Text('GIF'),
+              title: Text(l10n.chatGif),
               onTap: () {
                 Navigator.pop(ctx);
                 unawaited(_showGifPicker());
@@ -428,22 +444,33 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
   }
 
   Future<void> _pickAndSendImage() async {
+    final l10n = AppLocalizations.of(context)!;
     final prefix = _chatMediaStoragePrefix();
     if (prefix == null || _myUid == null) return;
+    final isPrivate = widget.collectionName == 'private_chats';
+    // Galerie: image_picker comprimă JPEG pe dispozitiv (quality + max dimensiuni).
+    // Chat privat: setări mai stricte ca să rămânem sub limita Storage (2MB) și să nu umplem bucket-ul.
+    // GIF-urile din picker sunt doar URL-uri către CDN extern în Firestore — nu ocupă Storage-ul nostru.
     final picker = ImagePicker();
     final x = await picker.pickImage(
       source: ImageSource.gallery,
-      imageQuality: 85,
-      maxWidth: 1600,
+      imageQuality: isPrivate ? 72 : 85,
+      maxWidth: isPrivate ? 1280 : 1600,
+      maxHeight: isPrivate ? 1280 : null,
     );
     if (x == null) return;
     setState(() => _uploadingMedia = true);
     try {
       final bytes = await x.readAsBytes();
-      if (bytes.length > 7 * 1024 * 1024) {
+      final maxBytes = isPrivate ? (1800 * 1024) : (7 * 1024 * 1024);
+      if (bytes.length > maxBytes) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Imaginea e prea mare (max ~7 MB).')),
+            SnackBar(
+              content: Text(isPrivate
+                  ? l10n.chatImageTooLargePrivate
+                  : l10n.chatImageTooLargeGeneral),
+            ),
           );
         }
         return;
@@ -456,7 +483,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
     } catch (_) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Nu s-a putut încărca imaginea.')),
+          SnackBar(content: Text(l10n.chatImageUploadFailed)),
         );
       }
     } finally {
@@ -465,6 +492,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
   }
 
   Future<void> _sendImageMessage(String downloadUrl) async {
+    final l10n = AppLocalizations.of(context)!;
     if (_myUid == null) return;
     final replyRef = _replyingTo;
     setState(() {
@@ -474,7 +502,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
     _scrollToBottom();
     final msg = ChatMessage(
       senderId: _myUid!,
-      text: '📷 Fotografie',
+      text: '📷 ${l10n.chatPhotoLabel}',
       timestamp: Timestamp.now(),
       type: MessageType.image,
       status: MessageStatus.sending,
@@ -484,9 +512,9 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
       replyToText: replyRef == null
           ? null
           : (replyRef.type == MessageType.voice
-              ? '🎤 Mesaj vocal'
+              ? '🎤 ${l10n.chatVoiceMessageLabel}'
               : replyRef.type == MessageType.image
-                  ? '📷 Fotografie'
+                  ? '📷 ${l10n.chatPhotoLabel}'
                   : replyRef.type == MessageType.gif
                       ? '🎬 GIF'
                       : replyRef.text),
@@ -498,19 +526,11 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
         'status': MessageStatus.sent.name,
         'timestamp': FieldValue.serverTimestamp(),
       });
-      final senderName = _auth.currentUser?.displayName ??
-          _auth.currentUser?.email ??
-          'Utilizator';
-      unawaited(PushNotificationService.sendChatMessageNotification(
-        recipientId: widget.otherUserId,
-        senderName: senderName,
-        messageText: '📷 Fotografie',
-        rideId: widget.rideId,
-      ));
+      _notifyRecipientOutgoingChat('📷 ${l10n.chatPhotoLabel}');
     } catch (_) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Mesajul nu a putut fi trimis.')),
+          SnackBar(content: Text(l10n.chatMessageSendFailed)),
         );
       }
     }
@@ -534,7 +554,9 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
     );
   }
 
+  /// [gifUrl] e URL către CDN extern; nu se încarcă fișierul în Firebase Storage — doar link în Firestore.
   Future<void> _sendGifMessage(String gifUrl) async {
+    final l10n = AppLocalizations.of(context)!;
     if (_myUid == null) return;
     final replyRef = _replyingTo;
     setState(() {
@@ -544,7 +566,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
     _scrollToBottom();
     final msg = ChatMessage(
       senderId: _myUid!,
-      text: '🎬 GIF',
+      text: '🎬 ${l10n.chatGifLabel}',
       timestamp: Timestamp.now(),
       type: MessageType.gif,
       status: MessageStatus.sending,
@@ -554,9 +576,9 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
       replyToText: replyRef == null
           ? null
           : (replyRef.type == MessageType.voice
-              ? '🎤 Mesaj vocal'
+              ? '🎤 ${l10n.chatVoiceMessageLabel}'
               : replyRef.type == MessageType.image
-                  ? '📷 Fotografie'
+                  ? '📷 ${l10n.chatPhotoLabel}'
                   : replyRef.type == MessageType.gif
                       ? '🎬 GIF'
                       : replyRef.text),
@@ -568,19 +590,11 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
         'status': MessageStatus.sent.name,
         'timestamp': FieldValue.serverTimestamp(),
       });
-      final senderName = _auth.currentUser?.displayName ??
-          _auth.currentUser?.email ??
-          'Utilizator';
-      unawaited(PushNotificationService.sendChatMessageNotification(
-        recipientId: widget.otherUserId,
-        senderName: senderName,
-        messageText: 'GIF',
-        rideId: widget.rideId,
-      ));
+      _notifyRecipientOutgoingChat('🎬 ${l10n.chatGifLabel}');
     } catch (_) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Mesajul nu a putut fi trimis.')),
+          SnackBar(content: Text(l10n.chatMessageSendFailed)),
         );
       }
     }
@@ -589,13 +603,14 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
   // ── Phone call ───────────────────────────────────────────────────────────
 
   Future<void> _callOtherUser() async {
+    final l10n = AppLocalizations.of(context)!;
     try {
       final doc = await _db.collection('users').doc(widget.otherUserId).get();
       final phone = doc.data()?['phoneNumber'] as String?;
       if (phone == null || phone.isEmpty) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Numărul de telefon nu este disponibil.')),
+            SnackBar(content: Text(l10n.chatPhoneNotAvailable)),
           );
         }
         return;
@@ -609,7 +624,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
     } catch (_) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Nu s-a putut iniția apelul.')),
+          SnackBar(content: Text(l10n.chatCallFailed)),
         );
       }
     }
@@ -676,6 +691,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
@@ -696,7 +712,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
                 Expanded(
                   child: FirestoreStreamErrorCenter(
                     error: snapshot.error,
-                    fallbackMessage: 'Nu s-au putut încărca mesajele.',
+                    fallbackMessage: l10n.chatMessagesLoadFailed,
                   ),
                 ),
                 if (_otherTyping) _buildTypingIndicator(isDark),
@@ -707,13 +723,10 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
             );
           }
           final msgs = _messagesForUi(snapshot.data ?? []);
-          
-          // markAllRead o singura data la deschidere, nu la fiecare mesaj nou
-          if (snapshot.hasData && !_didMarkReadOnOpen) {
-            _didMarkReadOnOpen = true;
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              if (mounted) _markAllRead();
-            });
+
+          // Cât timp ești pe chat, mesajele primite de la celălalt trec la „read” pentru el (debounced).
+          if (snapshot.hasData && (snapshot.data?.isNotEmpty ?? false)) {
+            _scheduleMarkAllRead();
           }
 
           // Scroll la fund doar cand soseste un mesaj nou si userul e deja aproape de fund
@@ -785,6 +798,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
   }
 
   PreferredSizeWidget _buildAppBar(bool isDark) {
+    final l10n = AppLocalizations.of(context)!;
     return AppBar(
       backgroundColor: isDark ? const Color(0xFF1F2C34) : const Color(0xFF075E54),
       foregroundColor: Colors.white,
@@ -801,7 +815,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
                     style: const TextStyle(
                         fontSize: 16, fontWeight: FontWeight.w600)),
                 if (_otherTyping)
-                  const Text('scrie...',
+                  Text(l10n.chatTyping,
                       style: TextStyle(
                           fontSize: 12, color: Color(0xFF25D366))),
               ],
@@ -813,13 +827,14 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
         IconButton(
           icon: const Icon(Icons.phone),
           onPressed: _callOtherUser,
-          tooltip: 'Sună',
+          tooltip: l10n.call,
         ),
       ],
     );
   }
 
   Widget _buildMessageList(bool isDark, List<ChatMessage> messages) {
+    final l10n = AppLocalizations.of(context)!;
     if (messages.isEmpty) {
       return Center(
         child: Column(
@@ -829,7 +844,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
                 size: 36, color: Colors.grey.shade400),
             const SizedBox(height: 8),
             Text(
-              'Mesajele sunt criptate end-to-end.',
+              l10n.chatEndToEndEncrypted,
               style: TextStyle(
                   fontSize: 13, color: Colors.grey.shade500),
             ),
@@ -874,14 +889,15 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
   }
 
   Widget _buildDateSeparator(Timestamp ts) {
+    final l10n = AppLocalizations.of(context)!;
     final date = ts.toDate();
     final now = DateTime.now();
     String label;
     if (_sameDay(ts, Timestamp.fromDate(now))) {
-      label = 'Astăzi';
+      label = l10n.chatToday;
     } else if (_sameDay(
         ts, Timestamp.fromDate(now.subtract(const Duration(days: 1))))) {
-      label = 'Ieri';
+      label = l10n.chatYesterday;
     } else {
       label =
           '${date.day.toString().padLeft(2, '0')}.${date.month.toString().padLeft(2, '0')}.${date.year}';
@@ -928,18 +944,27 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
   }
 
   Widget _buildQuickReplies() {
+    final l10n = AppLocalizations.of(context)!;
+    final quickReplies = [
+      l10n.chatQuickReplyHere,
+      l10n.chatQuickReplyIn2Min,
+      l10n.chatQuickReplyIn5Min,
+      l10n.chatQuickReplyArrived,
+      l10n.chatQuickReplyThanks,
+      l10n.chatQuickReplyOk,
+    ];
     return SizedBox(
       height: 40,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: 8),
-        itemCount: _kQuickReplies.length,
+        itemCount: quickReplies.length,
         separatorBuilder: (_, __) => const SizedBox(width: 8),
         itemBuilder: (context, i) {
           return GestureDetector(
-            onTap: () => _sendMessage(_kQuickReplies[i]),
+            onTap: () => _sendMessage(quickReplies[i]),
             child: Chip(
-              label: Text(_kQuickReplies[i],
+              label: Text(quickReplies[i],
                   style: const TextStyle(fontSize: 13)),
               backgroundColor: const Color(0xFF25D366).withValues(alpha: 0.15),
               side: const BorderSide(color: Color(0xFF25D366), width: 0.5),
@@ -953,11 +978,12 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
   }
 
   Widget _buildReplyBar(bool isDark) {
+    final l10n = AppLocalizations.of(context)!;
     final msg = _replyingTo!;
     final preview = msg.type == MessageType.voice
-        ? '🎤 Mesaj vocal'
+        ? '🎤 ${l10n.chatVoiceMessageLabel}'
         : msg.type == MessageType.image
-            ? '📷 Fotografie'
+            ? '📷 ${l10n.chatPhotoLabel}'
             : msg.type == MessageType.gif
                 ? '🎬 GIF'
                 : msg.text;
@@ -974,7 +1000,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  msg.senderId == _myUid ? 'Tu' : widget.otherUserName,
+                  msg.senderId == _myUid ? l10n.you : widget.otherUserName,
                   style: const TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.bold,
@@ -1005,6 +1031,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
   }
 
   Widget _buildInputBar(bool isDark) {
+    final l10n = AppLocalizations.of(context)!;
     return SafeArea(
       child: Padding(
         padding: const EdgeInsets.fromLTRB(6, 4, 6, 6),
@@ -1055,7 +1082,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
                                 color:
                                     isDark ? Colors.white : Colors.black87),
                             decoration: InputDecoration(
-                              hintText: 'Scrie un mesaj...',
+                              hintText: l10n.writeMessage,
                               hintStyle: TextStyle(
                                   color: isDark
                                       ? Colors.grey.shade500
@@ -1094,13 +1121,17 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
                         ),
                       );
                     }
+                    // Chat individual: ascundem înregistrarea vocală din UI (funcția rămâne în cod).
+                    if (widget.collectionName == 'private_chats') {
+                      return const SizedBox.shrink();
+                    }
                     return VoiceRecordButton(
                       rideId: widget.rideId,
                       onVoiceReady: (url, duration) async {
                         if (_myUid == null) return;
                         final msg = ChatMessage(
                           senderId: _myUid!,
-                          text: '🎤 Mesaj vocal',
+                          text: '🎤 ${l10n.chatVoiceMessageLabel}',
                           timestamp: Timestamp.now(),
                           type: MessageType.voice,
                           status: MessageStatus.sending,
@@ -1116,12 +1147,13 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
                             'status': MessageStatus.sent.name,
                             'timestamp': FieldValue.serverTimestamp(),
                           });
+                          _notifyRecipientOutgoingChat('🎤 ${l10n.chatVoiceMessageLabel}');
                         } catch (_) {
                           if (mounted) {
                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                  content: Text(
-                                      'Mesajul vocal nu a putut fi trimis.')),
+                              SnackBar(
+                                content: Text(l10n.chatVoiceMessageSendFailed),
+                              ),
                             );
                           }
                         }
@@ -1139,6 +1171,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
 
   void _showMessageOptions(
       BuildContext context, ChatMessage msg, bool isMe) {
+    final l10n = AppLocalizations.of(context)!;
     HapticFeedback.mediumImpact();
     showModalBottomSheet(
       context: context,
@@ -1168,7 +1201,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
               const Divider(height: 1),
               ListTile(
                 leading: const Icon(Icons.reply_rounded),
-                title: const Text('Răspunde'),
+                title: Text(l10n.chatReply),
                 onTap: () {
                   Navigator.pop(ctx);
                   setState(() => _replyingTo = msg);
@@ -1177,19 +1210,19 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
               ),
               ListTile(
                 leading: const Icon(Icons.copy),
-                title: const Text('Copiază'),
+                title: Text(l10n.chatCopy),
                 onTap: () {
                   Clipboard.setData(ClipboardData(text: msg.text));
                   Navigator.pop(ctx);
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Mesaj copiat.')),
+                    SnackBar(content: Text(l10n.chatMessageCopied)),
                   );
                 },
               ),
               if (isMe) ...[
                 ListTile(
                   leading: const Icon(Icons.edit_rounded, color: Color(0xFF7C3AED)),
-                  title: const Text('Editează'),
+                  title: Text(l10n.edit),
                   onTap: () {
                     Navigator.pop(ctx);
                     _editMessage(msg);
@@ -1197,7 +1230,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
                 ),
                 ListTile(
                   leading: const Icon(Icons.delete_outline, color: Colors.red),
-                  title: const Text('Șterge', style: TextStyle(color: Colors.red)),
+                  title: Text(l10n.delete, style: const TextStyle(color: Colors.red)),
                   onTap: () {
                     Navigator.pop(ctx);
                     _deleteMessage(msg);
@@ -1212,11 +1245,12 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
   }
 
   Future<void> _editMessage(ChatMessage msg) async {
+    final l10n = AppLocalizations.of(context)!;
     final controller = TextEditingController(text: msg.text);
     final result = await showDialog<String>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Editează mesaj'),
+        title: Text(l10n.editMessage),
         content: TextField(
           controller: controller,
           autofocus: true,
@@ -1227,11 +1261,11 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Anulează'),
+            child: Text(l10n.cancel),
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, controller.text.trim()),
-            child: const Text('Salvează'),
+            child: Text(l10n.save),
           ),
         ],
       ),
@@ -1310,13 +1344,14 @@ class _GifPickerSheetState extends State<_GifPickerSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        const Padding(
+        Padding(
           padding: EdgeInsets.all(12),
           child: Text(
-            'Alege GIF',
+            l10n.chatChooseGif,
             textAlign: TextAlign.center,
             style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
           ),
@@ -1328,8 +1363,8 @@ class _GifPickerSheetState extends State<_GifPickerSheet> {
               Expanded(
                 child: TextField(
                   controller: _q,
-                  decoration: const InputDecoration(
-                    hintText: 'Caută…',
+                  decoration: InputDecoration(
+                    hintText: l10n.chatSearchHint,
                     isDense: true,
                   ),
                   onSubmitted: (_) => _search(),

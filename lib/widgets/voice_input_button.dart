@@ -4,7 +4,7 @@ import 'package:nabour_app/voice/core/voice_orchestrator.dart';
 import 'package:nabour_app/voice/states/voice_interaction_states.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
-import 'package:nabour_app/voice/integration/friendsride_voice_integration.dart';
+import 'package:nabour_app/voice/integration/friends_voice_integration.dart';
 import 'package:nabour_app/utils/logger.dart';
 
 /// 🎤 VoiceInputButton - Buton reutilizabil pentru input vocal în câmpurile de adrese

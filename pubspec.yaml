@@ -18,7 +18,7 @@ dependencies:
   provider: ^6.0.5
   
   # Voice AI & Speech (WORKING)
-  flutter_tts: ^3.8.5
+  flutter_tts: ^4.2.5
   speech_to_text: ^7.3.0
   google_generative_ai: ^0.4.0
   
@@ -38,9 +38,9 @@ dependencies:
   dio_cache_interceptor_db_store: ^6.0.0
   
   # System Information & Monitoring
-  device_info_plus: ^11.5.0
-  battery_plus: ^6.0.3
-  connectivity_plus: ^6.0.3
+  device_info_plus: ^12.4.0
+  battery_plus: ^7.0.0
+  connectivity_plus: ^7.1.1
   sentry_flutter: ^9.14.0
   
   # Database & Storage
@@ -78,13 +78,13 @@ dependencies:
   intl: ^0.20.2
   flutter_dotenv: ^6.0.0
   url_launcher: ^6.3.0
-  share_plus: ^11.1.0
+  share_plus: ^12.0.2
   uuid: ^4.3.3
   crypto: ^3.0.3
-  mobile_scanner: ^6.0.2
+  mobile_scanner: ^7.2.0
   qr_flutter: ^4.1.0
   image_picker: ^1.1.2
-  file_picker: ^10.3.2
+  file_picker: ^11.0.2
   audioplayers: ^6.0.0
   # Android AudioManager / focus + iOS AVAudioSession (voice chat); folosit cu [record]
   audio_session: ^0.2.3
@@ -99,7 +99,7 @@ dependencies:
   flutter_local_notifications: ^19.4.1
   flutter_native_splash: ^2.4.1
   flutter_contacts: ^2.0.0
-  package_info_plus: ^9.0.0
+  package_info_plus: ^9.0.1
   open_file: ^3.5.11
   dio: ^5.9.2
   firebase_database: ^12.2.0
@@ -122,7 +122,7 @@ dev_dependencies:
   mockito: ^5.4.4
   integration_test:
     sdk: flutter
-  flutter_launcher_icons: ^0.13.1
+  flutter_launcher_icons: ^0.14.4
 
 # App Icons Configuration
 flutter_launcher_icons:

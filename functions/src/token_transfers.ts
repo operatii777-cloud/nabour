@@ -17,9 +17,6 @@ import * as admin from "firebase-admin";
 import { randomUUID } from "node:crypto";
 import { HttpsError, onCall } from "firebase-functions/v2/https";
 import { onSchedule } from "firebase-functions/v2/scheduler";
-import { setGlobalOptions } from "firebase-functions/v2";
-
-setGlobalOptions({ region: "europe-west1" });
 
 const db = () => admin.firestore();
 
@@ -197,7 +194,9 @@ async function sendFcm(
 // 1. createTokenDirectTransfer
 // ═══════════════════════════════════════════════════════════════════════════
 
-export const createTokenDirectTransfer = onCall(async (request) => {
+export const createTokenDirectTransfer = onCall(
+  { region: "europe-west1" },
+  async (request) => {
   const uid = request.auth?.uid;
   assertAuth(uid);
 
@@ -313,14 +312,17 @@ export const createTokenDirectTransfer = onCall(async (request) => {
     transferId,
   });
 
-  return { transferId, status: "completed", ledgerCorrelationId: correlationGroupId };
-});
+    return { transferId, status: "completed", ledgerCorrelationId: correlationGroupId };
+  }
+);
 
 // ═══════════════════════════════════════════════════════════════════════════
 // 2. createTokenPaymentRequest
 // ═══════════════════════════════════════════════════════════════════════════
 
-export const createTokenPaymentRequest = onCall(async (request) => {
+export const createTokenPaymentRequest = onCall(
+  { region: "europe-west1" },
+  async (request) => {
   const uid = request.auth?.uid;
   assertAuth(uid);
 
@@ -363,14 +365,17 @@ export const createTokenPaymentRequest = onCall(async (request) => {
     requestId: ref.id,
   });
 
-  return { requestId: ref.id };
-});
+    return { requestId: ref.id };
+  }
+);
 
 // ═══════════════════════════════════════════════════════════════════════════
 // 3. respondToTokenPaymentRequest
 // ═══════════════════════════════════════════════════════════════════════════
 
-export const respondToTokenPaymentRequest = onCall(async (request) => {
+export const respondToTokenPaymentRequest = onCall(
+  { region: "europe-west1" },
+  async (request) => {
   const uid = request.auth?.uid;
   assertAuth(uid);
 
@@ -506,14 +511,17 @@ export const respondToTokenPaymentRequest = onCall(async (request) => {
       requestId,
     });
   }
-  return { requestId, status: "accepted", ledgerCorrelationId: correlationGroupId };
-});
+    return { requestId, status: "accepted", ledgerCorrelationId: correlationGroupId };
+  }
+);
 
 // ═══════════════════════════════════════════════════════════════════════════
 // 4. cancelTokenPaymentRequest
 // ═══════════════════════════════════════════════════════════════════════════
 
-export const cancelTokenPaymentRequest = onCall(async (request) => {
+export const cancelTokenPaymentRequest = onCall(
+  { region: "europe-west1" },
+  async (request) => {
   const uid = request.auth?.uid;
   assertAuth(uid);
 
@@ -555,8 +563,9 @@ export const cancelTokenPaymentRequest = onCall(async (request) => {
       requestId,
     });
   }
-  return { requestId, status: "cancelled" };
-});
+    return { requestId, status: "cancelled" };
+  }
+);
 
 // ═══════════════════════════════════════════════════════════════════════════
 // 5. expireTokenPaymentRequests (Scheduled — every hour)

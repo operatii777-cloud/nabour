@@ -1067,7 +1067,7 @@ class _PassengerRideDetailsScreenState extends State<PassengerRideDetailsScreen>
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(l10n.howWasExperience),
+            Text(l10n.howWasYourExperience),
             const SizedBox(height: 16),
             _buildStarRating(),
             const SizedBox(height: 16),

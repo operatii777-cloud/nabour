@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:nabour_app/l10n/app_localizations.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:nabour_app/screens/map_screen.dart';
 import 'package:nabour_app/screens/app_warmup_screen.dart';
@@ -50,6 +51,7 @@ class _MapWithWarmupScreenState extends State<MapWithWarmupScreen> {
   }
 
   Future<void> _showDisclaimerSheet() async {
+    final l10n = AppLocalizations.of(context)!;
     await showModalBottomSheet(
       context: context,
       isDismissible: false,
@@ -93,8 +95,8 @@ class _MapWithWarmupScreenState extends State<MapWithWarmupScreen> {
                   ),
                 ),
                 const SizedBox(height: 16),
-                const Text(
-                  'Nabour nu intermediază plăți',
+                Text(
+                  l10n.disclaimerNoPaymentsTitle,
                   style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.w900,
@@ -102,8 +104,8 @@ class _MapWithWarmupScreenState extends State<MapWithWarmupScreen> {
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 12),
-                const Text(
-                  'Aplicația nu intermediază plăți între utilizatori.',
+                Text(
+                  l10n.disclaimerNoPaymentsSubtitle,
                   style: TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w700,
@@ -113,10 +115,7 @@ class _MapWithWarmupScreenState extends State<MapWithWarmupScreen> {
                 ),
                 const SizedBox(height: 10),
                 Text(
-                  'Nabour conectează vecini care vor să se ajute reciproc. '
-                  'Dacă un șofer alege să accepte sau să ofere un gest de apreciere, '
-                  'aceasta este exclusiv decizia și responsabilitatea sa personală. '
-                  'Aplicația nu intermediază, nu solicită și nu procesează niciun fel de plată.',
+                  l10n.disclaimerNoPaymentsBody,
                   style: TextStyle(
                     fontSize: 13,
                     color: Colors.grey.shade700,
@@ -126,8 +125,7 @@ class _MapWithWarmupScreenState extends State<MapWithWarmupScreen> {
                 ),
                 const SizedBox(height: 10),
                 Text(
-                  'Nu sta în aplicație mai mult de 40 de minute pe zi, în medie pe lună — '
-                  'aceasta fie generează costuri, fie te blochează la utilizare.',
+                  l10n.disclaimerUsageNotice,
                   style: TextStyle(
                     fontSize: 12,
                     color: Colors.orange.shade700,
@@ -149,8 +147,8 @@ class _MapWithWarmupScreenState extends State<MapWithWarmupScreen> {
                         borderRadius: BorderRadius.circular(14),
                       ),
                     ),
-                    child: const Text(
-                      'Am înțeles',
+                    child: Text(
+                      l10n.disclaimerUnderstood,
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w800,

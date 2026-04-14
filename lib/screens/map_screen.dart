@@ -20,7 +20,7 @@ import 'package:nabour_app/models/ride_model.dart';
 import 'package:nabour_app/screens/driver_ride_pickup_screen.dart';
 import 'package:nabour_app/screens/ride_summary_screen.dart';
 import 'package:nabour_app/services/firestore_service.dart';
-import 'package:nabour_app/services/map_quick_action_badge_prefs.dart';
+import 'package:nabour_app/services/map_qa_badge_prefs.dart';
 import 'package:nabour_app/models/neighborhood_request_model.dart';
 import 'package:nabour_app/services/passenger_ride_session_bus.dart';
 import 'package:nabour_app/services/location_cache_service.dart';
@@ -28,7 +28,7 @@ import 'package:nabour_app/widgets/app_drawer.dart';
 import 'package:nabour_app/config/nabour_map_styles.dart';
 import 'package:nabour_app/screens/personal_info_screen.dart';
 import 'package:nabour_app/widgets/ride_request_panel.dart';
-import 'package:nabour_app/voice/integration/friendsride_voice_integration.dart';
+import 'package:nabour_app/voice/integration/friends_voice_integration.dart';
 import 'package:nabour_app/voice/driver/driver_voice_controller.dart';
 import 'package:nabour_app/voice/states/voice_interaction_states.dart';
 import 'package:geolocator/geolocator.dart' as geolocator;
@@ -46,16 +46,17 @@ import 'package:nabour_app/features/smart_suggestions/smart_suggestions_widget.d
 import 'package:nabour_app/features/smart_suggestions/smart_suggestions_service.dart';
 import 'package:nabour_app/features/smart_suggestions/smart_suggestion_model.dart';
 import 'package:nabour_app/features/push_campaigns/push_campaign_service.dart';
-import 'package:nabour_app/services/bucharest_locations_database.dart';
+import 'package:nabour_app/services/buc_locations_db.dart';
 import 'package:nabour_app/services/geocoding_service.dart';
 import 'package:nabour_app/services/local_address_database.dart';
 import 'package:nabour_app/models/saved_address_model.dart';
 import 'package:nabour_app/l10n/app_localizations.dart';
 import 'package:nabour_app/widgets/assistant_status_overlay.dart';
 import 'package:nabour_app/services/connectivity_service.dart';
+import 'package:nabour_app/services/app_initializer.dart';
 import 'package:nabour_app/providers/assistant_status_provider.dart';
 import 'package:nabour_app/widgets/map/map_voice_overlay.dart';
-import 'package:nabour_app/widgets/map/map_driver_ride_offer_bottom_sheet.dart';
+import 'package:nabour_app/widgets/map/map_drv_offer_sheet.dart';
 import 'package:nabour_app/widgets/map/map_poi_card.dart';
 import 'package:nabour_app/widgets/map/map_poi_category_chips.dart';
 import 'package:nabour_app/services/poi_service.dart';
@@ -67,11 +68,12 @@ import 'package:nabour_app/utils/logger.dart';
 
 import 'package:nabour_app/models/neighbor_location_model.dart';
 import 'package:nabour_app/services/neighbor_location_service.dart';
-import 'package:nabour_app/features/map_neighbor_markers/neighbor_activity_feed_panel.dart';
-import 'package:nabour_app/features/map_neighbor_markers/neighbor_friend_marker_icons.dart';
-import 'package:nabour_app/features/map_neighbor_markers/neighbor_marker_display_layout.dart';
-import 'package:nabour_app/features/map_neighbor_markers/neighbor_map_feed_controller.dart';
-import 'package:nabour_app/features/map_neighbor_markers/neighbor_map_visibility_publish.dart';
+import 'package:nabour_app/features/map_neighbor_markers/nbr_activity_feed_panel.dart';
+import 'package:nabour_app/features/map_neighbor_markers/nbr_friend_marker_icons.dart';
+import 'package:nabour_app/features/map_neighbor_markers/neighbor_device_telemetry.dart';
+import 'package:nabour_app/features/map_neighbor_markers/nbr_marker_layout.dart';
+import 'package:nabour_app/features/map_neighbor_markers/nbr_map_feed_controller.dart';
+import 'package:nabour_app/features/map_neighbor_markers/nbr_map_vis_publish.dart';
 import 'package:nabour_app/features/map_neighbor_markers/neighbor_saved_places_cache.dart';
 import 'package:nabour_app/features/map_neighbor_markers/neighbor_stationary_tracker.dart';
 import 'package:nabour_app/features/neighbor_bump/neighbor_bump_match_overlay.dart';
@@ -83,8 +85,8 @@ import 'package:nabour_app/features/activity_feed/activity_feed_writer.dart';
 import 'package:nabour_app/features/map_moments/map_moment_service.dart';
 import 'package:nabour_app/features/map_moments/map_moment_model.dart';
 import 'package:nabour_app/features/map_moments/post_moment_sheet.dart';
-import 'package:nabour_app/features/neighborhood_requests/neighborhood_requests_manager.dart';
-import 'package:nabour_app/services/neighbor_telemetry_rtdb_service.dart';
+import 'package:nabour_app/features/neighborhood_requests/nbhd_requests_manager.dart';
+import 'package:nabour_app/services/nbr_telem_rtdb_service.dart';
 import 'package:nabour_app/services/walkie_talkie_service.dart';
 import 'package:nabour_app/services/open_meteo_service.dart';
 import 'package:nabour_app/services/local_notifications_service.dart'
@@ -96,14 +98,14 @@ import 'package:nabour_app/screens/chat_screen.dart';
 import 'package:nabour_app/screens/ride_broadcast_screen.dart';
 import 'package:nabour_app/services/contacts_service.dart';
 import 'package:nabour_app/services/friend_request_service.dart';
-import 'package:nabour_app/services/visibility_preferences_service.dart';
+import 'package:nabour_app/services/vis_prefs_service.dart';
 import 'package:nabour_app/services/ghost_mode_service.dart';
-import 'package:nabour_app/services/nearby_social_notifications_prefs.dart';
-import 'package:nabour_app/screens/visibility_exclusions_screen.dart';
+import 'package:nabour_app/services/nearby_social_notif_prefs.dart';
+import 'package:nabour_app/screens/vis_exclusions_screen.dart';
 
 import 'package:nabour_app/screens/week_review_screen.dart';
 import 'package:nabour_app/services/movement_history_service.dart';
-import 'package:nabour_app/services/movement_history_preferences_service.dart';
+import 'package:nabour_app/services/mhist_prefs_service.dart';
 import 'package:nabour_app/screens/add_address_screen.dart';
 import 'package:nabour_app/screens/favorite_addresses_screen.dart';
 import 'package:nabour_app/screens/point_navigation_screen.dart';
@@ -111,9 +113,9 @@ import 'package:nabour_app/utils/external_maps_launcher.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:geocoding/geocoding.dart' as geocoding;
 import 'package:cloud_functions/cloud_functions.dart';
-import 'package:nabour_app/features/mystery_box/community_mystery_box_map_manager.dart';
-import 'package:nabour_app/features/mystery_box/community_mystery_map_refresh.dart';
-import 'package:nabour_app/features/mystery_box/community_mystery_box_service.dart'
+import 'package:nabour_app/features/mystery_box/comm_mystery_map_manager.dart';
+import 'package:nabour_app/features/mystery_box/comm_mystery_map_refresh.dart';
+import 'package:nabour_app/features/mystery_box/comm_mystery_box_service.dart'
     show CommunityMysteryBoxService;
 import 'package:nabour_app/features/mystery_box/mystery_box_map_manager.dart';
 import 'package:nabour_app/features/magic_event_checkin/magic_event_checkin_store.dart';
@@ -121,7 +123,7 @@ import 'package:nabour_app/features/magic_event_checkin/magic_event_geofence.dar
 import 'package:nabour_app/features/magic_event_checkin/magic_event_marker_icons.dart';
 import 'package:nabour_app/features/magic_event_checkin/magic_event_model.dart';
 import 'package:nabour_app/features/magic_event_checkin/magic_event_service.dart';
-import 'package:nabour_app/features/magic_event_checkin/magic_event_star_shower_overlay.dart';
+import 'package:nabour_app/features/magic_event_checkin/magic_star_shower_overlay.dart';
 import 'package:nabour_app/features/magic_event_checkin/ultimate_nabour_aura.dart';
 import 'package:nabour_app/models/token_wallet_model.dart';
 import 'package:nabour_app/features/car_avatars/car_avatar_model.dart';
@@ -138,7 +140,7 @@ import 'package:nabour_app/widgets/map/spider_net_radar_selector.dart';
 import 'package:nabour_app/widgets/map/bump_bottom_bar.dart';
 import 'package:nabour_app/widgets/map/map_activity_toast.dart';
 import 'package:nabour_app/screens/friend_suggestions_screen.dart';
-import 'package:nabour_app/screens/activity_notifications_screen.dart';
+import 'package:nabour_app/screens/activity_notifs_screen.dart';
 import 'package:nabour_app/widgets/map/weather_overlay.dart';
 
 /// Rezultat metrici sociale pentru căutarea pe hartă (`users` + `friend_peers`).
@@ -239,6 +241,7 @@ class _GhostModeSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Padding(
       padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
       child: Column(
@@ -254,32 +257,32 @@ class _GhostModeSheet extends StatelessWidget {
           const SizedBox(height: 16),
           const Text('👥', style: TextStyle(fontSize: 36)),
           const SizedBox(height: 8),
-          const Text(
-            'Cât timp ești vizibil vecinilor?',
+          Text(
+            l10n.mapGhostDurationTitle,
             style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
           ),
           const SizedBox(height: 4),
           Text(
-            'Vecinii te vor vedea ca bulă pe hartă.',
+            l10n.mapGhostDurationSubtitle,
             style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
           ),
           const SizedBox(height: 20),
           _DurationTile(
             icon: '⏰',
-            label: '1 oră',
-            sub: 'Util pentru o ieșire scurtă',
+            label: l10n.mapGhostOneHourLabel,
+            sub: l10n.mapGhostOneHourSub,
             duration: const Duration(hours: 1),
           ),
           _DurationTile(
             icon: '🕓',
-            label: '4 ore',
-            sub: 'Util pentru o după-amiază',
+            label: l10n.mapGhostFourHoursLabel,
+            sub: l10n.mapGhostFourHoursSub,
             duration: const Duration(hours: 4),
           ),
           _DurationTile(
             icon: '🌙',
-            label: 'Până mâine',
-            sub: 'Se resetează la miezul nopții',
+            label: l10n.mapGhostUntilTomorrowLabel,
+            sub: l10n.mapGhostUntilTomorrowSub,
             duration: Duration(
               hours: 23 - DateTime.now().hour,
               minutes: 59 - DateTime.now().minute,
@@ -287,8 +290,8 @@ class _GhostModeSheet extends StatelessWidget {
           ),
           _DurationTile(
             icon: '♾️',
-            label: 'Permanent',
-            sub: 'Rămâi vizibil până dezactivezi manual',
+            label: l10n.mapGhostPermanentLabel,
+            sub: l10n.mapGhostPermanentSub,
             duration: Duration.zero, // sentinel = permanent
           ),
           const Padding(
@@ -297,8 +300,8 @@ class _GhostModeSheet extends StatelessWidget {
           ),
           _DurationTile(
             icon: '🫥',
-            label: 'Invizibil (mod fantomă)',
-            sub: 'Nu apari pe hartă; profilul marchează ghostMode în cont (sync între dispozitive).',
+            label: l10n.mapGhostInvisibleLabel,
+            sub: l10n.mapGhostInvisibleSub,
             duration: _kInvisibleChoice,
             isDestructive: true,
           ),
@@ -370,7 +373,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
 
   /// Zoom inițial „glob” (Mapbox v11: proiecție glob la zoom mic) înainte de fly către user.
   static const double _spaceIntroGlobeZoom = 1.38;
-  static const int _spaceIntroFlyDurationMs = 4200;
+  static const int _spaceIntroFlyDurationMs = 1800;
   static const int _spaceIntroPauseBeforeFlyMs = 500;
 
   double _overviewZoomForLatitude(double latitudeDeg) {
@@ -388,6 +391,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
   final RoutingService _routingService = RoutingService();
   final ContactsService _contactsService = ContactsService();
   NeighborhoodRequestsManager? _requestsManager;
+  Timer? _requestsRefreshDebounce;
 
   // Map & Basic UI
   MapboxMap? _mapboxMap;
@@ -552,7 +556,8 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
   // 3D Model Support
 
   bool _isUsing3DUserModel = false;
-  bool _isUserModelInitialized = false;
+  /// Ultimul URI încărcat în stil ca `user-3d-model`; la schimbare avatar în sesie se reaplică.
+  String? _loadedUser3dModelUri;
 
   /// Semnătură id-uri slot garaj din ultimul snapshot `users` — pentru a reapela [_loadCustomCarAvatar] doar la schimbare reală.
   String? _profileGarageSlotIdsSig;
@@ -617,11 +622,145 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
   
   geolocator.Position? _currentPositionObject;
   geolocator.Position? _previousPositionObject;
+
+  /// Limitează redesenările markerului din fluxurile GPS (reduce lockHardwareCanvas / frame drops).
+  static const double _userMarkerGpsRedrawMinMeters = 5.0;
+  static const Duration _userMarkerGpsRedrawMaxInterval = Duration(seconds: 4);
+  geolocator.Position? _lastGpsUserMarkerAnchor;
+  DateTime? _lastGpsUserMarkerRedrawTime;
+  int _gpsUserMarkerRedrawDebugCount = 0;
+  DateTime? _lastUserOverlayInfoLogAt;
+  double? _lastUserOverlayInfoLat;
+  double? _lastUserOverlayInfoLng;
+  String? _lastUserOverlayInfoVisualKey;
+  DateTime? _lastPuckInfoLogAt;
+  bool? _lastPuckInfoEnabled;
+  String? _lastPuckInfoPosKey;
+
+  void _clearGpsUserMarkerThrottle() {
+    _lastGpsUserMarkerAnchor = null;
+    _lastGpsUserMarkerRedrawTime = null;
+  }
+
+  void _scheduleVoiceWarmUpAfterBackendReady(FriendsRideVoiceIntegration voice) {
+    if (_voiceWarmUpRequested) return;
+    _voiceWarmUpRequested = true;
+    try {
+      final initializer = Provider.of<AppInitializer>(context, listen: false);
+      unawaited(() async {
+        await initializer.backendReadyFuture;
+        if (!mounted) return;
+        await Future<void>.delayed(const Duration(seconds: 10));
+        if (!mounted) return;
+        await voice.warmUp();
+      }().catchError((_) {
+        _voiceWarmUpRequested = false;
+      }));
+    } catch (_) {
+      _voiceWarmUpRequested = false;
+    }
+  }
+
+  bool _shouldLogUserOverlayInfo({
+    required double lat,
+    required double lng,
+    required String visualKey,
+  }) {
+    final now = DateTime.now();
+    final lastAt = _lastUserOverlayInfoLogAt;
+    final lastLat = _lastUserOverlayInfoLat;
+    final lastLng = _lastUserOverlayInfoLng;
+    final visualChanged = _lastUserOverlayInfoVisualKey != visualKey;
+    var movedEnough = false;
+    if (lastLat == null || lastLng == null) {
+      movedEnough = true;
+    } else {
+      final movedM = geolocator.Geolocator.distanceBetween(
+        lastLat,
+        lastLng,
+        lat,
+        lng,
+      );
+      movedEnough = movedM >= 12.0;
+    }
+    final elapsedEnough = lastAt == null || now.difference(lastAt) >= const Duration(seconds: 12);
+    final shouldLog = visualChanged || movedEnough || elapsedEnough;
+    if (shouldLog) {
+      _lastUserOverlayInfoLogAt = now;
+      _lastUserOverlayInfoLat = lat;
+      _lastUserOverlayInfoLng = lng;
+      _lastUserOverlayInfoVisualKey = visualKey;
+    }
+    return shouldLog;
+  }
+
+  bool _shouldLogPuckInfo({
+    required bool enabled,
+    required String posKey,
+  }) {
+    final now = DateTime.now();
+    final stateChanged = _lastPuckInfoEnabled != enabled;
+    final posChanged = _lastPuckInfoPosKey != posKey;
+    final elapsedEnough = _lastPuckInfoLogAt == null ||
+        now.difference(_lastPuckInfoLogAt!) >= const Duration(seconds: 20);
+    final shouldLog = stateChanged || posChanged || elapsedEnough;
+    if (shouldLog) {
+      _lastPuckInfoLogAt = now;
+      _lastPuckInfoEnabled = enabled;
+      _lastPuckInfoPosKey = posKey;
+    }
+    return shouldLog;
+  }
+
+  /// Dacă e false, poziția poate fi actualizată în stare dar nu forțăm desen Mapbox (cost mare).
+  bool _shouldRunFullUserMarkerRedrawForGps(geolocator.Position p) {
+    final anchor = _lastGpsUserMarkerAnchor;
+    final lastAt = _lastGpsUserMarkerRedrawTime;
+    final now = DateTime.now();
+    var allow = false;
+    if (anchor == null) {
+      _lastGpsUserMarkerAnchor = p;
+      _lastGpsUserMarkerRedrawTime = now;
+      allow = true;
+    } else {
+      final movedM = geolocator.Geolocator.distanceBetween(
+        anchor.latitude,
+        anchor.longitude,
+        p.latitude,
+        p.longitude,
+      );
+      if (movedM >= _userMarkerGpsRedrawMinMeters) {
+        _lastGpsUserMarkerAnchor = p;
+        _lastGpsUserMarkerRedrawTime = now;
+        allow = true;
+      } else if (lastAt != null &&
+          now.difference(lastAt) >= _userMarkerGpsRedrawMaxInterval) {
+        _lastGpsUserMarkerAnchor = p;
+        _lastGpsUserMarkerRedrawTime = now;
+        allow = true;
+      }
+    }
+    if (allow && kDebugMode) {
+      _gpsUserMarkerRedrawDebugCount++;
+      Logger.debug(
+        'GPS user marker redraw #$_gpsUserMarkerRedrawDebugCount @ ${now.toIso8601String()}',
+        tag: 'MAP_MARKER_GPS',
+      );
+    }
+    return allow;
+  }
   CameraOptions? _mapWidgetFrozenCamera;
   CameraOptions? _mapWidgetFallbackCamera;
 
   /// După primul fly din spațiu spre user, revine la [CameraOptions] „normale” pentru rebuild-uri.
   bool _mapSpaceIntroDone = false;
+  bool _startupCameraPrimed = false;
+  bool _mapReadyCenterInFlight = false;
+  bool _spaceIntroInFlight = false;
+  bool _cinematicIntroLock = true;
+  DateTime? _lastAutoCenterAt;
+  double? _lastAutoCenterLat;
+  double? _lastAutoCenterLng;
 
   double? _driverMarkerSmoothLat;
   double? _driverMarkerSmoothLng;
@@ -635,6 +774,12 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
   StreamSubscription<List<NeighborLocation>>? _neighborFirestoreSubscription;
   List<NeighborLocation> _neighborFsSnapshot = [];
   List<NeighborLocation> _neighborRtdbSnapshot = [];
+  /// Sweep periodic al vecinilor stagnați (fără event nou) ca să dispară fără restart.
+  Timer? _neighborStaleSweepTimer;
+  bool _voiceWarmUpRequested = false;
+  DateTime? _lastRequestsRefreshAt;
+  double? _lastRequestsRefreshLat;
+  double? _lastRequestsRefreshLng;
   /// Zoom curent al camerei (actualizat la fiecare mișcare) — scalare markere sociali.
   double _liveCameraZoom = 14.0;
   Timer? _neighborZoomDebounce;
@@ -750,6 +895,8 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
   PointAnnotation? _userPointAnnotation;
   /// Reper manual de orientare (`users.mapOrientationPin`) — afișat ca **ac cu gamalie verde**, separat de Acasă.
   GeoPoint? _manualOrientationPin;
+  /// Denumire (`users.mapOrientationPinLabel`) — pe marker și în căutarea universală.
+  String? _manualOrientationPinLabel;
   /// „Acasă” din favorite pe hartă (`users.showSavedHomePinOnMap` + coordonate din `saved_addresses`) — **casă în glob**.
   bool _showSavedHomePinOnMap = false;
   bool _awaitingMapOrientationPinPlacement = false;
@@ -783,6 +930,8 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
   Uint8List? _androidOrientationReperOverlayBytes;
   static const double _androidPrivatePinOverlayWidth = 48.0;
   static const double _androidPrivatePinOverlayHeight = 56.0;
+  /// Spațiu pentru eticheta deasupra reperului (Android overlay).
+  static const double _androidOrientationReperLabelBlock = 38.0;
   /// Serialize user-marker updates so concurrent GPS ticks do not race Mapbox `update` vs `delete`.
   Future<void>? _userMarkerUpdateChain;
   StreamSubscription? _honkSubscription;
@@ -830,18 +979,12 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
 
   Future<void> _prewarmTiles() async {
     try {
-      final cam = await _mapboxMap?.getCameraState();
-      if (cam == null) return;
       const List<String> candidateSources = ['composite', 'mapbox', 'basemap', 'raster-dem'];
       for (final src in candidateSources) {
         try {
           await _mapboxMap!.style.setStyleSourceProperty(src, 'prefetch-zoom-delta', 2);
         } catch (_) {}
       }
-      final center = cam.center;
-      final zoom = cam.zoom;
-      await _mapboxMap?.flyTo(CameraOptions(center: center, zoom: (zoom - 0.01).clamp(0.0, 22.0)), MapAnimationOptions(duration: 250));
-      await _mapboxMap?.flyTo(CameraOptions(center: center, zoom: zoom), MapAnimationOptions(duration: 200));
     } catch (_) {}
   }
 
@@ -875,9 +1018,35 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
   void _refreshNeighborhoodRequestBubbles() {
     final m = _requestsManager;
     if (m == null) return;
-    unawaited(m.refreshForUserLocation());
-    unawaited(_recomputeCereriQuickActionBadge());
-    unawaited(_rebindNbChatQuickActionBadgeListener());
+    final pos = _currentPositionObject ??
+        LocationCacheService.instance.peekRecent(maxAge: const Duration(minutes: 20));
+    if (pos != null &&
+        _lastRequestsRefreshAt != null &&
+        _lastRequestsRefreshLat != null &&
+        _lastRequestsRefreshLng != null) {
+      final elapsed = DateTime.now().difference(_lastRequestsRefreshAt!);
+      final movedM = geolocator.Geolocator.distanceBetween(
+        _lastRequestsRefreshLat!,
+        _lastRequestsRefreshLng!,
+        pos.latitude,
+        pos.longitude,
+      );
+      if (elapsed < const Duration(seconds: 3) && movedM < 25) {
+        return;
+      }
+    }
+    _requestsRefreshDebounce?.cancel();
+    _requestsRefreshDebounce = Timer(const Duration(milliseconds: 500), () {
+      if (!mounted) return;
+      if (pos != null) {
+        _lastRequestsRefreshAt = DateTime.now();
+        _lastRequestsRefreshLat = pos.latitude;
+        _lastRequestsRefreshLng = pos.longitude;
+      }
+      unawaited(m.refreshForUserLocation());
+      unawaited(_recomputeCereriQuickActionBadge());
+      unawaited(_rebindNbChatQuickActionBadgeListener());
+    });
   }
 
   void _startQuickActionBadgeListeners() {
@@ -1085,7 +1254,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
   void _onWarmupOverlayChanged() {
     if (!mounted) return;
     if (widget.warmupOverlayVisible?.value != false) return;
-    unawaited(_centerOnLocationOnMapReady());
+    unawaited(_centerOnLocationOnMapReady(preferSpaceIntro: true));
   }
 
   void _onCommunityMysteryMapRefreshRequested() {
@@ -1130,13 +1299,8 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
       try {
         final voice = Provider.of<FriendsRideVoiceIntegration>(context, listen: false);
         voice.addListener(_onVoiceAddressChanged);
-        // Delay TTS warmup: FlutterTts.setLanguage() triggers an Android BpBinder
-        // IPC call (~640ms) that blocks the platform thread and causes Choreographer
-        // to skip frames. Deferring by 8s lets the map render and animate smoothly.
-        Future.delayed(const Duration(seconds: 8), () {
-          if (!mounted) return;
-          unawaited(voice.warmUp().catchError((_) {}));
-        });
+        // Inițializează stack-ul vocal doar la finalul init-ului existent.
+        _scheduleVoiceWarmUpAfterBackendReady(voice);
 
         // Wire voice→panel callbacks so AI can fill addresses and press confirm
         voice.setRidePanelCallbacks(
@@ -1281,11 +1445,14 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
         _showEmojiPicker = false;
       });
       unawaited(_updateEmojiMarkers(_lastReceivedEmojis));
-      _showSafeSnackBar('Emoji-ul tău a fost scos de pe hartă', Colors.green.shade700);
+      _showSafeSnackBar(
+        AppLocalizations.of(context)!.mapEmojiRemoved,
+        Colors.green.shade700,
+      );
     } catch (_) {
       if (mounted) {
         _showSafeSnackBar(
-          'Nu am putut șterge emoji-ul. Încearcă din nou.',
+          AppLocalizations.of(context)!.mapEmojiDeleteError,
           const Color(0xFFB71C1C),
         );
       }
@@ -1435,7 +1602,12 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
       _emojiAnnotationManager ??= await _mapboxMap!.annotations.createPointAnnotationManager(id: 'map-emojis-layer');
 
       final sig = _signatureForMapEmojiLayer(emojis);
-      if (_lastMapEmojiLayerSig != null && sig == _lastMapEmojiLayerSig) return;
+      // Nu sări dacă managerul lipsește (ex. după loadStyleURI) — altfel rămâne sig vechi fără straturi.
+      if (_emojiAnnotationManager != null &&
+          _lastMapEmojiLayerSig != null &&
+          sig == _lastMapEmojiLayerSig) {
+        return;
+      }
 
       // `PointAnnotation.update` păstrează uneori textField vechi / nu aplică corect `image` — reconstruim stratul.
       try {
@@ -1530,10 +1702,10 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
       builder: (ctx) {
         final left = m.expiresAt.difference(DateTime.now());
         final expiryLabel = left.isNegative
-            ? 'Expirat'
+            ? AppLocalizations.of(ctx)!.mapMomentExpired
             : left.inMinutes >= 1
-                ? '~${left.inMinutes} min până dispare de pe hartă'
-                : 'Dispare în curând de pe hartă';
+                ? AppLocalizations.of(ctx)!.mapMomentExpiresInMinutes(left.inMinutes)
+                : AppLocalizations.of(ctx)!.mapMomentExpiresSoon;
 
         return Container(
           padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
@@ -1601,18 +1773,16 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
                       final ok = await showDialog<bool>(
                         context: ctx,
                         builder: (dCtx) => AlertDialog(
-                          title: const Text('Ștergi momentul?'),
-                          content: const Text(
-                            'Postarea va dispărea de pe hartă pentru toți.',
-                          ),
+                          title: Text(AppLocalizations.of(dCtx)!.mapDeleteMomentTitle),
+                          content: Text(AppLocalizations.of(dCtx)!.mapDeleteMomentContent),
                           actions: [
                             TextButton(
                               onPressed: () => Navigator.pop(dCtx, false),
-                              child: const Text('Renunță'),
+                              child: Text(AppLocalizations.of(dCtx)!.cancel),
                             ),
                             FilledButton(
                               onPressed: () => Navigator.pop(dCtx, true),
-                              child: const Text('Șterge'),
+                              child: Text(AppLocalizations.of(dCtx)!.delete),
                             ),
                           ],
                         ),
@@ -1624,19 +1794,19 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
                       Navigator.pop(context);
                       _showSafeSnackBar(
                         deleted
-                            ? 'Momentul a fost șters.'
-                            : 'Nu s-a putut șterge. Încearcă din nou.',
+                            ? AppLocalizations.of(context)!.mapMomentDeleted
+                            : AppLocalizations.of(context)!.mapMomentDeleteError,
                         deleted ? Colors.green.shade700 : const Color(0xFFB71C1C),
                       );
                     },
                     icon: const Icon(Icons.delete_outline),
-                    label: const Text('Șterge / anulează postarea'),
+                    label: Text(AppLocalizations.of(ctx)!.mapDeleteOrCancelPost),
                   ),
                 ],
                 const SizedBox(height: 8),
                 TextButton(
                   onPressed: () => Navigator.pop(ctx),
-                  child: const Text('Închide'),
+                  child: Text(AppLocalizations.of(ctx)!.close),
                 ),
               ],
             ),
@@ -1770,7 +1940,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
 
     // 2. Show brief notification
     if (mounted) {
-      _showSafeSnackBar('📣 $senderName te-a claxonat!', const Color(0xFF7C3AED));
+      _showSafeSnackBar(AppLocalizations.of(context)!.mapHonkReceived(senderName), const Color(0xFF7C3AED));
     }
 
     // 3. Show emoji above sender car on map (if visible)
@@ -1825,12 +1995,11 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
     if (_mapboxMap == null || !mounted) return;
     try {
       final String uri = modelPath.startsWith('http') ? modelPath : 'asset://$modelPath';
-      
-      if (!_isUserModelInitialized) {
-        // În Mapbox v11 (mapbox_maps_flutter 2.x), adăugăm modelul în stil
-        // folosind addStyleModel.
+
+      // Reîncarcă resursa când se schimbă avatarul 3D (același id de model în stil, URI nou).
+      if (_loadedUser3dModelUri != uri) {
         await _mapboxMap!.style.addStyleModel('user-3d-model', uri);
-        _isUserModelInitialized = true;
+        _loadedUser3dModelUri = uri;
       }
 
       if (!_isUsing3DUserModel) {
@@ -1956,6 +2125,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
           // Pauză scurtă după sheet + deleteAll nativ, ca create să nu lovească încă stări intermediare Mapbox.
           await Future<void>.delayed(const Duration(milliseconds: 32));
           if (!mounted) return;
+          _clearGpsUserMarkerThrottle();
           await _updateUserMarker(centerCamera: false);
           if (mounted) unawaited(_updateLocationPuck());
         }
@@ -2004,6 +2174,68 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
       }
     }
     return null;
+  }
+
+  String? _parseMapOrientationPinLabel(Map<String, dynamic>? data) {
+    if (data == null) return null;
+    final v = data['mapOrientationPinLabel'];
+    if (v is! String) return null;
+    final t = v.trim();
+    return t.isEmpty ? null : t;
+  }
+
+  /// Etichetă pe hartă / căutare (fallback dacă documentul vechi nu are câmp).
+  String _effectiveOrientationPinLabelForMap() {
+    final t = _manualOrientationPinLabel?.trim();
+    if (t != null && t.isNotEmpty) return t;
+    return 'Reper orientare';
+  }
+
+  String _orientationPinLabelForMapAnnotation() {
+    final s = _effectiveOrientationPinLabelForMap();
+    if (s.length <= 30) return s;
+    return '${s.substring(0, 27)}…';
+  }
+
+  Future<String?> _promptOrientationPinName({
+    required String title,
+    String initialName = '',
+  }) async {
+    final l10n = AppLocalizations.of(context)!;
+    final ctl = TextEditingController(text: initialName);
+    final result = await showDialog<String>(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => AlertDialog(
+        title: Text(title),
+        content: TextField(
+          controller: ctl,
+          decoration: InputDecoration(
+            labelText: l10n.mapPinNameLabel,
+            hintText: l10n.mapPinNameHint,
+          ),
+          autofocus: true,
+          maxLength: 48,
+          textCapitalization: TextCapitalization.sentences,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(l10n.cancel),
+          ),
+          FilledButton(
+            onPressed: () {
+              final t = ctl.text.trim();
+              if (t.isEmpty) return;
+              Navigator.pop(ctx, t);
+            },
+            child: Text(l10n.save),
+          ),
+        ],
+      ),
+    );
+    ctl.dispose();
+    return result;
   }
 
   bool _parseShowSavedHomePinOnMap(Map<String, dynamic>? data) {
@@ -2237,6 +2469,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
           );
         }
         if (reperGeom != null && _orientationReperPinManager != null) {
+          const reperTextOffset = [0.0, -2.35];
           await _orientationReperPinManager!.create(
             PointAnnotationOptions(
               geometry: reperGeom,
@@ -2244,6 +2477,12 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
               iconSize: 1.0,
               iconAnchor: IconAnchor.BOTTOM,
               symbolSortKey: 2e6 + 1,
+              textField: _orientationPinLabelForMapAnnotation(),
+              textSize: 11.5,
+              textOffset: reperTextOffset,
+              textColor: 0xFF0F172A,
+              textHaloColor: 0xFFFFFFFF,
+              textHaloWidth: 2.0,
             ),
           );
         }
@@ -2270,7 +2509,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
         behavior: SnackBarBehavior.floating,
         margin: const EdgeInsets.fromLTRB(12, 0, 12, 96),
         action: SnackBarAction(
-          label: 'Închide',
+          label: AppLocalizations.of(context)!.close,
           textColor: const Color(0xFF7DD3FC),
           onPressed: () {
             messenger.hideCurrentSnackBar();
@@ -2286,8 +2525,19 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
   Future<void> _finishMapOrientationPinPlacement(Point point) async {
     final lat = point.coordinates.lat.toDouble();
     final lng = point.coordinates.lng.toDouble();
+    if (!mounted) return;
+    final name = await _promptOrientationPinName(
+      title: AppLocalizations.of(context)!.mapPinNameTitle,
+      initialName: _manualOrientationPinLabel ?? '',
+    );
+    if (!mounted) return;
+    if (name == null) {
+      setState(() => _awaitingMapOrientationPinPlacement = false);
+      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+      return;
+    }
     try {
-      await _firestoreService.setMapOrientationPin(lat, lng);
+      await _firestoreService.setMapOrientationPin(lat, lng, label: name);
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -2304,12 +2554,13 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
     setState(() {
       _awaitingMapOrientationPinPlacement = false;
       _manualOrientationPin = GeoPoint(lat, lng);
+      _manualOrientationPinLabel = name.trim();
     });
     await _syncMapOrientationPinAnnotation();
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Reperul de orientare a fost salvat pe hartă.'),
+        SnackBar(
+          content: Text(AppLocalizations.of(context)!.mapOrientationPinSaved),
           backgroundColor: Color(0xFF166534),
           duration: Duration(seconds: 2),
         ),
@@ -2318,6 +2569,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
   }
 
   void _showSavedHomeFavoritePinActions() {
+    final l10n = AppLocalizations.of(context)!;
     showModalBottomSheet<void>(
       context: context,
       backgroundColor: const Color(0xFF1E293B),
@@ -2330,12 +2582,12 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
           children: [
             ListTile(
               leading: const Icon(Icons.bookmark_added_rounded, color: Color(0xFF38BDF8)),
-              title: const Text(
-                'Editează adresa Acasă',
+              title: Text(
+                l10n.mapEditHomeAddressTitle,
                 style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
               ),
               subtitle: Text(
-                'Schimbi poziția din Adrese salvate',
+                l10n.mapEditHomeAddressSubtitle,
                 style: TextStyle(color: Colors.white.withValues(alpha: 0.65), fontSize: 13),
               ),
               onTap: () {
@@ -2350,7 +2602,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
             ListTile(
               leading: Icon(Icons.visibility_off_rounded, color: Colors.orange.shade300),
               title: Text(
-                'Ascunde Acasă de pe hartă',
+                l10n.mapHideHomeFromMapTitle,
                 style: TextStyle(color: Colors.orange.shade200, fontWeight: FontWeight.w600),
               ),
               onTap: () async {
@@ -2360,7 +2612,10 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
                 } catch (e) {
                   if (!mounted) return;
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Eroare: $e'), backgroundColor: Colors.red.shade800),
+                    SnackBar(
+                      content: Text(AppLocalizations.of(context)!.errorPrefix(e.toString())),
+                      backgroundColor: Colors.red.shade800,
+                    ),
                   );
                   return;
                 }
@@ -2369,7 +2624,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
                 await _syncMapOrientationPinAnnotation();
                 if (!mounted) return;
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Acasă nu mai este afișată pe hartă.')),
+                  SnackBar(content: Text(l10n.mapHomeNoLongerShown)),
                 );
               },
             ),
@@ -2380,6 +2635,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
   }
 
   void _showOrientationReperPinActions() {
+    final l10n = AppLocalizations.of(context)!;
     showModalBottomSheet<void>(
       context: context,
       backgroundColor: const Color(0xFF1E293B),
@@ -2392,23 +2648,26 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
           children: [
             ListTile(
               leading: const Icon(Icons.edit_location_alt_rounded, color: Color(0xFF38BDF8)),
-              title: const Text('Mută reperul', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
+              title: Text(l10n.mapMoveOrientationMarkerTitle, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
               subtitle: Text(
-                'Apoi ține apăsat pe hartă la noul loc',
+                _manualOrientationPinLabel != null &&
+                        _manualOrientationPinLabel!.trim().isNotEmpty
+                    ? l10n.mapMoveOrientationMarkerWithName(_manualOrientationPinLabel!.trim())
+                    : l10n.mapMoveOrientationMarkerNoName,
                 style: TextStyle(color: Colors.white.withValues(alpha: 0.65), fontSize: 13),
               ),
               onTap: () {
                 Navigator.pop(ctx);
                 setState(() => _awaitingMapOrientationPinPlacement = true);
                 _showMapOrientationPlacementSnackBar(
-                  'Ține apăsat pe hartă pentru noul reper.',
+                  l10n.mapLongPressForNewMarker,
                 );
               },
             ),
             ListTile(
               leading: Icon(Icons.delete_outline_rounded, color: Colors.red.shade300),
               title: Text(
-                'Elimină reperul de orientare',
+                l10n.mapRemoveOrientationMarkerTitle,
                 style: TextStyle(color: Colors.red.shade200, fontWeight: FontWeight.w600),
               ),
               onTap: () async {
@@ -2418,16 +2677,22 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
                 } catch (e) {
                   if (!mounted) return;
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Eroare: $e'), backgroundColor: Colors.red.shade800),
+                    SnackBar(
+                      content: Text(AppLocalizations.of(context)!.errorPrefix(e.toString())),
+                      backgroundColor: Colors.red.shade800,
+                    ),
                   );
                   return;
                 }
                 if (!mounted) return;
-                setState(() => _manualOrientationPin = null);
+                setState(() {
+                  _manualOrientationPin = null;
+                  _manualOrientationPinLabel = null;
+                });
                 await _syncMapOrientationPinAnnotation();
                 if (!mounted) return;
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Reperul a fost eliminat.')),
+                  SnackBar(content: Text(l10n.mapMarkerRemoved)),
                 );
               },
             ),
@@ -2438,15 +2703,14 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
   }
 
   Future<void> _enableSavedHomePinFromDrawer() async {
+    final l10n = AppLocalizations.of(context)!;
     final h = _savedHomeAddressEntry();
     if (h == null || !_coordsPlausibleForSavedAddress(h.coordinates)) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            'Salvează adresa „Acasă” în favorite (cu poziție pe hartă), apoi încearcă din nou.',
-          ),
-          duration: Duration(seconds: 4),
+        SnackBar(
+          content: Text(l10n.mapSaveHomeFirst),
+          duration: const Duration(seconds: 4),
         ),
       );
       return;
@@ -2456,7 +2720,10 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Eroare: $e'), backgroundColor: Colors.red.shade800),
+        SnackBar(
+          content: Text(AppLocalizations.of(context)!.errorPrefix(e.toString())),
+          backgroundColor: Colors.red.shade800,
+        ),
       );
       return;
     }
@@ -2468,8 +2735,8 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
     });
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Acasă din favorite este afișată pe hartă (doar pentru tine).'),
+      SnackBar(
+        content: Text(l10n.mapHomeShownForYou),
         backgroundColor: Color(0xFF166534),
         duration: Duration(seconds: 2),
       ),
@@ -2477,10 +2744,11 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
   }
 
   Future<void> _hideSavedHomePinFromDrawer() async {
+    final l10n = AppLocalizations.of(context)!;
     if (!_showSavedHomePinOnMap) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Acasă nu este afișată pe hartă.')),
+        SnackBar(content: Text(l10n.mapHomeNotShown)),
       );
       return;
     }
@@ -2489,7 +2757,10 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Eroare: $e'), backgroundColor: Colors.red.shade800),
+        SnackBar(
+          content: Text(AppLocalizations.of(context)!.errorPrefix(e.toString())),
+          backgroundColor: Colors.red.shade800,
+        ),
       );
       return;
     }
@@ -2498,15 +2769,16 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
     await _syncMapOrientationPinAnnotation();
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Acasă nu mai este afișată pe hartă.')),
+      SnackBar(content: Text(l10n.mapHomeNoLongerShown)),
     );
   }
 
   Future<void> _removeOrientationReperFromDrawer() async {
+    final l10n = AppLocalizations.of(context)!;
     if (_manualOrientationPin == null) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Nu ai un reper de orientare pe hartă.')),
+        SnackBar(content: Text(l10n.mapNoOrientationMarker)),
       );
       return;
     }
@@ -2515,16 +2787,22 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Eroare: $e'), backgroundColor: Colors.red.shade800),
+        SnackBar(
+          content: Text(AppLocalizations.of(context)!.errorPrefix(e.toString())),
+          backgroundColor: Colors.red.shade800,
+        ),
       );
       return;
     }
     if (!mounted) return;
-    setState(() => _manualOrientationPin = null);
+    setState(() {
+      _manualOrientationPin = null;
+      _manualOrientationPinLabel = null;
+    });
     await _syncMapOrientationPinAnnotation();
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Reperul de orientare a fost eliminat de pe hartă.')),
+      SnackBar(content: Text(l10n.mapOrientationMarkerRemovedFromMap)),
     );
   }
 
@@ -2559,9 +2837,12 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
           if (!mounted || gen != _mapStyleThemeGeneration) return;
           unawaited(_syncMapOrientationPinAnnotation());
           if (_positionForUserMapMarker() != null) {
+            _clearGpsUserMarkerThrottle();
             unawaited(_updateUserMarker(centerCamera: false));
             unawaited(_updateLocationPuck());
           }
+          // După loadStyleURI managerii de adnotări sunt resetați; stream-ul vecini poate să nu reemită imediat.
+          unawaited(_reapplyContactFilterOnMap());
           if (mounted && gen == _mapStyleThemeGeneration) setState(() {});
         }).catchError((_) {}),
       );
@@ -2952,7 +3233,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
       _navDestLng = destLng;
       _navDestLabel = label;
       _navHasArrived = false;
-      _navCurrentInstruction = 'Se calculează traseul...';
+      _navCurrentInstruction = AppLocalizations.of(context)!.mapCalculatingRoute;
       _navRemainDistanceM = 0;
       _navRemainEta = Duration.zero;
       _navSteps = [];
@@ -2967,7 +3248,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
     if (originLat == null || originLng == null) {
       if (mounted) {
         setState(() {
-          _navCurrentInstruction = 'Nu am putut obține locația. Activează GPS-ul.';
+          _navCurrentInstruction = AppLocalizations.of(context)!.mapCannotGetLocationEnableGps;
         });
       }
       return;
@@ -2984,7 +3265,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
 
     if (route == null) {
       setState(() {
-        _navCurrentInstruction = 'Traseu indisponibil. Verifică conexiunea.';
+        _navCurrentInstruction = AppLocalizations.of(context)!.mapRouteUnavailableCheckConnection;
       });
       return;
     }
@@ -3032,7 +3313,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
   /// Actualizează instrucțiunea curentă din lista de pași.
   void _navUpdateInstruction() {
     if (_navSteps.isEmpty) {
-      setState(() => _navCurrentInstruction = 'Continuă pe traseu.');
+      setState(() => _navCurrentInstruction = AppLocalizations.of(context)!.mapContinueOnRoute);
       return;
     }
     final i = _navStepIndex.clamp(0, _navSteps.length - 1);
@@ -3140,13 +3421,14 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
   }
 
   Future<void> _navArrival() async {
+    final l10n = AppLocalizations.of(context)!;
     if (_navHasArrived || !mounted) return;
     setState(() {
       _navHasArrived = true;
-      _navCurrentInstruction = 'Ai sosit la destinație!';
+      _navCurrentInstruction = l10n.mapArrivalInstruction;
     });
     HapticFeedback.heavyImpact();
-    try { await _navTts?.stop(); await _navTts?.speak('Ai sosit la destinație!'); } catch (_) {}
+    try { await _navTts?.stop(); await _navTts?.speak(l10n.mapArrivalInstruction); } catch (_) {}
     await _stopInAppNavigation(announce: false);
     if (!mounted) return;
     await showDialog<void>(
@@ -3154,12 +3436,14 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
       barrierDismissible: false,
       builder: (ctx) => AlertDialog(
         icon: Icon(Icons.place_rounded, size: 48, color: Theme.of(ctx).colorScheme.primary),
-        title: const Text('Ai sosit!'),
-        content: Text('Ai ajuns la destinație: $_navDestLabel'),
+        title: Text(l10n.mapArrivedTitle),
+        content: Text(
+          AppLocalizations.of(context)!.mapArrivedAtDestination(_navDestLabel),
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('OK'),
+            child: Text(l10n.ok),
           ),
         ],
       ),
@@ -3302,7 +3586,9 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
     _magicEventPollTimer?.cancel();
     _auraProjectDebounce?.cancel();
     _neighborZoomDebounce?.cancel();
+    _neighborStaleSweepTimer?.cancel();
     _emojiAvoidanceDebounce?.cancel();
+    _requestsRefreshDebounce?.cancel();
 
     _disposeQuickActionBadgeListeners();
 
@@ -3580,7 +3866,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
       Logger.error('CRITICAL: All audio methods failed: $e', error: e);
       // Ultimate fallback: Show visual notification
       if (!mounted) return;
-      final l10n = AppLocalizations.of(context)!;
+      final l10n = lookupAppLocalizations(WidgetsBinding.instance.platformDispatcher.locale);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(l10n.newRideAudioUnavailable),
@@ -3771,7 +4057,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
 
   Future<void> _onMapCreated(MapboxMap mapboxMap) async {
     _mapboxMap = mapboxMap;
-    _isUserModelInitialized = false;
+    _loadedUser3dModelUri = null;
     _isUsing3DUserModel = false;
     // Resetează managerii lazy înainte de orice await. Altfel [onStyleLoaded] poate rula
     // în timpul await-urilor de mai jos, creează markerul, iar codul vechi punea managerul
@@ -3940,7 +4226,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
   /// Aplică estetica "Premium Neon" / "Clean Tech" prin Mapbox Runtime Styling la fiecare încărcare de stil.
   Future<void> _onStyleLoaded(StyleLoadedEventData event) async {
     if (_mapboxMap == null) return;
-    _isUserModelInitialized = false;
+    _loadedUser3dModelUri = null;
     _isUsing3DUserModel = false;
     Logger.info("Map style loaded. Applying Aesthetic Overlays dynamically...");
 
@@ -3957,7 +4243,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
         if (layerId == null) continue;
 
         if (isDark) {
-          // --- 🌌 DARK NEON MODE (Cyberpunk) ---
+          // --- 🌌 DARK: drumuri neon + ape/verde/clădiri „faded” (mai lizibil decât negru uniform) ---
           if (layerId.toLowerCase().contains('road') || layerId.toLowerCase().contains('street')) {
             try {
               await style.setStyleLayerProperty(layerId, 'line-color', '#D946FF');
@@ -3965,11 +4251,34 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
               await style.setStyleLayerProperty(layerId, 'line-blur', 0.6);
             } catch (_) {}
           }
+          // Apă: albastru estompat
           if (layerId.toLowerCase().contains('water')) {
-            try { await style.setStyleLayerProperty(layerId, 'fill-color', '#071626'); } catch (_) {}
+            try {
+              await style.setStyleLayerProperty(layerId, 'fill-color', '#3d5a78');
+              await style.setStyleLayerProperty(layerId, 'fill-opacity', 0.72);
+            } catch (_) {}
           }
-          if (layerId.toLowerCase().contains('park') || layerId.toLowerCase().contains('forest') || layerId.toLowerCase().contains('natural')) {
-            try { await style.setStyleLayerProperty(layerId, 'fill-color', '#061a14'); } catch (_) {}
+          // Păduri / vegetație / landcover: verde estompat
+          if (layerId.toLowerCase().contains('landcover') ||
+              layerId.toLowerCase().contains('park') ||
+              layerId.toLowerCase().contains('forest') ||
+              layerId.toLowerCase().contains('natural') ||
+              layerId.toLowerCase().contains('wood')) {
+            try {
+              await style.setStyleLayerProperty(layerId, 'fill-color', '#355542');
+              await style.setStyleLayerProperty(layerId, 'fill-opacity', 0.74);
+            } catch (_) {}
+          }
+          // Clădiri: gri estompat (2D fill sau extrudare 3D după tip strat)
+          if (layerId.toLowerCase().contains('building')) {
+            try {
+              await style.setStyleLayerProperty(layerId, 'fill-extrusion-color', '#6b7280');
+              await style.setStyleLayerProperty(layerId, 'fill-extrusion-opacity', 0.52);
+            } catch (_) {}
+            try {
+              await style.setStyleLayerProperty(layerId, 'fill-color', '#5c6370');
+              await style.setStyleLayerProperty(layerId, 'fill-opacity', 0.48);
+            } catch (_) {}
           }
           if (layerId == 'background') {
             try { await style.setStyleLayerProperty(layerId, 'background-color', '#020617'); } catch (_) {}
@@ -4221,10 +4530,17 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
   /// Generează iconița marker:
   /// passenger = cerc albastru cu punct alb
   /// driver    = mașinuță 3D (vedere de sus, design premium)
-  static Future<Uint8List> _generateMarkerIcon({required bool isPassenger, String? customAssetPath}) async {
+  static Future<Uint8List> _generateMarkerIcon({
+    required bool isPassenger,
+    String? customAssetPath,
+    int? batteryLevel,
+    bool isCharging = false,
+  }) async {
     // Include calea asset pentru pasager cu garaj — altfel toate variantele partajau cheia „passenger”.
+    final batKey =
+        NeighborFriendMarkerIcons.batteryBucketForMarker(batteryLevel)?.toString() ?? 'n';
     final cacheKey =
-        '${isPassenger ? 'p' : 'd'}_${customAssetPath ?? (isPassenger ? 'default' : 'driver_3d')}';
+        '${isPassenger ? 'p' : 'd'}_${customAssetPath ?? (isPassenger ? 'default' : 'driver_3d')}_b$batKey${isCharging ? 'c' : 'n'}';
     if (_markerIconCache.containsKey(cacheKey)) return _markerIconCache[cacheKey]!;
 
     // Avatar icon: folosește asset-ul dacă este furnizat (sofer sau pasager).
@@ -4290,6 +4606,8 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
                 return _generateMarkerIcon(
                   isPassenger: false,
                   customAssetPath: null,
+                  batteryLevel: batteryLevel,
+                  isCharging: isCharging,
                 );
               }
             }
@@ -4374,7 +4692,26 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
           }
         }
 
-        final byteData = await img.toByteData(format: ui.ImageByteFormat.png);
+        ui.Image imgOut = img;
+        if (NeighborFriendMarkerIcons.batteryBucketForMarker(batteryLevel) !=
+            null) {
+          final overlay = ui.PictureRecorder();
+          final overlayCanvas = ui.Canvas(
+            overlay,
+            ui.Rect.fromLTWH(0, 0, maxSize, maxSize),
+          );
+          overlayCanvas.drawImage(img, ui.Offset.zero, ui.Paint());
+          NeighborFriendMarkerIcons.paintBatteryChip(
+            overlayCanvas,
+            maxSize,
+            batteryLevel: batteryLevel,
+            isCharging: isCharging,
+          );
+          final pic = overlay.endRecording();
+          imgOut = await pic.toImage(maxSize.toInt(), maxSize.toInt());
+        }
+
+        final byteData = await imgOut.toByteData(format: ui.ImageByteFormat.png);
         final bytes = _pngBytesOrMinimalFallback(
           byteData,
           '_generateMarkerIcon asset=$path',
@@ -4578,6 +4915,13 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
       paint.color = const ui.Color(0xFF69F0AE);
       canvas.drawCircle(ui.Offset(cx + 16, cy + 28), 3, paint);
     }
+
+    NeighborFriendMarkerIcons.paintBatteryChip(
+      canvas,
+      size,
+      batteryLevel: batteryLevel,
+      isCharging: isCharging,
+    );
 
     final picture = recorder.endRecording();
     final img = await picture.toImage(size.toInt(), size.toInt());
@@ -4879,6 +5223,13 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
     try {
       // Ierarhie: garaj (slot potrivit) → berlină doar șoferi validați mod șofer; pasageri fără skin → puck (ramura de mai sus).
       final visualKey = _ownUserMarkerVisualKey();
+      final batSnap = await NeighborDeviceTelemetryReader.instance.snapshot();
+      final int? userBatLevel = batSnap?.level;
+      final bool userBatCharging = batSnap?.isCharging ?? false;
+      final batKey =
+          NeighborFriendMarkerIcons.batteryBucketForMarker(userBatLevel)?.toString() ??
+              'n';
+      final userMarkerCacheKey = '$visualKey|b$batKey${userBatCharging ? 'c' : 'n'}';
       final bool isEmojiMode = visualKey.startsWith('passenger:emoji:');
       // Berlina vectorială e desenată cu „botul” spre nord; GPS + iconRotate are sens.
       // Skin-urile PNG din garaj (animale, mașini raster) nu respectă aceeași axă → rămân nord-sus, fără jitter.
@@ -4968,7 +5319,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
           _userPointAnnotationManager = null;
           _userPointAnnotation = null;
         }
-        if (_userMarkerVisualCacheKey != visualKey ||
+        if (_userMarkerVisualCacheKey != userMarkerCacheKey ||
             _androidUserMarkerOverlayImageBytes == null) {
           late final Uint8List imageList;
           final Future<Uint8List> bitmapFuture;
@@ -4977,10 +5328,16 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
             bitmapFuture = _generateMarkerIcon(
               isPassenger: !_driverOnDutyOnMap,
               customAssetPath: garagePath,
+              batteryLevel: userBatLevel,
+              isCharging: userBatCharging,
             );
           } else {
-            bitmapFuture =
-                _generateMarkerIcon(isPassenger: false, customAssetPath: null);
+            bitmapFuture = _generateMarkerIcon(
+              isPassenger: false,
+              customAssetPath: null,
+              batteryLevel: userBatLevel,
+              isCharging: userBatCharging,
+            );
           }
           final gen = _userDriverMarkerIconInFlight ??= bitmapFuture;
           try {
@@ -4995,6 +5352,8 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
             imageList = await _generateMarkerIcon(
               isPassenger: false,
               customAssetPath: null,
+              batteryLevel: userBatLevel,
+              isCharging: userBatCharging,
             );
           } finally {
             if (identical(_userDriverMarkerIconInFlight, gen)) {
@@ -5003,7 +5362,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
           }
           if (!mounted) return;
           _androidUserMarkerOverlayImageBytes = imageList;
-          _userMarkerVisualCacheKey = visualKey;
+          _userMarkerVisualCacheKey = userMarkerCacheKey;
         }
         final latU = _driverMarkerSmoothLat ?? tgtLat;
         final lngU = _driverMarkerSmoothLng ?? tgtLng;
@@ -5011,12 +5370,14 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
         _androidUserMarkerOverlayHeadingDeg = iconRotateDeg;
         _androidUserMarkerOverlayLabel = textField;
         await _projectAndroidUserMarkerOverlay();
-        Logger.info(
-          'User marker Android Flutter overlay: lat=${latU.toStringAsFixed(6)} '
-          'lng=${lngU.toStringAsFixed(6)} visualKey=$visualKey '
-          'bytes=${_androidUserMarkerOverlayImageBytes?.length}',
-          tag: 'MAP',
-        );
+        if (_shouldLogUserOverlayInfo(lat: latU, lng: lngU, visualKey: visualKey)) {
+          Logger.info(
+            'User marker Android Flutter overlay: lat=${latU.toStringAsFixed(6)} '
+            'lng=${lngU.toStringAsFixed(6)} visualKey=$visualKey '
+            'bytes=${_androidUserMarkerOverlayImageBytes?.length}',
+            tag: 'MAP',
+          );
+        }
       } else {
         if (!mounted || _userPointAnnotationManager == null) {
           Logger.debug('Aborting marker update - state changed during operation');
@@ -5033,7 +5394,8 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
         }
 
         // Schimbare bitmap (garaj / mod / avatar profil): recreate — Mapbox nu actualizează mereu iconul doar din `update`.
-        if (_userPointAnnotation != null && _userMarkerVisualCacheKey != visualKey) {
+        if (_userPointAnnotation != null &&
+            _userMarkerVisualCacheKey != userMarkerCacheKey) {
           try {
             await _userPointAnnotationManager!.deleteAll();
           } catch (_) {}
@@ -5087,10 +5449,16 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
             bitmapFuture = _generateMarkerIcon(
               isPassenger: !_driverOnDutyOnMap,
               customAssetPath: garagePath,
+              batteryLevel: userBatLevel,
+              isCharging: userBatCharging,
             );
           } else {
-            bitmapFuture =
-                _generateMarkerIcon(isPassenger: false, customAssetPath: null);
+            bitmapFuture = _generateMarkerIcon(
+              isPassenger: false,
+              customAssetPath: null,
+              batteryLevel: userBatLevel,
+              isCharging: userBatCharging,
+            );
           }
           final gen = _userDriverMarkerIconInFlight ??= bitmapFuture;
           try {
@@ -5105,6 +5473,8 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
             imageList = await _generateMarkerIcon(
               isPassenger: false,
               customAssetPath: null,
+              batteryLevel: userBatLevel,
+              isCharging: userBatCharging,
             );
           } finally {
             if (identical(_userDriverMarkerIconInFlight, gen)) {
@@ -5144,7 +5514,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
             );
             unawaited(_updateLocationPuck());
           } else {
-            _userMarkerVisualCacheKey = visualKey;
+            _userMarkerVisualCacheKey = userMarkerCacheKey;
             Logger.info(
               'User marker created OK: id=${_userPointAnnotation!.id} '
               'lat=${latForGeom.toStringAsFixed(6)} lng=${lngForGeom.toStringAsFixed(6)} '
@@ -5199,8 +5569,10 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
           _mapSurfaceSafeForUserMarker && pos != null;
       // Pe Android apar des curse Surface/GL; stratul de simbol pentru marker poate eșua
       // la randare deși create/update raportează succes — puck-ul rămâne c și indicație de rezervă.
-      final usePuckBackup =
-          defaultTargetPlatform == TargetPlatform.android && canDrawCustom;
+      final hasCustomOverlayReady = _androidUserMarkerOverlayImageBytes != null;
+      final usePuckBackup = defaultTargetPlatform == TargetPlatform.android &&
+          canDrawCustom &&
+          !hasCustomOverlayReady;
       final puckOnlyPassenger = _usePassengerMapPuckOnly;
       if (!canDrawCustom || usePuckBackup || puckOnlyPassenger) {
         await _mapboxMap!.location.updateSettings(
@@ -5211,21 +5583,29 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
             pulsingColor: const Color(0xFF3682F3).toARGB32(),
           ),
         );
-        Logger.info(
-          'Location puck ON: safeSurface=$_mapSurfaceSafeForUserMarker '
-          'pos=${pos != null ? '${pos.latitude.toStringAsFixed(6)},${pos.longitude.toStringAsFixed(6)}' : 'null'}'
-          '${usePuckBackup ? ' (Android backup alongside custom marker)' : ''}',
-          tag: 'MAP',
-        );
+        final posKey = pos != null
+            ? '${pos.latitude.toStringAsFixed(5)},${pos.longitude.toStringAsFixed(5)}'
+            : 'null';
+        if (_shouldLogPuckInfo(enabled: true, posKey: '$posKey|$usePuckBackup')) {
+          Logger.info(
+            'Location puck ON: safeSurface=$_mapSurfaceSafeForUserMarker '
+            'pos=${pos != null ? '${pos.latitude.toStringAsFixed(6)},${pos.longitude.toStringAsFixed(6)}' : 'null'}'
+            '${usePuckBackup ? ' (Android backup alongside custom marker)' : ''}',
+            tag: 'MAP',
+          );
+        }
       } else {
         await _mapboxMap!.location.updateSettings(
           LocationComponentSettings(enabled: false),
         );
-        Logger.debug(
-          'Location puck OFF (custom marker path): '
-          'pos=${pos.latitude.toStringAsFixed(6)},${pos.longitude.toStringAsFixed(6)}',
-          tag: 'MAP',
-        );
+        final posKey = '${pos.latitude.toStringAsFixed(5)},${pos.longitude.toStringAsFixed(5)}';
+        if (_shouldLogPuckInfo(enabled: false, posKey: posKey)) {
+          Logger.debug(
+            'Location puck OFF (custom marker path): '
+            'pos=${pos.latitude.toStringAsFixed(6)},${pos.longitude.toStringAsFixed(6)}',
+            tag: 'MAP',
+          );
+        }
       }
     } catch (e) {
       Logger.warning('Could not update location puck: $e', tag: 'MAP');
@@ -5454,7 +5834,10 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
             Text('${broadcast.passengerAvatar} ${broadcast.passengerName}', 
                style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
-            Text('Vrea să meargă la: ${broadcast.destination ?? 'Destinație nestabilită'}', 
+            Text(
+              AppLocalizations.of(ctx)!.mapRideBroadcastWantsToGo(
+                broadcast.destination ?? AppLocalizations.of(ctx)!.mapDestinationUnset,
+              ),
                textAlign: TextAlign.center, style: TextStyle(color: Colors.grey.shade700)),
             const SizedBox(height: 24),
             ElevatedButton(
@@ -5468,7 +5851,10 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
                 Navigator.pop(ctx);
                 Navigator.push(context, MaterialPageRoute(builder: (_) => const RideBroadcastFeedScreen()));
               },
-              child: const Text('VEZI CEREREA ȘI OFERĂ CURSĂ', style: TextStyle(fontWeight: FontWeight.bold)),
+              child: Text(
+                AppLocalizations.of(ctx)!.mapSeeRequestAndOfferRide,
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
             ),
           ],
         ),
@@ -5536,9 +5922,10 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
   }
 
   Future<void> _onNewEmergencyAlertReceived(String id, Map<String, dynamic> data) async {
+    final l10n = AppLocalizations.of(context)!;
     final lat = data['latitude'] as double?;
     final lng = data['longitude'] as double?;
-    final userName = data['userName'] as String? ?? 'Un vecin';
+    final userName = data['userName'] as String? ?? l10n.mapAneighbor;
     
     if (lat == null || lng == null) return;
 
@@ -5547,8 +5934,8 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
 
     // B. Notificare locală
     LocalNotificationsService().showSimple(
-      title: '🆘 SOS PROXIMITATE: $userName',
-      body: 'Urgență activă în apropiere! Verifică radarul pe hartă.',
+      title: l10n.mapSosNearbyTitle(userName),
+      body: l10n.mapSosNearbyBody,
       payload: 'sos_$id',
     );
 
@@ -5562,7 +5949,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
 
     // D. Mesaj vocal
     if (_navTts != null) {
-      unawaited(_navTts!.speak('Atenție! ALERTĂ S.O.S. în apropiere de la $userName. Radarul de proximitate este activat.'));
+      unawaited(_navTts!.speak(l10n.mapSosTtsAlert(userName)));
     }
   }
 
@@ -5608,6 +5995,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
   }
 
   void _updateEmergencyAuraSlot(String id, {Map<String, dynamic>? data}) async {
+    final l10n = AppLocalizations.of(context)!;
     if (_mapboxMap == null) return;
     
     final ann = _emergencyAnnotations[id];
@@ -5623,7 +6011,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
           screenCenter: Offset(screenPos.x, screenPos.y),
           radiusPx: 140, // Radar larg de proximitate
           userDensity: 80, // Intensitate maximă pentru SOS
-          title: 'ZONĂ CRITICĂ',
+          title: l10n.mapCriticalZone,
           endsAt: DateTime.now().add(const Duration(minutes: 5)),
         ));
       });
@@ -5646,6 +6034,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
 
   /// ✅ Sincronizează poziția pe ecran a aurelor de siguranță SOS cu mișcarea camerei.
   Future<void> _projectEmergencyAuraSlots() async {
+    final l10n = AppLocalizations.of(context)!;
     if (!mounted || _mapboxMap == null) return;
     if (_emergencyAnnotations.isEmpty) {
       if (_emergencyAuraSlots.isNotEmpty && mounted) {
@@ -5665,7 +6054,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
           screenCenter: Offset(sc.x.toDouble(), sc.y.toDouble()),
           radiusPx: 140, // Radius constant pentru radar urgență
           userDensity: 80, // Intensitate plasmă (SOS e dens)
-          title: '🆘 S.O.S. ACTIV',
+          title: l10n.mapSosActiveTitle,
           endsAt: DateTime.now().add(const Duration(minutes: 5)),
         ));
       }
@@ -5704,6 +6093,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
   }
 
   void _onRadarConfirmed() async {
+    final l10n = AppLocalizations.of(context)!;
     if (_radarCenter == null || _mapboxMap == null) return;
     
     final selected = <NeighborLocation>[];
@@ -5730,7 +6120,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
       _onRadarSelectionCompleted(selected); // Reutilizăm logica de grup-chat/broadcast
     } else {
       _showSafeSnackBar(
-        'Nimeni din contactele tale cu poziție în zonă nu e în cercul de scanare acum.',
+        l10n.mapNoContactsInRadarCircle,
         Colors.blueGrey,
       );
     }
@@ -5786,12 +6176,38 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
     _neighborRtdbSubscription = null;
     _neighborFirestoreSubscription?.cancel();
     _neighborFirestoreSubscription = null;
+    _neighborStaleSweepTimer?.cancel();
+    _neighborStaleSweepTimer = null;
     _neighborFsSnapshot = [];
     _neighborRtdbSnapshot = [];
   }
 
+  bool _pruneStaleNeighborSnapshots() {
+    final cutoff = DateTime.now().subtract(const Duration(minutes: 5));
+    final fsBefore = _neighborFsSnapshot.length;
+    final rtdbBefore = _neighborRtdbSnapshot.length;
+    _neighborFsSnapshot =
+        _neighborFsSnapshot.where((n) => n.lastUpdate.isAfter(cutoff)).toList();
+    _neighborRtdbSnapshot = _neighborRtdbSnapshot
+        .where((n) => n.lastUpdate.isAfter(cutoff))
+        .toList();
+    return fsBefore != _neighborFsSnapshot.length ||
+        rtdbBefore != _neighborRtdbSnapshot.length;
+  }
+
+  void _startNeighborStaleSweep() {
+    _neighborStaleSweepTimer?.cancel();
+    _neighborStaleSweepTimer = Timer.periodic(const Duration(seconds: 10), (_) {
+      if (!mounted) return;
+      if (_pruneStaleNeighborSnapshots()) {
+        _mergeNeighborStreamsAndUpdateAnnotations();
+      }
+    });
+  }
+
   void _mergeNeighborStreamsAndUpdateAnnotations() {
     if (!mounted) return;
+    _pruneStaleNeighborSnapshots();
     final merged = <String, NeighborLocation>{};
     for (final n in _neighborFsSnapshot) {
       merged[n.uid] = n;
@@ -5832,6 +6248,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
       return;
     }
 
+    _startNeighborStaleSweep();
     unawaited(_subscribeNeighborsPreferredRtdb(pos).then((_) => _isInitializingNeighbors = false));
   }
 
@@ -5958,6 +6375,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
     final uniqueNeighbors = uniqueMap.values.toList();
 
     try {
+      final l10n = lookupAppLocalizations(WidgetsBinding.instance.platformDispatcher.locale);
       final currentUserId = FirebaseAuth.instance.currentUser?.uid;
       List<NeighborLocation> filteredNeighbors = uniqueNeighbors;
       
@@ -6020,8 +6438,8 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
             count++;
             _proximitNotifiedUids.add(neighbor.uid);
             unawaited(LocalNotificationsService().showSimple(
-              title: '${neighbor.avatar} ${neighbor.displayName} e aproape!',
-              body: 'La ${distM.round()} m — harta socială 📍',
+              title: l10n.mapNeighborNearbyTitle(neighbor.avatar, neighbor.displayName),
+              body: l10n.mapNeighborNearbyBody(distM.round()),
               payload: 'proximity_${neighbor.uid}',
               channelId: 'social_proximity',
             ));
@@ -6078,13 +6496,26 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
 
       if (isDriving) {
         if (garagePath != null) {
-          icon = await _generateMarkerIcon(isPassenger: false, customAssetPath: garagePath);
+          icon = await _generateMarkerIcon(
+            isPassenger: false,
+            customAssetPath: garagePath,
+            batteryLevel: neighbor.batteryLevel,
+            isCharging: neighbor.isCharging,
+          );
         } else {
-          icon = await _generateNeighborCarMarker();
+          icon = await _generateNeighborCarMarker(
+            batteryLevel: neighbor.batteryLevel,
+            isCharging: neighbor.isCharging,
+          );
         }
         iconSizeBase = 1.98 * densityFactor;
       } else if (garagePath != null) {
-        icon = await _generateMarkerIcon(isPassenger: true, customAssetPath: garagePath);
+        icon = await _generateMarkerIcon(
+          isPassenger: true,
+          customAssetPath: garagePath,
+          batteryLevel: neighbor.batteryLevel,
+          isCharging: neighbor.isCharging,
+        );
         iconSizeBase = 1.72 * densityFactor;
       } else if (hasPhoto) {
         icon = await NeighborFriendMarkerIcons.buildPhotoMarker(
@@ -6126,12 +6557,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
         textField = neighbor.displayName.isNotEmpty ? neighbor.displayName : null;
       }
 
-      // Baterie: pe icon (emoji / foto), nu și în etichetă; pentru mașină rămâne în text.
-      if (neighbor.batteryLevel != null && isDriving) {
-        final bat = neighbor.batteryLevel!;
-        final batStr = neighbor.isCharging ? '⚡$bat%' : '$bat%';
-        textField = textField != null ? '$textField  $batStr' : batStr;
-      }
+      // Baterie: pe icon (emoji / foto / garaj / mașină implicită), nu duplicăm în etichetă.
 
       if (isDriving &&
           neighbor.speedMps != null &&
@@ -6358,7 +6784,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
         onSendReaction: (reaction) async {
           final sorted = [myUid, uid]..sort();
           final roomId = sorted.join('_');
-          final myName = FirebaseAuth.instance.currentUser?.displayName ?? 'Vecin';
+          final myName = FirebaseAuth.instance.currentUser?.displayName ?? AppLocalizations.of(context)!.neighborFallback;
           
           await FirebaseFirestore.instance
               .collection('private_chats')
@@ -6373,7 +6799,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
           });
           
           HapticFeedback.mediumImpact();
-          if (mounted) _showSafeSnackBar('Reacție trimisă: $reaction', const Color(0xFF7C3AED));
+          if (mounted) _showSafeSnackBar(AppLocalizations.of(context)!.mapReactionSent(reaction), const Color(0xFF7C3AED));
         },
         onCall: phoneNumber != null ? () async {
           final uri = Uri.parse('tel:$phoneNumber');
@@ -6382,12 +6808,13 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
           }
         } : null,
         onHonk: () async {
-          final myName = FirebaseAuth.instance.currentUser?.displayName ?? 'Vecin';
+          final myName = FirebaseAuth.instance.currentUser?.displayName ?? AppLocalizations.of(context)!.neighborFallback;
           await VirtualHonkService().sendHonk(uid, myName);
           HapticFeedback.heavyImpact();
-          if (mounted) _showSafeSnackBar('L-ai claxonat pe ${neighbor.displayName}!', Colors.orange);
+          if (mounted) _showSafeSnackBar(AppLocalizations.of(context)!.mapHonkedNeighbor(neighbor.displayName), Colors.orange);
         },
         onSendEta: () async {
+          final l10n = AppLocalizations.of(context)!;
           final sorted = [myUid, uid]..sort();
           final roomId = sorted.join('_');
           final myName = FirebaseAuth.instance.currentUser?.displayName ?? 'Vecin';
@@ -6400,7 +6827,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
               .doc(roomId)
               .collection('messages')
               .add({
-            'text': '📍 Vin spre tine! ETA estimat: $etaMin min.',
+            'text': l10n.mapEtaMessageToNeighbor(etaMin),
             'isEta': true,
             'senderId': myUid,
             'senderName': myName,
@@ -6408,7 +6835,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
           });
            HapticFeedback.lightImpact();
            if (ctx.mounted) Navigator.pop(ctx);
-           _showSafeSnackBar('ETA trimis lui ${neighbor.displayName}', Colors.green);
+           _showSafeSnackBar(l10n.mapEtaSentTo(neighbor.displayName), Colors.green);
         },
         onNeighborhoodRequest: () {
           Navigator.pop(ctx);
@@ -6418,7 +6845,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
             neighbor.lng,
             initialMessage: '${neighbor.displayName}: ',
             locationContext:
-                'Bula apare lângă ${neighbor.displayName} pe hartă. Vizibilă vecinilor ~1 oră.',
+                AppLocalizations.of(context)!.mapNeighborhoodBubbleContext(neighbor.displayName),
           );
         },
         onSendMapEmoji: (emoji) async {
@@ -6449,13 +6876,13 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
             });
             unawaited(_updateEmojiMarkers(_lastReceivedEmojis));
             _showSafeSnackBar(
-              'Emoji plasat lângă ${neighbor.displayName} pe hartă',
+              AppLocalizations.of(context)!.mapEmojiPlacedNear(neighbor.displayName),
               const Color(0xFFE91E63),
             );
           } catch (e) {
             if (mounted) {
               _showSafeSnackBar(
-                'Nu am putut plasa emoji-ul pe hartă',
+                AppLocalizations.of(context)!.mapCannotPlaceEmoji,
                 const Color(0xFFB71C1C),
               );
             }
@@ -6470,14 +6897,14 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
     if (myUid == null || uid.isEmpty || uid == myUid) return;
     if (_friendPeerUids.contains(uid)) {
       if (mounted) {
-        _showSafeSnackBar('Sunteți deja prieteni în Nabour.', Colors.orange.shade800);
+        _showSafeSnackBar(AppLocalizations.of(context)!.friendSuggestionsAlreadyFriends, Colors.orange.shade800);
       }
       return;
     }
     if (await FriendRequestService.instance.hasPendingRequestTo(uid)) {
       if (mounted) {
         _showSafeSnackBar(
-          'Ai trimis deja o cerere către această persoană.',
+          AppLocalizations.of(context)!.friendSuggestionsRequestAlreadySent,
           Colors.orange.shade800,
         );
       }
@@ -6492,7 +6919,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
       });
       if (mounted) {
         _showSafeSnackBar(
-          'Cerere de prietenie trimisă!',
+          AppLocalizations.of(context)!.friendSuggestionsRequestSent,
           const Color(0xFF22C55E),
         );
       }
@@ -6501,8 +6928,8 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
         _showSafeSnackBar(
           (e.toString().contains('permission-denied') ||
                   e.toString().contains('PERMISSION_DENIED'))
-              ? 'Nu avem voie să scriem cererea (reguli Firebase).'
-              : 'Nu am putut trimite cererea. Încearcă din nou.',
+              ? AppLocalizations.of(context)!.friendSuggestionsRequestPermissionDenied
+              : AppLocalizations.of(context)!.friendSuggestionsRequestFailed,
           const Color(0xFFB71C1C),
         );
       }
@@ -6513,7 +6940,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
     final neighbor = _neighborData[uid];
     if (neighbor == null) {
       _showSafeSnackBar(
-        'Persoana nu e vizibilă pe hartă acum. Poți trimite cerere de prietenie din listă (+).',
+        AppLocalizations.of(context)!.mapPersonNotVisibleSendFromList,
         Colors.grey.shade800,
       );
       return;
@@ -6624,7 +7051,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
 
   void _closeRideAddressSheet() {
     if (_inAppNavActive) {
-      _showSafeSnackBar('Oprește mai întâi navigarea din bannerul de sus.', Colors.orange);
+      _showSafeSnackBar(AppLocalizations.of(context)!.mapStopNavigationFirst, Colors.orange);
       return;
     }
     setState(() => _rideAddressSheetVisible = false);
@@ -6666,7 +7093,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
     final pos = _currentPositionObject;
     if (pos == null) {
       _showSafeSnackBar(
-        'Așteptăm poziția GPS. Încearcă din nou în câteva secunde.',
+        AppLocalizations.of(context)!.mapWaitingGpsTryAgain,
         Colors.orange,
       );
       return;
@@ -6689,7 +7116,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
   void _shareCurrentLocation() {
     final pos = _currentPositionObject;
     if (pos == null) {
-      _showSafeSnackBar('Locatia GPS nu este disponibila inca', Colors.orange);
+      _showSafeSnackBar(AppLocalizations.of(context)!.mapGpsLocationUnavailableYet, Colors.orange);
       return;
     }
     final lat = pos.latitude;
@@ -7085,9 +7512,14 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
   }
 
   /// Generează iconița mașinuță 3D pentru vecinii care sunt șoferi disponibili.
-  /// Portată din friendsride_app. Cacheată cu cheia 'neighbor_driver_3d'.
-  static Future<Uint8List> _generateNeighborCarMarker() async {
-    const cacheKey = 'neighbor_driver_3d';
+  /// Portată din friendsride_app. Cache inclusiv nivel baterie (chip pe icon).
+  static Future<Uint8List> _generateNeighborCarMarker({
+    int? batteryLevel,
+    bool isCharging = false,
+  }) async {
+    final batKey =
+        NeighborFriendMarkerIcons.batteryBucketForMarker(batteryLevel)?.toString() ?? 'n';
+    final cacheKey = 'neighbor_driver_3d_b$batKey${isCharging ? 'c' : 'n'}';
     if (_emojiMarkerCache.containsKey(cacheKey)) return _emojiMarkerCache[cacheKey]!;
 
     const double size = 96;
@@ -7274,6 +7706,13 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
     canvas.drawCircle(ui.Offset(cx + 16, cy + 28), 6, paint);
     paint.color = const ui.Color(0xFF69F0AE);
     canvas.drawCircle(ui.Offset(cx + 16, cy + 28), 3, paint);
+
+    NeighborFriendMarkerIcons.paintBatteryChip(
+      canvas,
+      size,
+      batteryLevel: batteryLevel,
+      isCharging: isCharging,
+    );
 
     final picture = recorder.endRecording();
     final img = await picture.toImage(size.toInt(), size.toInt());
@@ -7823,7 +8262,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
                   const SizedBox(height: 24),
                   FilledButton(
                     onPressed: () => Navigator.pop(ctx),
-                    child: const Text('Închide'),
+                    child: Text(AppLocalizations.of(context)!.close),
                   ),
                 ],
               ),
@@ -7906,6 +8345,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
         setState(() {
           _driverProfile = profileData;
           _manualOrientationPin = _parseMapOrientationPin(profileData);
+          _manualOrientationPinLabel = _parseMapOrientationPinLabel(profileData);
           _showSavedHomePinOnMap = _parseShowSavedHomePinOnMap(profileData);
           _isDriverAccountVerified = isVerifiedDriverProfile;
           // Nu mai coborâm rolul la pasager: contul rămâne șofer în UI (switch în AppBar).
@@ -7923,8 +8363,8 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
             .syncFromServer(profileData['ghostMode'] == true);
       }
       
-      // Locația se obține Ã®n fundal
-      unawaited(_getCurrentLocation(centerCamera: true));
+      // Locația se obține în fundal fără recenter forțat (camera e gestionată separat la map-ready).
+      unawaited(_getCurrentLocation(centerCamera: false));
       
       // Ascultarea șoferilor Ã®n fundal
       _listenForNearbyDrivers();
@@ -7985,6 +8425,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
           setState(() {
             _driverProfile = updatedProfile;
             _manualOrientationPin = _parseMapOrientationPin(updatedProfile);
+            _manualOrientationPinLabel = _parseMapOrientationPinLabel(updatedProfile);
             _showSavedHomePinOnMap = _parseShowSavedHomePinOnMap(updatedProfile);
             _isDriverAccountVerified = _isDriverProfileComplete(updatedProfile);
             if (!_isDriverAccountVerified && _isDriverAvailable) {
@@ -8002,6 +8443,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
         } else {
           setState(() {
             _manualOrientationPin = _parseMapOrientationPin(updatedProfile);
+            _manualOrientationPinLabel = _parseMapOrientationPinLabel(updatedProfile);
             _showSavedHomePinOnMap = _parseShowSavedHomePinOnMap(updatedProfile);
           });
           unawaited(_syncMapOrientationPinAnnotation());
@@ -8357,8 +8799,8 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
       
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Cursă acceptată! Așteptăm confirmarea pasagerului...'),
+          SnackBar(
+            content: Text(AppLocalizations.of(context)!.rideAcceptedWaiting),
             backgroundColor: Colors.green,
             duration: Duration(seconds: 3),
           ),
@@ -8369,7 +8811,9 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Eroare la acceptarea cursei: $e'),
+            content: Text(
+              AppLocalizations.of(context)!.mapAcceptRideError(e.toString()),
+            ),
             backgroundColor: Colors.red,
           ),
         );
@@ -8524,28 +8968,30 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
     double destLat,
     double destLng,
   ) async {
+    final l10n = AppLocalizations.of(context)!;
     if (!mounted) return;
     await ExternalMapsLauncher.showNavigationChooser(
       context,
       destLat,
       destLng,
-      title: 'Destinație finală',
-      hint: 'Deschide în aplicația de navigație spre destinație. Revii apoi la hartă.',
+      title: l10n.mapFinalDestinationTitle,
+      hint: l10n.mapOpenNavigationToDestinationHint,
     );
   }
 
   String _passengerRideSessionStatusLabel(String status) {
+    final l10n = AppLocalizations.of(context)!;
     switch (status) {
       case 'driver_found':
-        return 'Șofer găsit — așteptă confirmarea ta';
+        return l10n.mapPassengerStatusDriverFound;
       case 'accepted':
-        return 'Șofer în drum spre tine';
+        return l10n.mapPassengerStatusDriverOnWay;
       case 'arrived':
-        return 'Șofer la pickup — deschide navigația spre destinație';
+        return l10n.mapPassengerStatusDriverAtPickup;
       case 'in_progress':
-        return 'Cursă în desfășurare';
+        return l10n.mapPassengerStatusInProgress;
       default:
-        return 'Cursă: $status';
+        return l10n.mapPassengerStatusGeneric(status);
     }
   }
 
@@ -8585,18 +9031,18 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
                       context,
                       pickupLat,
                       pickupLng,
-                      title: 'Navigare spre pickup',
-                      hint: 'Aplicație de navigație (fără rută în Nabour).',
+                      title: AppLocalizations.of(context)!.mapNavigationToPickupTitle,
+                      hint: AppLocalizations.of(context)!.mapExternalNavigationNoRouteHint,
                     ),
                   );
                 },
                 icon: const Icon(Icons.place_outlined, size: 20),
-                label: const Text('Pickup: navigație externă'),
+                label: Text(AppLocalizations.of(context)!.mapPickupExternalNavigation),
               ),
             if (ride.status == 'arrived' && destLat != null && destLng != null) ...[
               const SizedBox(height: 6),
               Text(
-                'Deschide aceeași destinație ca și șoferul în app-ul de navigație.',
+                AppLocalizations.of(context)!.mapOpenSameDestinationAsDriver,
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
                       color: Theme.of(context).colorScheme.onSurfaceVariant,
                     ),
@@ -8609,20 +9055,20 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
                       context,
                       destLat,
                       destLng,
-                      title: 'Destinație finală',
-                      hint: 'Aplicație de navigație (fără rută în Nabour).',
+                      title: AppLocalizations.of(context)!.mapFinalDestinationTitle,
+                      hint: AppLocalizations.of(context)!.mapExternalNavigationNoRouteHint,
                     ),
                   );
                 },
                 icon: const Icon(Icons.flag_rounded, size: 20),
-                label: const Text('Destinație: navigație externă'),
+                label: Text(AppLocalizations.of(context)!.mapDestinationExternalNavigation),
               ),
             ],
             Align(
               alignment: Alignment.centerRight,
               child: TextButton(
                 onPressed: _endPassengerRideSession,
-                child: const Text('Închide panoul'),
+                child: Text(AppLocalizations.of(context)!.mapClosePanel),
               ),
             ),
           ],
@@ -8764,11 +9210,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
       _maybeRepublishSocialMapAfterContactsLoaded();
       if (users.isEmpty && _friendPeerUids.isEmpty && !_contactEmptyHintShown) {
         _contactEmptyHintShown = true;
-        _showSafeSnackBar(
-          'Pe hartă apar doar prietenii acceptați sau contactele din telefon care au cont Nabour. '
-          'Adaugă numerele în agendă sau acceptă o cerere din Sugestii.',
-          Colors.blueGrey,
-        );
+        _showSafeSnackBar(AppLocalizations.of(context)!.mapContactsVisibilityHint, Colors.blueGrey);
       }
     }
   }
@@ -8776,7 +9218,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
   /// ✅ NOU: Sincronizare manuală contacte
   Future<void> _refreshContacts() async {
     if (!mounted) return;
-    _showSafeSnackBar('Sincronizez contactele...', Colors.indigo);
+    _showSafeSnackBar(AppLocalizations.of(context)!.mapSyncingContacts, Colors.indigo);
     
     await FriendRequestService.instance.ensureFriendPeersForAcceptedOutgoing();
     // Force refresh cache în service
@@ -8793,7 +9235,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
       });
       unawaited(_reapplyContactFilterOnMap());
       _maybeRepublishSocialMapAfterContactsLoaded();
-      _showSafeSnackBar('Sincronizare completă: ${users.length} nume găsite.', Colors.green);
+      _showSafeSnackBar(AppLocalizations.of(context)!.mapSyncComplete(users.length), Colors.green);
     }
   }
 
@@ -8806,7 +9248,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
   void _handleRoleChange(bool isDriver) {
     if (isDriver && !_isDriverAccountVerified) {
       _showSafeSnackBar(
-        'Activează profilul de șofer și adaugă mașina ca să folosești modul șofer.',
+        AppLocalizations.of(context)!.mapEnableDriverProfileHint,
         Colors.orange,
       );
       return;
@@ -8834,6 +9276,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
     // Dup─â frame: `setState` e vizibil, apoi desen─âm slotul corect
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
+      _clearGpsUserMarkerThrottle();
       unawaited(_updateUserMarker(centerCamera: false));
       unawaited(_updateLocationPuck());
       unawaited(_loadCustomCarAvatar());
@@ -8884,6 +9327,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
   /// ðŸš€ PERFORMANÈšÄ‚: ObÈ›ine ultima locaÈ›ie cunoscutÄƒ IMEDIAT, fÄƒrÄƒ a aÈ™tepta hardware-ul GPS.
   /// Astfel, harta se va deschide deja centratÄƒ pe utilizator.
   Future<void> _tryPreloadLastKnownLocation() async {
+    if (_cinematicIntroLock) return;
     try {
       final pos = await geolocator.Geolocator.getLastKnownPosition();
       if (pos != null && mounted) {
@@ -8939,13 +9383,25 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
   }
 
   /// După ce stilul e gata: fie fly animat din „spațiu” (glob) spre user, fie centrare clasică ~3 km.
-  Future<void> _centerOnLocationOnMapReady() async {
+  Future<void> _centerOnLocationOnMapReady({bool preferSpaceIntro = false}) async {
+    if (_mapReadyCenterInFlight) return;
+    _mapReadyCenterInFlight = true;
+    try {
     if (_warmupBlocksCamera) {
       await _primeLocationWhileWarmup();
       return;
     }
+    if (_startupCameraPrimed) return;
+    _startupCameraPrimed = true;
 
-    if (!AppDrawer.lowDataMode && !_mapSpaceIntroDone && _mapboxMap != null) {
+    if (AppDrawer.lowDataMode) {
+      _cinematicIntroLock = false;
+    }
+
+    if (!AppDrawer.lowDataMode &&
+        !_mapSpaceIntroDone &&
+        _mapboxMap != null &&
+        (preferSpaceIntro || !_spaceIntroInFlight)) {
       final flew = await _runSpaceIntroFlyFromGlobe();
       if (flew) {
         await _getCurrentLocation(centerCamera: false);
@@ -8954,10 +9410,12 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
     }
 
     // Comportament anterior: overview ~3 km + eventual recentrare după GPS.
+    var startupCentered = false;
     if (_currentPositionObject != null && mounted && _mapboxMap != null) {
       try {
         LocationCacheService.instance.record(_currentPositionObject!);
         await _centerCameraOnCurrentPosition();
+        startupCentered = true;
         unawaited(_updateWeatherAndStyle(
           _currentPositionObject!.latitude,
           _currentPositionObject!.longitude,
@@ -8982,22 +9440,33 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
           lastKnown.latitude,
           lastKnown.longitude,
         ));
-        await _centerCameraOnCurrentPosition();
+        if (!startupCentered) {
+          await _centerCameraOnCurrentPosition();
+          startupCentered = true;
+        }
         unawaited(_updateUserMarker(centerCamera: false));
         unawaited(_updateCurrentStreetName());
       }
     } catch (_) {}
 
-    await _getCurrentLocation(centerCamera: true);
+    // Evităm un al treilea recenter la startup (produce bucle de zoom pe unele device-uri).
+    await _getCurrentLocation(centerCamera: false);
+    _cinematicIntroLock = false;
+    } finally {
+      _mapReadyCenterInFlight = false;
+    }
   }
 
   /// O singură dată la deschiderea hărții: de la zoom glob la vederea obișnuită (~3 km) peste locația userului.
   Future<bool> _runSpaceIntroFlyFromGlobe() async {
     if (_mapboxMap == null || !mounted) return false;
+    if (_spaceIntroInFlight) return false;
     if (AppDrawer.lowDataMode) {
       setState(() => _mapSpaceIntroDone = true);
+      _cinematicIntroLock = false;
       return false;
     }
+    _spaceIntroInFlight = true;
 
     geolocator.Position? pos = _currentPositionObject;
     try {
@@ -9006,6 +9475,8 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
 
     if (pos == null) {
       setState(() => _mapSpaceIntroDone = true);
+      _spaceIntroInFlight = false;
+      _cinematicIntroLock = false;
       return false;
     }
 
@@ -9021,7 +9492,11 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
     _refreshNeighborhoodRequestBubbles();
 
     await Future.delayed(const Duration(milliseconds: _spaceIntroPauseBeforeFlyMs));
-    if (!mounted || _mapboxMap == null) return false;
+    if (!mounted || _mapboxMap == null) {
+      _spaceIntroInFlight = false;
+      _cinematicIntroLock = false;
+      return false;
+    }
 
     try {
       await _mapboxMap!.flyTo(
@@ -9037,7 +9512,11 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
       Logger.warning('Space intro flyTo failed: $e', tag: 'MAP');
     }
 
-    if (!mounted) return false;
+    if (!mounted) {
+      _spaceIntroInFlight = false;
+      _cinematicIntroLock = false;
+      return false;
+    }
 
     setState(() {
       _mapSpaceIntroDone = true;
@@ -9051,22 +9530,45 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
     unawaited(_updateWeatherAndStyle(target.latitude, target.longitude));
     unawaited(_updateUserMarker(centerCamera: false));
     unawaited(_updateCurrentStreetName());
+    _cinematicIntroLock = false;
+    _spaceIntroInFlight = false;
     return true;
   }
 
   Future<void> _centerCameraOnCurrentPosition() async {
+    if (_cinematicIntroLock) return;
     if (!mounted || _mapboxMap == null || _currentPositionObject == null) return;
+    final now = DateTime.now();
+    final lat = _currentPositionObject!.latitude;
+    final lng = _currentPositionObject!.longitude;
+    if (_lastAutoCenterAt != null &&
+        _lastAutoCenterLat != null &&
+        _lastAutoCenterLng != null) {
+      final movedM = geolocator.Geolocator.distanceBetween(
+        _lastAutoCenterLat!,
+        _lastAutoCenterLng!,
+        lat,
+        lng,
+      );
+      final recent = now.difference(_lastAutoCenterAt!) < const Duration(seconds: 8);
+      if (recent && movedM < 40) {
+        return;
+      }
+    }
     try {
       await _mapboxMap!.flyTo(
         CameraOptions(
           center: MapboxUtils.createPoint(
-            _currentPositionObject!.latitude,
-            _currentPositionObject!.longitude,
+            lat,
+            lng,
           ),
-          zoom: _overviewZoomForLatitude(_currentPositionObject!.latitude),
+          zoom: _overviewZoomForLatitude(lat),
         ),
         MapAnimationOptions(duration: AppDrawer.lowDataMode ? 500 : 1100),
       );
+      _lastAutoCenterAt = now;
+      _lastAutoCenterLat = lat;
+      _lastAutoCenterLng = lng;
     } catch (e) {
       Logger.warning('Auto-center failed: $e');
     }
@@ -9145,7 +9647,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
           position.latitude,
           position.longitude,
         ));
-        if (centerCamera) {
+        if (centerCamera && !_cinematicIntroLock) {
           await _centerCameraOnCurrentPosition();
         }
         unawaited(_updateUserMarker(centerCamera: false));
@@ -9170,7 +9672,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
             lastKnownPosition.latitude,
             lastKnownPosition.longitude,
           ));
-          if (centerCamera) {
+          if (centerCamera && !_cinematicIntroLock) {
             await _centerCameraOnCurrentPosition();
           }
           unawaited(_updateUserMarker(centerCamera: false));
@@ -9319,7 +9821,9 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
         }
         
         _updateDriverRideEstimates(snappedPosition);
-        _updateUserMarker(centerCamera: false);
+        if (_shouldRunFullUserMarkerRedrawForGps(snappedPosition)) {
+          unawaited(_updateUserMarker(centerCamera: false));
+        }
         _publishNeighborSocialMapFreshUnawaited(snappedPosition);
         unawaited(_maybePollMagicEventsThrottled());
         _refreshNeighborhoodRequestBubbles();
@@ -9345,7 +9849,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
           geolocator.Geolocator.getPositionStream(
         locationSettings: const geolocator.LocationSettings(
           accuracy: geolocator.LocationAccuracy.medium,
-          distanceFilter: 12,
+          distanceFilter: 18,
         ),
       ).listen(
         (geolocator.Position p) {
@@ -9357,14 +9861,16 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
             _currentPositionObject = p;
             _freezeMapWidgetCameraIfNeeded();
           });
-          unawaited(_updateUserMarker(centerCamera: false));
+          if (_shouldRunFullUserMarkerRedrawForGps(p)) {
+            unawaited(_updateUserMarker(centerCamera: false));
+            if (_useAndroidFlutterUserMarkerOverlay) {
+              unawaited(_projectAndroidUserMarkerOverlay());
+            }
+          }
           unawaited(_updateCurrentStreetName(throttle: true));
           unawaited(_maybePollMagicEventsThrottled());
           _ensureNeighborsListeningAfterPosition();
           _refreshNeighborhoodRequestBubbles();
-          if (_useAndroidFlutterUserMarkerOverlay) {
-            unawaited(_projectAndroidUserMarkerOverlay());
-          }
         },
         onError: (Object e) {
           Logger.warning('Passive GPS warmup: $e', tag: 'MAP');
@@ -10282,9 +10788,9 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
                               const Icon(Icons.touch_app_rounded,
                                   color: Colors.white70, size: 20),
                               const SizedBox(width: 8),
-                              const Expanded(
+                              Expanded(
                                 child: Text(
-                                  'Ține apăsat pe hartă pentru a fixa reperul.',
+                                  AppLocalizations.of(context)!.mapLongPressToSetLandmark,
                                   style: TextStyle(
                                     color: Colors.white,
                                     fontSize: 13,
@@ -10302,11 +10808,11 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
                                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                                   minimumSize: const ui.Size(0, 40),
                                 ),
-                                child: const Text('Renunță', style: TextStyle(fontWeight: FontWeight.w800)),
+                                child: Text(AppLocalizations.of(context)!.cancel, style: const TextStyle(fontWeight: FontWeight.w800)),
                               ),
                               IconButton(
-                                icon: const Icon(Icons.close_rounded, color: Colors.white, size: 26),
-                                tooltip: 'Închide (anulează plasarea)',
+                                icon: const Icon(Icons.close_rounded, color: Color(0xFFE53935), size: 26),
+                                tooltip: AppLocalizations.of(context)!.mapCloseCancelPlacement,
                                 constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
                                 padding: EdgeInsets.zero,
                                 onPressed: () {
@@ -10460,21 +10966,56 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
                       left: _androidOrientationReperOverlayPx!.dx -
                           _androidPrivatePinOverlayWidth / 2,
                       top: _androidOrientationReperOverlayPx!.dy -
-                          _androidPrivatePinOverlayHeight,
+                          _androidPrivatePinOverlayHeight -
+                          _androidOrientationReperLabelBlock,
                       child: GestureDetector(
                         behavior: HitTestBehavior.opaque,
                         onTap: () {
                           if (mounted) _showOrientationReperPinActions();
                         },
-                        child: SizedBox(
-                          width: _androidPrivatePinOverlayWidth,
-                          height: _androidPrivatePinOverlayHeight,
-                          child: Image.memory(
-                            _androidOrientationReperOverlayBytes!,
-                            fit: BoxFit.contain,
-                            gaplessPlayback: true,
-                            filterQuality: FilterQuality.medium,
-                          ),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            SizedBox(
+                              width: 160,
+                              height: _androidOrientationReperLabelBlock,
+                              child: Align(
+                                alignment: Alignment.bottomCenter,
+                                child: Padding(
+                                  padding: const EdgeInsets.only(bottom: 2),
+                                  child: Text(
+                                    _orientationPinLabelForMapAnnotation(),
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                      fontSize: 11.5,
+                                      fontWeight: FontWeight.w800,
+                                      height: 1.15,
+                                      color: Colors.white,
+                                      shadows: const [
+                                        Shadow(
+                                          color: Colors.black87,
+                                          blurRadius: 6,
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            SizedBox(
+                              width: _androidPrivatePinOverlayWidth,
+                              height: _androidPrivatePinOverlayHeight,
+                              child: Image.memory(
+                                _androidOrientationReperOverlayBytes!,
+                                fit: BoxFit.contain,
+                                gaplessPlayback: true,
+                                filterQuality: FilterQuality.medium,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ),
@@ -10579,12 +11120,14 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
                           color: Colors.black,
                           letterSpacing: -0.5,
                         );
+                  // Aceeași dimensiune ca textul străzii (streetStyle 14) — lățime vizibilă + °C
                   final subStyle = TextStyle(
-                    fontSize: 10,
-                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
                     color: mapAppearsDark
                         ? strongOrangeMapHud
                         : Colors.grey.shade600,
+                    letterSpacing: -0.2,
                   );
                   return Column(
                     mainAxisSize: MainAxisSize.min,
@@ -10713,6 +11256,35 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
                   Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
+                      Tooltip(
+                        message: 'Caută',
+                        child: GestureDetector(
+                          onTap: () =>
+                              setState(() => _universalSearchOpen = true),
+                          child: Container(
+                            width: 36,
+                            height: 36,
+                            decoration: BoxDecoration(
+                              color: Colors.black87,
+                              shape: BoxShape.circle,
+                              border: Border.all(color: Colors.white24),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withValues(alpha: 0.35),
+                                  blurRadius: 8,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ],
+                            ),
+                            child: const Icon(
+                              Icons.search_rounded,
+                              color: Colors.white70,
+                              size: 20,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
                       Tooltip(
                         message: 'Reîmprospătează harta',
                         child: GestureDetector(
@@ -11348,7 +11920,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
                     children: List.generate(_pickupSuggestionPoints.length, (i) {
                       return ActionChip(
                         avatar: const Icon(Icons.trip_origin, size: 18),
-                        label: Text('Pickup ${i + 1}'),
+                        label: Text(AppLocalizations.of(context)!.mapPickupIndex(i + 1)),
                         onPressed: () {
                           final pt = _pickupSuggestionPoints[i];
                           setState(() {
@@ -11357,7 +11929,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
                             _showPickupSuggestions = false;
                           });
                           _updateMapWithNewPickup();
-                          _showSafeSnackBar('Punct de preluare selectat', Colors.blue);
+                          _showSafeSnackBar(AppLocalizations.of(context)!.mapPickupPointSelected, Colors.blue);
                         },
                       );
                     }),
@@ -11575,37 +12147,6 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
             onItinerary: shouldShowPassengerUI ? _onItineraryButtonPressed : null,
           ),
 
-          // Căutare (lupă) — stânga jos, aceeași înălțime ca bara centrală
-          Positioned(
-            bottom: 16 + MediaQuery.of(context).padding.bottom,
-            left: 14,
-            child: Material(
-              color: Colors.transparent,
-              child: InkWell(
-                customBorder: const CircleBorder(),
-                onTap: () => setState(() => _universalSearchOpen = true),
-                child: Ink(
-                  width: 48,
-                  height: 48,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.12),
-                        blurRadius: 12,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
-                    border: Border.all(color: Colors.grey.shade300, width: 1),
-                  ),
-                  child: const Icon(Icons.search_rounded,
-                      color: Colors.black87, size: 26),
-                ),
-              ),
-            ),
-          ),
-
           // ── Cerere FAB (above quick actions row) ─────────────────────
           if (_isVisibleToNeighbors && _showCerereButton)
             Positioned(
@@ -11625,7 +12166,9 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
                         );
                       } else {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Așteptăm localizarea GPS...')),
+                          SnackBar(
+                            content: Text(AppLocalizations.of(context)!.mapWaitingGpsLocation),
+                          ),
                         );
                       }
                     },
@@ -11643,7 +12186,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
                       backgroundColor: Colors.white,
                       elevation: 2,
                       onPressed: () => setState(() => _showCerereButton = false),
-                      child: const Icon(Icons.close, size: 18, color: Colors.indigo),
+                      child: const Icon(Icons.close, size: 18, color: Color(0xFFE53935)),
                     ),
                   ),
                 ],
@@ -11818,6 +12361,13 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
                 neighborPhotoUrlByUid:
                     Map<String, String>.from(_neighborPhotoURLCache),
                 userPosition: _currentPositionObject,
+                orientationLandmark: _manualOrientationPin == null
+                    ? null
+                    : (
+                        label: _effectiveOrientationPinLabelForMap(),
+                        lat: _manualOrientationPin!.latitude,
+                        lng: _manualOrientationPin!.longitude,
+                      ),
                 onPlaceChosen: _onUniversalSearchPlace,
                 onContactChosen: _onUniversalSearchContact,
                 onAddFriend: _sendFriendRequestFromSearch,
@@ -11895,6 +12445,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
     final bool isAbove = zoom >= 17.5;
     _mapZoomLevel = zoom;
     if (wasAbove != isAbove) {
+      _clearGpsUserMarkerThrottle();
       unawaited(_updateUserMarker(centerCamera: false));
     }
 
@@ -12631,7 +13182,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
       Logger.error('Stack trace: ${StackTrace.current}');
       if (mounted) {
         _closePoiCard();
-        _showSafeSnackBar('Eroare la setarea pickup: $e', Colors.red);
+        _showSafeSnackBar(AppLocalizations.of(context)!.mapSetPickupError(e.toString()), Colors.red);
       }
     }
   }
@@ -12695,7 +13246,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
       Logger.error('Stack trace: ${StackTrace.current}');
       if (mounted) {
         _closePoiCard();
-        _showSafeSnackBar('Eroare la setarea destinației: $e', Colors.red);
+        _showSafeSnackBar(AppLocalizations.of(context)!.mapSetDestinationError(e.toString()), Colors.red);
       }
     }
   }
@@ -12710,7 +13261,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
       
       // Validation
       if (_intermediateStops.length >= _maxIntermediateStops) {
-        _showSafeSnackBar('Maximum $_maxIntermediateStops opriri intermediare permise', Colors.orange);
+        _showSafeSnackBar(AppLocalizations.of(context)!.mapMaxIntermediateStops(_maxIntermediateStops), Colors.orange);
         return;
       }
 
@@ -12719,7 +13270,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
           stop == poi.name);
       
       if (existingStop) {
-        _showSafeSnackBar('Această oprire este deja adăugată', Colors.orange);
+        _showSafeSnackBar(AppLocalizations.of(context)!.mapStopAlreadyAdded, Colors.orange);
         return;
       }
 
@@ -12740,7 +13291,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
 
       // âœ… PERFORMANCE: Show SnackBar immediately
       _showSafeSnackBar(
-        '${poi.name} adăugat ca oprire intermediară',
+        AppLocalizations.of(context)!.mapIntermediateStopAdded(poi.name),
         Colors.orange,
         action: SnackBarAction(
           label: 'UNDO',
@@ -12771,7 +13322,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
       Logger.error('Stack trace: ${StackTrace.current}');
       if (mounted) {
         _closePoiCard();
-        _showSafeSnackBar('Eroare la adăugarea opririi: $e', Colors.red);
+        _showSafeSnackBar(AppLocalizations.of(context)!.mapAddStopError(e.toString()), Colors.red);
       }
     }
   }
@@ -12800,7 +13351,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('$stopName eliminat din opriri'),
+          content: Text(AppLocalizations.of(context)!.mapStopRemoved(stopName)),
           backgroundColor: Colors.red,
         ),
       );
@@ -12826,7 +13377,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
     
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Punctul de plecare a fost șters')),
+        SnackBar(content: Text(AppLocalizations.of(context)!.pickupPointDeleted)),
       );
     }
     
@@ -12844,7 +13395,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
     
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Destinația a fost ștearsă')),
+        SnackBar(content: Text(AppLocalizations.of(context)!.destinationDeleted)),
       );
     }
     
@@ -12987,7 +13538,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
         } catch (e) {
           Logger.error('Route calculation failed: $e', error: e);
           if (mounted) {
-            _showSafeSnackBar('Eroare la calcularea rutei: $e', Colors.red);
+            _showSafeSnackBar(AppLocalizations.of(context)!.mapRouteCalculationError(e.toString()), Colors.red);
           }
         }
       });
@@ -12996,7 +13547,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
       Logger.error('Route setup failed: $e', error: e);
       Logger.error('Stack trace: ${StackTrace.current}');
       if (mounted) {
-        _showSafeSnackBar('Eroare la configurarea rutei: $e', Colors.red);
+        _showSafeSnackBar(AppLocalizations.of(context)!.mapRouteSetupError(e.toString()), Colors.red);
       }
     }
   }
@@ -13043,8 +13594,8 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
     if (_pickupLatitude == null || _destinationLatitude == null) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Selectează punctul de plecare și destinația'),
+        SnackBar(
+          content: Text(AppLocalizations.of(context)!.selectPickupAndDestination),
           backgroundColor: Colors.red,
         ),
       );
@@ -13117,7 +13668,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Eroare la crearea cursei: $e')),
+        SnackBar(content: Text(AppLocalizations.of(context)!.mapCreateRideError(e.toString()))),
       );
     }
   }
@@ -13128,7 +13679,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
     if (pos == null) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Așteptăm poziția GPS pentru a plasa cutia aici.')),
+          SnackBar(content: Text(AppLocalizations.of(context)!.mapWaitingGpsToPlaceBox)),
         );
       }
       return;
@@ -13141,25 +13692,23 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
       useRootNavigator: true,
       barrierDismissible: true,
       builder: (ctx) => AlertDialog(
-        title: const Text('Mystery Box comunitar'),
+        title: Text(AppLocalizations.of(ctx)!.mapCommunityMysteryBoxTitle),
         content: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Plasezi o cutie la locația curentă. Cost: ${TokenCost.mysteryBoxSlot} tokeni. '
-                'Primul utilizator care o deschide la fața locului primește aceiași tokeni — '
-                'tu vei primi o notificare când se întâmplă.',
+                AppLocalizations.of(ctx)!.mapCommunityMysteryBoxDescription(TokenCost.mysteryBoxSlot),
               ),
               const SizedBox(height: 12),
               TextField(
                 controller: msgCtrl,
                 maxLength: 120,
                 maxLines: 3,
-                decoration: const InputDecoration(
-                  labelText: 'Mesaj scurt (opțional)',
-                  hintText: 'ex: Bonus pe vârf — distracție plăcută!',
+                decoration: InputDecoration(
+                  labelText: AppLocalizations.of(ctx)!.mapShortMessageOptional,
+                  hintText: AppLocalizations.of(ctx)!.mapShortMessageHint,
                   border: OutlineInputBorder(),
                 ),
               ),
@@ -13167,10 +13716,13 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
           ),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Renunț')),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(AppLocalizations.of(ctx)!.cancel),
+          ),
           FilledButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Plasează'),
+            child: Text(AppLocalizations.of(ctx)!.mapPlace),
           ),
         ],
       ),
@@ -13190,7 +13742,9 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
       if (id != null) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Cutie plasată! (-${TokenCost.mysteryBoxSlot} tokeni)'),
+            content: Text(
+              AppLocalizations.of(context)!.mapBoxPlaced(TokenCost.mysteryBoxSlot),
+            ),
             backgroundColor: Colors.teal.shade700,
           ),
         );
@@ -13210,7 +13764,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
       msgCtrl.dispose();
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Eroare: $e')),
+        SnackBar(content: Text(AppLocalizations.of(context)!.errorPrefix(e.toString()))),
       );
     }
   }
@@ -13276,7 +13830,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
 
       if (pois.isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Niciun ${category.displayName} gasit in zona')),
+          SnackBar(content: Text(AppLocalizations.of(context)!.mapNoPoiFoundInArea(category.displayName))),
         );
         return;
       }
@@ -13299,7 +13853,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
       Logger.error('Failed to load POIs for ${category.displayName}: $e', error: e);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Eroare la incarcarea POI-urilor: $e')),
+          SnackBar(content: Text(AppLocalizations.of(context)!.mapPoiLoadError(e.toString()))),
         );
       }
     }
@@ -13683,13 +14237,13 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
       } else {
         Logger.debug('Route calculation returned null');
         if (mounted) {
-          _showSafeSnackBar('Nu s-a putut calcula ruta', Colors.orange);
+          _showSafeSnackBar(AppLocalizations.of(context)!.mapCouldNotCalculateRoute, Colors.orange);
         }
       }
     } catch (e) {
       Logger.error('Route calculation with service failed: $e', error: e);
       if (mounted) {
-        _showSafeSnackBar('Eroare la calcularea rutei: $e', Colors.red);
+        _showSafeSnackBar(AppLocalizations.of(context)!.mapRouteCalculationError(e.toString()), Colors.red);
       }
     }
   }
@@ -13766,7 +14320,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
     try {
       final hasTorch = await TorchLight.isTorchAvailable();
       if (!hasTorch) {
-        if (mounted) _showSafeSnackBar('Lanterna nu este disponibila pe acest dispozitiv', Colors.orange);
+        if (mounted) _showSafeSnackBar(AppLocalizations.of(context)!.mapFlashlightUnavailable, Colors.orange);
         return;
       }
       if (_flashlightOn) {
@@ -13778,7 +14332,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
       }
     } catch (e) {
       Logger.warning('Flashlight toggle error: $e', tag: 'MAP');
-      if (mounted) _showSafeSnackBar('Eroare la activarea lanternei', Colors.red);
+      if (mounted) _showSafeSnackBar(AppLocalizations.of(context)!.mapFlashlightActivationError, Colors.red);
     }
   }
 
@@ -14192,7 +14746,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
                     unawaited(_startInAppNavigation(la, ln, 'Locul tău de parcare'));
                   },
                   icon: const Icon(Icons.navigation_rounded),
-                  label: const Text('Navighează la locul marcat'),
+                  label: Text(AppLocalizations.of(context)!.mapNavigateToMarkedPlace),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.amber,
                     foregroundColor: Colors.black,
@@ -14205,11 +14759,11 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
                     Navigator.pop(ctx);
                     await _clearParkingYieldTarget();
                   },
-                  child: const Text('Șterge marcajul și începe din nou'),
+                  child: Text(AppLocalizations.of(context)!.mapDeleteMarkerAndRestart),
                 ),
                 TextButton(
                   onPressed: () => Navigator.pop(ctx),
-                  child: const Text('Închide'),
+                  child: Text(AppLocalizations.of(context)!.close),
                 ),
               ],
             ),
@@ -14220,6 +14774,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
   }
 
   Future<void> _confirmAndAnnounceParkingYield() async {
+    final l10n = AppLocalizations.of(context)!;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
@@ -14253,9 +14808,9 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
     if (!mounted) return;
     if (id != null) {
       await _clearParkingYieldTarget();
-      _showSafeSnackBar('Locul a fost anunțat disponibil.', Colors.green.shade700);
+      _showSafeSnackBar(l10n.mapSpotAnnouncedAvailable, Colors.green.shade700);
     } else {
-      _showSafeSnackBar('Nu s-a putut anunța. Încearcă din nou.', Colors.red.shade800);
+      _showSafeSnackBar(l10n.mapCouldNotAnnounceTryAgain, Colors.red.shade800);
     }
   }
 
@@ -14267,7 +14822,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
         spotId: firestoreSpotId,
         onReserved: () {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Loc rezervat! Ai 3 minute să ajungi.')),
+            SnackBar(content: Text(AppLocalizations.of(context)!.mapSpotReserved)),
           );
         },
       ),
@@ -14279,7 +14834,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
 
     if (_awaitingParkingYieldMapPick) {
       setState(() => _awaitingParkingYieldMapPick = false);
-      _showSafeSnackBar('Selecția pe hartă a fost anulată.', Colors.grey.shade700);
+      _showSafeSnackBar(AppLocalizations.of(context)!.mapSelectionCancelled, Colors.grey.shade700);
       return;
     }
 
@@ -14452,7 +15007,7 @@ class _NeighborProfileSheetState extends State<_NeighborProfileSheet> {
                     : (isDark ? Colors.grey.shade800 : Colors.grey.shade100),
                 onTap: widget.onCall ?? () {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Numar de telefon indisponibil'), duration: Duration(seconds: 2)),
+                    SnackBar(content: Text(AppLocalizations.of(context)!.mapPhoneNumberUnavailable), duration: const Duration(seconds: 2)),
                   );
                 },
               ),
@@ -14541,7 +15096,7 @@ class _NeighborProfileSheetState extends State<_NeighborProfileSheet> {
                     ),
                     GestureDetector(
                       onTap: () => setState(() => _etaDismissed = true),
-                      child: Icon(Icons.close, size: 16, color: Colors.grey.shade400),
+                      child: const Icon(Icons.close, size: 16, color: Color(0xFFE53935)),
                     ),
                   ],
                 ),
@@ -14900,7 +15455,7 @@ class _MapTapGeocodeSheetBodyState extends State<_MapTapGeocodeSheetBody> {
             const SizedBox(height: 16),
             ListTile(
               leading: const Icon(Icons.star_rounded, color: Colors.amber),
-              title: const Text('Adaugă la adrese favorite'),
+              title: Text(AppLocalizations.of(context)!.mapAddToFavoriteAddresses),
               onTap: () {
                 Navigator.pop(sheetCtx);
                 unawaited(widget.onOpenFavorite(lat, lng, address));
@@ -14908,7 +15463,7 @@ class _MapTapGeocodeSheetBodyState extends State<_MapTapGeocodeSheetBody> {
             ),
             ListTile(
               leading: const Icon(Icons.navigation_outlined, color: Colors.green),
-              title: const Text('Navighează cu Google Maps / Waze'),
+              title: Text(AppLocalizations.of(context)!.mapNavigateWithExternalApps),
               onTap: () {
                 Navigator.pop(sheetCtx);
                 WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -14935,6 +15490,7 @@ class MapUniversalSearchOverlay extends StatefulWidget {
     required this.neighborEmojiByUid,
     required this.neighborPhotoUrlByUid,
     required this.userPosition,
+    this.orientationLandmark,
     required this.onPlaceChosen,
     required this.onContactChosen,
     this.onAddFriend,
@@ -14948,6 +15504,8 @@ class MapUniversalSearchOverlay extends StatefulWidget {
   final Map<String, String> neighborEmojiByUid;
   final Map<String, String> neighborPhotoUrlByUid;
   final geolocator.Position? userPosition;
+  /// Reper de orientare salvat — la „Sugerat” și potrivire la căutare după denumire.
+  final ({String label, double lat, double lng})? orientationLandmark;
 
   final void Function(double lat, double lng, String label) onPlaceChosen;
   final void Function(String uid) onContactChosen;
@@ -15092,6 +15650,7 @@ class _MapUniversalSearchOverlayState extends State<MapUniversalSearchOverlay> {
   }
 
   List<_MapUniversalSearchPlaceRow> _mergePlaceRowsWithSaved(
+    List<AddressSuggestion> orientationLm,
     List<AddressSuggestion> saved,
     List<AddressSuggestion> local,
     List<AddressSuggestion> remote,
@@ -15118,10 +15677,41 @@ class _MapUniversalSearchOverlayState extends State<MapUniversalSearchOverlay> {
       }
     }
 
+    addAll(orientationLm, true);
     addAll(saved, true);
     addAll(local, true);
     addAll(remote, false);
     return out.take(16).toList();
+  }
+
+  /// Potrivire reper de orientare (nume) — aceeași logică de normalizare ca la favorite.
+  List<AddressSuggestion> _orientationLandmarkSuggestions(
+    String trimmed,
+    geolocator.Position pos,
+  ) {
+    final o = widget.orientationLandmark;
+    if (o == null) return [];
+    if (trimmed.length < 2) return [];
+    final qn = normalizeRomanianTextForSearch(trimmed);
+    final nameNorm = normalizeRomanianTextForSearch(o.label);
+    final sc = searchMatchScoreNormalized(qn, nameNorm);
+    final contains = o.label.toLowerCase().contains(trimmed.toLowerCase());
+    if (sc <= 0 && !contains) return [];
+    final dist = geolocator.Geolocator.distanceBetween(
+      pos.latitude,
+      pos.longitude,
+      o.lat,
+      o.lng,
+    );
+    return [
+      AddressSuggestion(
+        description: o.label,
+        latitude: o.lat,
+        longitude: o.lng,
+        score: 1000,
+        distanceMeters: dist,
+      ),
+    ];
   }
 
   bool _nameMatches(String name, String q) {
@@ -15151,10 +15741,11 @@ class _MapUniversalSearchOverlayState extends State<MapUniversalSearchOverlay> {
     _debounce = Timer(const Duration(milliseconds: 380), () async {
       List<_MapUniversalSearchPlaceRow> rows;
       try {
+        final orient = _orientationLandmarkSuggestions(trimmed, pos);
         final saved = _savedAddressSuggestions(trimmed, pos);
         final local = await LocalAddressDatabase().search(trimmed, pos);
         final remote = await GeocodingService().fetchSuggestions(trimmed, pos);
-        rows = _mergePlaceRowsWithSaved(saved, local, remote);
+        rows = _mergePlaceRowsWithSaved(orient, saved, local, remote);
       } catch (_) {
         rows = [];
       }
@@ -15405,12 +15996,9 @@ class _MapUniversalSearchOverlayState extends State<MapUniversalSearchOverlay> {
                                         .hintStyle,
                                     suffixIcon: q.isNotEmpty
                                         ? IconButton(
-                                            icon: Icon(
+                                            icon: const Icon(
                                               Icons.close_rounded,
-                                              color: Theme.of(context)
-                                                  .colorScheme
-                                                  .onSurface
-                                                  .withValues(alpha: 0.65),
+                                              color: Color(0xFFE53935),
                                             ),
                                             onPressed: () {
                                               _controller.clear();
@@ -15436,15 +16024,12 @@ class _MapUniversalSearchOverlayState extends State<MapUniversalSearchOverlay> {
                                 ),
                               ),
                               IconButton(
-                                tooltip: 'Închide',
+                                tooltip: AppLocalizations.of(context)!.close,
                                 visualDensity: VisualDensity.compact,
                                 onPressed: widget.onClose,
-                                icon: Icon(
+                                icon: const Icon(
                                   Icons.close_rounded,
-                                  color: Theme.of(context)
-                                      .colorScheme
-                                      .onSurface
-                                      .withValues(alpha: 0.85),
+                                  color: Color(0xFFE53935),
                                 ),
                               ),
                             ],
@@ -15471,6 +16056,43 @@ class _MapUniversalSearchOverlayState extends State<MapUniversalSearchOverlay> {
                                 ),
                               ),
                             ),
+                            if (widget.orientationLandmark != null) ...[
+                              Padding(
+                                padding:
+                                    const EdgeInsets.fromLTRB(16, 4, 16, 6),
+                                child: Text(
+                                  'Reper pe hartă',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w800,
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .onSurfaceVariant,
+                                    letterSpacing: 0.6,
+                                  ),
+                                ),
+                              ),
+                              ListTile(
+                                leading: const Icon(
+                                  Icons.explore_rounded,
+                                  color: Color(0xFF16A34A),
+                                ),
+                                title: Text(widget.orientationLandmark!.label),
+                                subtitle: const Text(
+                                  'Reper salvat de tine',
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                onTap: () {
+                                  widget.onPlaceChosen(
+                                    widget.orientationLandmark!.lat,
+                                    widget.orientationLandmark!.lng,
+                                    widget.orientationLandmark!.label,
+                                  );
+                                  widget.onClose();
+                                },
+                              ),
+                            ],
                             if (_savedAddresses.isNotEmpty) ...[
                               Padding(
                                 padding:
@@ -15847,7 +16469,7 @@ class _ParkingReservationSheetState extends State<_ParkingReservationSheet> {
         Navigator.pop(context);
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Ne pare rău, locul a fost deja rezervat.')),
+          SnackBar(content: Text(AppLocalizations.of(context)!.mapSpotAlreadyReserved)),
         );
       }
     }

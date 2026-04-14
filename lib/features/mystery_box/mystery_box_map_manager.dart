@@ -282,13 +282,13 @@ class MysteryBoxMapManager {
       final serviceOn = await geolocator.Geolocator.isLocationServiceEnabled();
       String msg;
       if (!serviceOn) {
-        msg = 'Locația este oprită la nivel de sistem. Pornește GPS-ul / Locația și încearcă din nou.';
+        msg = 'Location is disabled at the system level. Enable GPS/Location and try again.';
       } else if (deniedForever) {
-        msg = 'Nabour nu are permisiune de locație. Activează-o din Setări aplicație și încearcă din nou.';
+        msg = 'Nabour does not have location permission. Enable it in app settings and try again.';
       } else if (denied) {
-        msg = 'Permisiunea de locație a fost refuzată. Acceptă accesul la locație pentru Nabour.';
+        msg = 'Location permission was denied. Allow location access for Nabour.';
       } else {
-        msg = 'Nu am putut obține poziția curentă. Așteaptă ca punctul tău albastru să apară pe hartă, apoi apasă din nou pe cutie.';
+        msg = 'Could not get your current position. Wait for your blue dot to appear on the map, then tap the box again.';
       }
       if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -321,11 +321,11 @@ class MysteryBoxMapManager {
         if (!context.mounted) return;
         final msg = switch (e.code) {
           'resource-exhausted' =>
-            'Toate cutiile acestei oferte au fost deja deschise.',
+            'All boxes for this offer have already been opened.',
           'failed-precondition' =>
-            e.message ?? 'Oferta nu mai e disponibilă.',
+            e.message ?? 'This offer is no longer available.',
           _ => e.message ??
-              'Nu s-a putut deschide cutia. Încearcă din nou.',
+              'Could not open the box. Please try again.',
         };
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -349,8 +349,8 @@ class MysteryBoxMapManager {
         unawaited(updateMysteryBoxes(userLL.lat, userLL.lng, force: true));
       } else if (context.mounted) {
         final msg = claimResult.alreadyOpenedToday
-            ? 'Ai deschis deja o cutie azi la acest magazin.'
-            : 'Cutia nu s-a putut deschide. Poate a apărut o problemă de rețea.';
+            ? 'You already opened a box today at this store.'
+            : 'The box could not be opened. There may be a network issue.';
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(msg), backgroundColor: Colors.orange),
         );
@@ -360,7 +360,7 @@ class MysteryBoxMapManager {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              'Ești prea departe! Apropie-te la ${dist.round()}m de ${offer.businessName} ca să deschizi cutia.',
+              'You are too far away! Move within ${dist.round()}m of ${offer.businessName} to open the box.',
             ),
             backgroundColor: Colors.orange,
           ),
@@ -389,13 +389,13 @@ class MysteryBoxMapManager {
           children: [
             const Expanded(
               child: Text(
-                '🎉 Felicitări!',
+                '🎉 Congratulations!',
                 style: TextStyle(color: Colors.white),
               ),
             ),
             IconButton(
               icon: const Icon(Icons.close_rounded, color: Colors.white70),
-              tooltip: 'Închide',
+              tooltip: 'Close',
               onPressed: () => Navigator.pop(ctx),
             ),
           ],
@@ -407,13 +407,13 @@ class MysteryBoxMapManager {
               const Icon(Icons.card_giftcard, size: 80, color: Colors.amber),
               const SizedBox(height: 16),
               Text(
-                'Ai deschis Mystery Box de la ${offer.businessName}!',
+                'You opened a Mystery Box from ${offer.businessName}!',
                 style: const TextStyle(color: Colors.white),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 8),
               const Text(
-                'Ai primit 50 Tokeni Nabour!',
+                'You received 50 Nabour Tokens!',
                 style: TextStyle(
                     color: Colors.amber,
                     fontWeight: FontWeight.bold,
@@ -428,7 +428,7 @@ class MysteryBoxMapManager {
               if (code != null && code.isNotEmpty) ...[
                 const SizedBox(height: 20),
                 const Text(
-                  'Cod pentru reducere la magazin',
+                  'Store discount code',
                   style: TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.bold,
@@ -438,7 +438,7 @@ class MysteryBoxMapManager {
                 ),
                 const SizedBox(height: 6),
                 const Text(
-                  'Arată codul sau QR-ul personalului. Valabil 7 zile, o singură folosire.',
+                  'Show the code or QR to the staff. Valid for 7 days, single use.',
                   style: TextStyle(color: Colors.white60, fontSize: 12),
                   textAlign: TextAlign.center,
                 ),
@@ -480,7 +480,7 @@ class MysteryBoxMapManager {
                     if (ctx.mounted) {
                       ScaffoldMessenger.of(ctx).showSnackBar(
                         const SnackBar(
-                          content: Text('Cod copiat în clipboard'),
+                          content: Text('Code copied to clipboard'),
                           behavior: SnackBarBehavior.floating,
                         ),
                       );
@@ -488,7 +488,7 @@ class MysteryBoxMapManager {
                   },
                   icon: const Icon(Icons.copy_rounded, color: Colors.amber),
                   label: const Text(
-                    'Copiază codul',
+                    'Copy code',
                     style: TextStyle(color: Colors.amber),
                   ),
                 ),

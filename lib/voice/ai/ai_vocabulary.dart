@@ -1329,9 +1329,14 @@ class AIVocabulary {
   /// Identifică intenția utilizatorului din comanda vocală
   static String? getCommandType(String input) {
     final lowerInput = input.toLowerCase();
+    final isRomanianLocalContext = _isRomanianLocalContext(lowerInput);
     
     // Verifică toate tipurile de comenzi
     for (final entry in rideCommands.entries) {
+      if (!isRomanianLocalContext &&
+          _ambiguousDestinationCommandKeys.contains(entry.key)) {
+        continue;
+      }
       if (lowerInput.contains(entry.key)) return entry.value;
     }
     
@@ -1833,5 +1838,38 @@ class AIVocabulary {
     }
     return false;
   }
+
+  static bool _isRomanianLocalContext(String text) {
+    const localSignals = <String>{
+      'romania',
+      'românia',
+      'bucuresti',
+      'bucurești',
+      'ilfov',
+      'otopeni',
+      'piata unirii',
+      'piața unirii',
+      'gara de nord',
+      'henri coanda',
+      'henri coandă',
+    };
+    for (final signal in localSignals) {
+      if (text.contains(signal)) return true;
+    }
+    return false;
+  }
+
+  static const Set<String> _ambiguousDestinationCommandKeys = <String>{
+    'universitate',
+    'centru',
+    'aeroport',
+    'gara',
+    'mall',
+    'spital',
+    'bancă',
+    'restaurant',
+    'benzinărie',
+    'farmacie',
+  };
 
 }

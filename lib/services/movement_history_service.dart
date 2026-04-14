@@ -8,7 +8,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:nabour_app/models/movement_history_models.dart';
-import 'package:nabour_app/services/movement_history_preferences_service.dart';
+import 'package:nabour_app/services/mhist_prefs_service.dart';
 import 'package:nabour_app/utils/logger.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';

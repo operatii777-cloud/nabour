@@ -1011,7 +1011,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get reportIncidentToSafety =>
-      '• Raportați un incident către echipa de siguranță';
+      '• Report an incident to the safety team';
 
   @override
   String get voiceSettingsSaved => 'Voice settings have been saved';

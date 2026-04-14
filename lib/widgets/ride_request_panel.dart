@@ -7,7 +7,7 @@ import 'package:nabour_app/models/ride_model.dart';
 import 'package:nabour_app/models/stop_location.dart';
 import 'package:nabour_app/screens/searching_for_driver_screen.dart';
 import 'package:nabour_app/services/firestore_service.dart';
-import 'package:nabour_app/services/passenger_allowed_driver_uids.dart';
+import 'package:nabour_app/services/pax_allowed_drv_uids.dart';
 // PricingService removal handled in imports (none used anymore)
 import 'package:nabour_app/services/routing_service.dart';
 import 'package:nabour_app/widgets/address_input_view.dart';

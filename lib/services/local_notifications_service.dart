@@ -2,6 +2,9 @@ import 'dart:io';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:nabour_app/utils/logger.dart';
 
+/// Apelat la tap pe notificarea locală (ex. heads-up din foreground FCM).
+typedef LocalNotificationTapCallback = void Function(String? payload);
+
 class LocalNotificationsService {
   static final LocalNotificationsService _instance = LocalNotificationsService._internal();
   factory LocalNotificationsService() => _instance;
@@ -9,6 +12,12 @@ class LocalNotificationsService {
 
   final FlutterLocalNotificationsPlugin _plugin = FlutterLocalNotificationsPlugin();
   bool _initialized = false;
+  LocalNotificationTapCallback? _onTap;
+
+  /// Înregistrează înainte de primul tap (ex. din `main` după navigator + push callback).
+  void setTapHandler(LocalNotificationTapCallback? handler) {
+    _onTap = handler;
+  }
 
   Future<void> initialize() async {
     if (_initialized) return;
@@ -23,6 +32,7 @@ class LocalNotificationsService {
         onDidReceiveNotificationResponse: (NotificationResponse response) async {
       Logger.debug('LocalNotification tapped: ${response.payload}',
           tag: 'LocalNotifications');
+      _onTap?.call(response.payload);
     });
 
     if (Platform.isAndroid) {
@@ -30,19 +40,19 @@ class LocalNotificationsService {
       await androidPlugin?.createNotificationChannel(const AndroidNotificationChannel(
         'ride_updates',
         'Ride Updates',
-        description: 'Notificări pentru actualizări de cursă',
+        description: 'Notifications for ride updates',
         importance: Importance.high,
       ));
       await androidPlugin?.createNotificationChannel(const AndroidNotificationChannel(
         'chat_messages',
-        'Mesaje Chat',
-        description: 'Notificări pentru mesaje de chat între vecini',
+        'Chat Messages',
+        description: 'Notifications for neighborhood chat messages',
         importance: Importance.high,
       ));
       await androidPlugin?.createNotificationChannel(const AndroidNotificationChannel(
         'social_proximity',
-        'Aproape de prieteni',
-        description: 'Alertă când un contact e foarte aproape pe harta socială',
+        'Nearby Contacts',
+        description: 'Alert when a contact is very close on the social map',
         importance: Importance.defaultImportance,
       ));
     }
@@ -58,13 +68,13 @@ class LocalNotificationsService {
   }) async {
     await initialize();
     String channelName = 'Ride Updates';
-    String channelDescription = 'Notificări pentru actualizări de cursă';
+    String channelDescription = 'Notifications for ride updates';
     if (channelId == 'chat_messages') {
-      channelName = 'Mesaje Chat';
-      channelDescription = 'Notificări pentru mesaje de chat între vecini';
+      channelName = 'Chat Messages';
+      channelDescription = 'Notifications for neighborhood chat messages';
     } else if (channelId == 'social_proximity') {
-      channelName = 'Aproape de prieteni';
-      channelDescription = 'Contacte aproape pe harta socială';
+      channelName = 'Nearby Contacts';
+      channelDescription = 'Nearby contacts on the social map';
     }
     final AndroidNotificationDetails androidDetails = AndroidNotificationDetails(
       channelId,

@@ -6,13 +6,14 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart' hide Visibility;
 import 'package:nabour_app/models/ride_model.dart';
 import 'package:nabour_app/services/firestore_service.dart';
-import 'package:nabour_app/services/route_preview_capture_service.dart';
+import 'package:nabour_app/services/route_preview_cap_svc.dart';
 import 'package:nabour_app/screens/map_screen.dart';
 import 'package:nabour_app/services/passenger_ride_session_bus.dart'; 
 import 'package:nabour_app/config/nabour_map_styles.dart';
 import 'package:nabour_app/utils/logger.dart';
 import 'package:nabour_app/utils/driver_icon_helper.dart';
 import 'package:nabour_app/core/skeletons/skeleton_driver_search.dart';
+import 'package:nabour_app/l10n/app_localizations.dart';
 import '../utils/mapbox_utils.dart';
 
 class SearchingForDriverScreen extends StatefulWidget {
@@ -61,7 +62,7 @@ class _SearchingForDriverScreenState extends State<SearchingForDriverScreen>
   late Animation<Offset> _slideAnimation;
   late Animation<double> _fadeAnimation;
 
-  String _statusMessage = 'Se caută șoferi în apropiere...';
+  String _statusMessage = 'Searching for nearby drivers...';
   bool _isSearching = true;
   bool _isInitializing = true; // shows skeleton for first 600ms
   
@@ -210,7 +211,7 @@ class _SearchingForDriverScreenState extends State<SearchingForDriverScreen>
       _driverAnnotation = null;
     }
 
-    final driverName = _foundDriverDisplayName ?? 'Șofer';
+    final driverName = _foundDriverDisplayName ?? 'Driver';
     final licensePlate = _foundDriverLicensePlate ?? '';
 
     _driverAnnotation = await _markersManager?.create(
@@ -376,7 +377,7 @@ class _SearchingForDriverScreenState extends State<SearchingForDriverScreen>
                 ride.startLatitude != null && ride.startLongitude != null;
 
             setState(() {
-              _statusMessage = 'Se caută șoferi în apropiere...';
+              _statusMessage = AppLocalizations.of(context)!.searchDriverSearchingNearby;
               _isSearching = true;
               _foundDriverDisplayName = null;
               _foundDriverLicensePlate = null;
@@ -413,7 +414,7 @@ class _SearchingForDriverScreenState extends State<SearchingForDriverScreen>
 
           setState(() {
             _isSearching = false;
-            _statusMessage = 'Șofer găsit! Așteaptă confirmarea ta.';
+            _statusMessage = AppLocalizations.of(context)!.searchDriverFoundWaitConfirm;
             _foundDriverId = ride.driverId;
 
             if (ride.startLatitude != null &&
@@ -505,9 +506,10 @@ class _SearchingForDriverScreenState extends State<SearchingForDriverScreen>
           _confirmationTimeoutTimer?.cancel();
           if (mounted) {
             setState(() {
+              final l10n = AppLocalizations.of(context)!;
               _statusMessage = ride.status == 'cancelled' 
-                  ? 'Cursa a fost anulată.' 
-                  : 'Ne pare rău, niciun șofer nu a fost disponibil.';
+                  ? l10n.searchDriverRideCancelled
+                  : l10n.searchDriverNoDriverAvailable;
               _isSearching = false;
               _foundDriverDisplayName = null;
             });
@@ -518,7 +520,7 @@ class _SearchingForDriverScreenState extends State<SearchingForDriverScreen>
         default:
           if (mounted) {
             setState(() {
-              _statusMessage = 'Stare cursă necunoscută: ${ride.status}';
+              _statusMessage = AppLocalizations.of(context)!.searchDriverUnknownRideStatus(ride.status);
               _isSearching = false;
             });
             _stopSearchAnimations();
@@ -529,7 +531,7 @@ class _SearchingForDriverScreenState extends State<SearchingForDriverScreen>
       Logger.error('Error listening to ride stream: $error', error: error);
       if (mounted) {
         setState(() {
-          _statusMessage = 'Eroare la monitorizarea cursei.';
+          _statusMessage = AppLocalizations.of(context)!.errorMonitoringRide;
           _isSearching = false;
         });
         _stopSearchAnimations();
@@ -676,7 +678,7 @@ class _SearchingForDriverScreenState extends State<SearchingForDriverScreen>
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Eroare la confirmarea șoferului: $e'),
+            content: Text(AppLocalizations.of(context)!.searchDriverConfirmError(e.toString())),
             backgroundColor: Colors.red,
           ),
         );
@@ -704,7 +706,7 @@ class _SearchingForDriverScreenState extends State<SearchingForDriverScreen>
         if (mounted) {
           setState(() {
             _foundDriverDisplayName = null;
-            _statusMessage = 'Ai refuzat șoferul. Se reia căutarea...';
+            _statusMessage = AppLocalizations.of(context)!.searchDriverDeclinedResuming;
             _isSearching = true;
             _searchTimeoutTimer?.cancel();
             _searchTimeoutTimer = Timer(const Duration(minutes: 1), _handleSearchTimeout);
@@ -721,7 +723,7 @@ class _SearchingForDriverScreenState extends State<SearchingForDriverScreen>
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Eroare la refuzarea șoferului: $e'),
+              content: Text(AppLocalizations.of(context)!.searchDriverDeclineError(e.toString())),
               backgroundColor: Colors.red,
             ),
           );
@@ -772,7 +774,7 @@ class _SearchingForDriverScreenState extends State<SearchingForDriverScreen>
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Eroare la anulare: $e'),
+            content: Text(AppLocalizations.of(context)!.searchDriverCancelError(e.toString())),
             backgroundColor: Colors.red,
           ),
         );
@@ -928,6 +930,7 @@ class _SearchingForDriverScreenState extends State<SearchingForDriverScreen>
   }
 
   Widget _buildSearchingContent() {
+    final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final int remaining = (_searchTimeoutSeconds - _searchSecondsElapsed).clamp(0, _searchTimeoutSeconds);
@@ -944,7 +947,7 @@ class _SearchingForDriverScreenState extends State<SearchingForDriverScreen>
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Se caută șoferi',
+                    l10n.searchDriverSearchingTitle,
                     style: TextStyle(
                       fontSize: 28,
                       fontWeight: FontWeight.w900,
@@ -1022,8 +1025,8 @@ class _SearchingForDriverScreenState extends State<SearchingForDriverScreen>
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      'Sugestie Premium',
+                    Text(
+                      l10n.searchDriverPremiumHintTitle,
                       style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w800,
@@ -1033,7 +1036,7 @@ class _SearchingForDriverScreenState extends State<SearchingForDriverScreen>
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      'Rămâi pe ecran pentru o preluare mai rapidă.',
+                      l10n.searchDriverPremiumHintBody,
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
@@ -1119,6 +1122,7 @@ class _SearchingForDriverScreenState extends State<SearchingForDriverScreen>
   }
 
   Widget _buildDriverFoundContent() {
+    final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     
@@ -1128,7 +1132,7 @@ class _SearchingForDriverScreenState extends State<SearchingForDriverScreen>
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Șofer găsit',
+            l10n.searchDriverFoundTitle,
             style: TextStyle(
               fontSize: 28,
               fontWeight: FontWeight.w900,
@@ -1163,7 +1167,7 @@ class _SearchingForDriverScreenState extends State<SearchingForDriverScreen>
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
                 _buildRideMetric(
-                  'Sosește în',
+                  l10n.searchDriverArrivesIn,
                   _formatEtaMinutes(_driverEtaMinutes),
                   Icons.access_time_filled_rounded,
                   Colors.orangeAccent,
@@ -1171,7 +1175,7 @@ class _SearchingForDriverScreenState extends State<SearchingForDriverScreen>
                 ),
                 Container(width: 1, height: 40, color: isDark ? Colors.white10 : Colors.grey[200]),
                 _buildRideMetric(
-                  'Distanță',
+                  l10n.searchDriverDistanceLabel,
                   _formatDistanceMeters(_driverDistanceMeters),
                   Icons.near_me_rounded,
                   Colors.blueAccent,
@@ -1189,6 +1193,7 @@ class _SearchingForDriverScreenState extends State<SearchingForDriverScreen>
   }
 
   Widget _buildUberDriverCard() {
+    final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     
@@ -1251,7 +1256,7 @@ class _SearchingForDriverScreenState extends State<SearchingForDriverScreen>
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  _foundDriverDisplayName ?? 'Șofer Nabour',
+                  _foundDriverDisplayName ?? l10n.searchDriverNabourDriverFallback,
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w900,
@@ -1260,7 +1265,7 @@ class _SearchingForDriverScreenState extends State<SearchingForDriverScreen>
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  _foundDriverCategory ?? 'Categoria Standard',
+                  _foundDriverCategory ?? l10n.searchDriverStandardCategory,
                   style: TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
@@ -1291,7 +1296,7 @@ class _SearchingForDriverScreenState extends State<SearchingForDriverScreen>
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                 foregroundColor: Colors.redAccent,
               ),
-              child: const Text('Refuză', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
+              child: Text(AppLocalizations.of(context)!.decline, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
             ),
           ),
         ),
@@ -1318,9 +1323,9 @@ class _SearchingForDriverScreenState extends State<SearchingForDriverScreen>
                         color: isDark ? Colors.black : Colors.white,
                       ),
                     )
-                  : const Text(
-                      'Confirmă Cursa',
-                      style: TextStyle(fontWeight: FontWeight.w900, fontSize: 16),
+                  : Text(
+                      AppLocalizations.of(context)!.confirm,
+                      style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 16),
                     ),
             ),
           ),
@@ -1404,7 +1409,7 @@ class _SearchingForDriverScreenState extends State<SearchingForDriverScreen>
               foregroundColor: Colors.white,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(50)),
             ),
-            child: const Text('Înapoi la Hartă'),
+            child: Text(AppLocalizations.of(context)!.backToMap),
           ),
         ),
       ],

@@ -112,10 +112,25 @@ class AppTheme {
       shape: _shape12,
       margin: EdgeInsets.symmetric(vertical: 4),
     ),
-    listTileTheme: const ListTileThemeData(
+    listTileTheme: ListTileThemeData(
       tileColor: Colors.transparent,
       horizontalTitleGap: 12,
       minVerticalPadding: 4,
+      // inherit: false — altfel la ThemeData.lerp (tema animată) TextStyle.lerp cade pe ExpansionTile.
+      titleTextStyle: const TextStyle(
+        inherit: false,
+        fontSize: 16,
+        fontWeight: FontWeight.w500,
+        letterSpacing: 0.15,
+        height: 1.43,
+        color: AppColors.textPrimary,
+      ),
+      subtitleTextStyle: TextStyle(
+        inherit: false,
+        fontSize: 14,
+        fontWeight: FontWeight.w400,
+        color: AppColors.textSecondary,
+      ),
     ),
     buttonTheme: const ButtonThemeData(
       buttonColor: AppColors.electricBlue,
@@ -227,12 +242,17 @@ class AppTheme {
       horizontalTitleGap: 12,
       minVerticalPadding: 4,
       titleTextStyle: const TextStyle(
+        inherit: false,
         fontSize: 16,
         fontWeight: FontWeight.w600,
+        letterSpacing: 0.15,
+        height: 1.43,
         color: Colors.white,
       ),
       subtitleTextStyle: TextStyle(
+        inherit: false,
         fontSize: 13,
+        fontWeight: FontWeight.w400,
         color: Colors.white.withAlpha(180),
       ),
     ),
@@ -253,6 +273,21 @@ class AppTheme {
       bodyColor: Colors.black,
       displayColor: Colors.black,
     ),
+    listTileTheme: lightTheme.listTileTheme.copyWith(
+      titleTextStyle: const TextStyle(
+        inherit: false,
+        fontSize: 16,
+        fontWeight: FontWeight.w500,
+        letterSpacing: 0.15,
+        height: 1.43,
+        color: Colors.black,
+      ),
+      subtitleTextStyle: const TextStyle(
+        inherit: false,
+        fontSize: 14,
+        color: Colors.black87,
+      ),
+    ),
     dividerColor: Colors.black,
     focusColor: Colors.black,
   );
@@ -265,6 +300,21 @@ class AppTheme {
     textTheme: darkTheme.textTheme.apply(
       bodyColor: Colors.white,
       displayColor: Colors.white,
+    ),
+    listTileTheme: darkTheme.listTileTheme.copyWith(
+      titleTextStyle: const TextStyle(
+        inherit: false,
+        fontSize: 16,
+        fontWeight: FontWeight.w600,
+        letterSpacing: 0.15,
+        height: 1.43,
+        color: Colors.white,
+      ),
+      subtitleTextStyle: TextStyle(
+        inherit: false,
+        fontSize: 13,
+        color: Colors.white.withAlpha(200),
+      ),
     ),
     dividerColor: Colors.white,
     focusColor: Colors.white,

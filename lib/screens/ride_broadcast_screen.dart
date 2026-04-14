@@ -7,11 +7,12 @@ import 'package:intl/intl.dart';
 import 'package:nabour_app/models/neighborhood_request_model.dart';
 import 'package:nabour_app/screens/chat_screen.dart';
 import 'package:nabour_app/services/firestore_service.dart';
-import 'package:nabour_app/services/map_quick_action_badge_prefs.dart';
-import 'package:nabour_app/features/neighborhood_requests/neighborhood_requests_manager.dart';
+import 'package:nabour_app/services/map_qa_badge_prefs.dart';
+import 'package:nabour_app/features/neighborhood_requests/nbhd_requests_manager.dart';
 import 'package:nabour_app/utils/logger.dart';
 import 'package:nabour_app/widgets/nabour_nametag_widget.dart';
 import 'package:nabour_app/services/contacts_service.dart';
+import 'package:nabour_app/l10n/app_localizations.dart';
 
 /// Model pentru o cerere de cursă broadcast
 class RideBroadcastRequest {
@@ -148,7 +149,7 @@ class DriverOffer {
 
   factory DriverOffer.fromMap(Map<String, dynamic> m) => DriverOffer(
         driverId: m['driverId'] as String? ?? '',
-        driverName: m['driverName'] as String? ?? 'Șofer',
+        driverName: m['driverName'] as String? ?? 'Driver',
         driverAvatar: m['driverAvatar'] as String? ?? '🚗',
         carInfo: m['carInfo'] as String? ?? '',
         etaMinutes: (m['etaMinutes'] as num?)?.toInt() ?? 5,
@@ -295,14 +296,15 @@ class _RideBroadcastFeedScreenState extends State<RideBroadcastFeedScreen>
   }
 
   Future<void> _deleteBroadcast(String id) async {
+    final l10n = AppLocalizations.of(context)!;
     final confirm = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Șterge cererea'),
-        content: const Text('Ești sigur că vrei să ștergi această cerere din istoricul tău?'),
+        title: Text(l10n.rideBroadcastDeleteRequestTitle),
+        content: Text(l10n.rideBroadcastDeleteRequestConfirm),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Anulează')),
-          TextButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Șterge', style: TextStyle(color: Colors.red))),
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(l10n.cancel)),
+          TextButton(onPressed: () => Navigator.pop(ctx, true), child: Text(l10n.delete, style: const TextStyle(color: Colors.red))),
         ],
       ),
     );
@@ -316,12 +318,13 @@ class _RideBroadcastFeedScreenState extends State<RideBroadcastFeedScreen>
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
     final uid = _auth.currentUser?.uid;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Cereri din cartier'),
+        title: Text(l10n.rideBroadcastFeedTitle),
         centerTitle: true,
         actions: [
           if (_userPosition != null)
@@ -329,7 +332,7 @@ class _RideBroadcastFeedScreenState extends State<RideBroadcastFeedScreen>
               padding: const EdgeInsets.only(right: 4),
               child: Tooltip(
                 message:
-                    'În tab-ul „Active” afișăm cererile în cel mult ${_radiusKm.toInt()} km față de locația ta curentă (când locația e disponibilă).',
+                    l10n.rideBroadcastActiveRadiusTooltip(_radiusKm.toInt()),
                 child: Chip(
                   avatar: const Icon(Icons.radar_rounded, size: 14, color: Color(0xFF7C3AED)),
                   label: Text('${_radiusKm.toInt()} km',
@@ -347,10 +350,10 @@ class _RideBroadcastFeedScreenState extends State<RideBroadcastFeedScreen>
           labelColor: const Color(0xFF7C3AED),
           unselectedLabelColor: Colors.grey,
           indicatorColor: const Color(0xFF7C3AED),
-          tabs: const [
-            Tab(text: 'Active'),
-            Tab(text: 'Bule pe hartă'),
-            Tab(text: 'Istoricul meu'),
+          tabs: [
+            Tab(text: l10n.rideBroadcastTabActive),
+            Tab(text: l10n.rideBroadcastTabMapBubbles),
+            Tab(text: l10n.rideBroadcastTabMyHistory),
           ],
         ),
       ),
@@ -369,8 +372,8 @@ class _RideBroadcastFeedScreenState extends State<RideBroadcastFeedScreen>
                   if (result.warnNoNabourContacts) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                        content: const Text(
-                          'Cererea e vizibilă doar pentru tine: în agendă nu am găsit alți utilizatori Nabour cu numărul din profilul lor.',
+                        content: Text(
+                          l10n.rideBroadcastVisibleOnlyForYouNoContacts,
                         ),
                         backgroundColor: Colors.orange.shade800,
                         behavior: SnackBarBehavior.floating,
@@ -383,9 +386,8 @@ class _RideBroadcastFeedScreenState extends State<RideBroadcastFeedScreen>
                         n == 1 ? '1 contact Nabour' : '$n contacte Nabour';
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                        content: Text(
-                          'Cererea e vizibilă pentru tine și pentru încă $people din agendă.',
-                        ),
+                        content:
+                            Text(l10n.rideBroadcastVisibleForYouAndContacts(people)),
                         backgroundColor: Colors.green.shade800,
                         behavior: SnackBarBehavior.floating,
                         duration: const Duration(seconds: 5),
@@ -399,9 +401,9 @@ class _RideBroadcastFeedScreenState extends State<RideBroadcastFeedScreen>
                 if (!context.mounted) return;
                 if (p == null) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
+                    SnackBar(
                       content: Text(
-                        'Activează locația ca să plasezi o cerere pe hartă.',
+                        l10n.rideBroadcastEnableLocationForMapRequest,
                       ),
                     ),
                   );
@@ -417,8 +419,8 @@ class _RideBroadcastFeedScreenState extends State<RideBroadcastFeedScreen>
                   ? Icons.directions_car_rounded
                   : Icons.water_drop_rounded),
               label: Text(_tabController.index == 0
-                  ? 'Cer o cursă'
-                  : 'Cerere pe hartă'),
+                  ? l10n.rideBroadcastRequestRide
+                  : l10n.rideBroadcastMapRequest),
               backgroundColor: const Color(0xFF7C3AED),
               foregroundColor: Colors.white,
             )
@@ -505,7 +507,7 @@ class _RideBroadcastFeedScreenState extends State<RideBroadcastFeedScreen>
                     children: [
                       SizedBox(height: MediaQuery.of(context).size.height * 0.2),
                       Text(
-                        'Nu s-au putut încărca bulele. Trage în jos pentru reîncercare.\n${snap.error}',
+                        l10n.rideBroadcastBubblesLoadFailed(snap.error.toString()),
                         style: theme.textTheme.bodyMedium?.copyWith(
                           color: theme.colorScheme.error,
                         ),
@@ -564,8 +566,8 @@ class _RideBroadcastFeedScreenState extends State<RideBroadcastFeedScreen>
                             const SizedBox(height: 16),
                             Text(
                               onlyOutsideRadius
-                                  ? 'Nicio bulă în raza de ${_radiusKm.toInt()} km'
-                                  : 'Nicio bulă activă aici',
+                                  ? l10n.rideBroadcastNoBubbleInRadius(_radiusKm.toInt())
+                                  : l10n.rideBroadcastNoActiveBubbleHere,
                               style: theme.textTheme.titleMedium
                                   ?.copyWith(fontWeight: FontWeight.w800),
                               textAlign: TextAlign.center,
@@ -573,9 +575,8 @@ class _RideBroadcastFeedScreenState extends State<RideBroadcastFeedScreen>
                             const SizedBox(height: 12),
                             Text(
                               onlyOutsideRadius
-                                  ? 'Există bule active, dar sunt peste ${_radiusKm.toInt()} km față de locația curentă. Verifică pe hartă sau actualizează GPS-ul (trage în jos).'
-                                  : 'Bulele sunt vizibile pe hartă cam o oră de la plasare, apoi dispar. '
-                                      'Plasează una din meniul hărții. Dacă tocmai ai deschis ecranul, trage în jos pentru sincron.',
+                                  ? l10n.rideBroadcastBubblesOutsideRadiusHint(_radiusKm.toInt())
+                                  : l10n.rideBroadcastBubblesVisibilityHint,
                               style: theme.textTheme.bodyMedium?.copyWith(
                                 color: Colors.grey.shade600,
                                 height: 1.45,
@@ -590,7 +591,10 @@ class _RideBroadcastFeedScreenState extends State<RideBroadcastFeedScreen>
                 );
               }
 
-              final fmt = DateFormat('dd.MM.yyyy · HH:mm', 'ro');
+              final fmt = DateFormat(
+                'dd.MM.yyyy · HH:mm',
+                Localizations.localeOf(context).languageCode,
+              );
               return RefreshIndicator(
                 onRefresh: onPullRefresh,
                 child: ListView.builder(
@@ -628,7 +632,7 @@ class _RideBroadcastFeedScreenState extends State<RideBroadcastFeedScreen>
                       children: [
                         const Text('📋', style: TextStyle(fontSize: 48)),
                         const SizedBox(height: 16),
-                        Text('Nicio cerere postată încă',
+                        Text(l10n.rideBroadcastNoPostedRequestYet,
                             style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800)),
                       ],
                     ),
@@ -652,6 +656,7 @@ class _RideBroadcastFeedScreenState extends State<RideBroadcastFeedScreen>
   }
 
   Widget _buildEmptyState(ThemeData theme) {
+    final l10n = AppLocalizations.of(context)!;
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(40),
@@ -661,20 +666,20 @@ class _RideBroadcastFeedScreenState extends State<RideBroadcastFeedScreen>
             const Text('🏘️', style: TextStyle(fontSize: 64)),
             const SizedBox(height: 20),
             Text(
-              'Nicio cerere activă',
+              l10n.rideBroadcastNoActiveRequest,
               style: theme.textTheme.titleLarge
                   ?.copyWith(fontWeight: FontWeight.w800),
             ),
             const SizedBox(height: 10),
             Text(
-              'Fii primul din cartier care postează o cerere de cursă.',
+              l10n.rideBroadcastBeFirstHint,
               style: theme.textTheme.bodyMedium
                   ?.copyWith(color: Colors.grey.shade600, height: 1.5),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 16),
             Text(
-              'Dacă un prieten a postat dar nu vezi: trage în jos pentru reîmprospătare, verifică că îl ai în agendă cu același număr ca în profilul Nabour și că ai permisiune la contacte.',
+              l10n.rideBroadcastFriendPostedButNotVisibleHint,
               style: theme.textTheme.bodySmall
                   ?.copyWith(color: Colors.grey.shade500, height: 1.45),
               textAlign: TextAlign.center,
@@ -686,6 +691,7 @@ class _RideBroadcastFeedScreenState extends State<RideBroadcastFeedScreen>
   }
 
   Widget _buildRadiusFilteredEmptyState(ThemeData theme) {
+    final l10n = AppLocalizations.of(context)!;
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(40),
@@ -695,21 +701,21 @@ class _RideBroadcastFeedScreenState extends State<RideBroadcastFeedScreen>
             const Text('📍', style: TextStyle(fontSize: 64)),
             const SizedBox(height: 20),
             Text(
-              'Nicio cerere în raza de ${_radiusKm.toInt()} km',
+              l10n.rideBroadcastNoRequestInRadius(_radiusKm.toInt()),
               style: theme.textTheme.titleLarge
                   ?.copyWith(fontWeight: FontWeight.w800),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 10),
             Text(
-              'Există cereri în care ești inclus, dar sunt mai departe față de locația ta curentă. Te apropii sau pornești locația pentru filtre corecte.',
+              l10n.rideBroadcastIncludedButFarHint,
               style: theme.textTheme.bodyMedium
                   ?.copyWith(color: Colors.grey.shade600, height: 1.5),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 16),
             Text(
-              'Dacă aștepți de la un prieten apropiat, verifică și agendă + profilul Nabour cu același număr.',
+              l10n.rideBroadcastWaitingFriendHint,
               style: theme.textTheme.bodySmall
                   ?.copyWith(color: Colors.grey.shade500, height: 1.45),
               textAlign: TextAlign.center,
@@ -753,20 +759,20 @@ class _NeighborhoodBubbleFeedCard extends StatelessWidget {
   }
 
   Future<void> _confirmDelete(BuildContext context) async {
+    final l10n = AppLocalizations.of(context)!;
     final ok = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Ștergi cererea de pe hartă?'),
-        content: const Text(
-            'Bula dispare pentru toți vecinii; acțiunea nu poate fi anulată.'),
+        title: Text(l10n.rideBroadcastDeleteMapRequestTitle),
+        content: Text(l10n.rideBroadcastDeleteMapRequestConfirm),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Anulează'),
+            child: Text(l10n.cancel),
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Șterge', style: TextStyle(color: Colors.red)),
+            child: Text(l10n.delete, style: const TextStyle(color: Colors.red)),
           ),
         ],
       ),
@@ -776,14 +782,14 @@ class _NeighborhoodBubbleFeedCard extends StatelessWidget {
       await FirestoreService().deleteNeighborhoodRequest(request.id);
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Bula a fost ștearsă de pe hartă.')),
+          SnackBar(content: Text(l10n.rideBroadcastMapBubbleDeleted)),
         );
       }
     } catch (e) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Nu s-a putut șterge: $e'),
+            content: Text(l10n.rideBroadcastDeleteFailed(e.toString())),
             backgroundColor: Colors.red.shade800,
           ),
         );
@@ -793,6 +799,7 @@ class _NeighborhoodBubbleFeedCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
     final isMine =
         currentUid != null && currentUid == request.authorUid && currentUid!.isNotEmpty;
@@ -823,7 +830,7 @@ class _NeighborhoodBubbleFeedCard extends StatelessWidget {
                 ),
                 if (isMine)
                   IconButton(
-                    tooltip: 'Șterge de pe hartă',
+                    tooltip: l10n.rideBroadcastDeleteFromMapTooltip,
                     icon: Icon(Icons.delete_outline_rounded,
                         color: Colors.red.shade700),
                     onPressed: () => unawaited(_confirmDelete(context)),
@@ -840,13 +847,13 @@ class _NeighborhoodBubbleFeedCard extends StatelessWidget {
             ),
             const SizedBox(height: 6),
             Text(
-              'Plasată: $createdLabel',
+              l10n.rideBroadcastPlaced(createdLabel),
               style: theme.textTheme.bodySmall?.copyWith(
                 color: Colors.grey.shade800,
               ),
             ),
             Text(
-              'Expiră: $expiresLabel (≈1 h după plasare)',
+              l10n.rideBroadcastExpiresMapBubble(expiresLabel),
               style: theme.textTheme.bodySmall?.copyWith(
                 color: Colors.deepOrange.shade800,
                 fontWeight: FontWeight.w500,
@@ -855,7 +862,7 @@ class _NeighborhoodBubbleFeedCard extends StatelessWidget {
             if (distanceKm != null) ...[
               const SizedBox(height: 4),
               Text(
-                'La ~${distanceKm!.toStringAsFixed(1)} km față de tine',
+                l10n.rideBroadcastDistanceFromYou(distanceKm!.toStringAsFixed(1)),
                 style: theme.textTheme.bodySmall?.copyWith(
                   color: const Color(0xFF7C3AED),
                   fontWeight: FontWeight.w600,
@@ -953,20 +960,21 @@ class _BroadcastCardState extends State<_BroadcastCard> {
   }
 
   Future<void> _cancelRequest() async {
+    final l10n = AppLocalizations.of(context)!;
     final confirm = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Anulează cererea'),
-        content: const Text('Ești sigur că vrei să anulezi această cerere?'),
+        title: Text(l10n.rideBroadcastCancelRequestTitle),
+        content: Text(l10n.rideBroadcastCancelRequestConfirm),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Nu'),
+            child: Text(l10n.rideBroadcastNo),
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Da, anulează',
-                style: TextStyle(color: Colors.red)),
+            child: Text(l10n.rideBroadcastYesCancel,
+                style: const TextStyle(color: Colors.red)),
           ),
         ],
       ),
@@ -983,6 +991,7 @@ class _BroadcastCardState extends State<_BroadcastCard> {
   }
 
   Future<void> _offerRide() async {
+    final l10n = AppLocalizations.of(context)!;
     if (_isOffering || _hasMyOffer) return;
     setState(() => _isOffering = true);
 
@@ -1006,7 +1015,7 @@ class _BroadcastCardState extends State<_BroadcastCard> {
         driverId: uid,
         driverName: name,
         driverAvatar: avatar,
-        carInfo: carInfo.isEmpty ? 'Mașină personală' : carInfo,
+        carInfo: carInfo.isEmpty ? l10n.rideBroadcastPersonalCar : carInfo,
         etaMinutes: 5,
         offeredAt: DateTime.now(),
       );
@@ -1022,7 +1031,7 @@ class _BroadcastCardState extends State<_BroadcastCard> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Nu s-a putut trimite oferta: $e'),
+            content: Text(l10n.rideBroadcastOfferSendFailed(e.toString())),
             backgroundColor: Colors.red.shade800,
             behavior: SnackBarBehavior.floating,
           ),
@@ -1034,6 +1043,7 @@ class _BroadcastCardState extends State<_BroadcastCard> {
   }
 
   Future<void> _sendReply() async {
+    final l10n = AppLocalizations.of(context)!;
     final text = _replyController.text.trim();
     if (text.isEmpty) return;
 
@@ -1071,7 +1081,7 @@ class _BroadcastCardState extends State<_BroadcastCard> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Nu s-a putut trimite răspunsul: $e'),
+            content: Text(l10n.rideBroadcastReplySendFailed(e.toString())),
             backgroundColor: Colors.red.shade800,
             behavior: SnackBarBehavior.floating,
           ),
@@ -1123,10 +1133,11 @@ class _BroadcastCardState extends State<_BroadcastCard> {
   bool get _isAccepted => widget.request.status == 'accepted';
 
   void _openChat(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final request = widget.request;
     final isPassenger = _isMyRequest;
     final otherUserId = isPassenger ? request.acceptedDriverId! : request.passengerId;
-    final otherUserName = isPassenger ? (request.acceptedDriverName ?? 'Șofer') : request.passengerName;
+    final otherUserName = isPassenger ? (request.acceptedDriverName ?? l10n.rideBroadcastDriverFallback) : request.passengerName;
     Navigator.push(context, MaterialPageRoute(
       builder: (_) => ChatScreen(
         rideId: 'broadcast_${request.id}',
@@ -1137,20 +1148,21 @@ class _BroadcastCardState extends State<_BroadcastCard> {
   }
 
   Future<void> _confirmRide(BuildContext context) async {
+    final l10n = AppLocalizations.of(context)!;
     final done = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Confirmă cursa'),
-        content: const Text('Cursa s-a efectuat?'),
+        title: Text(l10n.rideBroadcastConfirmRideTitle),
+        content: Text(l10n.rideBroadcastRideCompletedQuestion),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Nu s-a efectuat', style: TextStyle(color: Colors.red)),
+            child: Text(l10n.rideBroadcastNotCompleted, style: const TextStyle(color: Colors.red)),
           ),
           ElevatedButton(
             onPressed: () => Navigator.pop(ctx, true),
             style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
-            child: const Text('Da, s-a efectuat'),
+            child: Text(l10n.rideBroadcastCompletedYes),
           ),
         ],
       ),
@@ -1159,11 +1171,16 @@ class _BroadcastCardState extends State<_BroadcastCard> {
 
     String? reason;
     if (!done) {
-      final reasons = ['Șoferul nu a mai venit', 'Pasagerul a anulat', 'Altă mașină', 'Alt motiv'];
+      final reasons = [
+        l10n.rideBroadcastReasonDriverNoShow,
+        l10n.rideBroadcastReasonPassengerCancelled,
+        l10n.rideBroadcastReasonAnotherCar,
+        l10n.rideBroadcastReasonOther,
+      ];
       reason = await showDialog<String>(
         context: context,
         builder: (ctx) => SimpleDialog(
-          title: const Text('Motivul'),
+          title: Text(l10n.rideBroadcastReasonTitle),
           children: [
             ...reasons.map((r) => SimpleDialogOption(
               onPressed: () => Navigator.pop(ctx, r),
@@ -1190,6 +1207,7 @@ class _BroadcastCardState extends State<_BroadcastCard> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
     final request = widget.request;
 
@@ -1226,7 +1244,7 @@ class _BroadcastCardState extends State<_BroadcastCard> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Expiră în ${_timeLeft()}',
+                        l10n.rideBroadcastExpiresIn(_timeLeft()),
                         style: TextStyle(
                             fontSize: 12, color: Colors.grey.shade500),
                       ),
@@ -1271,8 +1289,8 @@ class _BroadcastCardState extends State<_BroadcastCard> {
                       color: const Color(0xFF7C3AED).withValues(alpha: 0.10),
                       borderRadius: BorderRadius.circular(20),
                     ),
-                    child: const Text(
-                      'Cererea mea',
+                    child: Text(
+                      l10n.rideBroadcastMyRequest,
                       style: TextStyle(
                           fontSize: 11,
                           color: Color(0xFF7C3AED),
@@ -1350,10 +1368,10 @@ class _BroadcastCardState extends State<_BroadcastCard> {
 
           // ── Oferte primite (vizibil pasagerului) ─────────────────
           if (_isMyRequest && request.offers.isNotEmpty) ...[
-            const Padding(
+            Padding(
               padding: EdgeInsets.fromLTRB(14, 12, 14, 4),
               child: Text(
-                'Șoferi disponibili',
+                l10n.rideBroadcastAvailableDrivers,
                 style: TextStyle(
                     fontWeight: FontWeight.w800, fontSize: 13),
               ),
@@ -1368,10 +1386,10 @@ class _BroadcastCardState extends State<_BroadcastCard> {
 
           // ── Răspunsuri (Replica locală de chat) ────────────────
           if (request.replies.isNotEmpty) ...[
-            const Padding(
+            Padding(
               padding: EdgeInsets.fromLTRB(14, 12, 14, 4),
               child: Text(
-                'Răspunsuri',
+                l10n.rideBroadcastReplies,
                 style: TextStyle(
                     fontWeight: FontWeight.w800, fontSize: 13),
               ),
@@ -1391,7 +1409,7 @@ class _BroadcastCardState extends State<_BroadcastCard> {
               child: Row(
                 children: [
                   IconButton(
-                    tooltip: 'Închide',
+                    tooltip: l10n.close,
                     icon: Icon(Icons.close_rounded, color: Colors.grey.shade600),
                     onPressed: () {
                       _replyController.clear();
@@ -1403,7 +1421,7 @@ class _BroadcastCardState extends State<_BroadcastCard> {
                       controller: _replyController,
                       autofocus: true,
                       decoration: InputDecoration(
-                        hintText: 'Poți trimite mai multe mesaje — apasă trimitere pentru fiecare',
+                        hintText: l10n.rideBroadcastReplyHint,
                         hintStyle: const TextStyle(fontSize: 13),
                         contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                         isDense: true,
@@ -1437,7 +1455,9 @@ class _BroadcastCardState extends State<_BroadcastCard> {
                       border: Border.all(color: Colors.green.shade200),
                     ),
                     child: Text(
-                      '${request.offers.length} ${request.offers.length == 1 ? 'ofertă' : 'oferte'}',
+                      request.offers.length == 1
+                          ? l10n.rideBroadcastOffersOne(request.offers.length)
+                          : l10n.rideBroadcastOffersMany(request.offers.length),
                       style: TextStyle(
                           fontSize: 12,
                           color: Colors.green.shade700,
@@ -1452,7 +1472,7 @@ class _BroadcastCardState extends State<_BroadcastCard> {
                     child: TextButton.icon(
                       onPressed: () => setState(() => _isReplying = true),
                       icon: const Icon(Icons.reply_rounded, size: 16),
-                      label: const Text('Răspunde',
+                      label: Text(l10n.chatReply,
                           style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700)),
                       style: TextButton.styleFrom(
                         foregroundColor: const Color(0xFF7C3AED),
@@ -1470,7 +1490,7 @@ class _BroadcastCardState extends State<_BroadcastCard> {
                     child: OutlinedButton.icon(
                       onPressed: _cancelRequest,
                       icon: const Icon(Icons.close_rounded, size: 16),
-                      label: const Text('Anulează',
+                      label: Text(l10n.cancel,
                           style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700)),
                       style: OutlinedButton.styleFrom(
                         foregroundColor: Colors.red,
@@ -1488,7 +1508,7 @@ class _BroadcastCardState extends State<_BroadcastCard> {
                     child: ElevatedButton.icon(
                       onPressed: () => _openChat(context),
                       icon: const Icon(Icons.chat_rounded, size: 16),
-                      label: const Text('Chat', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700)),
+                      label: Text(l10n.chat, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700)),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF7C3AED),
                         foregroundColor: Colors.white,
@@ -1503,7 +1523,7 @@ class _BroadcastCardState extends State<_BroadcastCard> {
                     child: OutlinedButton.icon(
                       onPressed: () => _confirmRide(context),
                       icon: const Icon(Icons.check_circle_outline_rounded, size: 16),
-                      label: const Text('Confirmă', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700)),
+                      label: Text(l10n.confirm, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700)),
                       style: OutlinedButton.styleFrom(
                         foregroundColor: Colors.green,
                         side: const BorderSide(color: Colors.green),
@@ -1533,7 +1553,7 @@ class _BroadcastCardState extends State<_BroadcastCard> {
                               size: 16,
                             ),
                       label: Text(
-                        _hasMyOffer ? 'Ofertă trimisă' : 'Mă ofer',
+                        _hasMyOffer ? l10n.rideBroadcastOfferSent : l10n.rideBroadcastIOffer,
                         style: const TextStyle(
                             fontSize: 13,
                             fontWeight: FontWeight.w700),
@@ -1697,13 +1717,14 @@ class _HistoryCard extends StatelessWidget {
     required this.onDelete,
   });
 
-  String _statusLabel() {
+  String _statusLabel(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     switch (request.status) {
-      case 'completed': return request.completionStatus == 'done' ? '✅ Efectuată' : '❌ Neefectuată';
-      case 'accepted': return '🤝 Acceptată';
-      case 'cancelled': return '🚫 Anulată';
-      case 'open': return '🕐 Activă';
-      default: return '⏱ Expirată';
+      case 'completed': return request.completionStatus == 'done' ? l10n.rideBroadcastStatusDone : l10n.rideBroadcastStatusNotDone;
+      case 'accepted': return l10n.rideBroadcastStatusAccepted;
+      case 'cancelled': return l10n.rideBroadcastStatusCancelled;
+      case 'open': return l10n.rideBroadcastStatusActive;
+      default: return l10n.rideBroadcastStatusExpired;
     }
   }
 
@@ -1718,6 +1739,7 @@ class _HistoryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
     final cs = theme.colorScheme;
     final local = request.createdAt.toLocal();
@@ -1752,7 +1774,7 @@ class _HistoryCard extends StatelessWidget {
                   color: _statusColor().withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(20),
                 ),
-                child: Text(_statusLabel(), style: TextStyle(fontSize: 12, color: _statusColor(), fontWeight: FontWeight.w700)),
+                child: Text(_statusLabel(context), style: TextStyle(fontSize: 12, color: _statusColor(), fontWeight: FontWeight.w700)),
               ),
               const Spacer(),
               Text(
@@ -1793,12 +1815,12 @@ class _HistoryCard extends StatelessWidget {
             Row(children: [
               const Icon(Icons.drive_eta_rounded, size: 13, color: Color(0xFF7C3AED)),
               const SizedBox(width: 4),
-              Text('Șofer: ${request.acceptedDriverName}', style: const TextStyle(fontSize: 12, color: Color(0xFF7C3AED), fontWeight: FontWeight.w600)),
+              Text(l10n.rideBroadcastDriverWithName(request.acceptedDriverName!), style: const TextStyle(fontSize: 12, color: Color(0xFF7C3AED), fontWeight: FontWeight.w600)),
             ]),
           ],
           if (request.notDoneReason != null && request.notDoneReason!.isNotEmpty) ...[
             const SizedBox(height: 6),
-            Text('Motiv: ${request.notDoneReason}', style: TextStyle(fontSize: 12, color: Colors.red.shade400, fontStyle: FontStyle.italic)),
+            Text(l10n.rideBroadcastReasonWithValue(request.notDoneReason!), style: TextStyle(fontSize: 12, color: Colors.red.shade400, fontStyle: FontStyle.italic)),
           ],
         ],
       ),
@@ -1842,12 +1864,12 @@ class _NewRideBroadcastScreenState
   static const int _maxOpenBroadcastsPerPassenger = 3;
 
   static const List<String> _quickMessages = [
-    'Merg la supermarket, are cineva loc? 🛒',
-    'Dus la stația de metrou, oricine merge? 🚇',
-    'Merg spre centru în ~10 min ✌️',
-    'Trebuie să ajung la spital, urgent 🏥',
-    'Merg la școală cu copilul, loc disponibil? 👧',
-    'Plecare spre aeroport dimineață ✈️',
+    'Going to the supermarket, anyone has a free seat? 🛒',
+    'Heading to the metro station, anyone going? 🚇',
+    'I am going downtown in ~10 min ✌️',
+    'I need to get to the hospital urgently 🏥',
+    'Going to school with my child, any seat available? 👧',
+    'Heading to the airport this morning ✈️',
   ];
 
   @override
@@ -1858,6 +1880,7 @@ class _NewRideBroadcastScreenState
   }
 
   Future<void> _post() async {
+    final l10n = AppLocalizations.of(context)!;
     final msg = _messageController.text.trim();
     if (msg.isEmpty) return;
     setState(() => _isPosting = true);
@@ -1880,8 +1903,8 @@ class _NewRideBroadcastScreenState
           setState(() => _isPosting = false);
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: const Text(
-                'Ai deja $_maxOpenBroadcastsPerPassenger cereri active. Închide sau așteaptă expirarea uneia (30 min) înainte de o nouă postare.',
+              content: Text(
+                l10n.rideBroadcastTooManyActiveRequests(_maxOpenBroadcastsPerPassenger),
               ),
               backgroundColor: Colors.orange.shade900,
               behavior: SnackBarBehavior.floating,
@@ -1977,7 +2000,7 @@ class _NewRideBroadcastScreenState
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-              content: Text('Eroare: $e'),
+              content: Text(l10n.rideBroadcastErrorWithMessage(e.toString())),
               backgroundColor: Colors.red),
         );
       }
@@ -1988,12 +2011,13 @@ class _NewRideBroadcastScreenState
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
     final cs = theme.colorScheme;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Cer o cursă'),
+        title: Text(l10n.rideBroadcastAskRideTitle),
         centerTitle: true,
       ),
       body: SingleChildScrollView(
@@ -2017,7 +2041,7 @@ class _NewRideBroadcastScreenState
                   const SizedBox(width: 10),
                   Expanded(
                     child: Text(
-                      'Cererea ta va fi vizibilă persoanelor din agenda ta timp de 30 de minute.',
+                      l10n.rideBroadcastPostVisibilityHint,
                       style: theme.textTheme.bodySmall?.copyWith(
                         color: cs.onSurface.withValues(alpha: 0.92),
                         height: 1.4,
@@ -2032,7 +2056,7 @@ class _NewRideBroadcastScreenState
 
             // ── Quick chips: inverseSurface + onInverseSurface (pilule citibile mereu) ──
             Text(
-              'Selectează rapid sau scrie',
+              l10n.rideBroadcastQuickSelectOrWrite,
               style: theme.textTheme.titleSmall
                   ?.copyWith(fontWeight: FontWeight.w800, color: cs.onSurface),
             ),
@@ -2077,8 +2101,8 @@ class _NewRideBroadcastScreenState
               style: TextStyle(color: cs.onSurface),
               cursorColor: cs.primary,
               decoration: InputDecoration(
-                labelText: 'Mesajul tău *',
-                hintText: 'Unde vrei să mergi? Orice detaliu util...',
+                labelText: l10n.rideBroadcastYourMessageRequired,
+                hintText: l10n.rideBroadcastMessageHint,
                 labelStyle: TextStyle(color: cs.onSurface.withValues(alpha: 0.85)),
                 hintStyle: TextStyle(color: cs.onSurface.withValues(alpha: 0.45)),
                 border: OutlineInputBorder(
@@ -2095,8 +2119,8 @@ class _NewRideBroadcastScreenState
               style: TextStyle(color: cs.onSurface),
               cursorColor: cs.primary,
               decoration: InputDecoration(
-                labelText: 'Destinație (opțional)',
-                hintText: 'ex: Kaufland Titan, Stația Iancului...',
+                labelText: l10n.rideBroadcastDestinationOptional,
+                hintText: l10n.rideBroadcastDestinationHint,
                 labelStyle: TextStyle(color: cs.onSurface.withValues(alpha: 0.85)),
                 hintStyle: TextStyle(color: cs.onSurface.withValues(alpha: 0.45)),
                 prefixIcon: Icon(Icons.location_on_outlined, color: cs.onSurfaceVariant),
@@ -2121,8 +2145,8 @@ class _NewRideBroadcastScreenState
                             color: Colors.white, strokeWidth: 2),
                       )
                     : const Icon(Icons.send_rounded),
-                label: const Text(
-                  'Postează cererea',
+                label: Text(
+                  l10n.rideBroadcastPostRequest,
                   style: TextStyle(
                       fontSize: 16, fontWeight: FontWeight.w800),
                 ),
@@ -2138,7 +2162,7 @@ class _NewRideBroadcastScreenState
             const SizedBox(height: 12),
             Center(
               child: Text(
-                'Cererea expiră automat după 30 de minute.',
+                l10n.rideBroadcastExpiresAfterThirtyMinutes,
                 style: theme.textTheme.bodySmall?.copyWith(
                   color: cs.onSurfaceVariant,
                 ),

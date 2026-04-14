@@ -22,7 +22,7 @@ import '../../models/saved_address_model.dart';
 import '../../screens/searching_for_driver_screen.dart';
 import '../../utils/deprecated_apis_fix.dart';
 import '../../utils/input_validator.dart';
-import '../../services/bucharest_locations_database.dart';
+import '../../services/buc_locations_db.dart';
 import '../utils/voice_translations.dart';
 import 'package:nabour_app/utils/logger.dart';
 
@@ -1845,7 +1845,7 @@ class RideFlowManager {
             await geocoding_svc.GeocodingService().fetchSuggestions(_destination!, pos);
         if (suggestions.isEmpty) {
           suggestions = await geocoding_svc.GeocodingService().fetchSuggestions(
-            '$_destination, România',
+            _destination!,
             pos,
           );
         }
@@ -2582,47 +2582,13 @@ class RideFlowManager {
             currentPos,
           );
           
-          // Încercare 2: Dacă nu găsește, adaugă explicit "România"
+          // Încercare 2: Re-încearcă fără a forța țara.
           if (suggestions.isEmpty) {
-            Logger.warning('Retry 1: Adding "România" to query', tag: 'GPS');
+            Logger.warning('Retry 1: repeat neutral query', tag: 'GPS');
             suggestions = await geocoding_svc.GeocodingService().fetchSuggestions(
-              '$_destination, România',
+              _destination!,
               currentPos,
             );
-          }
-          
-          // Încercare 3: Dacă tot nu găsește și e aproape de București, adaugă "București"
-          if (suggestions.isEmpty) {
-            final distanceToBucharest = _calculateHaversineDistance(
-              _pickupLatitude!,
-              _pickupLongitude!,
-              44.4268, // București center
-              26.1025,
-            );
-            if (distanceToBucharest < 50) { // < 50km de București
-              Logger.warning('Retry 2: Adding "București" to query', tag: 'GPS');
-              suggestions = await geocoding_svc.GeocodingService().fetchSuggestions(
-                '$_destination, București, România',
-                currentPos,
-              );
-            }
-          }
-          
-          // Încercare 4: Dacă e aproape de Ilfov/Bragadiru, încearcă cu "Ilfov"
-          if (suggestions.isEmpty) {
-            final distanceToBragadiru = _calculateHaversineDistance(
-              _pickupLatitude!,
-              _pickupLongitude!,
-              44.3704, // Bragadiru center
-              25.9661,
-            );
-            if (distanceToBragadiru < 20) { // < 20km de Bragadiru
-              Logger.warning('Retry 3: Adding "Ilfov" to query', tag: 'GPS');
-              suggestions = await geocoding_svc.GeocodingService().fetchSuggestions(
-                '$_destination, Ilfov, România',
-                currentPos,
-              );
-            }
           }
           
           if (suggestions.isNotEmpty) {
@@ -2679,13 +2645,13 @@ class RideFlowManager {
                   Logger.debug('Distance to destination: ${distanceKm.toStringAsFixed(2)} km', tag: 'GPS');
                 }
               } else {
-                // ✅ PRIORITATE 3: Dacă locationFromAddress eșuează, încearcă cu "România" adăugat
-                Logger.error('locationFromAddress failed, retrying with "România"...', tag: 'GPS');
-                locations = await geocoding.locationFromAddress('$_destination, România');
+                // ✅ PRIORITATE 3: Dacă locationFromAddress eșuează, repetăm query-ul neutru.
+                Logger.error('locationFromAddress failed, retrying neutral query...', tag: 'GPS');
+                locations = await geocoding.locationFromAddress(_destination!);
                 if (locations.isNotEmpty) {
                   _destinationLatitude = locations.first.latitude;
                   _destinationLongitude = locations.first.longitude;
-                  Logger.info('Destination found via locationFromAddress (with România): $_destinationLatitude, $_destinationLongitude', tag: 'GPS');
+                  Logger.info('Destination found via locationFromAddress retry: $_destinationLatitude, $_destinationLongitude', tag: 'GPS');
                 } else {
                   // ✅ PRIORITATE 4: Dacă tot eșuează, încearcă Gemini AI
                   Logger.error('locationFromAddress failed, trying Gemini AI for address clarification and coordinates...', tag: 'GPS');
@@ -2731,28 +2697,11 @@ class RideFlowManager {
                           currentPos,
                         );
                         
-                        // Dacă tot nu găsește, încearcă cu "România" adăugat
                         if (suggestions.isEmpty) {
                           suggestions = await geocoding_svc.GeocodingService().fetchSuggestions(
-                            '$clarifiedAddress, România',
+                            clarifiedAddress,
                             currentPos,
                           );
-                        }
-                        
-                        // Dacă tot nu găsește, încearcă cu "București" adăugat
-                        if (suggestions.isEmpty) {
-                          final distanceToBucharest = _calculateHaversineDistance(
-                            _pickupLatitude!,
-                            _pickupLongitude!,
-                            44.4268,
-                            26.1025,
-                          );
-                          if (distanceToBucharest < 50) {
-                            suggestions = await geocoding_svc.GeocodingService().fetchSuggestions(
-                              '$clarifiedAddress, București, România',
-                              currentPos,
-                            );
-                          }
                         }
                         
                         if (suggestions.isNotEmpty) {

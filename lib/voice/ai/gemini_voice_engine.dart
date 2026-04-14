@@ -209,7 +209,7 @@ Text: "$text"
   /// 🎯 Construiește prompt-ul în română
   String _buildGeminiPromptRomanian(String userInput, VoiceContext context) {
     return '''
-Ești asistentul vocal pentru Nabour, o aplicație de ride sharing din România.
+Ești asistentul vocal pentru Nabour, o aplicație de ride sharing.
 
 🎯 MOD AUTONOM: După ce utilizatorul confirmă destinația, procesezi TOTUL automat:
 - Detectezi locația curentă automat
@@ -281,7 +281,7 @@ RĂSPUNSUL TĂU (JSON):
   /// 🎯 Construiește prompt-ul în engleză
   String _buildGeminiPromptEnglish(String userInput, VoiceContext context) {
     return '''
-You are the voice assistant for Nabour, a ride sharing app from Romania.
+You are the voice assistant for Nabour, a ride sharing app.
 
 🎯 AUTONOMOUS MODE: After the user confirms the destination, you process EVERYTHING automatically:
 - Detect current location automatically
@@ -445,7 +445,7 @@ YOUR RESPONSE (JSON):
       
       // Construiește un prompt specific pentru clarificarea adresei și obținerea coordonatelor
       final prompt = '''
-Ești un asistent pentru clarificarea adreselor în România și obținerea coordonatelor GPS.
+Ești un asistent pentru clarificarea adreselor și obținerea coordonatelor GPS.
 
 TASK: Clarifică și completează următoarea adresă și, dacă este posibil, oferă coordonatele GPS exacte.
 
@@ -453,10 +453,10 @@ Adresa originală: "$originalAddress"
 
 INSTRUCȚIUNI:
 1. Clarifică adresa completă cu orașul și țara
-2. Dacă știi coordonatele GPS exacte pentru această adresă în România, oferă-le
+2. Dacă știi coordonatele GPS exacte pentru această adresă, oferă-le
 3. Returnează răspunsul în format JSON:
 {
-  "address": "Adresa clarificată completă, Oraș, România",
+  "address": "Adresa clarificată completă, oraș/regiune și țară (dacă e clară)",
   "latitude": 44.4268 (sau null dacă nu știi),
   "longitude": 26.1025 (sau null dacă nu știi)
 }
@@ -467,9 +467,9 @@ IMPORTANT:
 - Dacă adresa conține referințe la locații cunoscute (ex: "baraj", "sad", "lac"), încearcă să identifici locația exactă
 
 Exemple:
-- Input: "aeroport" → Output: {"address": "Aeroportul Henri Coandă, Otopeni, România", "latitude": 44.5721, "longitude": 26.0691}
-- Input: "gară" → Output: {"address": "Gara de Nord, București, România", "latitude": 44.4478, "longitude": 26.0758}
-- Input: "aleea barajului sadului nr 10" → Output: {"address": "Aleea Barajului Sadului, nr. 10, București, România", "latitude": null, "longitude": null} (dacă nu știi coordonatele exacte)
+- Input: "airport" → Output: {"address": "Airport name, city, country", "latitude": <value_or_null>, "longitude": <value_or_null>}
+- Input: "central station" → Output: {"address": "Main station, city, country", "latitude": <value_or_null>, "longitude": <value_or_null>}
+- Input: "street name + number" → Output: {"address": "Street, number, city, country", "latitude": null, "longitude": null} (dacă nu știi coordonatele exacte)
 
 Răspuns JSON:
 ''';
@@ -534,8 +534,8 @@ Răspuns JSON:
           final lat = latitude.toDouble();
           final lon = longitude.toDouble();
           
-          // Validează coordonatele (România este între 43.5-48.5 lat și 20.0-30.0 lon)
-          if (lat >= 43.5 && lat <= 48.5 && lon >= 20.0 && lon <= 30.0) {
+          // Validează coordonatele la nivel global.
+          if (lat >= -90 && lat <= 90 && lon >= -180 && lon <= 180) {
             result['latitude'] = lat;
             result['longitude'] = lon;
             Logger.info('Gemini AI provided coordinates: $lat, $lon', tag: 'GEMINI_GEOCODE');
@@ -604,27 +604,7 @@ Răspuns JSON:
       // Normalizează adresa
       String clarified = originalAddress.trim();
       
-      // Adaugă "România" dacă lipsește
-      if (!clarified.toLowerCase().contains('românia') && 
-          !clarified.toLowerCase().contains('romania')) {
-        clarified = '$clarified, România';
-      }
-      
-      // Încearcă să identifice orașul dacă lipsește (presupunem București pentru adrese comune)
-      final lowerAddress = clarified.toLowerCase();
-      if (!lowerAddress.contains('bucurești') && 
-          !lowerAddress.contains('bucuresti') &&
-          !lowerAddress.contains('otopeni') &&
-          !lowerAddress.contains('ilfov')) {
-        // Dacă adresa conține "baraj", "sad", "dunării", probabil e în București
-        if (lowerAddress.contains('baraj') || 
-            lowerAddress.contains('sad') || 
-            lowerAddress.contains('dunării') ||
-            lowerAddress.contains('dunarii')) {
-          clarified = clarified.replaceAll(RegExp(r',\s*România$'), '');
-          clarified = '$clarified, București, România';
-        }
-      }
+      // Fallback global: nu forțăm țară/oraș implicit.
       
       // Verifică dacă adresa clarificată este diferită de originală
       if (clarified.toLowerCase() == originalAddress.toLowerCase()) {
@@ -1088,8 +1068,14 @@ Răspuns JSON:
       };
     }
     
+    final isRomanianLocalContext = _isRomanianLocalContext(input, context);
+    final ambiguousAliases = _ambiguousLocalDestinationAliases;
+
     // 🔍 Caut destinația în input
     for (final entry in destinations.entries) {
+      if (!isRomanianLocalContext && ambiguousAliases.contains(entry.key)) {
+        continue;
+      }
       if (input.contains(entry.key)) {
         Logger.info('Local processing: Found known destination "${entry.value}"', tag: 'GEMINI_VOICE');
         return GeminiVoiceResponse(
@@ -1144,6 +1130,63 @@ Răspuns JSON:
     
     return null; // Input prea scurt
   }
+
+  bool _isRomanianLocalContext(String input, VoiceContext? context) {
+    final signalText = <String>[
+      input,
+      context?.destination ?? '',
+      context?.pickup ?? '',
+      context?.conversationHistory.join(' ') ?? '',
+    ].join(' ').toLowerCase();
+
+    const localSignals = <String>{
+      'romania',
+      'românia',
+      'bucuresti',
+      'bucurești',
+      'ilfov',
+      'otopeni',
+      'piata unirii',
+      'piața unirii',
+      'gara de nord',
+      'henri coanda',
+      'henri coandă',
+      'baneasa',
+      'băneasa',
+      'victoriei',
+      'revolutiei',
+      'revoluției',
+    };
+
+    for (final signal in localSignals) {
+      if (signalText.contains(signal)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  static const Set<String> _ambiguousLocalDestinationAliases = <String>{
+    // EN generic aliases
+    'station',
+    'train station',
+    'railway station',
+    'airport',
+    'center',
+    'city center',
+    'downtown',
+    'university',
+    'mall',
+    // RO generic aliases
+    'gara',
+    'aeroport',
+    'aeroportul',
+    'centru',
+    'centrul',
+    'universitate',
+    'opera',
+    'victoria',
+  };
   
   /// 🛑 Oprește procesarea
   Future<void> stop() async {

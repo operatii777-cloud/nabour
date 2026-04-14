@@ -492,7 +492,7 @@ class RoutingService {
 
     // Fallback to HTTP request
     final url = Uri.parse(
-        '$_geocodingBaseUrl/$query.json?access_token=$_accessToken&country=RO&autocomplete=true');
+        '$_geocodingBaseUrl/$query.json?access_token=$_accessToken&autocomplete=true');
 
     try {
       final response = await http.get(url);
@@ -524,7 +524,7 @@ class RoutingService {
   /// Obține adresa corespunzătoare unor coordonate geografice (Reverse Geocoding).
   Future<Map<String, dynamic>> getReverseGeocoding(double lat, double lng) async {
     final url = Uri.parse(
-        '$_geocodingBaseUrl/$lng,$lat.json?access_token=$_accessToken&country=RO');
+        '$_geocodingBaseUrl/$lng,$lat.json?access_token=$_accessToken');
 
     try {
       final response = await http.get(url);

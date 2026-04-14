@@ -23,6 +23,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:nabour_app/utils/logger.dart';
 import 'package:nabour_app/config/nabour_map_styles.dart';
+import 'package:nabour_app/l10n/app_localizations.dart';
 
 class RideRequestScreen extends StatefulWidget {
   final geolocator.Position startPosition;
@@ -90,23 +91,24 @@ class _RideRequestScreenState extends State<RideRequestScreen> {
   
   // ✅ NOU: Helper pentru afișarea statusului cursei
   String _getStatusDisplayName(String status) {
+    final l10n = AppLocalizations.of(context)!;
     switch (status) {
       case 'searching':
-        return 'Căutare șoferi';
+        return l10n.rideRequestStatusSearching;
       case 'pending':
-        return 'În așteptare';
+        return l10n.rideRequestStatusPending;
       case 'driver_found':
-        return 'Șofer găsit';
+        return l10n.rideRequestStatusDriverFound;
       case 'accepted':
-        return 'Acceptată';
+        return l10n.rideRequestStatusAccepted;
       case 'arrived':
-        return 'Șoferul a ajuns';
+        return l10n.rideRequestStatusDriverArrived;
       case 'in_progress':
-        return 'În curs';
+        return l10n.rideRequestStatusInProgress;
       case 'driver_rejected':
-        return 'Șofer respins';
+        return l10n.rideRequestStatusDriverRejected;
       case 'driver_declined':
-        return 'Șofer a refuzat';
+        return l10n.rideRequestStatusDriverDeclined;
       default:
         return status;
     }
@@ -209,12 +211,14 @@ class _RideRequestScreenState extends State<RideRequestScreen> {
       Logger.debug("--- Route and ETA calculation successful ---");
     } on TimeoutException {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('A expirat timpul de așteptare. Te rugăm să verifici conexiunea la internet.'), backgroundColor: Colors.red));
+          final l10n = AppLocalizations.of(context)!;
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.rideRequestTimeoutInternet), backgroundColor: Colors.red));
         }
     } catch (e) {
       Logger.error("Error in _calculateRouteAndEta: ${e.toString()}");
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Eroare la calcularea rutei: ${e.toString().replaceAll("Exception: ", "")}'), backgroundColor: Colors.red));
+        final l10n = AppLocalizations.of(context)!;
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.rideRequestRouteCalcError(e.toString().replaceAll("Exception: ", ""))), backgroundColor: Colors.red));
       }
     } finally {
         if(mounted) {
@@ -292,7 +296,7 @@ class _RideRequestScreenState extends State<RideRequestScreen> {
     final userId = FirebaseAuth.instance.currentUser?.uid;
     if (userId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Eroare: Utilizatorul nu este autentificat.'), backgroundColor: Colors.red),
+        SnackBar(content: Text(AppLocalizations.of(context)!.rideRequestUserNotAuthenticated), backgroundColor: Colors.red),
       );
       return;
     }
@@ -352,28 +356,28 @@ class _RideRequestScreenState extends State<RideRequestScreen> {
       final shouldCancel = await showGeneralDialog<bool>(
         context: context,
         barrierColor: Colors.black54,
-        barrierLabel: 'Cursă activă',
+        barrierLabel: AppLocalizations.of(context)!.activeRide,
         pageBuilder: (context, animation, secondaryAnimation) {
           return AlertDialog(
-            title: const Text('Cursă activă detectată'),
+            title: Text(AppLocalizations.of(context)!.rideRequestActiveRideDetected),
             content: SingleChildScrollView(
               child: Text(
                 '${e.message}\n\n'
-                'Status cursă: ${_getStatusDisplayName(e.activeRideStatus)}\n'
-                'ID cursă: ${e.activeRideId.length > 8 ? e.activeRideId.substring(0, 8) : e.activeRideId}...',
+                '${AppLocalizations.of(context)!.rideRequestStatusLabel}: ${_getStatusDisplayName(e.activeRideStatus)}\n'
+                '${AppLocalizations.of(context)!.rideRequestIdLabel}: ${e.activeRideId.length > 8 ? e.activeRideId.substring(0, 8) : e.activeRideId}...',
               ),
             ),
             actions: [
               TextButton(
                 onPressed: () => rootNavigator.pop(false),
-                child: const Text('Anulează'),
+                child: Text(AppLocalizations.of(context)!.cancel),
               ),
               ElevatedButton(
                 onPressed: () => rootNavigator.pop(true),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.orange,
                 ),
-                child: const Text('Anulează cursa precedentă'),
+                child: Text(AppLocalizations.of(context)!.rideRequestCancelPreviousRide),
               ),
             ],
           );
@@ -394,7 +398,7 @@ class _RideRequestScreenState extends State<RideRequestScreen> {
           });
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Eroare la anularea cursei precedente: $cancelError'),
+              content: Text(AppLocalizations.of(context)!.rideRequestCancelPreviousRideError(cancelError.toString())),
               backgroundColor: Colors.red,
             ),
           );
@@ -419,7 +423,7 @@ class _RideRequestScreenState extends State<RideRequestScreen> {
       });
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Eroare la crearea cursei: $e'),
+          content: Text(AppLocalizations.of(context)!.rideRequestCreateRideError(e.toString())),
           backgroundColor: Colors.red,
         ),
       );
@@ -453,10 +457,11 @@ class _RideRequestScreenState extends State<RideRequestScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       resizeToAvoidBottomInset: false,
       appBar: AppBar(
-        title: Text(_faresByCategory.isEmpty ? 'Where to?' : 'Choose a ride'),
+        title: Text(_faresByCategory.isEmpty ? l10n.rideRequestWhereTo : l10n.rideRequestChooseRide),
         leading: _faresByCategory.isNotEmpty ? IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: _resetToAddressInput,
@@ -542,6 +547,7 @@ class _RideRequestScreenState extends State<RideRequestScreen> {
   }
 
   Widget _buildCategorySelection() {
+    final l10n = AppLocalizations.of(context)!;
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -556,12 +562,12 @@ class _RideRequestScreenState extends State<RideRequestScreen> {
         const Divider(height: 24),
         _buildAnyCategoryButton(),
         const SizedBox(height: 12),
-        const Row(
+        Row(
           children: [
             Expanded(child: Divider()),
             Padding(
-              padding: EdgeInsets.symmetric(horizontal: 8),
-              child: Text('sau alege categoria', style: TextStyle(fontSize: 12, color: Colors.grey)),
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              child: Text(l10n.rideRequestOrChooseCategory, style: const TextStyle(fontSize: 12, color: Colors.grey)),
             ),
             Expanded(child: Divider()),
           ],
@@ -587,7 +593,7 @@ class _RideRequestScreenState extends State<RideRequestScreen> {
                 ),
                 const SizedBox(width: 8),
                 Text(
-                  'Căutare șoferi...',
+                  l10n.searchDriverSearchingTitle,
                   style: TextStyle(
                     color: Theme.of(context).colorScheme.primary,
                     fontSize: 14,
@@ -607,7 +613,7 @@ class _RideRequestScreenState extends State<RideRequestScreen> {
               textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)
             ),
             child: Text(
-              _isAutoStarting ? 'Căutare în curs...' : 'Confirm & Request Ride',
+              _isAutoStarting ? l10n.rideRequestSearchInProgress : l10n.rideRequestConfirmAndRequest,
               style: const TextStyle(color: Colors.white),
             ),
           ),
@@ -641,6 +647,7 @@ class _RideRequestScreenState extends State<RideRequestScreen> {
   }
 
   Widget _buildAnyCategoryButton() {
+    final l10n = AppLocalizations.of(context)!;
     final isSelected = _selectedCategory == RideCategory.any;
     return GestureDetector(
       onTap: () => _onCategorySelected(RideCategory.any),
@@ -669,7 +676,7 @@ class _RideRequestScreenState extends State<RideRequestScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Orice categorie disponibilă',
+                    l10n.rideRequestAnyCategoryAvailable,
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 15,
@@ -677,7 +684,7 @@ class _RideRequestScreenState extends State<RideRequestScreen> {
                     ),
                   ),
                   Text(
-                    'Cel mai rapid șofer disponibil din zonă',
+                    l10n.rideRequestFastestDriverInArea,
                     style: TextStyle(
                       fontSize: 12,
                       color: isSelected ? Colors.white70 : Colors.grey.shade600,
@@ -1069,17 +1076,17 @@ class _RideRequestScreenState extends State<RideRequestScreen> {
   String _getCategorySubtitle(RideCategory category) {
     switch (category) {
       case RideCategory.any:
-        return "Cel mai rapid șofer disponibil.";
+        return AppLocalizations.of(context)!.rideRequestAnyCategorySubtitle;
       case RideCategory.standard:
         return "Cel mai accesibil mod de transport.";
       case RideCategory.family:
-        return "Spațiu extra pentru familie și bagaje.";
+        return AppLocalizations.of(context)!.rideRequestFamilySubtitle;
       case RideCategory.energy:
-        return "Călătorește eco cu o mașină electrică.";
+        return AppLocalizations.of(context)!.rideRequestEnergySubtitle;
       case RideCategory.best:
         return "Confort premium garantat.";
       case RideCategory.utility:
-        return "Dubă sau utilitar (până la 3.5t). Ideal pentru mutări.";
+        return AppLocalizations.of(context)!.rideRequestUtilitySubtitle;
     }
   }
   

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../voice/passenger/passenger_voice_controller_adapter.dart';
+import '../voice/passenger/pax_voice_ctrl_adapter.dart';
 import '../voice/driver/driver_voice_controller.dart';
 
 class VoiceDemoScreen extends StatefulWidget {

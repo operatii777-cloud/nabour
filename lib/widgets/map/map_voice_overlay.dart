@@ -4,7 +4,7 @@
 // Inlocuieste cardul mare care se suprapunea peste panelul de adrese.
 
 import 'package:flutter/material.dart';
-import 'package:nabour_app/voice/integration/friendsride_voice_integration.dart';
+import 'package:nabour_app/voice/integration/friends_voice_integration.dart';
 import 'package:nabour_app/voice/states/voice_interaction_states.dart';
 
 /// Buton pulsatoriu flotant pentru controlul asistentului vocal.

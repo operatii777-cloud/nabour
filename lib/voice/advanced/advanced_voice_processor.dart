@@ -11,7 +11,7 @@ import '../core/conversational_ai_engine.dart';
 import '../../services/firestore_service.dart';
 import '../../services/routing_service.dart';
 import '../../services/ai_location_service.dart';
-import 'package:nabour_app/services/passenger_allowed_driver_uids.dart';
+import 'package:nabour_app/services/pax_allowed_drv_uids.dart';
 
 import '../../models/simple_location.dart';
 import '../../models/voice_models.dart';

@@ -44,7 +44,7 @@ class AIMethods {
     final commandType = getCommandType(input);
     switch (commandType) {
       case 'booking':
-        return ['Piața Victoriei', 'Aeroportul Otopeni', 'Mall AFI'];
+        return ['City center', 'Main station', 'Airport'];
       case 'pricing':
         return ['Preț până la centru', 'Tarif către aeroport'];
       case 'driver_search':
@@ -72,7 +72,7 @@ class AIMethods {
 
   /// Obține județele disponibile
   static List<String> getAvailableCounties() {
-    return ['București', 'Ilfov'];
+    return ['Global'];
   }
 
   /// Obține categoriile disponibile
@@ -88,7 +88,7 @@ class AIMethods {
       case 'ilfov':
         return ['Aeroportul Otopeni', 'Băneasa Shopping City'];
       default:
-        return ['Centrul', 'Mall-ul principal'];
+        return ['City center', 'Main station', 'Airport'];
     }
   }
 
@@ -114,7 +114,7 @@ class AIMethods {
         ];
       default:
         return [
-          {'name': 'Locație Test', 'address': 'Adresă Test'},
+          {'name': 'Local destination', 'address': 'Local address'},
         ];
     }
   }

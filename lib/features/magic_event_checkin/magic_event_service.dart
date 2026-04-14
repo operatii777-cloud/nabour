@@ -118,4 +118,44 @@ class MagicEventService {
   Future<void> setEventActive(String eventId, bool active) async {
     await _col.doc(eventId).update({'isActive': active});
   }
+
+  static const int _batchLimit = 450;
+
+  /// Șterge documentele din `participants`, apoi evenimentul.
+  Future<void> deleteEvent(String eventId) async {
+    final eventRef = _col.doc(eventId);
+    final partCol = eventRef.collection('participants');
+    while (true) {
+      final snap = await partCol.limit(500).get();
+      if (snap.docs.isEmpty) break;
+      var batch = _db.batch();
+      var n = 0;
+      for (final d in snap.docs) {
+        batch.delete(d.reference);
+        n++;
+        if (n >= _batchLimit) {
+          await batch.commit();
+          batch = _db.batch();
+          n = 0;
+        }
+      }
+      if (n > 0) {
+        await batch.commit();
+      }
+    }
+    await eventRef.delete();
+    Logger.info('Magic event deleted: $eventId', tag: 'MAGIC_EVENT');
+  }
+
+  /// Șterge toate evenimentele afacerii (cu subcolecții participants).
+  Future<void> deleteAllEventsForBusiness(String businessId) async {
+    final snap = await _col.where('businessId', isEqualTo: businessId).get();
+    for (final doc in snap.docs) {
+      await deleteEvent(doc.id);
+    }
+    Logger.info(
+      'Magic events bulk deleted for business: $businessId (${snap.docs.length})',
+      tag: 'MAGIC_EVENT',
+    );
+  }
 }

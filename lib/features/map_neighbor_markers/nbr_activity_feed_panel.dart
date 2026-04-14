@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:nabour_app/features/activity_feed/activity_feed_dismiss_store.dart';
 import 'package:nabour_app/features/map_neighbor_markers/neighbor_activity_deriver.dart';
-import 'package:nabour_app/features/map_neighbor_markers/neighbor_map_feed_controller.dart';
+import 'package:nabour_app/features/map_neighbor_markers/nbr_map_feed_controller.dart';
 import 'package:nabour_app/models/neighbor_location_model.dart';
 
 /// Sertar inferior tip Bump: activitate recentă a prietenilor pe hartă.

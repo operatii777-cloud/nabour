@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:nabour_app/l10n/app_localizations.dart';
-import 'package:nabour_app/screens/business_registration_screen.dart';
+import 'package:nabour_app/screens/biz_registration_screen.dart';
 
 /// Ecran informativ înainte de înregistrarea afacerii (utilizator fără profil business).
 class BusinessIntroScreen extends StatelessWidget {

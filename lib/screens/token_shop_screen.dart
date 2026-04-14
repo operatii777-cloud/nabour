@@ -4,7 +4,7 @@ import 'package:nabour_app/l10n/app_localizations.dart';
 import 'package:nabour_app/models/subscription_plan_doc.dart';
 import 'package:nabour_app/models/token_economy.dart';
 import 'package:nabour_app/models/token_wallet_model.dart';
-import 'package:nabour_app/services/subscription_catalog_service.dart';
+import 'package:nabour_app/services/subscr_catalog_service.dart';
 import 'package:nabour_app/services/token_service.dart';
 import 'package:nabour_app/theme/app_colors.dart';
 import 'package:nabour_app/core/ui/app_feedback.dart';
@@ -237,15 +237,15 @@ class _PlansTab extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Alege metoda de plată pentru $planName',
+                l10n.tokenShopChoosePaymentMethodFor(planName),
                 style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 18),
               ),
               const SizedBox(height: 20),
               // Opțiunea 1: Card/Bancar
               ListTile(
                 leading: const Icon(Icons.credit_card_rounded, color: AppColors.violetAccent),
-                title: const Text('Plată cu Cardul', style: TextStyle(fontWeight: FontWeight.w700)),
-                subtitle: Text('Preț: $ronPrice (Reînnoire automată)'),
+                title: Text(l10n.tokenShopPayByCard, style: const TextStyle(fontWeight: FontWeight.w700)),
+                subtitle: Text(l10n.tokenShopPriceWithAutoRenewal(ronPrice)),
                 trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 14),
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
@@ -265,11 +265,11 @@ class _PlansTab extends StatelessWidget {
                 enabled: p2pBalance >= tokenPrice,
                 leading: Icon(Icons.generating_tokens_outlined, 
                     color: p2pBalance >= tokenPrice ? Colors.teal : Colors.grey),
-                title: const Text('Plătește cu Tokeni Transferabili', 
-                    style: TextStyle(fontWeight: FontWeight.w700)),
-                subtitle: Text('Preț: $tokenPrice Tokeni (Fără reînnoire)'),
+                title: Text(l10n.tokenShopPayWithTransferableTokens, 
+                    style: const TextStyle(fontWeight: FontWeight.w700)),
+                subtitle: Text(l10n.tokenShopPriceInTokensNoRenewal(tokenPrice)),
                 trailing: p2pBalance < tokenPrice 
-                    ? const Text('Insalificient', style: TextStyle(color: Colors.red, fontSize: 10))
+                    ? Text(l10n.tokenShopInsufficientShort, style: const TextStyle(color: Colors.red, fontSize: 10))
                     : const Icon(Icons.arrow_forward_ios_rounded, size: 14),
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
@@ -279,11 +279,11 @@ class _PlansTab extends StatelessWidget {
                   try {
                     await TokenService().purchasePlanWithTokens(plan.name);
                     if (context.mounted) {
-                      AppFeedback.success(context, 'Planul $planName a fost activat!');
+                      AppFeedback.success(context, l10n.tokenShopPlanActivated(planName));
                     }
                   } catch (e) {
                     if (context.mounted) {
-                      AppFeedback.error(context, 'Eroare: $e');
+                      AppFeedback.error(context, l10n.tokenShopErrorWithMessage(e.toString()));
                     }
                   }
                 },
@@ -458,7 +458,7 @@ class _PlanCardState extends State<_PlanCard> with SingleTickerProviderStateMixi
                           const SizedBox(height: 8),
                           if (economy.isUnlimited)
                             Text(
-                              'Acces absolut la inteligența rețelei.',
+                              l10n.tokenShopUnlimitedAccessNetworkIntelligence,
                               style: TextStyle(fontSize: 11, color: Colors.white.withValues(alpha: 0.4)),
                             )
                           else
@@ -515,7 +515,7 @@ class _PlanCardState extends State<_PlanCard> with SingleTickerProviderStateMixi
                               ],
                             ),
                             child: const Text(
-                              'SELECTEAZĂ',
+                              'SELECT',
                               style: TextStyle(fontSize: 10, color: Colors.black, fontWeight: FontWeight.w900, letterSpacing: 0.5),
                             ),
                           ),
@@ -561,7 +561,7 @@ class _TopupTab extends StatelessWidget {
         _SectionHeader(
           icon: Icons.person_outline_rounded,
           title: l10n.tokenShopBuyExtraTitle,
-          subtitle: 'Tokeni pentru AI, rute și funcțiile tale.',
+          subtitle: l10n.tokenShopPersonalTokensSubtitle,
         ),
         const SizedBox(height: 12),
         GridView.count(
@@ -584,8 +584,8 @@ class _TopupTab extends StatelessWidget {
         // Secțiunea 2: Transferabili (Nou!)
         _SectionHeader(
           icon: Icons.card_giftcard_rounded,
-          title: 'PACHETE TRANSFERABILE',
-          subtitle: 'Tokeni reali pe care îi poți trimite oricui.',
+          title: l10n.tokenShopTransferablePackagesTitle,
+          subtitle: l10n.tokenShopTransferablePackagesSubtitle,
         ),
         const SizedBox(height: 12),
         GridView.count(
@@ -613,7 +613,7 @@ class _TopupTab extends StatelessWidget {
   void _buyPackage(BuildContext context, _TopupPackage pkg) {
     final l10n = AppLocalizations.of(context)!;
     final title = pkg.isTransferable 
-        ? 'Pachet Transferabil: ${pkg.tokens} Tokeni'
+        ? l10n.tokenShopTransferablePackageTitle(pkg.tokens)
         : '${pkg.tokens} ${l10n.tokenShopTokensWord} (${pkg.label})';
 
     _showPaymentDialog(
@@ -630,14 +630,14 @@ class _TopupTab extends StatelessWidget {
             TokenTransactionType.purchase,
             isTransferable: pkg.isTransferable,
             description: pkg.isTransferable 
-                ? 'Cumpărare pachet TRANSFERABIL: ${pkg.label}'
+                ? l10n.tokenShopTxPurchaseTransferablePackage(pkg.label)
                 : l10n.tokenShopTxPurchasePackage(pkg.label, pkg.tokens),
           );
           if (context.mounted) {
             AppFeedback.success(
               context,
               l10n.tokenShopTokensAdded(pkg.tokens) +
-                  (pkg.isTransferable ? ' (în portofelul transferabil)' : ''),
+                  (pkg.isTransferable ? l10n.tokenShopTransferableWalletSuffix : ''),
             );
           }
         } on FirebaseFunctionsException catch (e) {

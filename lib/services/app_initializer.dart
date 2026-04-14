@@ -39,14 +39,36 @@ class AppInitializer extends ChangeNotifier {
       if (user != null) {
         Logger.info('User authenticated: ${user.uid}. Ensuring token wallet & phone sync...', tag: 'INITIALIZER');
         unawaited(TrialConfigService.instance.ensureTrialAnchorFromServer());
-        // Scurt delay pentru ID token + App Check; 2s era excesiv la cold start.
-        unawaited(Future<void>.delayed(const Duration(milliseconds: 500), () {
-          unawaited(TokenService().ensureWalletExists(user.uid));
-        }));
+        unawaited(_ensureWalletAfterBackendReady(user.uid));
 
         unawaited(_syncUserProfile(user));
       }
     });
+  }
+
+  Future<void> _ensureWalletAfterBackendReady(String uid) async {
+    try {
+      // Asigurăm existența wallet-ului fără maintain în burst-ul de startup.
+      await TokenService().ensureWalletExists(uid, maintainExisting: false);
+
+      // Nu lovim callable-ul în burst-ul inițial de auth; așteptăm backendReady.
+      final readyFuture = _backendReadyCompleter?.future;
+      if (readyFuture != null) {
+        await readyFuture;
+      } else {
+        var waited = 0;
+        while (_status != AppStatus.backendReady && waited < 20) {
+          await Future<void>.delayed(const Duration(milliseconds: 500));
+          waited++;
+        }
+      }
+      await Future<void>.delayed(const Duration(seconds: 12));
+      final current = FirebaseAuth.instance.currentUser;
+      if (current == null || current.uid != uid) return;
+      await TokenService().maintainWalletOnStartupOnce();
+    } catch (e) {
+      Logger.warning('ensureWalletAfterBackendReady: $e', tag: 'INITIALIZER');
+    }
   }
 
   /// Silently ensures the user profile in Firestore matches Auth data (phone, etc.)

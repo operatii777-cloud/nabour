@@ -37,6 +37,51 @@ class NeighborFriendMarkerIcons {
     return (level / 5).round() * 5;
   }
 
+  /// Nivel baterie cuantificat (5%) — folosit la cache și la chip vizual.
+  static int? batteryBucketForMarker(int? level) => _batteryBucket(level);
+
+  /// Chip baterie în colțul dreapta-sus — același stil pentru emoji, foto și pictograme garaj/hartă.
+  static void paintBatteryChip(
+    ui.Canvas canvas,
+    double markerSide, {
+    required int? batteryLevel,
+    required bool isCharging,
+  }) {
+    final batB = _batteryBucket(batteryLevel);
+    if (batB == null) return;
+
+    final fill = batB >= 40
+        ? const ui.Color(0xFF22C55E)
+        : (batB >= 15
+            ? const ui.Color(0xFFF59E0B)
+            : const ui.Color(0xFFEF4444));
+    const chipW = 42.0;
+    const chipH = 18.0;
+    final cx = markerSide - chipW / 2 - 2;
+    const cy = 4.0 + chipH / 2;
+    final chip = ui.RRect.fromRectAndRadius(
+      ui.Rect.fromCenter(
+        center: ui.Offset(cx, cy),
+        width: chipW,
+        height: chipH,
+      ),
+      const ui.Radius.circular(9),
+    );
+    canvas.drawRRect(chip, ui.Paint()..color = fill);
+
+    final label = isCharging ? '⚡$batB%' : '$batB%';
+    final chipText = ui.ParagraphBuilder(ui.ParagraphStyle(
+      fontSize: 10,
+      fontWeight: ui.FontWeight.w700,
+      textAlign: ui.TextAlign.center,
+    ))
+      ..pushStyle(ui.TextStyle(color: const ui.Color(0xFFFFFFFF)))
+      ..addText(label);
+    final chipPara = chipText.build();
+    chipPara.layout(const ui.ParagraphConstraints(width: chipW + 4));
+    canvas.drawParagraph(chipPara, ui.Offset(cx - chipW / 2 - 2, 1));
+  }
+
   /// Minute staționare (cuantificate) pentru cache sau null.
   static int? _stationaryBucket(int? stationarySinceMs, double? speedMps) {
     if (stationarySinceMs == null) return null;
@@ -122,39 +167,12 @@ class NeighborFriendMarkerIcons {
     final textY = (size - paragraph.height) / 2;
     canvas.drawParagraph(paragraph, ui.Offset(0, textY));
 
-    if (batB != null) {
-      final fill = batB >= 40
-          ? const ui.Color(0xFF22C55E)
-          : (batB >= 15
-              ? const ui.Color(0xFFF59E0B)
-              : const ui.Color(0xFFEF4444));
-      const chipW = 42.0;
-      const chipH = 18.0;
-      final cx = size - chipW / 2 - 2;
-      const cy = 4.0 + chipH / 2;
-      final chip = ui.RRect.fromRectAndRadius(
-        ui.Rect.fromCenter(
-          center: ui.Offset(cx, cy),
-          width: chipW,
-          height: chipH,
-        ),
-        const ui.Radius.circular(9),
-      );
-      final chipBg = ui.Paint()..color = fill;
-      canvas.drawRRect(chip, chipBg);
-
-      final label = isCharging ? '⚡$batB%' : '$batB%';
-      final chipText = ui.ParagraphBuilder(ui.ParagraphStyle(
-        fontSize: 10,
-        fontWeight: ui.FontWeight.w700,
-        textAlign: ui.TextAlign.center,
-      ))
-        ..pushStyle(ui.TextStyle(color: const ui.Color(0xFFFFFFFF)))
-        ..addText(label);
-      final chipPara = chipText.build();
-      chipPara.layout(const ui.ParagraphConstraints(width: chipW + 4));
-      canvas.drawParagraph(chipPara, ui.Offset(cx - chipW / 2 - 2, 1));
-    }
+    paintBatteryChip(
+      canvas,
+      size,
+      batteryLevel: batteryLevel,
+      isCharging: isCharging,
+    );
 
     final placeEm = _placeEmoji(placeKind);
     if (placeEm != null) {
@@ -320,38 +338,12 @@ class NeighborFriendMarkerIcons {
       const ui.Offset(size / 2, size / 2), radius, borderPaint,
     );
 
-    if (batB != null) {
-      final fill = batB >= 40
-          ? const ui.Color(0xFF22C55E)
-          : (batB >= 15
-              ? const ui.Color(0xFFF59E0B)
-              : const ui.Color(0xFFEF4444));
-      const chipW = 42.0;
-      const chipH = 18.0;
-      final cx = size - chipW / 2 - 2;
-      const cy = 4.0 + chipH / 2;
-      final chip = ui.RRect.fromRectAndRadius(
-        ui.Rect.fromCenter(
-          center: ui.Offset(cx, cy),
-          width: chipW,
-          height: chipH,
-        ),
-        const ui.Radius.circular(9),
-      );
-      canvas.drawRRect(chip, ui.Paint()..color = fill);
-
-      final label = isCharging ? '⚡$batB%' : '$batB%';
-      final chipText = ui.ParagraphBuilder(ui.ParagraphStyle(
-        fontSize: 10,
-        fontWeight: ui.FontWeight.w700,
-        textAlign: ui.TextAlign.center,
-      ))
-        ..pushStyle(ui.TextStyle(color: const ui.Color(0xFFFFFFFF)))
-        ..addText(label);
-      final chipPara = chipText.build();
-      chipPara.layout(const ui.ParagraphConstraints(width: chipW + 4));
-      canvas.drawParagraph(chipPara, ui.Offset(cx - chipW / 2 - 2, 1));
-    }
+    paintBatteryChip(
+      canvas,
+      size,
+      batteryLevel: batteryLevel,
+      isCharging: isCharging,
+    );
 
     if (isOnline) {
       final onlinePaint = ui.Paint()..color = const ui.Color(0xFF22C55E);

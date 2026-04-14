@@ -1,6 +1,18 @@
 rules_version = '2';
 service firebase.storage {
   match /b/{bucket}/o {
+    // Participant la mesaj vocal: chat privat uid1_uid2 sau ride_requests.
+    // (Fără if/let suplimentar — sintaxa Storage rules e mai strictă decât Firestore rules.)
+    function voiceChatParticipant(rideId) {
+      let parts = rideId.split('_');
+      return (parts.size() == 2
+          && parts[0].size() > 0 && parts[1].size() > 0
+          && (parts[0] == request.auth.uid || parts[1] == request.auth.uid))
+        || (firestore.exists(/databases/(default)/documents/ride_requests/$(rideId))
+            && (firestore.get(/databases/(default)/documents/ride_requests/$(rideId)).data.passengerId == request.auth.uid
+                || firestore.get(/databases/(default)/documents/ride_requests/$(rideId)).data.driverId == request.auth.uid));
+    }
+
     // Previzualizare traseu cursă — deploy: firebase deploy --only storage
     match /ride_route_previews/{rideId}/preview.png {
       function ridePath() {
@@ -69,6 +81,15 @@ service firebase.storage {
         && request.auth.uid == userId
         && request.resource.size < 1 * 1024 * 1024
         && request.resource.contentType.matches('image/.*');
+    }
+
+    // Mesaje vocale chat (ride sau chat privat uid1_uid2). Path: voice_messages/{rideId}/timestamp.m4a
+    match /voice_messages/{rideId}/{fileName} {
+      allow read: if request.auth != null && voiceChatParticipant(rideId);
+      allow write: if request.auth != null
+        && voiceChatParticipant(rideId)
+        && request.resource.size < 10 * 1024 * 1024
+        && request.resource.contentType.matches('audio/.*');
     }
   }
 }

@@ -114,13 +114,24 @@ exports.sendPassengerNotification = functions.https.onCall(async (data, context)
 // ─── CALLABLE: sendChatNotification ──────────────────────────────────────────
 
 exports.sendChatNotification = functions.https.onCall(async (data, context) => {
-  const { token, rideId, senderName, messageText, title, body } = data;
+  const { token, rideId, senderName, messageText, title, body, senderUid, isPrivateChat } = data;
   if (!token) throw new functions.https.HttpsError('invalid-argument', 'token required');
+
+  const chatId = rideId || '';
+  const priv = !!isPrivateChat;
+  const msgType = priv ? 'private_chat_message' : 'chat_message';
 
   const message = {
     token,
     notification: { title: title || senderName, body: body || messageText },
-    data: { type: 'chat_message', rideId: rideId || '', senderName: senderName || '' },
+    data: {
+      type: msgType,
+      rideId: String(chatId),
+      chatId: String(chatId),
+      senderName: String(senderName || ''),
+      senderUid: String(senderUid || ''),
+      isPrivateChat: priv ? '1' : '0',
+    },
     android: {
       priority: 'high',
       notification: { channelId: 'friendsride_default', sound: 'default' },

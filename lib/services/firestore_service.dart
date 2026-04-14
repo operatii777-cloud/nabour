@@ -18,10 +18,10 @@ import 'package:nabour_app/models/stop_location.dart';
 import 'package:nabour_app/models/support_ticket_model.dart';
 import 'package:nabour_app/models/voice_models.dart';
 // (PricingService import removed - rides now cost 0.0 except for 1 token)
-import 'package:nabour_app/services/active_ride_telemetry_rtdb_service.dart';
+import 'package:nabour_app/services/active_ride_telem_rtdb.dart';
 import 'package:nabour_app/services/contacts_service.dart';
-import 'package:nabour_app/services/passenger_allowed_driver_uids.dart';
-import 'package:nabour_app/services/passenger_driver_search_config.dart';
+import 'package:nabour_app/services/pax_allowed_drv_uids.dart';
+import 'package:nabour_app/services/pax_drv_search_config.dart';
 import 'package:nabour_app/services/push_notification_service.dart';
 import 'package:nabour_app/services/routing_service.dart';
 import 'package:nabour_app/services/token_service.dart';
@@ -789,7 +789,7 @@ _pendingUpdates.addAll(updates.map((e) => e as Map<String, dynamic>));
     try {
       await _db.collection('neighborhood_requests').doc(id).update({'resolved': true});
     } catch (e) {
-      Logger.error('Eroare rezolvare cerere cartier: $e', tag: 'FIRESTORE');
+      Logger.error('Error resolving neighborhood request: $e', tag: 'FIRESTORE');
     }
   }
 
@@ -797,7 +797,7 @@ _pendingUpdates.addAll(updates.map((e) => e as Map<String, dynamic>));
     try {
       await _db.collection('neighborhood_requests').doc(id).delete();
     } catch (e) {
-      Logger.error('Eroare ștergere cerere cartier: $e', tag: 'FIRESTORE');
+      Logger.error('Error deleting neighborhood request: $e', tag: 'FIRESTORE');
       rethrow;
     }
   }
@@ -1090,7 +1090,7 @@ _pendingUpdates.addAll(updates.map((e) => e as Map<String, dynamic>));
             final ride = r['ride'] as Ride;
             return {
               'rideId': r['rideId'],
-              'passengerName': 'Pasager', // Will be fetched from user profile if needed
+              'passengerName': 'Passenger', // Will be fetched from user profile if needed
               'pickupAddress': ride.startAddress,
               'destinationAddress': ride.destinationAddress,
               'distanceKm': ride.distance,
@@ -1292,7 +1292,7 @@ _pendingUpdates.addAll(updates.map((e) => e as Map<String, dynamic>));
         });
         
         // Trimite mesaj de sistem pentru șofer
-        await sendSystemMessage(rideId, 'Destinația a fost modificată: $newDestinationAddress');
+        await sendSystemMessage(rideId, 'Destination was updated: $newDestinationAddress');
         
         Logger.info('Destination updated for ride $rideId', tag: 'FIRESTORE');
       } catch (e) {
@@ -1480,18 +1480,30 @@ _pendingUpdates.addAll(updates.map((e) => e as Map<String, dynamic>));
   }
 
   /// Punct personal pe hartă (reper „acasă” / orientare), vizibil doar pentru contul curent.
-  Future<void> setMapOrientationPin(double latitude, double longitude) async {
+  /// [label] — denumire afișată pe hartă și în căutare (opțională; dacă lipsește, câmpul e șters).
+  Future<void> setMapOrientationPin(
+    double latitude,
+    double longitude, {
+    String? label,
+  }) async {
     if (_uid == null) return;
-    await _db.collection('users').doc(_uid).set(
-      {'mapOrientationPin': GeoPoint(latitude, longitude)},
-      SetOptions(merge: true),
-    );
+    final data = <String, dynamic>{
+      'mapOrientationPin': GeoPoint(latitude, longitude),
+    };
+    final t = label?.trim() ?? '';
+    if (t.isNotEmpty) {
+      data['mapOrientationPinLabel'] = t;
+    } else {
+      data['mapOrientationPinLabel'] = FieldValue.delete();
+    }
+    await _db.collection('users').doc(_uid).set(data, SetOptions(merge: true));
   }
 
   Future<void> clearMapOrientationPin() async {
     if (_uid == null) return;
     await _db.collection('users').doc(_uid).update({
       'mapOrientationPin': FieldValue.delete(),
+      'mapOrientationPinLabel': FieldValue.delete(),
     });
   }
 
@@ -1728,7 +1740,7 @@ _pendingUpdates.addAll(updates.map((e) => e as Map<String, dynamic>));
     String code, {
     bool consume = true,
   }) async {
-    if (_uid == null) return {'success': false, 'message': 'Utilizator neautentificat.'};
+    if (_uid == null) return {'success': false, 'message': 'User not authenticated.'};
 
     final upperCode = code.trim().toUpperCase();
     try {
@@ -1740,20 +1752,20 @@ _pendingUpdates.addAll(updates.map((e) => e as Map<String, dynamic>));
           .get();
 
       if (snap.docs.isEmpty) {
-        return {'success': false, 'message': 'Codul de voucher este invalid sau a expirat.'};
+        return {'success': false, 'message': 'Voucher code is invalid or expired.'};
       }
 
       final doc = snap.docs.first;
       final data = doc.data();
       final expiryTs = data['expiryDate'] as Timestamp?;
       if (expiryTs != null && expiryTs.toDate().isBefore(DateTime.now())) {
-        return {'success': false, 'message': 'Codul de voucher a expirat.'};
+        return {'success': false, 'message': 'Voucher code has expired.'};
       }
 
       final maxUses = (data['maxUses'] as num?)?.toInt();
       final timesUsed = (data['timesUsed'] as num?)?.toInt() ?? 0;
       if (maxUses != null && timesUsed >= maxUses) {
-        return {'success': false, 'message': 'Codul de voucher nu mai este disponibil.'};
+        return {'success': false, 'message': 'Voucher code is no longer available.'};
       }
 
       // 2. Check if user already used this voucher
@@ -1766,7 +1778,7 @@ _pendingUpdates.addAll(updates.map((e) => e as Map<String, dynamic>));
           .get();
 
       if (userVoucherSnap.docs.isNotEmpty) {
-        return {'success': false, 'message': 'Ai folosit deja acest voucher.'};
+        return {'success': false, 'message': 'You already used this voucher.'};
       }
 
       // 3. Save to user's vouchers and increment usage counter (optional for preview UX)
@@ -1790,7 +1802,7 @@ _pendingUpdates.addAll(updates.map((e) => e as Map<String, dynamic>));
         });
       }
 
-      final description = data['description'] as String? ?? 'Voucher aplicat cu succes!';
+      final description = data['description'] as String? ?? 'Voucher applied successfully!';
       final double value = (data['value'] as num?)?.toDouble() ?? 0.0;
       final String type = data['type'] as String? ?? 'percentage';
       return {
@@ -1801,7 +1813,7 @@ _pendingUpdates.addAll(updates.map((e) => e as Map<String, dynamic>));
         'type': type,
       };
     } catch (e) {
-      return {'success': false, 'message': 'Eroare la validarea voucher-ului.'};
+      return {'success': false, 'message': 'Error validating voucher.'};
     }
   }
 
@@ -1955,13 +1967,13 @@ _pendingUpdates.addAll(updates.map((e) => e as Map<String, dynamic>));
       final d = doc.data();
       final label = d['label']?.toString().toLowerCase() ?? '';
       final cat = d['category']?.toString();
-      if (cat == 'home' || label == 'acasă') hasHome = true;
-      if (cat == 'work' || label == 'serviciu') hasWork = true;
+      if (cat == 'home' || label == 'home') hasHome = true;
+      if (cat == 'work' || label == 'work') hasWork = true;
     }
     
     if (!hasHome) {
       await addressesRef.add({
-        'label': 'Acasă',
+        'label': 'Home',
         'address': '',
         'coordinates': const GeoPoint(44.4268, 26.1025),
         'category': 'home',
@@ -1970,7 +1982,7 @@ _pendingUpdates.addAll(updates.map((e) => e as Map<String, dynamic>));
     
     if (!hasWork) {
       await addressesRef.add({
-        'label': 'Serviciu',
+        'label': 'Work',
         'address': '',
         'coordinates': const GeoPoint(44.4268, 26.1025),
         'category': 'work',
@@ -2143,8 +2155,8 @@ _pendingUpdates.addAll(updates.map((e) => e as Map<String, dynamic>));
     final merged = await PassengerAllowedDriverUids.loadMergedUidList();
     if (merged.isEmpty) {
       throw Exception(
-        'Nabour trimite cererea doar către șoferii din contactele tale. '
-        'Adaugă în agendă numerele prietenilor cu cont Nabour sau acordă permisiunea la contacte.',
+        'Nabour sends the request only to drivers from your contacts. '
+        'Add your friends\' phone numbers to contacts, or grant contacts permission.',
       );
     }
     return merged;
@@ -2171,7 +2183,7 @@ _pendingUpdates.addAll(updates.map((e) => e as Map<String, dynamic>));
       
       if (activeRides == null) {
         Logger.error('Failed to check active rides', tag: 'FIRESTORE');
-        throw Exception('Eroare la verificarea cursei active. Vă rog să reîncercați.');
+        throw Exception('Error checking active ride. Please try again.');
       }
       
       // ✅ NOU: Returnăm informații despre cursa activă în loc să aruncăm excepție
@@ -2186,7 +2198,7 @@ _pendingUpdates.addAll(updates.map((e) => e as Map<String, dynamic>));
         throw ActiveRideException(
           activeRideId: activeRideId,
           activeRideStatus: activeRideStatus ?? 'unknown',
-          message: 'Ai deja o cursă activă. Vrei să o anulezi pentru a crea una nouă?',
+          message: 'You already have an active ride. Do you want to cancel it to create a new one?',
         );
       }
   
@@ -2194,7 +2206,7 @@ _pendingUpdates.addAll(updates.map((e) => e as Map<String, dynamic>));
 
       // Deducere token pentru postarea cursei (1 token)
       unawaited(TokenService().spend(TokenTransactionType.broadcastPost,
-          customDescription: 'Post cursă: ${ride.startAddress} → ${ride.destinationAddress}'));
+          customDescription: 'Ride post: ${ride.startAddress} -> ${ride.destinationAddress}'));
 
       final rideData = ride.toMap();
       rideData['passengerId'] = _uid;  // ✅ MODIFICAT: userId → passengerId
@@ -2212,7 +2224,7 @@ _pendingUpdates.addAll(updates.map((e) => e as Map<String, dynamic>));
       
       if (docRef == null) {
         Logger.error('Failed to create ride', tag: 'FIRESTORE');
-        throw Exception('Eroare la crearea cursei. Vă rog să reîncercați.');
+        throw Exception('Error creating ride. Please try again.');
       }
       
       Logger.info('Ride created with ID: ${docRef.id}', tag: 'FIRESTORE');
@@ -2231,13 +2243,13 @@ _pendingUpdates.addAll(updates.map((e) => e as Map<String, dynamic>));
       return docRef.id;
     } on FirebaseException catch (e) {
       Logger.critical('Firebase error in requestRide: ${e.code}', error: e, tag: 'FIRESTORE');
-      throw Exception('Eroare Firebase: ${e.message ?? e.code}');
+      throw Exception('Firebase error: ${e.message ?? e.code}');
     } on Exception catch (e) {
       Logger.error('Exception in requestRide', error: e, tag: 'FIRESTORE');
       rethrow;
     } catch (e, stackTrace) {
       Logger.critical('Unexpected error in requestRide', error: e, stackTrace: stackTrace, tag: 'FIRESTORE');
-      throw Exception('Eroare neașteptată la crearea cursei: $e');
+      throw Exception('Unexpected error while creating ride: $e');
     }
   }
 
@@ -2262,7 +2274,7 @@ _pendingUpdates.addAll(updates.map((e) => e as Map<String, dynamic>));
       
       if (activeRides == null) {
         Logger.error('Failed to check active rides in createRideRequest', tag: 'FIRESTORE');
-        throw Exception('Eroare la verificarea cursei active. Vă rog să reîncercați.');
+        throw Exception('Error checking active ride. Please try again.');
       }
       
       if (activeRides.docs.isNotEmpty) {
@@ -2273,7 +2285,7 @@ _pendingUpdates.addAll(updates.map((e) => e as Map<String, dynamic>));
         throw ActiveRideException(
           activeRideId: activeRideId,
           activeRideStatus: activeRideStatus ?? 'unknown',
-          message: 'Ai deja o cursă activă. Anulează-o înainte de a crea una nouă.',
+          message: 'You already have an active ride. Cancel it before creating a new one.',
         );
       }
 
@@ -2285,18 +2297,18 @@ _pendingUpdates.addAll(updates.map((e) => e as Map<String, dynamic>));
     
       if (pickupLat == null || pickupLng == null || destLat == null || destLng == null) {
         Logger.warning('Incomplete coordinates in createRideRequest', tag: 'FIRESTORE');
-        throw Exception('Coordonatele sunt incomplete. Toate coordonatele sunt necesare.');
+        throw Exception('Coordinates are incomplete. All coordinates are required.');
       }
     
       // ✅ VALIDARE 3: Verifică range-ul coordonatelor
       if (pickupLat < -90 || pickupLat > 90 || pickupLng < -180 || pickupLng > 180) {
         Logger.warning('Invalid pickup coordinates: $pickupLat, $pickupLng', tag: 'FIRESTORE');
-        throw Exception('Coordonatele pickup sunt invalide.');
+        throw Exception('Pickup coordinates are invalid.');
       }
     
       if (destLat < -90 || destLat > 90 || destLng < -180 || destLng > 180) {
         Logger.warning('Invalid destination coordinates: $destLat, $destLng', tag: 'FIRESTORE');
-        throw Exception('Coordonatele destinației sunt invalide.');
+        throw Exception('Destination coordinates are invalid.');
       }
     
       // ✅ VALIDARE 4: Calculează și validează distanța
@@ -2304,12 +2316,12 @@ _pendingUpdates.addAll(updates.map((e) => e as Map<String, dynamic>));
     
       if (distance < 0.1) {
         Logger.warning('Distance too small: $distance km', tag: 'FIRESTORE');
-        throw Exception('Distanța este prea mică. Distanța minimă este 100 metri.');
+        throw Exception('Distance is too short. Minimum distance is 100 meters.');
       }
     
       if (distance > 200) {
         Logger.warning('Distance too large: $distance km', tag: 'FIRESTORE');
-        throw Exception('Distanța este prea mare. Distanța maximă este 200 km.');
+        throw Exception('Distance is too long. Maximum distance is 200 km.');
       }
 
       final allowedDriverUids =
@@ -2342,7 +2354,7 @@ _pendingUpdates.addAll(updates.map((e) => e as Map<String, dynamic>));
     
       // Deducere token pentru postarea cursei (1 token)
       unawaited(TokenService().spend(TokenTransactionType.broadcastPost,
-          customDescription: 'Post cursă vocală: ${rideRequest.pickupLocation} → ${rideRequest.destination}'));
+          customDescription: 'Voice ride post: ${rideRequest.pickupLocation} -> ${rideRequest.destination}'));
 
       Logger.info('Creating ride request for user: $_uid (distance: ${distance.toStringAsFixed(2)} km)', tag: 'FIRESTORE');
 
@@ -2353,7 +2365,7 @@ _pendingUpdates.addAll(updates.map((e) => e as Map<String, dynamic>));
       
       if (docRef == null) {
         Logger.error('Failed to create ride request', tag: 'FIRESTORE');
-        throw Exception('Eroare la crearea solicitării de cursă. Vă rog să reîncercați.');
+        throw Exception('Error creating ride request. Please try again.');
       }
       
       Logger.info('Ride request created with ID: ${docRef.id}', tag: 'FIRESTORE');
@@ -2393,13 +2405,13 @@ _pendingUpdates.addAll(updates.map((e) => e as Map<String, dynamic>));
       return docRef.id;
     } on FirebaseException catch (e) {
       Logger.critical('Firebase error in createRideRequest: ${e.code}', error: e, tag: 'FIRESTORE');
-      throw Exception('Eroare Firebase: ${e.message ?? e.code}');
+      throw Exception('Firebase error: ${e.message ?? e.code}');
     } on Exception catch (e) {
       Logger.error('Exception in createRideRequest', error: e, tag: 'FIRESTORE');
       rethrow;
     } catch (e, stackTrace) {
       Logger.critical('Unexpected error in createRideRequest', error: e, stackTrace: stackTrace, tag: 'FIRESTORE');
-      throw Exception('Eroare neașteptată la crearea solicitării de cursă: $e');
+      throw Exception('Unexpected error while creating ride request: $e');
     }
   }
   
@@ -2634,7 +2646,7 @@ _pendingUpdates.addAll(updates.map((e) => e as Map<String, dynamic>));
 
     final message = ChatMessage(
       senderId: _uid!,
-      text: type == MessageType.voice ? '🎤 Mesaj vocal' : text.trim(),
+      text: type == MessageType.voice ? '🎤 Voice message' : text.trim(),
       timestamp: Timestamp.now(),
       type: type,
       quickReplyId: quickReplyId,
@@ -2688,7 +2700,7 @@ _pendingUpdates.addAll(updates.map((e) => e as Map<String, dynamic>));
       if (fcmToken == null) return;
       
       // Obține numele expeditorului
-      final senderName = isDriver ? 'Șoferul' : 'Pasagerul';
+      final senderName = isDriver ? 'Driver' : 'Passenger';
       
       // Note: Push notification will be sent via Cloud Function in future update
       // For now, only log
@@ -2812,12 +2824,12 @@ _pendingUpdates.addAll(updates.map((e) => e as Map<String, dynamic>));
       final messageDoc = await messageRef.get();
       
       if (!messageDoc.exists) {
-        throw Exception('Mesajul nu a fost găsit');
+        throw Exception('Message not found');
       }
       
       final messageData = messageDoc.data();
       if (messageData == null || messageData['senderId'] != _uid) {
-        throw Exception('Nu poți edita mesajele altora');
+        throw Exception('You cannot edit other users\' messages');
       }
       
       await messageRef.update({
@@ -2930,7 +2942,7 @@ _pendingUpdates.addAll(updates.map((e) => e as Map<String, dynamic>));
           'systemLogs': FieldValue.arrayUnion([
             {
               'type': 'auto_cancel_stuck_ride',
-              'message': 'Cursă blocată anulată automat (status: $status)',
+              'message': 'Stuck ride automatically cancelled (status: $status)',
               'previousStatus': status,
               'timestamp': Timestamp.now(), // ✅ FIX: Folosește Timestamp.now() în loc de FieldValue.serverTimestamp() în arrayUnion
               'triggeredBy': 'manual_cleanup',
@@ -3291,12 +3303,12 @@ _pendingUpdates.addAll(updates.map((e) => e as Map<String, dynamic>));
       
       return {
         'success': true,
-        'message': 'Codul de recomandare a fost aplicat cu succes!',
+        'message': 'Referral code applied successfully!',
         'benefits': referralData['benefits'] ?? {},
       };
     } catch (e) {
       Logger.error('Error validating referral code', error: e, tag: 'FIRESTORE');
-      return {'success': false, 'message': 'Eroare la validarea codului de recomandare.'};
+      return {'success': false, 'message': 'Error validating referral code.'};
     }
   }
 
@@ -3696,7 +3708,7 @@ _pendingUpdates.addAll(updates.map((e) => e as Map<String, dynamic>));
             'systemLogs': FieldValue.arrayUnion([
               {
                 'type': 'auto_expire_stuck_ride',
-                'message': 'Cursă blocată resetată automat după $thresholdMinutes minute (status: $status, durată blocare: $differenceInMinutes minute)',
+                'message': 'Stuck ride automatically reset after $thresholdMinutes minutes (status: $status, stuck duration: $differenceInMinutes minutes)',
                 'previousStatus': status,
                 'passengerId': passengerId,
                 'driverId': driverId,

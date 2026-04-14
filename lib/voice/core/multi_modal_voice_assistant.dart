@@ -2,7 +2,7 @@ import 'dart:async';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'voice_analytics.dart';
 import 'conversational_ai_engine.dart';
-import 'ecosystem_integration_service.dart';
+import 'eco_integration_service.dart';
 import 'proactive_ai_service.dart';
 import '../nlp/ride_intent_processor.dart';
 
