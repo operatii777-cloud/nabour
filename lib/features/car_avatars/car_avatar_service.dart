@@ -42,7 +42,7 @@ class CarAvatarService {
     CarAvatar(id: 'scooter', name: 'Trotineta Urbana', assetPath: 'assets/images/avatars/scooter.png', price: 150, category: CarCategory.transport),
     CarAvatar(id: 'moto', name: 'Motocicleta Sport', assetPath: 'assets/images/avatars/moto.png', price: 450, category: CarCategory.transport),
     CarAvatar(id: 'yacht', name: 'Iaht Diamond', assetPath: 'assets/images/avatars/yacht.png', price: 2500, category: CarCategory.transport),
-    CarAvatar(id: 'uber', name: 'Uber Prototype', assetPath: 'assets/images/avatars/uber.png', price: 1250, category: CarCategory.transport),
+    CarAvatar(id: 'premium_taxi', name: 'Premium Taxi', assetPath: 'assets/images/avatars/premium_taxi.png', price: 1250, category: CarCategory.transport),
     CarAvatar(id: 'salupa', name: 'Salupa Rapida', assetPath: 'assets/images/avatars/salupa.png', price: 1200, category: CarCategory.transport),
     // --- Animals ---
     CarAvatar(id: 'horse', name: 'Cal de Curse', assetPath: 'assets/images/avatars/horse.png', price: 1500, category: CarCategory.animals),
