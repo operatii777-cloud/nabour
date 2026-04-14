@@ -692,35 +692,35 @@ abstract class AppLocalizations {
   /// **'DECONECTARE'**
   String get logout;
 
-  /// No description provided for @aboutNabour.
+  /// No description provided for @about_titleNabour.
   ///
   /// In ro, this message translates to:
   /// **'Despre Nabour'**
-  String get aboutNabour;
+  String get about_titleNabour;
 
-  /// No description provided for @evaluateApp.
+  /// No description provided for @about_evaluateApp.
   ///
   /// In ro, this message translates to:
   /// **'Evaluează Aplicația'**
-  String get evaluateApp;
+  String get about_evaluateApp;
 
-  /// No description provided for @howManyStars.
+  /// No description provided for @about_howManyStars.
   ///
   /// In ro, this message translates to:
   /// **'Câte stele dai aplicației Nabour?'**
-  String get howManyStars;
+  String get about_howManyStars;
 
-  /// No description provided for @starSelected.
+  /// No description provided for @about_starSelected.
   ///
   /// In ro, this message translates to:
   /// **'stea selectată'**
-  String get starSelected;
+  String get about_starSelected;
 
-  /// No description provided for @starsSelected.
+  /// No description provided for @about_starsSelected.
   ///
   /// In ro, this message translates to:
   /// **'stele selectate'**
-  String get starsSelected;
+  String get about_starsSelected;
 
   /// No description provided for @cancel.
   ///
@@ -734,41 +734,41 @@ abstract class AppLocalizations {
   /// **'Selectează'**
   String get select;
 
-  /// No description provided for @ratingSentSuccessfully.
+  /// No description provided for @about_ratingSentSuccessfully.
   ///
   /// In ro, this message translates to:
   /// **'✅ Rating de {rating} stele trimis cu succes!'**
-  String ratingSentSuccessfully(String rating);
+  String about_ratingSentSuccessfully(String rating);
 
-  /// No description provided for @career.
+  /// No description provided for @about_career.
   ///
   /// In ro, this message translates to:
   /// **'Carieră'**
-  String get career;
+  String get about_career;
 
-  /// No description provided for @joinOurTeam.
+  /// No description provided for @about_joinOurTeam.
   ///
   /// In ro, this message translates to:
   /// **'Alătură-te echipei noastre'**
-  String get joinOurTeam;
+  String get about_joinOurTeam;
 
-  /// No description provided for @evaluateApplication.
+  /// No description provided for @about_evaluateApplication.
   ///
   /// In ro, this message translates to:
   /// **'Evaluează aplicația'**
-  String get evaluateApplication;
+  String get about_evaluateApplication;
 
-  /// No description provided for @giveStarRating.
+  /// No description provided for @about_giveStarRating.
   ///
   /// In ro, this message translates to:
   /// **'⭐ Dă un rating cu stele'**
-  String get giveStarRating;
+  String get about_giveStarRating;
 
-  /// No description provided for @followUs.
+  /// No description provided for @about_followUs.
   ///
   /// In ro, this message translates to:
   /// **'Urmărește-ne'**
-  String get followUs;
+  String get about_followUs;
 
   /// No description provided for @legalInformation.
   ///
@@ -1711,6 +1711,12 @@ abstract class AppLocalizations {
   /// In ro, this message translates to:
   /// **'Raportează o problemă'**
   String get reportProblem;
+
+  /// No description provided for @career.
+  ///
+  /// In ro, this message translates to:
+  /// **'Carieră'**
+  String get career;
 
   /// No description provided for @cannotRequestRide.
   ///
@@ -7598,11 +7604,11 @@ abstract class AppLocalizations {
   /// **'Pachet {label} · {count} tokeni'**
   String tokenShopTxPurchasePackage(String label, int count);
 
-  /// No description provided for @appMissionTagline.
+  /// No description provided for @about_appMissionTagline.
   ///
   /// In ro, this message translates to:
   /// **'Vecini, curse și chat de cartier — într-o singură aplicație, pe harta ta.'**
-  String get appMissionTagline;
+  String get about_appMissionTagline;
 
   /// No description provided for @settingsSectionUpdates.
   ///

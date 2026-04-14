@@ -328,19 +328,19 @@ class AppLocalizationsEn extends AppLocalizations {
   String get logout => 'Logout';
 
   @override
-  String get aboutNabour => 'About Nabour';
+  String get about_titleNabour => 'About Nabour';
 
   @override
-  String get evaluateApp => 'Evaluate App';
+  String get about_evaluateApp => 'Evaluate App';
 
   @override
-  String get howManyStars => 'How many stars do you give the Nabour app?';
+  String get about_howManyStars => 'How many stars do you give the Nabour app?';
 
   @override
-  String get starSelected => 'star selected';
+  String get about_starSelected => 'star selected';
 
   @override
-  String get starsSelected => 'stars selected';
+  String get about_starsSelected => 'stars selected';
 
   @override
   String get cancel => 'Cancel';
@@ -349,24 +349,24 @@ class AppLocalizationsEn extends AppLocalizations {
   String get select => 'Select';
 
   @override
-  String ratingSentSuccessfully(String rating) {
+  String about_ratingSentSuccessfully(String rating) {
     return '✅ Rating of $rating stars sent successfully!';
   }
 
   @override
-  String get career => 'Career';
+  String get about_career => 'Career';
 
   @override
-  String get joinOurTeam => 'Join our team';
+  String get about_joinOurTeam => 'Join our team';
 
   @override
-  String get evaluateApplication => 'Evaluate application';
+  String get about_evaluateApplication => 'Evaluate application';
 
   @override
-  String get giveStarRating => '⭐ Give a star rating';
+  String get about_giveStarRating => '⭐ Give a star rating';
 
   @override
-  String get followUs => 'Follow us';
+  String get about_followUs => 'Follow us';
 
   @override
   String get legalInformation => 'Legal Information';
@@ -871,6 +871,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get reportProblem => 'Report a Problem';
 
   @override
+  String get career => 'Career';
+
+  @override
   String get cannotRequestRide => 'Cannot request a ride';
 
   @override
@@ -1008,7 +1011,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get reportIncidentToSafety =>
-      '• Report an incident to the safety team';
+      '• Raportați un incident către echipa de siguranță';
 
   @override
   String get voiceSettingsSaved => 'Voice settings have been saved';
@@ -4228,7 +4231,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get appMissionTagline =>
+  String get about_appMissionTagline =>
       'Neighbors, rides, and block chat — one app on your map.';
 
   @override

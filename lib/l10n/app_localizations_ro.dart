@@ -331,19 +331,19 @@ class AppLocalizationsRo extends AppLocalizations {
   String get logout => 'DECONECTARE';
 
   @override
-  String get aboutNabour => 'Despre Nabour';
+  String get about_titleNabour => 'Despre Nabour';
 
   @override
-  String get evaluateApp => 'Evaluează Aplicația';
+  String get about_evaluateApp => 'Evaluează Aplicația';
 
   @override
-  String get howManyStars => 'Câte stele dai aplicației Nabour?';
+  String get about_howManyStars => 'Câte stele dai aplicației Nabour?';
 
   @override
-  String get starSelected => 'stea selectată';
+  String get about_starSelected => 'stea selectată';
 
   @override
-  String get starsSelected => 'stele selectate';
+  String get about_starsSelected => 'stele selectate';
 
   @override
   String get cancel => 'Anulează';
@@ -352,24 +352,24 @@ class AppLocalizationsRo extends AppLocalizations {
   String get select => 'Selectează';
 
   @override
-  String ratingSentSuccessfully(String rating) {
+  String about_ratingSentSuccessfully(String rating) {
     return '✅ Rating de $rating stele trimis cu succes!';
   }
 
   @override
-  String get career => 'Carieră';
+  String get about_career => 'Carieră';
 
   @override
-  String get joinOurTeam => 'Alătură-te echipei noastre';
+  String get about_joinOurTeam => 'Alătură-te echipei noastre';
 
   @override
-  String get evaluateApplication => 'Evaluează aplicația';
+  String get about_evaluateApplication => 'Evaluează aplicația';
 
   @override
-  String get giveStarRating => '⭐ Dă un rating cu stele';
+  String get about_giveStarRating => '⭐ Dă un rating cu stele';
 
   @override
-  String get followUs => 'Urmărește-ne';
+  String get about_followUs => 'Urmărește-ne';
 
   @override
   String get legalInformation => 'Informații Juridice';
@@ -885,6 +885,9 @@ class AppLocalizationsRo extends AppLocalizations {
 
   @override
   String get reportProblem => 'Raportează o problemă';
+
+  @override
+  String get career => 'Carieră';
 
   @override
   String get cannotRequestRide => 'Nu pot solicita o cursă';
@@ -4276,7 +4279,7 @@ class AppLocalizationsRo extends AppLocalizations {
   }
 
   @override
-  String get appMissionTagline =>
+  String get about_appMissionTagline =>
       'Vecini, curse și chat de cartier — într-o singură aplicație, pe harta ta.';
 
   @override

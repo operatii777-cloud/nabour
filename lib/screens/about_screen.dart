@@ -21,7 +21,7 @@ class AboutScreen extends StatelessWidget {
         builder: (context, setState) => AlertDialog(
           contentPadding: const EdgeInsets.all(16),
           title: Text(
-            AppLocalizations.of(context)!.evaluateApp,
+            AppLocalizations.of(context)!.about_evaluateApp,
             style: const TextStyle(fontSize: 16),
             textAlign: TextAlign.center,
           ),
@@ -29,7 +29,7 @@ class AboutScreen extends StatelessWidget {
             child: Column(
               children: [
                 Text(
-                  AppLocalizations.of(context)!.howManyStars,
+                  AppLocalizations.of(context)!.about_howManyStars,
                   style: const TextStyle(fontSize: 14),
                   textAlign: TextAlign.center,
                 ),
@@ -64,7 +64,7 @@ class AboutScreen extends StatelessWidget {
                 // Feedback simplu
                 if (selectedRating > 0)
                   Text(
-                    '${selectedRating.toInt()} ${selectedRating == 1 ? AppLocalizations.of(context)!.starSelected : AppLocalizations.of(context)!.starsSelected}',
+                    '${selectedRating.toInt()} ${selectedRating == 1 ? AppLocalizations.of(context)!.about_starSelected : AppLocalizations.of(context)!.about_starsSelected}',
                     style: const TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.bold,
@@ -113,7 +113,7 @@ class AboutScreen extends StatelessWidget {
     
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(AppLocalizations.of(context)!.ratingSentSuccessfully(rating.toString())),
+        content: Text(AppLocalizations.of(context)!.about_ratingSentSuccessfully(rating.toString())),
         backgroundColor: Colors.orange,
         duration: const Duration(seconds: 3),
       ),
@@ -142,7 +142,7 @@ class AboutScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(AppLocalizations.of(context)!.aboutNabour),
+        title: Text(AppLocalizations.of(context)!.about_titleNabour),
       ),
       body: ListView(
         children: [
@@ -154,7 +154,7 @@ class AboutScreen extends StatelessWidget {
               child: Padding(
                 padding: const EdgeInsets.all(16),
                 child: Text(
-                  AppLocalizations.of(context)!.appMissionTagline,
+                  AppLocalizations.of(context)!.about_appMissionTagline,
                   style: Theme.of(context).textTheme.titleSmall?.copyWith(
                         height: 1.35,
                         fontWeight: FontWeight.w700,
@@ -165,8 +165,8 @@ class AboutScreen extends StatelessWidget {
           ),
           ListTile(
             leading: const Icon(Icons.work_outline),
-            title: Text(AppLocalizations.of(context)!.career),
-            subtitle: Text(AppLocalizations.of(context)!.joinOurTeam),
+            title: Text(AppLocalizations.of(context)!.about_career),
+            subtitle: Text(AppLocalizations.of(context)!.about_joinOurTeam),
             onTap: () {
               Navigator.push(
                 context, 
@@ -179,8 +179,8 @@ class AboutScreen extends StatelessWidget {
           // DOAR rating - am eliminat comentariul
           ListTile(
             leading: const Icon(Icons.star, color: Colors.orange),
-            title: Text(AppLocalizations.of(context)!.evaluateApplication),
-            subtitle: Text(AppLocalizations.of(context)!.giveStarRating),
+            title: Text(AppLocalizations.of(context)!.about_evaluateApplication),
+            subtitle: Text(AppLocalizations.of(context)!.about_giveStarRating),
             onTap: () => _showRatingDialog(context),
           ),
           
@@ -188,7 +188,7 @@ class AboutScreen extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
             child: Text(
-              AppLocalizations.of(context)!.followUs, 
+              AppLocalizations.of(context)!.about_followUs, 
               style: const TextStyle(
                 fontSize: 16, 
                 fontWeight: FontWeight.bold, 

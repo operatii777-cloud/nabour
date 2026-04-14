@@ -174,27 +174,27 @@
   "legal": "Juridic",
   "logout": "DECONECTARE",
   
-  "aboutNabour": "Despre Nabour",
-  "evaluateApp": "Evaluează Aplicația",
-  "howManyStars": "Câte stele dai aplicației Nabour?",
-  "starSelected": "stea selectată",
-  "starsSelected": "stele selectate",
+  "about_titleNabour": "Despre Nabour",
+  "about_evaluateApp": "Evaluează Aplicația",
+  "about_howManyStars": "Câte stele dai aplicației Nabour?",
+  "about_starSelected": "stea selectată",
+  "about_starsSelected": "stele selectate",
   "cancel": "Anulează",
   "send": "Trimite",
   "select": "Selectează",
-  "ratingSentSuccessfully": "✅ Rating de {rating} stele trimis cu succes!",
-  "@ratingSentSuccessfully": {
+  "about_ratingSentSuccessfully": "✅ Rating de {rating} stele trimis cu succes!",
+  "@about_ratingSentSuccessfully": {
     "placeholders": {
       "rating": {
         "type": "String"
       }
     }
   },
-  "career": "Carieră",
-  "joinOurTeam": "Alătură-te echipei noastre",
-  "evaluateApplication": "Evaluează aplicația",
-  "giveStarRating": "⭐ Dă un rating cu stele",
-  "followUs": "Urmărește-ne",
+  "about_career": "Carieră",
+  "about_joinOurTeam": "Alătură-te echipei noastre",
+  "about_evaluateApplication": "Evaluează aplicația",
+  "about_giveStarRating": "⭐ Dă un rating cu stele",
+  "about_followUs": "Urmărește-ne",
   
   "legalInformation": "Informații Juridice",
   "termsConditions": "Termeni & Condiții",
@@ -1912,7 +1912,7 @@
     }
   },
 
-  "appMissionTagline": "Vecini, curse și chat de cartier — într-o singură aplicație, pe harta ta.",
+  "about_appMissionTagline": "Vecini, curse și chat de cartier — într-o singură aplicație, pe harta ta.",
   "settingsSectionUpdates": "Actualizări",
   "settingsSectionInterfaceData": "Interfață și date",
   "settingsSectionPrivacyLanguage": "Confidențialitate și limbă",

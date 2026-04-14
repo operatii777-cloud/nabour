@@ -174,27 +174,27 @@
   "legal": "Legal",
   "logout": "LOGOUT",
   
-  "aboutNabour": "About Nabour",
-  "evaluateApp": "Evaluate App",
-  "howManyStars": "How many stars do you give the Nabour app?",
-  "starSelected": "star selected",
-  "starsSelected": "stars selected",
+  "about_titleNabour": "About Nabour",
+  "about_evaluateApp": "Evaluate App",
+  "about_howManyStars": "How many stars do you give the Nabour app?",
+  "about_starSelected": "star selected",
+  "about_starsSelected": "stars selected",
   "cancel": "Cancel",
   "send": "Send",
   "select": "Select",
-  "ratingSentSuccessfully": "✅ Rating of {rating} stars sent successfully!",
-  "@ratingSentSuccessfully": {
+  "about_ratingSentSuccessfully": "✅ Rating of {rating} stars sent successfully!",
+  "@about_ratingSentSuccessfully": {
     "placeholders": {
       "rating": {
         "type": "String"
       }
     }
   },
-  "career": "Career",
-  "joinOurTeam": "Join our team",
-  "evaluateApplication": "Evaluate application",
-  "giveStarRating": "⭐ Give a star rating",
-  "followUs": "Follow us",
+  "about_career": "Career",
+  "about_joinOurTeam": "Join our team",
+  "about_evaluateApplication": "Evaluate application",
+  "about_giveStarRating": "⭐ Give a star rating",
+  "about_followUs": "Follow us",
   
   "legalInformation": "Legal Information",
   "termsConditions": "Terms & Conditions",
@@ -409,7 +409,7 @@
   "emergencyAssistanceContent": "The emergency function allows you to:",
   "quickCall112": "• Quickly call 112",
   "sendLocationToContact": "• Send your location to an emergency contact",
-  "reportIncidentToSafety": "• Report an incident to the safety team",
+  "reportIncidentToSafetyTeam": "• Report an incident to the safety team",
   
   "voiceSettings": "Voice Settings",
   "voiceSettingsSaved": "Voice settings have been saved",
@@ -1914,7 +1914,7 @@
     }
   },
 
-  "appMissionTagline": "Neighbors, rides, and block chat — one app on your map.",
+  "about_appMissionTagline": "Neighbors, rides, and block chat — one app on your map.",
   "settingsSectionUpdates": "Updates",
   "settingsSectionInterfaceData": "Interface & data",
   "settingsSectionPrivacyLanguage": "Privacy & language",
