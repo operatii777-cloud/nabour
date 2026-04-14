@@ -2303,13 +2303,13 @@ abstract class AppLocalizations {
   /// No description provided for @waitingForPassengerConfirmation.
   ///
   /// In ro, this message translates to:
-  /// **'Aștepți confirmarea pasagerului'**
+  /// **'Așteaptă confirmarea pasagerului'**
   String get waitingForPassengerConfirmation;
 
   /// No description provided for @confirmedGoToPassenger.
   ///
   /// In ro, this message translates to:
-  /// **'Confirmată - Mergi spre pasager'**
+  /// **'Confirmat. Mergi la pasager'**
   String get confirmedGoToPassenger;
 
   /// No description provided for @earningsTodayShort.
@@ -2360,17 +2360,17 @@ abstract class AppLocalizations {
   /// **'Adaugă contact'**
   String get addContact;
 
-  /// No description provided for @emergencyAssistanceButton.
+  /// No description provided for @safety_emergencyAssistanceButton.
   ///
   /// In ro, this message translates to:
   /// **'Butonul de Asistență de Urgență'**
-  String get emergencyAssistanceButton;
+  String get safety_emergencyAssistanceButton;
 
-  /// No description provided for @emergencyAssistanceButtonDesc.
+  /// No description provided for @safety_emergencyAssistanceButtonDesc.
   ///
   /// In ro, this message translates to:
   /// **'În timpul oricărei curse, aveți la dispoziție butonul 112 în colțul ecranului pentru a contacta rapid serviciile de urgență.'**
-  String get emergencyAssistanceButtonDesc;
+  String get safety_emergencyAssistanceButtonDesc;
 
   /// No description provided for @tripSharing.
   ///
@@ -4838,23 +4838,23 @@ abstract class AppLocalizations {
   /// **'Eroare la trimiterea evaluării. Încercați din nou.'**
   String get errorSubmittingRating;
 
-  /// No description provided for @thankYouForRide.
+  /// No description provided for @rideSummary_thankYouForRide.
   ///
   /// In ro, this message translates to:
   /// **'Vă mulțumim pentru călătorie!'**
-  String get thankYouForRide;
+  String get rideSummary_thankYouForRide;
 
-  /// No description provided for @howWasExperience.
+  /// No description provided for @rideSummary_howWasExperience.
   ///
   /// In ro, this message translates to:
   /// **'Cum a fost experiența?'**
-  String get howWasExperience;
+  String get rideSummary_howWasExperience;
 
-  /// No description provided for @leaveCommentOptional.
+  /// No description provided for @rideSummary_leaveCommentOptional.
   ///
   /// In ro, this message translates to:
   /// **'Lasă un comentariu (opțional)'**
-  String get leaveCommentOptional;
+  String get rideSummary_leaveCommentOptional;
 
   /// No description provided for @thanksForRating.
   ///
@@ -6938,6 +6938,42 @@ abstract class AppLocalizations {
   /// **'Sincronizează contactele'**
   String get drawerMenuSyncContacts;
 
+  /// No description provided for @drawerShowHomeOnMap.
+  ///
+  /// In ro, this message translates to:
+  /// **'Afișează Acasă (favorite) pe hartă\n(doar pentru tine)'**
+  String get drawerShowHomeOnMap;
+
+  /// No description provided for @drawerOrientationMarkerOnMap.
+  ///
+  /// In ro, this message translates to:
+  /// **'Reper orientare pe hartă\n(ține apăsat pe hartă după activare)'**
+  String get drawerOrientationMarkerOnMap;
+
+  /// No description provided for @drawerHideHomeOnMap.
+  ///
+  /// In ro, this message translates to:
+  /// **'Ascunde Acasă de pe hartă\n(doar markerul favorite)'**
+  String get drawerHideHomeOnMap;
+
+  /// No description provided for @drawerHideOrientationMarker.
+  ///
+  /// In ro, this message translates to:
+  /// **'Ascunde reper orientare\n(elimină acul de pe hartă)'**
+  String get drawerHideOrientationMarker;
+
+  /// No description provided for @drawerActiveContactsOnMap.
+  ///
+  /// In ro, this message translates to:
+  /// **'Contacte active pe hartă'**
+  String get drawerActiveContactsOnMap;
+
+  /// No description provided for @drawerIdCopied.
+  ///
+  /// In ro, this message translates to:
+  /// **'ID copiat în clipboard.'**
+  String get drawerIdCopied;
+
   /// No description provided for @drawerSyncContactsDialogTitle.
   ///
   /// In ro, this message translates to:
@@ -7031,8 +7067,68 @@ abstract class AppLocalizations {
   /// No description provided for @warmupCtaOpenMap.
   ///
   /// In ro, this message translates to:
-  /// **'Deschide harta'**
+  /// **'Mergi la hartă'**
   String get warmupCtaOpenMap;
+
+  /// No description provided for @warmupSubtitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Centrul comunității tale'**
+  String get warmupSubtitle;
+
+  /// No description provided for @warmupExampleRidesCount.
+  ///
+  /// In ro, this message translates to:
+  /// **'{count} Curse Active în Apropiere'**
+  String warmupExampleRidesCount(String count);
+
+  /// No description provided for @warmupExampleDealsCount.
+  ///
+  /// In ro, this message translates to:
+  /// **'{count} Oferte Noi Astăzi'**
+  String warmupExampleDealsCount(String count);
+
+  /// No description provided for @warmupExampleMessagesCount.
+  ///
+  /// In ro, this message translates to:
+  /// **'{count} Mesaje Noi'**
+  String warmupExampleMessagesCount(String count);
+
+  /// No description provided for @warmupExampleRide1.
+  ///
+  /// In ro, this message translates to:
+  /// **'Sarah B. (2 min) → Centru'**
+  String get warmupExampleRide1;
+
+  /// No description provided for @warmupExampleRide2.
+  ///
+  /// In ro, this message translates to:
+  /// **'Mihai K. (5 min) → Gară'**
+  String get warmupExampleRide2;
+
+  /// No description provided for @warmupExampleOffer1.
+  ///
+  /// In ro, this message translates to:
+  /// **'The Daily Grind: 20% reducere la cafea'**
+  String get warmupExampleOffer1;
+
+  /// No description provided for @warmupExampleOffer2.
+  ///
+  /// In ro, this message translates to:
+  /// **'Urban Bites: Garnitură gratis la orice fel'**
+  String get warmupExampleOffer2;
+
+  /// No description provided for @warmupExampleChat1.
+  ///
+  /// In ro, this message translates to:
+  /// **'Alex: Cine vrea la o plimbare în parc...?'**
+  String get warmupExampleChat1;
+
+  /// No description provided for @warmupExampleChat2.
+  ///
+  /// In ro, this message translates to:
+  /// **'Chloe: S-a auzit un zgomot pe Elm St...'**
+  String get warmupExampleChat2;
 
   /// No description provided for @warmupSwipeDownHint.
   ///
@@ -7831,6 +7927,3402 @@ abstract class AppLocalizations {
   /// In ro, this message translates to:
   /// **'Toate categoriile'**
   String get businessOffersAllCategories;
+
+  /// No description provided for @mapGhostDurationTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Cât timp ești vizibil vecinilor?'**
+  String get mapGhostDurationTitle;
+
+  /// No description provided for @mapGhostDurationSubtitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Vecinii te vor vedea ca bulă pe hartă.'**
+  String get mapGhostDurationSubtitle;
+
+  /// No description provided for @mapGhostOneHourLabel.
+  ///
+  /// In ro, this message translates to:
+  /// **'1 oră'**
+  String get mapGhostOneHourLabel;
+
+  /// No description provided for @mapGhostOneHourSub.
+  ///
+  /// In ro, this message translates to:
+  /// **'Util pentru o ieșire scurtă'**
+  String get mapGhostOneHourSub;
+
+  /// No description provided for @mapGhostFourHoursLabel.
+  ///
+  /// In ro, this message translates to:
+  /// **'4 ore'**
+  String get mapGhostFourHoursLabel;
+
+  /// No description provided for @mapGhostFourHoursSub.
+  ///
+  /// In ro, this message translates to:
+  /// **'Util pentru o după-amiază'**
+  String get mapGhostFourHoursSub;
+
+  /// No description provided for @mapGhostUntilTomorrowLabel.
+  ///
+  /// In ro, this message translates to:
+  /// **'Până mâine'**
+  String get mapGhostUntilTomorrowLabel;
+
+  /// No description provided for @mapGhostUntilTomorrowSub.
+  ///
+  /// In ro, this message translates to:
+  /// **'Se resetează la miezul nopții'**
+  String get mapGhostUntilTomorrowSub;
+
+  /// No description provided for @mapGhostPermanentLabel.
+  ///
+  /// In ro, this message translates to:
+  /// **'Permanent'**
+  String get mapGhostPermanentLabel;
+
+  /// No description provided for @mapGhostPermanentSub.
+  ///
+  /// In ro, this message translates to:
+  /// **'Rămâi vizibil până dezactivezi manual'**
+  String get mapGhostPermanentSub;
+
+  /// No description provided for @mapGhostInvisibleLabel.
+  ///
+  /// In ro, this message translates to:
+  /// **'Invizibil (mod fantomă)'**
+  String get mapGhostInvisibleLabel;
+
+  /// No description provided for @mapGhostInvisibleSub.
+  ///
+  /// In ro, this message translates to:
+  /// **'Nu apari pe hartă; profilul marchează ghostMode în cont (sync între dispozitive).'**
+  String get mapGhostInvisibleSub;
+
+  /// No description provided for @mapDeleteMomentTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Ștergi momentul?'**
+  String get mapDeleteMomentTitle;
+
+  /// No description provided for @mapDeleteMomentContent.
+  ///
+  /// In ro, this message translates to:
+  /// **'Postarea va dispărea de pe hartă pentru toți.'**
+  String get mapDeleteMomentContent;
+
+  /// No description provided for @mapMomentDeleted.
+  ///
+  /// In ro, this message translates to:
+  /// **'Momentul a fost șters.'**
+  String get mapMomentDeleted;
+
+  /// No description provided for @mapMomentDeleteError.
+  ///
+  /// In ro, this message translates to:
+  /// **'Nu s-a putut șterge. Încearcă din nou.'**
+  String get mapMomentDeleteError;
+
+  /// No description provided for @mapDeleteOrCancelPost.
+  ///
+  /// In ro, this message translates to:
+  /// **'Șterge / anulează postarea'**
+  String get mapDeleteOrCancelPost;
+
+  /// No description provided for @mapPinNameLabel.
+  ///
+  /// In ro, this message translates to:
+  /// **'Denumire'**
+  String get mapPinNameLabel;
+
+  /// No description provided for @mapPinNameHint.
+  ///
+  /// In ro, this message translates to:
+  /// **'ex.: intrarea principală'**
+  String get mapPinNameHint;
+
+  /// No description provided for @mapPinNameTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Denumire reper'**
+  String get mapPinNameTitle;
+
+  /// No description provided for @mapOrientationPinSaved.
+  ///
+  /// In ro, this message translates to:
+  /// **'Reperul de orientare a fost salvat pe hartă.'**
+  String get mapOrientationPinSaved;
+
+  /// No description provided for @mapEditHomeAddressTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Editează adresa Acasă'**
+  String get mapEditHomeAddressTitle;
+
+  /// No description provided for @mapEditHomeAddressSubtitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Schimbi poziția din Adrese salvate'**
+  String get mapEditHomeAddressSubtitle;
+
+  /// No description provided for @mapHideHomeFromMapTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Ascunde Acasă de pe hartă'**
+  String get mapHideHomeFromMapTitle;
+
+  /// No description provided for @mapMoveOrientationMarkerTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Mută reperul'**
+  String get mapMoveOrientationMarkerTitle;
+
+  /// No description provided for @mapMoveOrientationMarkerWithName.
+  ///
+  /// In ro, this message translates to:
+  /// **'„{name}” · apoi ține apăsat pe hartă la noul loc'**
+  String mapMoveOrientationMarkerWithName(String name);
+
+  /// No description provided for @mapMoveOrientationMarkerNoName.
+  ///
+  /// In ro, this message translates to:
+  /// **'Apoi ține apăsat pe hartă la noul loc'**
+  String get mapMoveOrientationMarkerNoName;
+
+  /// No description provided for @mapLongPressForNewMarker.
+  ///
+  /// In ro, this message translates to:
+  /// **'Ține apăsat pe hartă pentru noul reper.'**
+  String get mapLongPressForNewMarker;
+
+  /// No description provided for @mapRemoveOrientationMarkerTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Elimină reperul de orientare'**
+  String get mapRemoveOrientationMarkerTitle;
+
+  /// No description provided for @mapMarkerRemoved.
+  ///
+  /// In ro, this message translates to:
+  /// **'Reperul a fost eliminat.'**
+  String get mapMarkerRemoved;
+
+  /// No description provided for @mapSaveHomeFirst.
+  ///
+  /// In ro, this message translates to:
+  /// **'Salvează adresa „Acasă” în favorite (cu poziție pe hartă), apoi încearcă din nou.'**
+  String get mapSaveHomeFirst;
+
+  /// No description provided for @mapHomeShownForYou.
+  ///
+  /// In ro, this message translates to:
+  /// **'Acasă din favorite este afișată pe hartă (doar pentru tine).'**
+  String get mapHomeShownForYou;
+
+  /// No description provided for @mapHomeNotShown.
+  ///
+  /// In ro, this message translates to:
+  /// **'Acasă nu este afișată pe hartă.'**
+  String get mapHomeNotShown;
+
+  /// No description provided for @mapHomeNoLongerShown.
+  ///
+  /// In ro, this message translates to:
+  /// **'Acasă nu mai este afișată pe hartă.'**
+  String get mapHomeNoLongerShown;
+
+  /// No description provided for @mapNoOrientationMarker.
+  ///
+  /// In ro, this message translates to:
+  /// **'Nu ai un reper de orientare pe hartă.'**
+  String get mapNoOrientationMarker;
+
+  /// No description provided for @mapOrientationMarkerRemovedFromMap.
+  ///
+  /// In ro, this message translates to:
+  /// **'Reperul de orientare a fost eliminat de pe hartă.'**
+  String get mapOrientationMarkerRemovedFromMap;
+
+  /// No description provided for @mapEmojiRemoved.
+  ///
+  /// In ro, this message translates to:
+  /// **'Emoji-ul tău a fost scos de pe hartă'**
+  String get mapEmojiRemoved;
+
+  /// No description provided for @mapEmojiDeleteError.
+  ///
+  /// In ro, this message translates to:
+  /// **'Nu am putut șterge emoji-ul. Încearcă din nou.'**
+  String get mapEmojiDeleteError;
+
+  /// No description provided for @mapMomentExpired.
+  ///
+  /// In ro, this message translates to:
+  /// **'Expirat'**
+  String get mapMomentExpired;
+
+  /// No description provided for @mapMomentExpiresInMinutes.
+  ///
+  /// In ro, this message translates to:
+  /// **'~{minutes} min până dispare de pe hartă'**
+  String mapMomentExpiresInMinutes(int minutes);
+
+  /// No description provided for @mapMomentExpiresSoon.
+  ///
+  /// In ro, this message translates to:
+  /// **'Dispare în curând de pe hartă'**
+  String get mapMomentExpiresSoon;
+
+  /// No description provided for @mapArrivedAtDestination.
+  ///
+  /// In ro, this message translates to:
+  /// **'Ai ajuns la destinație: {destination}'**
+  String mapArrivedAtDestination(String destination);
+
+  /// No description provided for @mapDestinationUnset.
+  ///
+  /// In ro, this message translates to:
+  /// **'Destinație nestabilită'**
+  String get mapDestinationUnset;
+
+  /// No description provided for @mapRideBroadcastWantsToGo.
+  ///
+  /// In ro, this message translates to:
+  /// **'Vrea să meargă la: {destination}'**
+  String mapRideBroadcastWantsToGo(String destination);
+
+  /// No description provided for @mapSeeRequestAndOfferRide.
+  ///
+  /// In ro, this message translates to:
+  /// **'VEZI CEREREA ȘI OFERĂ CURSĂ'**
+  String get mapSeeRequestAndOfferRide;
+
+  /// No description provided for @mapAcceptRideError.
+  ///
+  /// In ro, this message translates to:
+  /// **'Eroare la acceptarea cursei: {error}'**
+  String mapAcceptRideError(String error);
+
+  /// No description provided for @mapPickupExternalNavigation.
+  ///
+  /// In ro, this message translates to:
+  /// **'Pickup: navigație externă'**
+  String get mapPickupExternalNavigation;
+
+  /// No description provided for @mapDestinationExternalNavigation.
+  ///
+  /// In ro, this message translates to:
+  /// **'Destinație: navigație externă'**
+  String get mapDestinationExternalNavigation;
+
+  /// No description provided for @mapClosePanel.
+  ///
+  /// In ro, this message translates to:
+  /// **'Închide panoul'**
+  String get mapClosePanel;
+
+  /// No description provided for @mapWaitingGpsLocation.
+  ///
+  /// In ro, this message translates to:
+  /// **'Așteptăm localizarea GPS...'**
+  String get mapWaitingGpsLocation;
+
+  /// No description provided for @mapCreateRideError.
+  ///
+  /// In ro, this message translates to:
+  /// **'Eroare la crearea cursei: {error}'**
+  String mapCreateRideError(String error);
+
+  /// No description provided for @mapWaitingGpsToPlaceBox.
+  ///
+  /// In ro, this message translates to:
+  /// **'Așteptăm poziția GPS pentru a plasa cutia aici.'**
+  String get mapWaitingGpsToPlaceBox;
+
+  /// No description provided for @mapPlace.
+  ///
+  /// In ro, this message translates to:
+  /// **'Plasează'**
+  String get mapPlace;
+
+  /// No description provided for @mapBoxPlaced.
+  ///
+  /// In ro, this message translates to:
+  /// **'Cutie plasată! (-{tokens} tokeni)'**
+  String mapBoxPlaced(int tokens);
+
+  /// No description provided for @mapPoiLoadError.
+  ///
+  /// In ro, this message translates to:
+  /// **'Eroare la încărcarea POI-urilor: {error}'**
+  String mapPoiLoadError(String error);
+
+  /// No description provided for @mapNavigateToMarkedPlace.
+  ///
+  /// In ro, this message translates to:
+  /// **'Navighează la locul marcat'**
+  String get mapNavigateToMarkedPlace;
+
+  /// No description provided for @mapDeleteMarkerAndRestart.
+  ///
+  /// In ro, this message translates to:
+  /// **'Șterge marcajul și începe din nou'**
+  String get mapDeleteMarkerAndRestart;
+
+  /// No description provided for @mapSpotReserved.
+  ///
+  /// In ro, this message translates to:
+  /// **'Loc rezervat! Ai 3 minute să ajungi.'**
+  String get mapSpotReserved;
+
+  /// No description provided for @mapAddToFavoriteAddresses.
+  ///
+  /// In ro, this message translates to:
+  /// **'Adaugă la adrese favorite'**
+  String get mapAddToFavoriteAddresses;
+
+  /// No description provided for @mapNavigateWithExternalApps.
+  ///
+  /// In ro, this message translates to:
+  /// **'Navighează cu Google Maps / Waze'**
+  String get mapNavigateWithExternalApps;
+
+  /// No description provided for @mapSpotAlreadyReserved.
+  ///
+  /// In ro, this message translates to:
+  /// **'Ne pare rău, locul a fost deja rezervat.'**
+  String get mapSpotAlreadyReserved;
+
+  /// No description provided for @chatImageTooLargePrivate.
+  ///
+  /// In ro, this message translates to:
+  /// **'Imaginea e încă prea mare după compresie (max ~1,8 MB). Încearcă o poză mai mică.'**
+  String get chatImageTooLargePrivate;
+
+  /// No description provided for @chatImageTooLargeGeneral.
+  ///
+  /// In ro, this message translates to:
+  /// **'Imaginea e prea mare (max ~7 MB).'**
+  String get chatImageTooLargeGeneral;
+
+  /// No description provided for @chatImageUploadFailed.
+  ///
+  /// In ro, this message translates to:
+  /// **'Nu s-a putut încărca imaginea.'**
+  String get chatImageUploadFailed;
+
+  /// No description provided for @chatPhotoLabel.
+  ///
+  /// In ro, this message translates to:
+  /// **'Fotografie'**
+  String get chatPhotoLabel;
+
+  /// No description provided for @chatVoiceMessageLabel.
+  ///
+  /// In ro, this message translates to:
+  /// **'Mesaj vocal'**
+  String get chatVoiceMessageLabel;
+
+  /// No description provided for @chatMessageSendFailed.
+  ///
+  /// In ro, this message translates to:
+  /// **'Mesajul nu a putut fi trimis.'**
+  String get chatMessageSendFailed;
+
+  /// No description provided for @chatGifLabel.
+  ///
+  /// In ro, this message translates to:
+  /// **'GIF'**
+  String get chatGifLabel;
+
+  /// No description provided for @chatPhoneNotAvailable.
+  ///
+  /// In ro, this message translates to:
+  /// **'Numărul de telefon nu este disponibil.'**
+  String get chatPhoneNotAvailable;
+
+  /// No description provided for @chatCallFailed.
+  ///
+  /// In ro, this message translates to:
+  /// **'Nu s-a putut iniția apelul.'**
+  String get chatCallFailed;
+
+  /// No description provided for @chatMessagesLoadFailed.
+  ///
+  /// In ro, this message translates to:
+  /// **'Nu s-au putut încărca mesajele.'**
+  String get chatMessagesLoadFailed;
+
+  /// No description provided for @chatTyping.
+  ///
+  /// In ro, this message translates to:
+  /// **'scrie...'**
+  String get chatTyping;
+
+  /// No description provided for @chatEndToEndEncrypted.
+  ///
+  /// In ro, this message translates to:
+  /// **'Mesajele sunt criptate end-to-end.'**
+  String get chatEndToEndEncrypted;
+
+  /// No description provided for @chatToday.
+  ///
+  /// In ro, this message translates to:
+  /// **'Astăzi'**
+  String get chatToday;
+
+  /// No description provided for @chatYesterday.
+  ///
+  /// In ro, this message translates to:
+  /// **'Ieri'**
+  String get chatYesterday;
+
+  /// No description provided for @chatQuickReplyHere.
+  ///
+  /// In ro, this message translates to:
+  /// **'Sunt aici 👋'**
+  String get chatQuickReplyHere;
+
+  /// No description provided for @chatQuickReplyIn2Min.
+  ///
+  /// In ro, this message translates to:
+  /// **'Vin în 2 min ⏱️'**
+  String get chatQuickReplyIn2Min;
+
+  /// No description provided for @chatQuickReplyIn5Min.
+  ///
+  /// In ro, this message translates to:
+  /// **'Vin în 5 min ⏱️'**
+  String get chatQuickReplyIn5Min;
+
+  /// No description provided for @chatQuickReplyArrived.
+  ///
+  /// In ro, this message translates to:
+  /// **'Ai ajuns? 📍'**
+  String get chatQuickReplyArrived;
+
+  /// No description provided for @chatQuickReplyThanks.
+  ///
+  /// In ro, this message translates to:
+  /// **'Mulțumesc! 🙏'**
+  String get chatQuickReplyThanks;
+
+  /// No description provided for @chatQuickReplyOk.
+  ///
+  /// In ro, this message translates to:
+  /// **'OK 👍'**
+  String get chatQuickReplyOk;
+
+  /// No description provided for @you.
+  ///
+  /// In ro, this message translates to:
+  /// **'Tu'**
+  String get you;
+
+  /// No description provided for @chatVoiceMessageSendFailed.
+  ///
+  /// In ro, this message translates to:
+  /// **'Mesajul vocal nu a putut fi trimis.'**
+  String get chatVoiceMessageSendFailed;
+
+  /// No description provided for @chatReply.
+  ///
+  /// In ro, this message translates to:
+  /// **'Răspunde'**
+  String get chatReply;
+
+  /// No description provided for @chatCopy.
+  ///
+  /// In ro, this message translates to:
+  /// **'Copiază'**
+  String get chatCopy;
+
+  /// No description provided for @chatMessageCopied.
+  ///
+  /// In ro, this message translates to:
+  /// **'Mesaj copiat.'**
+  String get chatMessageCopied;
+
+  /// No description provided for @chatChooseGif.
+  ///
+  /// In ro, this message translates to:
+  /// **'Alege GIF'**
+  String get chatChooseGif;
+
+  /// No description provided for @chatSearchHint.
+  ///
+  /// In ro, this message translates to:
+  /// **'Caută…'**
+  String get chatSearchHint;
+
+  /// No description provided for @privateChatNotAuthenticated.
+  ///
+  /// In ro, this message translates to:
+  /// **'Nu ești autentificat.'**
+  String get privateChatNotAuthenticated;
+
+  /// No description provided for @privateChatReaction.
+  ///
+  /// In ro, this message translates to:
+  /// **'Reacție'**
+  String get privateChatReaction;
+
+  /// No description provided for @privateChatNewChat.
+  ///
+  /// In ro, this message translates to:
+  /// **'Chat nou'**
+  String get privateChatNewChat;
+
+  /// No description provided for @privateChatAddContactsToChoose.
+  ///
+  /// In ro, this message translates to:
+  /// **'Adaugă contacte în agendă sau prieteni ca să poți alege o persoană.'**
+  String get privateChatAddContactsToChoose;
+
+  /// No description provided for @privateChatOnMap.
+  ///
+  /// In ro, this message translates to:
+  /// **'Pe hartă'**
+  String get privateChatOnMap;
+
+  /// No description provided for @privateChatNoPeopleYet.
+  ///
+  /// In ro, this message translates to:
+  /// **'Nu ai încă persoane în agendă sau prieteni confirmați.'**
+  String get privateChatNoPeopleYet;
+
+  /// No description provided for @privateChatAddContactsOrAcceptSuggestions.
+  ///
+  /// In ro, this message translates to:
+  /// **'Adaugă contacte sau acceptă cereri în tab-ul Sugestii ca să poți începe conversații private.'**
+  String get privateChatAddContactsOrAcceptSuggestions;
+
+  /// No description provided for @privateChatConversationsHint.
+  ///
+  /// In ro, this message translates to:
+  /// **'Conversații private — aceleași mesaje ca din profilul unui vecin pe hartă.'**
+  String get privateChatConversationsHint;
+
+  /// No description provided for @privateChatOnMapNowTapToWrite.
+  ///
+  /// In ro, this message translates to:
+  /// **'Pe hartă acum — apasă pentru a scrie'**
+  String get privateChatOnMapNowTapToWrite;
+
+  /// No description provided for @privateChatTapToSendMessage.
+  ///
+  /// In ro, this message translates to:
+  /// **'Apasă pentru a trimite un mesaj'**
+  String get privateChatTapToSendMessage;
+
+  /// No description provided for @chatLocationLabel.
+  ///
+  /// In ro, this message translates to:
+  /// **'Locație'**
+  String get chatLocationLabel;
+
+  /// No description provided for @friendSuggestionsUserFallback.
+  ///
+  /// In ro, this message translates to:
+  /// **'Utilizator'**
+  String get friendSuggestionsUserFallback;
+
+  /// No description provided for @friendSuggestionsAlreadyFriends.
+  ///
+  /// In ro, this message translates to:
+  /// **'Sunteți deja prieteni în Nabour.'**
+  String get friendSuggestionsAlreadyFriends;
+
+  /// No description provided for @friendSuggestionsRequestAlreadySent.
+  ///
+  /// In ro, this message translates to:
+  /// **'Ai trimis deja o cerere către această persoană.'**
+  String get friendSuggestionsRequestAlreadySent;
+
+  /// No description provided for @friendSuggestionsRequestSent.
+  ///
+  /// In ro, this message translates to:
+  /// **'Cerere de prietenie trimisă!'**
+  String get friendSuggestionsRequestSent;
+
+  /// No description provided for @friendSuggestionsRequestPermissionDenied.
+  ///
+  /// In ro, this message translates to:
+  /// **'Nu avem voie să scriem cererea (reguli Firebase). Contactează suportul.'**
+  String get friendSuggestionsRequestPermissionDenied;
+
+  /// No description provided for @friendSuggestionsRequestFailed.
+  ///
+  /// In ro, this message translates to:
+  /// **'Nu am putut trimite cererea. Încearcă din nou.'**
+  String get friendSuggestionsRequestFailed;
+
+  /// No description provided for @friendSuggestionsAcceptedFrom.
+  ///
+  /// In ro, this message translates to:
+  /// **'Ai acceptat cererea de la {name}! ✓'**
+  String friendSuggestionsAcceptedFrom(String name);
+
+  /// No description provided for @friendSuggestionsFriendFallback.
+  ///
+  /// In ro, this message translates to:
+  /// **'prieten'**
+  String get friendSuggestionsFriendFallback;
+
+  /// No description provided for @friendSuggestionsPermissionAcceptDenied.
+  ///
+  /// In ro, this message translates to:
+  /// **'Nu avem voie să acceptăm (reguli Firebase).'**
+  String get friendSuggestionsPermissionAcceptDenied;
+
+  /// No description provided for @friendSuggestionsAcceptFailed.
+  ///
+  /// In ro, this message translates to:
+  /// **'Nu am putut accepta cererea. Încearcă din nou.'**
+  String get friendSuggestionsAcceptFailed;
+
+  /// No description provided for @friendSuggestionsRejected.
+  ///
+  /// In ro, this message translates to:
+  /// **'Cererea a fost refuzată.'**
+  String get friendSuggestionsRejected;
+
+  /// No description provided for @friendSuggestionsRejectFailed.
+  ///
+  /// In ro, this message translates to:
+  /// **'Nu am putut refuza cererea. Încearcă din nou.'**
+  String get friendSuggestionsRejectFailed;
+
+  /// No description provided for @friendSuggestionsThisUser.
+  ///
+  /// In ro, this message translates to:
+  /// **'acest utilizator'**
+  String get friendSuggestionsThisUser;
+
+  /// No description provided for @friendSuggestionsRemoveTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Elimină din prieteni'**
+  String get friendSuggestionsRemoveTitle;
+
+  /// No description provided for @friendSuggestionsRemoveConfirm.
+  ///
+  /// In ro, this message translates to:
+  /// **'Sigur vrei să îl elimini pe {name} din lista ta? Nu vei mai vedea reciproc pe hartă ca prieteni Nabour până nu retrimiteți cereri.'**
+  String friendSuggestionsRemoveConfirm(String name);
+
+  /// No description provided for @friendSuggestionsCancel.
+  ///
+  /// In ro, this message translates to:
+  /// **'Anulează'**
+  String get friendSuggestionsCancel;
+
+  /// No description provided for @friendSuggestionsRemove.
+  ///
+  /// In ro, this message translates to:
+  /// **'Elimină'**
+  String get friendSuggestionsRemove;
+
+  /// No description provided for @friendSuggestionsRemovedFromList.
+  ///
+  /// In ro, this message translates to:
+  /// **'{name} a fost eliminat din lista ta.'**
+  String friendSuggestionsRemovedFromList(String name);
+
+  /// No description provided for @friendSuggestionsRemoveFailed.
+  ///
+  /// In ro, this message translates to:
+  /// **'Nu am putut elimina. Încearcă din nou.'**
+  String get friendSuggestionsRemoveFailed;
+
+  /// No description provided for @friendSuggestionsTabSuggestions.
+  ///
+  /// In ro, this message translates to:
+  /// **'Sugestii'**
+  String get friendSuggestionsTabSuggestions;
+
+  /// No description provided for @friendSuggestionsTabMyFriends.
+  ///
+  /// In ro, this message translates to:
+  /// **'Prietenii mei'**
+  String get friendSuggestionsTabMyFriends;
+
+  /// No description provided for @friendSuggestionsTabPrivateChat.
+  ///
+  /// In ro, this message translates to:
+  /// **'Chat individual'**
+  String get friendSuggestionsTabPrivateChat;
+
+  /// No description provided for @friendSuggestionsSearchHint.
+  ///
+  /// In ro, this message translates to:
+  /// **'Caută în agendă...'**
+  String get friendSuggestionsSearchHint;
+
+  /// No description provided for @friendSuggestionsIncomingRequests.
+  ///
+  /// In ro, this message translates to:
+  /// **'Cereri primite ({count})'**
+  String friendSuggestionsIncomingRequests(int count);
+
+  /// No description provided for @friendSuggestionsAddressBookSuggestions.
+  ///
+  /// In ro, this message translates to:
+  /// **'Sugestii din agendă'**
+  String get friendSuggestionsAddressBookSuggestions;
+
+  /// No description provided for @friendSuggestionsNoConfirmedFriends.
+  ///
+  /// In ro, this message translates to:
+  /// **'Nu ai încă prieteni confirmați.\nAcceptă cereri în tab-ul Sugestii sau trimite tu o cerere.'**
+  String get friendSuggestionsNoConfirmedFriends;
+
+  /// No description provided for @friendSuggestionsLoading.
+  ///
+  /// In ro, this message translates to:
+  /// **'Se încarcă…'**
+  String get friendSuggestionsLoading;
+
+  /// No description provided for @friendSuggestionsOnMapNow.
+  ///
+  /// In ro, this message translates to:
+  /// **'Pe hartă acum'**
+  String get friendSuggestionsOnMapNow;
+
+  /// No description provided for @friendSuggestionsNabourFriend.
+  ///
+  /// In ro, this message translates to:
+  /// **'Prieten Nabour'**
+  String get friendSuggestionsNabourFriend;
+
+  /// No description provided for @friendSuggestionsSendsRequest.
+  ///
+  /// In ro, this message translates to:
+  /// **'îți trimite o cerere de prietenie'**
+  String get friendSuggestionsSendsRequest;
+
+  /// No description provided for @friendSuggestionsReject.
+  ///
+  /// In ro, this message translates to:
+  /// **'Refuză'**
+  String get friendSuggestionsReject;
+
+  /// No description provided for @friendSuggestionsAccept.
+  ///
+  /// In ro, this message translates to:
+  /// **'Acceptă'**
+  String get friendSuggestionsAccept;
+
+  /// No description provided for @friendSuggestionsIntroOne.
+  ///
+  /// In ro, this message translates to:
+  /// **'{count} INTRODUCERE'**
+  String friendSuggestionsIntroOne(int count);
+
+  /// No description provided for @friendSuggestionsIntroMany.
+  ///
+  /// In ro, this message translates to:
+  /// **'{count} INTRODUCERI'**
+  String friendSuggestionsIntroMany(int count);
+
+  /// No description provided for @friendSuggestionsFriendsCount.
+  ///
+  /// In ro, this message translates to:
+  /// **'{count} DE PRIETENI'**
+  String friendSuggestionsFriendsCount(int count);
+
+  /// No description provided for @friendSuggestionsFriendsCount50Plus.
+  ///
+  /// In ro, this message translates to:
+  /// **'50+ DE PRIETENI'**
+  String get friendSuggestionsFriendsCount50Plus;
+
+  /// No description provided for @friendSuggestionsFriendBadge.
+  ///
+  /// In ro, this message translates to:
+  /// **'Prieten'**
+  String get friendSuggestionsFriendBadge;
+
+  /// No description provided for @friendSuggestionsAdded.
+  ///
+  /// In ro, this message translates to:
+  /// **'Adăugat'**
+  String get friendSuggestionsAdded;
+
+  /// No description provided for @friendSuggestionsAdd.
+  ///
+  /// In ro, this message translates to:
+  /// **'Adaugă'**
+  String get friendSuggestionsAdd;
+
+  /// No description provided for @friendSuggestionsBackOnMap.
+  ///
+  /// In ro, this message translates to:
+  /// **'este din nou pe hartă'**
+  String get friendSuggestionsBackOnMap;
+
+  /// No description provided for @disclaimerNoPaymentsTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Nabour nu intermediază plăți'**
+  String get disclaimerNoPaymentsTitle;
+
+  /// No description provided for @disclaimerNoPaymentsSubtitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Aplicația nu intermediază plăți între utilizatori.'**
+  String get disclaimerNoPaymentsSubtitle;
+
+  /// No description provided for @disclaimerNoPaymentsBody.
+  ///
+  /// In ro, this message translates to:
+  /// **'Nabour conectează vecini care vor să se ajute reciproc. Dacă un șofer alege să accepte sau să ofere un gest de apreciere, aceasta este exclusiv decizia și responsabilitatea sa personală. Aplicația nu intermediază, nu solicită și nu procesează niciun fel de plată.'**
+  String get disclaimerNoPaymentsBody;
+
+  /// No description provided for @disclaimerUsageNotice.
+  ///
+  /// In ro, this message translates to:
+  /// **'Nu sta în aplicație mai mult de 40 de minute pe zi, în medie pe lună — aceasta fie generează costuri, fie te blochează la utilizare.'**
+  String get disclaimerUsageNotice;
+
+  /// No description provided for @disclaimerUnderstood.
+  ///
+  /// In ro, this message translates to:
+  /// **'Am înțeles'**
+  String get disclaimerUnderstood;
+
+  /// No description provided for @splashStartupError.
+  ///
+  /// In ro, this message translates to:
+  /// **'A apărut o eroare la pornire.\nVerifică internetul și încearcă din nou.'**
+  String get splashStartupError;
+
+  /// No description provided for @splashRetry.
+  ///
+  /// In ro, this message translates to:
+  /// **'REÎNCEARCĂ'**
+  String get splashRetry;
+
+  /// No description provided for @splashTakingLonger.
+  ///
+  /// In ro, this message translates to:
+  /// **'Pornirea durează mai mult...'**
+  String get splashTakingLonger;
+
+  /// No description provided for @splashContinueAnyway.
+  ///
+  /// In ro, this message translates to:
+  /// **'CONTINUĂ ORICUM'**
+  String get splashContinueAnyway;
+
+  /// No description provided for @splashMadeInRomania.
+  ///
+  /// In ro, this message translates to:
+  /// **'Fabricat în România'**
+  String get splashMadeInRomania;
+
+  /// No description provided for @settingsCommunityModeSchool.
+  ///
+  /// In ro, this message translates to:
+  /// **'Mod școală / liceu'**
+  String get settingsCommunityModeSchool;
+
+  /// No description provided for @settingsCommunityModeStandard.
+  ///
+  /// In ro, this message translates to:
+  /// **'Standard (fără etichetă comunitate)'**
+  String get settingsCommunityModeStandard;
+
+  /// No description provided for @settingsNowPlayingNotSet.
+  ///
+  /// In ro, this message translates to:
+  /// **'Nu e setat — vizibil în profil pentru prieteni'**
+  String get settingsNowPlayingNotSet;
+
+  /// No description provided for @settingsVoiceAssistantOnMap.
+  ///
+  /// In ro, this message translates to:
+  /// **'Asistent vocal pe hartă'**
+  String get settingsVoiceAssistantOnMap;
+
+  /// No description provided for @settingsVoiceAssistantOnMapSubtitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Buton pe hartă și secțiunea din meniu (în curs de îmbunătățiri)'**
+  String get settingsVoiceAssistantOnMapSubtitle;
+
+  /// No description provided for @settingsGhostModeTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Mod fantomă (hartă socială)'**
+  String get settingsGhostModeTitle;
+
+  /// No description provided for @settingsGhostModeSubtitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Activezi „Invizibil” din meniul hărții sociale; oprește RTDB și marchează ghostMode în cont.'**
+  String get settingsGhostModeSubtitle;
+
+  /// No description provided for @settingsApproximateLocationTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Locație aproximativă (hartă socială)'**
+  String get settingsApproximateLocationTitle;
+
+  /// No description provided for @settingsSocialMapSection.
+  ///
+  /// In ro, this message translates to:
+  /// **'Hartă socială'**
+  String get settingsSocialMapSection;
+
+  /// No description provided for @settingsNearbyNotificationsTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Notificări „aproape de mine”'**
+  String get settingsNearbyNotificationsTitle;
+
+  /// No description provided for @settingsNearbyAlertRadiusTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Rază alertă apropiere'**
+  String get settingsNearbyAlertRadiusTitle;
+
+  /// No description provided for @settingsNearbyAlertRadiusSubtitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'{meters} m (contacte pe hartă)'**
+  String settingsNearbyAlertRadiusSubtitle(int meters);
+
+  /// No description provided for @settingsMusicTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Muzică (Spotify / Apple Music)'**
+  String get settingsMusicTitle;
+
+  /// No description provided for @settingsMusicSubtitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Deschide Spotify sau Apple Music'**
+  String get settingsMusicSubtitle;
+
+  /// No description provided for @settingsNowPlayingTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Ce ascult acum (profil)'**
+  String get settingsNowPlayingTitle;
+
+  /// No description provided for @settingsCommunityModeTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Mod comunitate / școală'**
+  String get settingsCommunityModeTitle;
+
+  /// No description provided for @settingsLocationHistoryTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Istoric locație (Timeline)'**
+  String get settingsLocationHistoryTitle;
+
+  /// No description provided for @settingsLocationHistoryStartFailed.
+  ///
+  /// In ro, this message translates to:
+  /// **'Nu s-a putut porni înregistrarea. Acordă acces la locație și, pe Android, „Permite tot timpul” pentru înregistrare când aplicația nu e deschisă.'**
+  String get settingsLocationHistoryStartFailed;
+
+  /// No description provided for @settingsLocationHistoryEnabled.
+  ///
+  /// In ro, this message translates to:
+  /// **'Istoricul locației a fost activat (vezi notificarea pe Android când rulează în fundal).'**
+  String get settingsLocationHistoryEnabled;
+
+  /// No description provided for @settingsLocationHistoryDisabled.
+  ///
+  /// In ro, this message translates to:
+  /// **'Istoricul locației a fost dezactivat.'**
+  String get settingsLocationHistoryDisabled;
+
+  /// No description provided for @settingsLocalHistoryRetentionTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Retenție istoric local'**
+  String get settingsLocalHistoryRetentionTitle;
+
+  /// No description provided for @settingsLocalHistoryRetentionSubtitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Păstrează datele locale {days} zile'**
+  String settingsLocalHistoryRetentionSubtitle(int days);
+
+  /// No description provided for @settingsDeleteLocalHistoryTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Șterge istoricul local'**
+  String get settingsDeleteLocalHistoryTitle;
+
+  /// No description provided for @settingsDeleteLocalHistorySubtitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Șterge recap, cache și timeline local pentru acest cont'**
+  String get settingsDeleteLocalHistorySubtitle;
+
+  /// No description provided for @settingsNearbyNotificationRadiusTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Rază notificare apropiere'**
+  String get settingsNearbyNotificationRadiusTitle;
+
+  /// No description provided for @settingsLocalHistoryRetentionSet.
+  ///
+  /// In ro, this message translates to:
+  /// **'Retenția locală a fost setată la {days} zile.'**
+  String settingsLocalHistoryRetentionSet(int days);
+
+  /// No description provided for @settingsNowPlayingSheetTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Ce ascult acum'**
+  String get settingsNowPlayingSheetTitle;
+
+  /// No description provided for @settingsNowPlayingSongLabel.
+  ///
+  /// In ro, this message translates to:
+  /// **'Piesă / titlu'**
+  String get settingsNowPlayingSongLabel;
+
+  /// No description provided for @settingsMusicProfileUpdated.
+  ///
+  /// In ro, this message translates to:
+  /// **'Profil muzical actualizat.'**
+  String get settingsMusicProfileUpdated;
+
+  /// No description provided for @settingsSaveToAccount.
+  ///
+  /// In ro, this message translates to:
+  /// **'Salvează în cont'**
+  String get settingsSaveToAccount;
+
+  /// No description provided for @settingsDeleteFromProfile.
+  ///
+  /// In ro, this message translates to:
+  /// **'Șterge din profil'**
+  String get settingsDeleteFromProfile;
+
+  /// No description provided for @settingsCommunitySheetTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Comunitate'**
+  String get settingsCommunitySheetTitle;
+
+  /// No description provided for @settingsCommunityModeSaved.
+  ///
+  /// In ro, this message translates to:
+  /// **'Mod comunitate salvat.'**
+  String get settingsCommunityModeSaved;
+
+  /// No description provided for @settingsDeleteLocalHistoryConfirmTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Ștergi istoricul local?'**
+  String get settingsDeleteLocalHistoryConfirmTitle;
+
+  /// No description provided for @settingsDeleteLocalHistoryConfirmContent.
+  ///
+  /// In ro, this message translates to:
+  /// **'Această acțiune șterge recap-ul și cache-ul local Week in Review pentru contul curent.'**
+  String get settingsDeleteLocalHistoryConfirmContent;
+
+  /// No description provided for @settingsLocalHistoryDeleted.
+  ///
+  /// In ro, this message translates to:
+  /// **'Istoricul local a fost șters.'**
+  String get settingsLocalHistoryDeleted;
+
+  /// No description provided for @tokenShopChoosePaymentMethodFor.
+  ///
+  /// In ro, this message translates to:
+  /// **'Alege metoda de plată pentru {planName}'**
+  String tokenShopChoosePaymentMethodFor(String planName);
+
+  /// No description provided for @tokenShopPayByCard.
+  ///
+  /// In ro, this message translates to:
+  /// **'Plată cu cardul'**
+  String get tokenShopPayByCard;
+
+  /// No description provided for @tokenShopPriceWithAutoRenewal.
+  ///
+  /// In ro, this message translates to:
+  /// **'Preț: {price} (Reînnoire automată)'**
+  String tokenShopPriceWithAutoRenewal(String price);
+
+  /// No description provided for @tokenShopPayWithTransferableTokens.
+  ///
+  /// In ro, this message translates to:
+  /// **'Plătește cu tokeni transferabili'**
+  String get tokenShopPayWithTransferableTokens;
+
+  /// No description provided for @tokenShopPriceInTokensNoRenewal.
+  ///
+  /// In ro, this message translates to:
+  /// **'Preț: {tokens} tokeni (Fără reînnoire)'**
+  String tokenShopPriceInTokensNoRenewal(int tokens);
+
+  /// No description provided for @tokenShopInsufficientShort.
+  ///
+  /// In ro, this message translates to:
+  /// **'Insuficient'**
+  String get tokenShopInsufficientShort;
+
+  /// No description provided for @tokenShopPlanActivated.
+  ///
+  /// In ro, this message translates to:
+  /// **'Planul {planName} a fost activat!'**
+  String tokenShopPlanActivated(String planName);
+
+  /// No description provided for @tokenShopUnlimitedAccessNetworkIntelligence.
+  ///
+  /// In ro, this message translates to:
+  /// **'Acces absolut la inteligența rețelei.'**
+  String get tokenShopUnlimitedAccessNetworkIntelligence;
+
+  /// No description provided for @tokenShopPersonalTokensSubtitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Tokeni pentru AI, rute și funcțiile tale.'**
+  String get tokenShopPersonalTokensSubtitle;
+
+  /// No description provided for @tokenShopTransferablePackagesTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'PACHETE TRANSFERABILE'**
+  String get tokenShopTransferablePackagesTitle;
+
+  /// No description provided for @tokenShopTransferablePackagesSubtitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Tokeni reali pe care îi poți trimite oricui.'**
+  String get tokenShopTransferablePackagesSubtitle;
+
+  /// No description provided for @tokenShopTransferablePackageTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Pachet transferabil: {tokens} tokeni'**
+  String tokenShopTransferablePackageTitle(int tokens);
+
+  /// No description provided for @tokenShopTxPurchaseTransferablePackage.
+  ///
+  /// In ro, this message translates to:
+  /// **'Cumpărare pachet TRANSFERABIL: {label}'**
+  String tokenShopTxPurchaseTransferablePackage(String label);
+
+  /// No description provided for @tokenShopTransferableWalletSuffix.
+  ///
+  /// In ro, this message translates to:
+  /// **' (în portofelul transferabil)'**
+  String get tokenShopTransferableWalletSuffix;
+
+  /// No description provided for @neighborhoodChatMuted.
+  ///
+  /// In ro, this message translates to:
+  /// **'Chat silențios'**
+  String get neighborhoodChatMuted;
+
+  /// No description provided for @neighborhoodChatSoundOn.
+  ///
+  /// In ro, this message translates to:
+  /// **'Sunet activat'**
+  String get neighborhoodChatSoundOn;
+
+  /// No description provided for @neighborhoodChatGpsDisabled.
+  ///
+  /// In ro, this message translates to:
+  /// **'GPS dezactivat. Activează locația pentru chat.'**
+  String get neighborhoodChatGpsDisabled;
+
+  /// No description provided for @neighborhoodChatGpsPermissionDenied.
+  ///
+  /// In ro, this message translates to:
+  /// **'Permisiune GPS refuzată.'**
+  String get neighborhoodChatGpsPermissionDenied;
+
+  /// No description provided for @neighborhoodChatInvalidServerResponse.
+  ///
+  /// In ro, this message translates to:
+  /// **'Chat cartier: răspuns invalid de la server (roomId H3).'**
+  String get neighborhoodChatInvalidServerResponse;
+
+  /// No description provided for @neighborhoodChatFunctionsUnavailable.
+  ///
+  /// In ro, this message translates to:
+  /// **'Chat cartier: Functions indisponibile ({code}).'**
+  String neighborhoodChatFunctionsUnavailable(String code);
+
+  /// No description provided for @neighborhoodChatActivationFailed.
+  ///
+  /// In ro, this message translates to:
+  /// **'Nu s-a putut activa chat-ul.'**
+  String get neighborhoodChatActivationFailed;
+
+  /// No description provided for @neighborhoodChatLocationResolveFailed.
+  ///
+  /// In ro, this message translates to:
+  /// **'Nu s-a putut determina locația.'**
+  String get neighborhoodChatLocationResolveFailed;
+
+  /// No description provided for @neighborhoodChatInappropriateMessage.
+  ///
+  /// In ro, this message translates to:
+  /// **'Mesaj inadecvat.'**
+  String get neighborhoodChatInappropriateMessage;
+
+  /// No description provided for @neighborhoodChatOnMyWay.
+  ///
+  /// In ro, this message translates to:
+  /// **'Sunt pe drum!'**
+  String get neighborhoodChatOnMyWay;
+
+  /// No description provided for @neighborhoodChatMarkedLocation.
+  ///
+  /// In ro, this message translates to:
+  /// **'Am marcat o locație pe hartă'**
+  String get neighborhoodChatMarkedLocation;
+
+  /// No description provided for @neighborhoodChatTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Chat cartier'**
+  String get neighborhoodChatTitle;
+
+  /// No description provided for @neighborhoodChatInviteNeighbors.
+  ///
+  /// In ro, this message translates to:
+  /// **'Invită vecini'**
+  String get neighborhoodChatInviteNeighbors;
+
+  /// No description provided for @neighborhoodChatNoAccessOrRulesChanged.
+  ///
+  /// In ro, this message translates to:
+  /// **'Nu ai acces la acest chat sau regulile de securitate s-au schimbat. Reîncearcă după ce te autentifici din nou.'**
+  String get neighborhoodChatNoAccessOrRulesChanged;
+
+  /// No description provided for @neighborhoodChatNoRecentMessages.
+  ///
+  /// In ro, this message translates to:
+  /// **'Niciun mesaj recent'**
+  String get neighborhoodChatNoRecentMessages;
+
+  /// No description provided for @neighborhoodChatEmptyHint.
+  ///
+  /// In ro, this message translates to:
+  /// **'Spune „Bună” vecinilor sau trimite o locație. Mesajele dispar după 30 minute.'**
+  String get neighborhoodChatEmptyHint;
+
+  /// No description provided for @neighborhoodChatSendLocationTooltip.
+  ///
+  /// In ro, this message translates to:
+  /// **'Trimite locația ta'**
+  String get neighborhoodChatSendLocationTooltip;
+
+  /// No description provided for @neighborhoodChatInviteText.
+  ///
+  /// In ro, this message translates to:
+  /// **'Vino în chat-ul cartierului Nabour! Suntem vecini în zona H3: {roomId}'**
+  String neighborhoodChatInviteText(String roomId);
+
+  /// No description provided for @neighborhoodChatInfoBody1.
+  ///
+  /// In ro, this message translates to:
+  /// **'Acesta este un spațiu efemer pentru vecinii din aceeași zonă H3 (aprox. 1km²).'**
+  String get neighborhoodChatInfoBody1;
+
+  /// No description provided for @neighborhoodChatInfoBody2.
+  ///
+  /// In ro, this message translates to:
+  /// **'• Mesajele dispar automat după 30 de minute.\n• Poți trimite locația sau mesaje text.\n• Respectă vecinii și păstrează comunitatea curată!'**
+  String get neighborhoodChatInfoBody2;
+
+  /// No description provided for @neighborhoodChatFlyToHint.
+  ///
+  /// In ro, this message translates to:
+  /// **'Apasă pentru animația \"FlyTo\" către punctul marcat de vecin.'**
+  String get neighborhoodChatFlyToHint;
+
+  /// No description provided for @neighborhoodChatSeeOnMap.
+  ///
+  /// In ro, this message translates to:
+  /// **'VEZI PE HARTĂ'**
+  String get neighborhoodChatSeeOnMap;
+
+  /// No description provided for @placesHubTabLearned.
+  ///
+  /// In ro, this message translates to:
+  /// **'Învățate'**
+  String get placesHubTabLearned;
+
+  /// No description provided for @placesHubTabFavorites.
+  ///
+  /// In ro, this message translates to:
+  /// **'Favorite'**
+  String get placesHubTabFavorites;
+
+  /// No description provided for @placesHubTabRecommendations.
+  ///
+  /// In ro, this message translates to:
+  /// **'Recomandări'**
+  String get placesHubTabRecommendations;
+
+  /// No description provided for @placesHubNoLearnedPlaces.
+  ///
+  /// In ro, this message translates to:
+  /// **'Încă nu avem locuri învățate. Rămâi cu aplicația deschisă pe hartă — detectăm zonele unde stai mai mult (confidențial, pe telefon).'**
+  String get placesHubNoLearnedPlaces;
+
+  /// No description provided for @placesHubFrequentArea.
+  ///
+  /// In ro, this message translates to:
+  /// **'Zonă frecventată ({minutes} min acumulate)'**
+  String placesHubFrequentArea(int minutes);
+
+  /// No description provided for @placesHubVisitsConfidence.
+  ///
+  /// In ro, this message translates to:
+  /// **'{visits} vizite · încredere {confidence}%'**
+  String placesHubVisitsConfidence(int visits, int confidence);
+
+  /// No description provided for @placesHubFavoritesHint.
+  ///
+  /// In ro, this message translates to:
+  /// **'Adresele tale salvate apar și pe hartă ca „acasă / serviciu” când ești aproape.'**
+  String get placesHubFavoritesHint;
+
+  /// No description provided for @placesHubManageFavoriteAddresses.
+  ///
+  /// In ro, this message translates to:
+  /// **'Gestionează adrese favorite'**
+  String get placesHubManageFavoriteAddresses;
+
+  /// No description provided for @placesHubDiscoverNeighborhood.
+  ///
+  /// In ro, this message translates to:
+  /// **'Descoperă cartierul'**
+  String get placesHubDiscoverNeighborhood;
+
+  /// No description provided for @placesHubDiscoverNeighborhoodHint.
+  ///
+  /// In ro, this message translates to:
+  /// **'Activează vizibilitatea pe harta socială ca să vezi cereri, momente și vecini. Locurile învățate se îmbogățesc automat din mișcarea ta.'**
+  String get placesHubDiscoverNeighborhoodHint;
+
+  /// No description provided for @placesHubFriendsNearbyTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Prieteni în zonă'**
+  String get placesHubFriendsNearbyTitle;
+
+  /// No description provided for @placesHubFriendsNearbySubtitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Pe harta principală vezi contactele care te-au adăugat și sunt aproape.'**
+  String get placesHubFriendsNearbySubtitle;
+
+  /// No description provided for @placesHubPreviewTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Previzualizare'**
+  String get placesHubPreviewTitle;
+
+  /// No description provided for @rideBroadcastDeleteRequestTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Șterge cererea'**
+  String get rideBroadcastDeleteRequestTitle;
+
+  /// No description provided for @rideBroadcastDeleteRequestConfirm.
+  ///
+  /// In ro, this message translates to:
+  /// **'Ești sigur că vrei să ștergi această cerere din istoricul tău?'**
+  String get rideBroadcastDeleteRequestConfirm;
+
+  /// No description provided for @rideBroadcastFeedTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Cereri din cartier'**
+  String get rideBroadcastFeedTitle;
+
+  /// No description provided for @rideBroadcastActiveRadiusTooltip.
+  ///
+  /// In ro, this message translates to:
+  /// **'În tab-ul „Active” afișăm cererile în cel mult {km} km față de locația ta curentă (când locația e disponibilă).'**
+  String rideBroadcastActiveRadiusTooltip(int km);
+
+  /// No description provided for @rideBroadcastTabActive.
+  ///
+  /// In ro, this message translates to:
+  /// **'Active'**
+  String get rideBroadcastTabActive;
+
+  /// No description provided for @rideBroadcastTabMapBubbles.
+  ///
+  /// In ro, this message translates to:
+  /// **'Bule pe hartă'**
+  String get rideBroadcastTabMapBubbles;
+
+  /// No description provided for @rideBroadcastTabMyHistory.
+  ///
+  /// In ro, this message translates to:
+  /// **'Istoricul meu'**
+  String get rideBroadcastTabMyHistory;
+
+  /// No description provided for @rideBroadcastVisibleOnlyForYouNoContacts.
+  ///
+  /// In ro, this message translates to:
+  /// **'Cererea e vizibilă doar pentru tine: în agendă nu am găsit alți utilizatori Nabour cu numărul din profilul lor.'**
+  String get rideBroadcastVisibleOnlyForYouNoContacts;
+
+  /// No description provided for @rideBroadcastVisibleForYouAndContacts.
+  ///
+  /// In ro, this message translates to:
+  /// **'Cererea e vizibilă pentru tine și pentru încă {people} din agendă.'**
+  String rideBroadcastVisibleForYouAndContacts(String people);
+
+  /// No description provided for @rideBroadcastEnableLocationForMapRequest.
+  ///
+  /// In ro, this message translates to:
+  /// **'Activează locația ca să plasezi o cerere pe hartă.'**
+  String get rideBroadcastEnableLocationForMapRequest;
+
+  /// No description provided for @rideBroadcastRequestRide.
+  ///
+  /// In ro, this message translates to:
+  /// **'Cer o cursă'**
+  String get rideBroadcastRequestRide;
+
+  /// No description provided for @rideBroadcastMapRequest.
+  ///
+  /// In ro, this message translates to:
+  /// **'Cerere pe hartă'**
+  String get rideBroadcastMapRequest;
+
+  /// No description provided for @rideBroadcastBubblesLoadFailed.
+  ///
+  /// In ro, this message translates to:
+  /// **'Nu s-au putut încărca bulele. Trage în jos pentru reîncercare.\n{error}'**
+  String rideBroadcastBubblesLoadFailed(String error);
+
+  /// No description provided for @rideBroadcastNoBubbleInRadius.
+  ///
+  /// In ro, this message translates to:
+  /// **'Nicio bulă în raza de {km} km'**
+  String rideBroadcastNoBubbleInRadius(int km);
+
+  /// No description provided for @rideBroadcastNoActiveBubbleHere.
+  ///
+  /// In ro, this message translates to:
+  /// **'Nicio bulă activă aici'**
+  String get rideBroadcastNoActiveBubbleHere;
+
+  /// No description provided for @rideBroadcastBubblesOutsideRadiusHint.
+  ///
+  /// In ro, this message translates to:
+  /// **'Există bule active, dar sunt peste {km} km față de locația curentă. Verifică pe hartă sau actualizează GPS-ul (trage în jos).'**
+  String rideBroadcastBubblesOutsideRadiusHint(int km);
+
+  /// No description provided for @rideBroadcastBubblesVisibilityHint.
+  ///
+  /// In ro, this message translates to:
+  /// **'Bulele sunt vizibile pe hartă cam o oră de la plasare, apoi dispar. Plasează una din meniul hărții. Dacă tocmai ai deschis ecranul, trage în jos pentru sincron.'**
+  String get rideBroadcastBubblesVisibilityHint;
+
+  /// No description provided for @rideBroadcastNoPostedRequestYet.
+  ///
+  /// In ro, this message translates to:
+  /// **'Nicio cerere postată încă'**
+  String get rideBroadcastNoPostedRequestYet;
+
+  /// No description provided for @rideBroadcastNoActiveRequest.
+  ///
+  /// In ro, this message translates to:
+  /// **'Nicio cerere activă'**
+  String get rideBroadcastNoActiveRequest;
+
+  /// No description provided for @rideBroadcastBeFirstHint.
+  ///
+  /// In ro, this message translates to:
+  /// **'Fii primul din cartier care postează o cerere de cursă.'**
+  String get rideBroadcastBeFirstHint;
+
+  /// No description provided for @rideBroadcastFriendPostedButNotVisibleHint.
+  ///
+  /// In ro, this message translates to:
+  /// **'Dacă un prieten a postat dar nu vezi: trage în jos pentru reîmprospătare, verifică că îl ai în agendă cu același număr ca în profilul Nabour și că ai permisiune la contacte.'**
+  String get rideBroadcastFriendPostedButNotVisibleHint;
+
+  /// No description provided for @rideBroadcastNoRequestInRadius.
+  ///
+  /// In ro, this message translates to:
+  /// **'Nicio cerere în raza de {km} km'**
+  String rideBroadcastNoRequestInRadius(int km);
+
+  /// No description provided for @rideBroadcastIncludedButFarHint.
+  ///
+  /// In ro, this message translates to:
+  /// **'Există cereri în care ești inclus, dar sunt mai departe față de locația ta curentă. Te apropii sau pornești locația pentru filtre corecte.'**
+  String get rideBroadcastIncludedButFarHint;
+
+  /// No description provided for @rideBroadcastWaitingFriendHint.
+  ///
+  /// In ro, this message translates to:
+  /// **'Dacă aștepți de la un prieten apropiat, verifică și agendă + profilul Nabour cu același număr.'**
+  String get rideBroadcastWaitingFriendHint;
+
+  /// No description provided for @rideBroadcastDeleteMapRequestTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Ștergi cererea de pe hartă?'**
+  String get rideBroadcastDeleteMapRequestTitle;
+
+  /// No description provided for @rideBroadcastDeleteMapRequestConfirm.
+  ///
+  /// In ro, this message translates to:
+  /// **'Bula dispare pentru toți vecinii; acțiunea nu poate fi anulată.'**
+  String get rideBroadcastDeleteMapRequestConfirm;
+
+  /// No description provided for @rideBroadcastMapBubbleDeleted.
+  ///
+  /// In ro, this message translates to:
+  /// **'Bula a fost ștearsă de pe hartă.'**
+  String get rideBroadcastMapBubbleDeleted;
+
+  /// No description provided for @rideBroadcastDeleteFailed.
+  ///
+  /// In ro, this message translates to:
+  /// **'Nu s-a putut șterge: {error}'**
+  String rideBroadcastDeleteFailed(String error);
+
+  /// No description provided for @rideBroadcastDeleteFromMapTooltip.
+  ///
+  /// In ro, this message translates to:
+  /// **'Șterge de pe hartă'**
+  String get rideBroadcastDeleteFromMapTooltip;
+
+  /// No description provided for @rideBroadcastPlaced.
+  ///
+  /// In ro, this message translates to:
+  /// **'Plasată: {value}'**
+  String rideBroadcastPlaced(String value);
+
+  /// No description provided for @rideBroadcastExpiresMapBubble.
+  ///
+  /// In ro, this message translates to:
+  /// **'Expiră: {value} (≈1 h după plasare)'**
+  String rideBroadcastExpiresMapBubble(String value);
+
+  /// No description provided for @rideBroadcastDistanceFromYou.
+  ///
+  /// In ro, this message translates to:
+  /// **'La ~{km} km față de tine'**
+  String rideBroadcastDistanceFromYou(String km);
+
+  /// No description provided for @rideBroadcastCancelRequestTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Anulează cererea'**
+  String get rideBroadcastCancelRequestTitle;
+
+  /// No description provided for @rideBroadcastCancelRequestConfirm.
+  ///
+  /// In ro, this message translates to:
+  /// **'Ești sigur că vrei să anulezi această cerere?'**
+  String get rideBroadcastCancelRequestConfirm;
+
+  /// No description provided for @rideBroadcastNo.
+  ///
+  /// In ro, this message translates to:
+  /// **'Nu'**
+  String get rideBroadcastNo;
+
+  /// No description provided for @rideBroadcastYesCancel.
+  ///
+  /// In ro, this message translates to:
+  /// **'Da, anulează'**
+  String get rideBroadcastYesCancel;
+
+  /// No description provided for @rideBroadcastPersonalCar.
+  ///
+  /// In ro, this message translates to:
+  /// **'Mașină personală'**
+  String get rideBroadcastPersonalCar;
+
+  /// No description provided for @rideBroadcastOfferSendFailed.
+  ///
+  /// In ro, this message translates to:
+  /// **'Nu s-a putut trimite oferta: {error}'**
+  String rideBroadcastOfferSendFailed(String error);
+
+  /// No description provided for @rideBroadcastReplySendFailed.
+  ///
+  /// In ro, this message translates to:
+  /// **'Nu s-a putut trimite răspunsul: {error}'**
+  String rideBroadcastReplySendFailed(String error);
+
+  /// No description provided for @rideBroadcastDriverFallback.
+  ///
+  /// In ro, this message translates to:
+  /// **'Șofer'**
+  String get rideBroadcastDriverFallback;
+
+  /// No description provided for @rideBroadcastConfirmRideTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Confirmă cursa'**
+  String get rideBroadcastConfirmRideTitle;
+
+  /// No description provided for @rideBroadcastRideCompletedQuestion.
+  ///
+  /// In ro, this message translates to:
+  /// **'Cursa s-a efectuat?'**
+  String get rideBroadcastRideCompletedQuestion;
+
+  /// No description provided for @rideBroadcastNotCompleted.
+  ///
+  /// In ro, this message translates to:
+  /// **'Nu s-a efectuat'**
+  String get rideBroadcastNotCompleted;
+
+  /// No description provided for @rideBroadcastCompletedYes.
+  ///
+  /// In ro, this message translates to:
+  /// **'Da, s-a efectuat'**
+  String get rideBroadcastCompletedYes;
+
+  /// No description provided for @rideBroadcastReasonDriverNoShow.
+  ///
+  /// In ro, this message translates to:
+  /// **'Șoferul nu a mai venit'**
+  String get rideBroadcastReasonDriverNoShow;
+
+  /// No description provided for @rideBroadcastReasonPassengerCancelled.
+  ///
+  /// In ro, this message translates to:
+  /// **'Pasagerul a anulat'**
+  String get rideBroadcastReasonPassengerCancelled;
+
+  /// No description provided for @rideBroadcastReasonAnotherCar.
+  ///
+  /// In ro, this message translates to:
+  /// **'Altă mașină'**
+  String get rideBroadcastReasonAnotherCar;
+
+  /// No description provided for @rideBroadcastReasonOther.
+  ///
+  /// In ro, this message translates to:
+  /// **'Alt motiv'**
+  String get rideBroadcastReasonOther;
+
+  /// No description provided for @rideBroadcastReasonTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Motivul'**
+  String get rideBroadcastReasonTitle;
+
+  /// No description provided for @rideBroadcastExpiresIn.
+  ///
+  /// In ro, this message translates to:
+  /// **'Expiră în {value}'**
+  String rideBroadcastExpiresIn(String value);
+
+  /// No description provided for @rideBroadcastMyRequest.
+  ///
+  /// In ro, this message translates to:
+  /// **'Cererea mea'**
+  String get rideBroadcastMyRequest;
+
+  /// No description provided for @rideBroadcastAvailableDrivers.
+  ///
+  /// In ro, this message translates to:
+  /// **'Șoferi disponibili'**
+  String get rideBroadcastAvailableDrivers;
+
+  /// No description provided for @rideBroadcastReplies.
+  ///
+  /// In ro, this message translates to:
+  /// **'Răspunsuri'**
+  String get rideBroadcastReplies;
+
+  /// No description provided for @rideBroadcastReplyHint.
+  ///
+  /// In ro, this message translates to:
+  /// **'Poți trimite mai multe mesaje - apasă trimitere pentru fiecare'**
+  String get rideBroadcastReplyHint;
+
+  /// No description provided for @rideBroadcastOffersOne.
+  ///
+  /// In ro, this message translates to:
+  /// **'{count} ofertă'**
+  String rideBroadcastOffersOne(int count);
+
+  /// No description provided for @rideBroadcastOffersMany.
+  ///
+  /// In ro, this message translates to:
+  /// **'{count} oferte'**
+  String rideBroadcastOffersMany(int count);
+
+  /// No description provided for @rideBroadcastOfferSent.
+  ///
+  /// In ro, this message translates to:
+  /// **'Ofertă trimisă'**
+  String get rideBroadcastOfferSent;
+
+  /// No description provided for @rideBroadcastIOffer.
+  ///
+  /// In ro, this message translates to:
+  /// **'Mă ofer'**
+  String get rideBroadcastIOffer;
+
+  /// No description provided for @rideBroadcastStatusDone.
+  ///
+  /// In ro, this message translates to:
+  /// **'✅ Efectuată'**
+  String get rideBroadcastStatusDone;
+
+  /// No description provided for @rideBroadcastStatusNotDone.
+  ///
+  /// In ro, this message translates to:
+  /// **'❌ Neefectuată'**
+  String get rideBroadcastStatusNotDone;
+
+  /// No description provided for @rideBroadcastStatusAccepted.
+  ///
+  /// In ro, this message translates to:
+  /// **'🤝 Acceptată'**
+  String get rideBroadcastStatusAccepted;
+
+  /// No description provided for @rideBroadcastStatusCancelled.
+  ///
+  /// In ro, this message translates to:
+  /// **'🚫 Anulată'**
+  String get rideBroadcastStatusCancelled;
+
+  /// No description provided for @rideBroadcastStatusActive.
+  ///
+  /// In ro, this message translates to:
+  /// **'🕐 Activă'**
+  String get rideBroadcastStatusActive;
+
+  /// No description provided for @rideBroadcastStatusExpired.
+  ///
+  /// In ro, this message translates to:
+  /// **'⏱ Expirată'**
+  String get rideBroadcastStatusExpired;
+
+  /// No description provided for @rideBroadcastDriverWithName.
+  ///
+  /// In ro, this message translates to:
+  /// **'Șofer: {name}'**
+  String rideBroadcastDriverWithName(String name);
+
+  /// No description provided for @rideBroadcastReasonWithValue.
+  ///
+  /// In ro, this message translates to:
+  /// **'Motiv: {value}'**
+  String rideBroadcastReasonWithValue(String value);
+
+  /// No description provided for @rideBroadcastTooManyActiveRequests.
+  ///
+  /// In ro, this message translates to:
+  /// **'Ai deja {max} cereri active. Închide sau așteaptă expirarea uneia (30 min) înainte de o nouă postare.'**
+  String rideBroadcastTooManyActiveRequests(int max);
+
+  /// No description provided for @rideBroadcastErrorWithMessage.
+  ///
+  /// In ro, this message translates to:
+  /// **'Eroare: {error}'**
+  String rideBroadcastErrorWithMessage(String error);
+
+  /// No description provided for @rideBroadcastAskRideTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Cer o cursă'**
+  String get rideBroadcastAskRideTitle;
+
+  /// No description provided for @rideBroadcastPostVisibilityHint.
+  ///
+  /// In ro, this message translates to:
+  /// **'Cererea ta va fi vizibilă persoanelor din agenda ta timp de 30 de minute.'**
+  String get rideBroadcastPostVisibilityHint;
+
+  /// No description provided for @rideBroadcastQuickSelectOrWrite.
+  ///
+  /// In ro, this message translates to:
+  /// **'Selectează rapid sau scrie'**
+  String get rideBroadcastQuickSelectOrWrite;
+
+  /// No description provided for @rideBroadcastYourMessageRequired.
+  ///
+  /// In ro, this message translates to:
+  /// **'Mesajul tău *'**
+  String get rideBroadcastYourMessageRequired;
+
+  /// No description provided for @rideBroadcastMessageHint.
+  ///
+  /// In ro, this message translates to:
+  /// **'Unde vrei să mergi? Orice detaliu util...'**
+  String get rideBroadcastMessageHint;
+
+  /// No description provided for @rideBroadcastDestinationOptional.
+  ///
+  /// In ro, this message translates to:
+  /// **'Destinație (opțional)'**
+  String get rideBroadcastDestinationOptional;
+
+  /// No description provided for @rideBroadcastDestinationHint.
+  ///
+  /// In ro, this message translates to:
+  /// **'ex: supermarket, stație, aeroport...'**
+  String get rideBroadcastDestinationHint;
+
+  /// No description provided for @rideBroadcastPostRequest.
+  ///
+  /// In ro, this message translates to:
+  /// **'Postează cererea'**
+  String get rideBroadcastPostRequest;
+
+  /// No description provided for @rideBroadcastExpiresAfterThirtyMinutes.
+  ///
+  /// In ro, this message translates to:
+  /// **'Cererea expiră automat după 30 de minute.'**
+  String get rideBroadcastExpiresAfterThirtyMinutes;
+
+  /// No description provided for @searchDriverFallback.
+  ///
+  /// In ro, this message translates to:
+  /// **'Șofer'**
+  String get searchDriverFallback;
+
+  /// No description provided for @searchDriverSearchingNearby.
+  ///
+  /// In ro, this message translates to:
+  /// **'Se caută șoferi în apropiere...'**
+  String get searchDriverSearchingNearby;
+
+  /// No description provided for @searchDriverFoundWaitConfirm.
+  ///
+  /// In ro, this message translates to:
+  /// **'Șofer găsit! Așteaptă confirmarea ta.'**
+  String get searchDriverFoundWaitConfirm;
+
+  /// No description provided for @searchDriverRideCancelled.
+  ///
+  /// In ro, this message translates to:
+  /// **'Cursa a fost anulată.'**
+  String get searchDriverRideCancelled;
+
+  /// No description provided for @searchDriverNoDriverAvailable.
+  ///
+  /// In ro, this message translates to:
+  /// **'Ne pare rău, niciun șofer nu a fost disponibil.'**
+  String get searchDriverNoDriverAvailable;
+
+  /// No description provided for @searchDriverUnknownRideStatus.
+  ///
+  /// In ro, this message translates to:
+  /// **'Stare cursă necunoscută: {status}'**
+  String searchDriverUnknownRideStatus(String status);
+
+  /// No description provided for @searchDriverConfirmError.
+  ///
+  /// In ro, this message translates to:
+  /// **'Eroare la confirmarea șoferului: {error}'**
+  String searchDriverConfirmError(String error);
+
+  /// No description provided for @searchDriverDeclinedResuming.
+  ///
+  /// In ro, this message translates to:
+  /// **'Ai refuzat șoferul. Se reia căutarea...'**
+  String get searchDriverDeclinedResuming;
+
+  /// No description provided for @searchDriverDeclineError.
+  ///
+  /// In ro, this message translates to:
+  /// **'Eroare la refuzarea șoferului: {error}'**
+  String searchDriverDeclineError(String error);
+
+  /// No description provided for @searchDriverCancelError.
+  ///
+  /// In ro, this message translates to:
+  /// **'Eroare la anulare: {error}'**
+  String searchDriverCancelError(String error);
+
+  /// No description provided for @searchDriverSearchingTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Se caută șoferi'**
+  String get searchDriverSearchingTitle;
+
+  /// No description provided for @searchDriverPremiumHintTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Sugestie Premium'**
+  String get searchDriverPremiumHintTitle;
+
+  /// No description provided for @searchDriverPremiumHintBody.
+  ///
+  /// In ro, this message translates to:
+  /// **'Rămâi pe ecran pentru o preluare mai rapidă.'**
+  String get searchDriverPremiumHintBody;
+
+  /// No description provided for @searchDriverFoundTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Șofer găsit'**
+  String get searchDriverFoundTitle;
+
+  /// No description provided for @searchDriverArrivesIn.
+  ///
+  /// In ro, this message translates to:
+  /// **'Sosește în'**
+  String get searchDriverArrivesIn;
+
+  /// No description provided for @searchDriverDistanceLabel.
+  ///
+  /// In ro, this message translates to:
+  /// **'Distanță'**
+  String get searchDriverDistanceLabel;
+
+  /// No description provided for @searchDriverNabourDriverFallback.
+  ///
+  /// In ro, this message translates to:
+  /// **'Șofer Nabour'**
+  String get searchDriverNabourDriverFallback;
+
+  /// No description provided for @searchDriverStandardCategory.
+  ///
+  /// In ro, this message translates to:
+  /// **'Categoria Standard'**
+  String get searchDriverStandardCategory;
+
+  /// No description provided for @rideRequestStatusSearching.
+  ///
+  /// In ro, this message translates to:
+  /// **'Căutare șoferi'**
+  String get rideRequestStatusSearching;
+
+  /// No description provided for @rideRequestStatusPending.
+  ///
+  /// In ro, this message translates to:
+  /// **'În așteptare'**
+  String get rideRequestStatusPending;
+
+  /// No description provided for @rideRequestStatusDriverFound.
+  ///
+  /// In ro, this message translates to:
+  /// **'Șofer găsit'**
+  String get rideRequestStatusDriverFound;
+
+  /// No description provided for @rideRequestStatusAccepted.
+  ///
+  /// In ro, this message translates to:
+  /// **'Acceptată'**
+  String get rideRequestStatusAccepted;
+
+  /// No description provided for @rideRequestStatusDriverArrived.
+  ///
+  /// In ro, this message translates to:
+  /// **'Șoferul a ajuns'**
+  String get rideRequestStatusDriverArrived;
+
+  /// No description provided for @rideRequestStatusInProgress.
+  ///
+  /// In ro, this message translates to:
+  /// **'În curs'**
+  String get rideRequestStatusInProgress;
+
+  /// No description provided for @rideRequestStatusDriverRejected.
+  ///
+  /// In ro, this message translates to:
+  /// **'Șofer respins'**
+  String get rideRequestStatusDriverRejected;
+
+  /// No description provided for @rideRequestStatusDriverDeclined.
+  ///
+  /// In ro, this message translates to:
+  /// **'Șofer a refuzat'**
+  String get rideRequestStatusDriverDeclined;
+
+  /// No description provided for @rideRequestTimeoutInternet.
+  ///
+  /// In ro, this message translates to:
+  /// **'A expirat timpul de așteptare. Te rugăm să verifici conexiunea la internet.'**
+  String get rideRequestTimeoutInternet;
+
+  /// No description provided for @rideRequestRouteCalcError.
+  ///
+  /// In ro, this message translates to:
+  /// **'Eroare la calcularea rutei: {error}'**
+  String rideRequestRouteCalcError(String error);
+
+  /// No description provided for @rideRequestActiveRideDetected.
+  ///
+  /// In ro, this message translates to:
+  /// **'Cursă activă detectată'**
+  String get rideRequestActiveRideDetected;
+
+  /// No description provided for @rideRequestStatusLabel.
+  ///
+  /// In ro, this message translates to:
+  /// **'Status cursă'**
+  String get rideRequestStatusLabel;
+
+  /// No description provided for @rideRequestIdLabel.
+  ///
+  /// In ro, this message translates to:
+  /// **'ID cursă'**
+  String get rideRequestIdLabel;
+
+  /// No description provided for @rideRequestCancelPreviousRide.
+  ///
+  /// In ro, this message translates to:
+  /// **'Anulează cursa precedentă'**
+  String get rideRequestCancelPreviousRide;
+
+  /// No description provided for @rideRequestCancelPreviousRideError.
+  ///
+  /// In ro, this message translates to:
+  /// **'Eroare la anularea cursei precedente: {error}'**
+  String rideRequestCancelPreviousRideError(String error);
+
+  /// No description provided for @rideRequestCreateRideError.
+  ///
+  /// In ro, this message translates to:
+  /// **'Eroare la crearea cursei: {error}'**
+  String rideRequestCreateRideError(String error);
+
+  /// No description provided for @rideRequestWhereTo.
+  ///
+  /// In ro, this message translates to:
+  /// **'Unde mergem?'**
+  String get rideRequestWhereTo;
+
+  /// No description provided for @rideRequestChooseRide.
+  ///
+  /// In ro, this message translates to:
+  /// **'Alege o cursă'**
+  String get rideRequestChooseRide;
+
+  /// No description provided for @rideRequestOrChooseCategory.
+  ///
+  /// In ro, this message translates to:
+  /// **'sau alege categoria'**
+  String get rideRequestOrChooseCategory;
+
+  /// No description provided for @rideRequestSearchInProgress.
+  ///
+  /// In ro, this message translates to:
+  /// **'Căutare în curs...'**
+  String get rideRequestSearchInProgress;
+
+  /// No description provided for @rideRequestConfirmAndRequest.
+  ///
+  /// In ro, this message translates to:
+  /// **'Confirmă și solicită cursa'**
+  String get rideRequestConfirmAndRequest;
+
+  /// No description provided for @rideRequestAnyCategoryAvailable.
+  ///
+  /// In ro, this message translates to:
+  /// **'Orice categorie disponibilă'**
+  String get rideRequestAnyCategoryAvailable;
+
+  /// No description provided for @rideRequestFastestDriverInArea.
+  ///
+  /// In ro, this message translates to:
+  /// **'Cel mai rapid șofer disponibil din zonă'**
+  String get rideRequestFastestDriverInArea;
+
+  /// No description provided for @rideRequestAnyCategorySubtitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Cel mai rapid șofer disponibil.'**
+  String get rideRequestAnyCategorySubtitle;
+
+  /// No description provided for @rideRequestFamilySubtitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Spațiu extra pentru familie și bagaje.'**
+  String get rideRequestFamilySubtitle;
+
+  /// No description provided for @rideRequestEnergySubtitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Călătorește eco cu o mașină electrică.'**
+  String get rideRequestEnergySubtitle;
+
+  /// No description provided for @rideRequestUtilitySubtitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Dubă sau utilitar (până la 3.5t). Ideal pentru mutări.'**
+  String get rideRequestUtilitySubtitle;
+
+  /// No description provided for @rideRequestUserNotAuthenticated.
+  ///
+  /// In ro, this message translates to:
+  /// **'Eroare: Utilizatorul nu este autentificat.'**
+  String get rideRequestUserNotAuthenticated;
+
+  /// No description provided for @mapArrivalInstruction.
+  ///
+  /// In ro, this message translates to:
+  /// **'Ai sosit la destinație!'**
+  String get mapArrivalInstruction;
+
+  /// No description provided for @mapArrivedTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Ai sosit!'**
+  String get mapArrivedTitle;
+
+  /// No description provided for @mapFinalDestinationTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Destinație finală'**
+  String get mapFinalDestinationTitle;
+
+  /// No description provided for @mapOpenNavigationToDestinationHint.
+  ///
+  /// In ro, this message translates to:
+  /// **'Deschide în aplicația de navigație spre destinație. Revii apoi la hartă.'**
+  String get mapOpenNavigationToDestinationHint;
+
+  /// No description provided for @mapPassengerStatusDriverFound.
+  ///
+  /// In ro, this message translates to:
+  /// **'Șofer găsit - așteaptă confirmarea ta'**
+  String get mapPassengerStatusDriverFound;
+
+  /// No description provided for @mapPassengerStatusDriverOnWay.
+  ///
+  /// In ro, this message translates to:
+  /// **'Șofer în drum spre tine'**
+  String get mapPassengerStatusDriverOnWay;
+
+  /// No description provided for @mapPassengerStatusDriverAtPickup.
+  ///
+  /// In ro, this message translates to:
+  /// **'Șofer la pickup - deschide navigația spre destinație'**
+  String get mapPassengerStatusDriverAtPickup;
+
+  /// No description provided for @mapPassengerStatusInProgress.
+  ///
+  /// In ro, this message translates to:
+  /// **'Cursă în desfășurare'**
+  String get mapPassengerStatusInProgress;
+
+  /// No description provided for @mapPassengerStatusGeneric.
+  ///
+  /// In ro, this message translates to:
+  /// **'Cursă: {status}'**
+  String mapPassengerStatusGeneric(String status);
+
+  /// No description provided for @mapNavigationToPickupTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Navigare spre pickup'**
+  String get mapNavigationToPickupTitle;
+
+  /// No description provided for @mapExternalNavigationNoRouteHint.
+  ///
+  /// In ro, this message translates to:
+  /// **'Aplicație de navigație (fără rută în Nabour).'**
+  String get mapExternalNavigationNoRouteHint;
+
+  /// No description provided for @mapOpenSameDestinationAsDriver.
+  ///
+  /// In ro, this message translates to:
+  /// **'Deschide aceeași destinație ca și șoferul în app-ul de navigație.'**
+  String get mapOpenSameDestinationAsDriver;
+
+  /// No description provided for @mapLongPressToSetLandmark.
+  ///
+  /// In ro, this message translates to:
+  /// **'Ține apăsat pe hartă pentru a fixa reperul.'**
+  String get mapLongPressToSetLandmark;
+
+  /// No description provided for @mapCloseCancelPlacement.
+  ///
+  /// In ro, this message translates to:
+  /// **'Închide (anulează plasarea)'**
+  String get mapCloseCancelPlacement;
+
+  /// No description provided for @mapCommunityMysteryBoxTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Mystery Box comunitar'**
+  String get mapCommunityMysteryBoxTitle;
+
+  /// No description provided for @mapCommunityMysteryBoxDescription.
+  ///
+  /// In ro, this message translates to:
+  /// **'Plasezi o cutie la locația curentă. Cost: {tokens} tokeni. Primul utilizator care o deschide la fața locului primește aceiași tokeni - tu vei primi o notificare când se întâmplă.'**
+  String mapCommunityMysteryBoxDescription(int tokens);
+
+  /// No description provided for @mapShortMessageOptional.
+  ///
+  /// In ro, this message translates to:
+  /// **'Mesaj scurt (opțional)'**
+  String get mapShortMessageOptional;
+
+  /// No description provided for @mapShortMessageHint.
+  ///
+  /// In ro, this message translates to:
+  /// **'ex: Bonus pe vârf - distracție plăcută!'**
+  String get mapShortMessageHint;
+
+  /// No description provided for @mapPhoneNumberUnavailable.
+  ///
+  /// In ro, this message translates to:
+  /// **'Număr de telefon indisponibil'**
+  String get mapPhoneNumberUnavailable;
+
+  /// No description provided for @neighborFallback.
+  ///
+  /// In ro, this message translates to:
+  /// **'Vecin'**
+  String get neighborFallback;
+
+  /// No description provided for @mapReactionSent.
+  ///
+  /// In ro, this message translates to:
+  /// **'Reacție trimisă: {reaction}'**
+  String mapReactionSent(String reaction);
+
+  /// No description provided for @mapHonkedNeighbor.
+  ///
+  /// In ro, this message translates to:
+  /// **'L-ai claxonat pe {name}!'**
+  String mapHonkedNeighbor(String name);
+
+  /// No description provided for @mapEtaMessageToNeighbor.
+  ///
+  /// In ro, this message translates to:
+  /// **'📍 Vin spre tine! ETA estimat: {minutes} min.'**
+  String mapEtaMessageToNeighbor(int minutes);
+
+  /// No description provided for @mapEtaSentTo.
+  ///
+  /// In ro, this message translates to:
+  /// **'ETA trimis lui {name}'**
+  String mapEtaSentTo(String name);
+
+  /// No description provided for @mapNeighborhoodBubbleContext.
+  ///
+  /// In ro, this message translates to:
+  /// **'Bula apare lângă {name} pe hartă. Vizibilă vecinilor ~1 oră.'**
+  String mapNeighborhoodBubbleContext(String name);
+
+  /// No description provided for @mapEmojiPlacedNear.
+  ///
+  /// In ro, this message translates to:
+  /// **'Emoji plasat lângă {name} pe hartă'**
+  String mapEmojiPlacedNear(String name);
+
+  /// No description provided for @mapCannotPlaceEmoji.
+  ///
+  /// In ro, this message translates to:
+  /// **'Nu am putut plasa emoji-ul pe hartă'**
+  String get mapCannotPlaceEmoji;
+
+  /// No description provided for @mapPersonNotVisibleSendFromList.
+  ///
+  /// In ro, this message translates to:
+  /// **'Persoana nu e vizibilă pe hartă acum. Poți trimite cerere de prietenie din listă (+).'**
+  String get mapPersonNotVisibleSendFromList;
+
+  /// No description provided for @mapContactsVisibilityHint.
+  ///
+  /// In ro, this message translates to:
+  /// **'Pe hartă apar doar prietenii acceptați sau contactele din telefon care au cont Nabour. Adaugă numerele în agendă sau acceptă o cerere din Sugestii.'**
+  String get mapContactsVisibilityHint;
+
+  /// No description provided for @mapSyncingContacts.
+  ///
+  /// In ro, this message translates to:
+  /// **'Sincronizez contactele...'**
+  String get mapSyncingContacts;
+
+  /// No description provided for @mapSyncComplete.
+  ///
+  /// In ro, this message translates to:
+  /// **'Sincronizare completă: {count} nume găsite.'**
+  String mapSyncComplete(int count);
+
+  /// No description provided for @mapEnableDriverProfileHint.
+  ///
+  /// In ro, this message translates to:
+  /// **'Activează profilul de șofer și adaugă mașina ca să folosești modul șofer.'**
+  String get mapEnableDriverProfileHint;
+
+  /// No description provided for @mapIntermediateStopAdded.
+  ///
+  /// In ro, this message translates to:
+  /// **'{name} adăugat ca oprire intermediară'**
+  String mapIntermediateStopAdded(String name);
+
+  /// No description provided for @mapStopRemoved.
+  ///
+  /// In ro, this message translates to:
+  /// **'{name} eliminat din opriri'**
+  String mapStopRemoved(String name);
+
+  /// No description provided for @mapNoPoiFoundInArea.
+  ///
+  /// In ro, this message translates to:
+  /// **'Niciun {category} găsit în zonă'**
+  String mapNoPoiFoundInArea(String category);
+
+  /// No description provided for @mapHonkReceived.
+  ///
+  /// In ro, this message translates to:
+  /// **'📣 {name} te-a claxonat!'**
+  String mapHonkReceived(String name);
+
+  /// No description provided for @mapCalculatingRoute.
+  ///
+  /// In ro, this message translates to:
+  /// **'Se calculează traseul...'**
+  String get mapCalculatingRoute;
+
+  /// No description provided for @mapCannotGetLocationEnableGps.
+  ///
+  /// In ro, this message translates to:
+  /// **'Nu am putut obține locația. Activează GPS-ul.'**
+  String get mapCannotGetLocationEnableGps;
+
+  /// No description provided for @mapRouteUnavailableCheckConnection.
+  ///
+  /// In ro, this message translates to:
+  /// **'Traseu indisponibil. Verifică conexiunea.'**
+  String get mapRouteUnavailableCheckConnection;
+
+  /// No description provided for @mapContinueOnRoute.
+  ///
+  /// In ro, this message translates to:
+  /// **'Continuă pe traseu.'**
+  String get mapContinueOnRoute;
+
+  /// No description provided for @mapAneighbor.
+  ///
+  /// In ro, this message translates to:
+  /// **'Un vecin'**
+  String get mapAneighbor;
+
+  /// No description provided for @mapSosNearbyTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'🆘 SOS PROXIMITATE: {name}'**
+  String mapSosNearbyTitle(String name);
+
+  /// No description provided for @mapSosNearbyBody.
+  ///
+  /// In ro, this message translates to:
+  /// **'Urgență activă în apropiere! Verifică radarul pe hartă.'**
+  String get mapSosNearbyBody;
+
+  /// No description provided for @mapSosTtsAlert.
+  ///
+  /// In ro, this message translates to:
+  /// **'Atenție! ALERTĂ S.O.S. în apropiere de la {name}. Radarul de proximitate este activat.'**
+  String mapSosTtsAlert(String name);
+
+  /// No description provided for @mapCriticalZone.
+  ///
+  /// In ro, this message translates to:
+  /// **'ZONĂ CRITICĂ'**
+  String get mapCriticalZone;
+
+  /// No description provided for @mapSosActiveTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'🆘 S.O.S. ACTIV'**
+  String get mapSosActiveTitle;
+
+  /// No description provided for @mapNoContactsInRadarCircle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Nimeni din contactele tale cu poziție în zonă nu e în cercul de scanare acum.'**
+  String get mapNoContactsInRadarCircle;
+
+  /// No description provided for @mapStopNavigationFirst.
+  ///
+  /// In ro, this message translates to:
+  /// **'Oprește mai întâi navigarea din bannerul de sus.'**
+  String get mapStopNavigationFirst;
+
+  /// No description provided for @mapWaitingGpsTryAgain.
+  ///
+  /// In ro, this message translates to:
+  /// **'Așteptăm poziția GPS. Încearcă din nou în câteva secunde.'**
+  String get mapWaitingGpsTryAgain;
+
+  /// No description provided for @mapGpsLocationUnavailableYet.
+  ///
+  /// In ro, this message translates to:
+  /// **'Locația GPS nu este disponibilă încă'**
+  String get mapGpsLocationUnavailableYet;
+
+  /// No description provided for @mapSetPickupError.
+  ///
+  /// In ro, this message translates to:
+  /// **'Eroare la setarea pickup: {error}'**
+  String mapSetPickupError(String error);
+
+  /// No description provided for @mapSetDestinationError.
+  ///
+  /// In ro, this message translates to:
+  /// **'Eroare la setarea destinației: {error}'**
+  String mapSetDestinationError(String error);
+
+  /// No description provided for @mapMaxIntermediateStops.
+  ///
+  /// In ro, this message translates to:
+  /// **'Maximum {count} opriri intermediare permise'**
+  String mapMaxIntermediateStops(int count);
+
+  /// No description provided for @mapStopAlreadyAdded.
+  ///
+  /// In ro, this message translates to:
+  /// **'Această oprire este deja adăugată'**
+  String get mapStopAlreadyAdded;
+
+  /// No description provided for @mapAddStopError.
+  ///
+  /// In ro, this message translates to:
+  /// **'Eroare la adăugarea opririi: {error}'**
+  String mapAddStopError(String error);
+
+  /// No description provided for @mapRouteCalculationError.
+  ///
+  /// In ro, this message translates to:
+  /// **'Eroare la calcularea rutei: {error}'**
+  String mapRouteCalculationError(String error);
+
+  /// No description provided for @mapRouteSetupError.
+  ///
+  /// In ro, this message translates to:
+  /// **'Eroare la configurarea rutei: {error}'**
+  String mapRouteSetupError(String error);
+
+  /// No description provided for @mapCouldNotCalculateRoute.
+  ///
+  /// In ro, this message translates to:
+  /// **'Nu s-a putut calcula ruta'**
+  String get mapCouldNotCalculateRoute;
+
+  /// No description provided for @mapFlashlightUnavailable.
+  ///
+  /// In ro, this message translates to:
+  /// **'Lanterna nu este disponibilă pe acest dispozitiv'**
+  String get mapFlashlightUnavailable;
+
+  /// No description provided for @mapFlashlightActivationError.
+  ///
+  /// In ro, this message translates to:
+  /// **'Eroare la activarea lanternei'**
+  String get mapFlashlightActivationError;
+
+  /// No description provided for @mapSpotAnnouncedAvailable.
+  ///
+  /// In ro, this message translates to:
+  /// **'Locul a fost anunțat disponibil.'**
+  String get mapSpotAnnouncedAvailable;
+
+  /// No description provided for @mapCouldNotAnnounceTryAgain.
+  ///
+  /// In ro, this message translates to:
+  /// **'Nu s-a putut anunța. Încearcă din nou.'**
+  String get mapCouldNotAnnounceTryAgain;
+
+  /// No description provided for @mapSelectionCancelled.
+  ///
+  /// In ro, this message translates to:
+  /// **'Selecția pe hartă a fost anulată.'**
+  String get mapSelectionCancelled;
+
+  /// No description provided for @mapNeighborNearbyTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'{avatar} {name} e aproape!'**
+  String mapNeighborNearbyTitle(String avatar, String name);
+
+  /// No description provided for @mapNeighborNearbyBody.
+  ///
+  /// In ro, this message translates to:
+  /// **'La {meters} m - harta socială 📍'**
+  String mapNeighborNearbyBody(int meters);
+
+  /// No description provided for @mapPickupIndex.
+  ///
+  /// In ro, this message translates to:
+  /// **'Pickup {index}'**
+  String mapPickupIndex(int index);
+
+  /// No description provided for @mapPickupPointSelected.
+  ///
+  /// In ro, this message translates to:
+  /// **'Punct de preluare selectat'**
+  String get mapPickupPointSelected;
+
+  /// No description provided for @helpChatGuideTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Ghid utilizare Chat Cartier'**
+  String get helpChatGuideTitle;
+
+  /// No description provided for @helpChatGuideIntro.
+  ///
+  /// In ro, this message translates to:
+  /// **'Chat-ul de cartier este conceput să te conecteze instantaneu cu vecinii aflați în proximitatea ta.'**
+  String get helpChatGuideIntro;
+
+  /// No description provided for @helpChatWhoSeesTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Cine vede mesajele?'**
+  String get helpChatWhoSeesTitle;
+
+  /// No description provided for @helpChatWhoSeesBody.
+  ///
+  /// In ro, this message translates to:
+  /// **'Mesajele trimise sunt vizibile pentru toți utilizatorii care se află în aceeași zonă geografică cu tine în momentul utilizării.'**
+  String get helpChatWhoSeesBody;
+
+  /// No description provided for @helpChatCoverageTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Raza și Aria de acoperire'**
+  String get helpChatCoverageTitle;
+
+  /// No description provided for @helpChatCoverageBody.
+  ///
+  /// In ro, this message translates to:
+  /// **'Sistemul împarte orașul în hexagoane cu latura de aproximativ 3.2 km (o suprafață de circa 36 km²). Este o zonă vastă, ideală pentru a acoperi un cartier întreg sau un sector.'**
+  String get helpChatCoverageBody;
+
+  /// No description provided for @helpChatPersistenceTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Persistența mesajelor'**
+  String get helpChatPersistenceTitle;
+
+  /// No description provided for @helpChatPersistenceBody.
+  ///
+  /// In ro, this message translates to:
+  /// **'Pentru a păstra conversațiile proaspete și relevante, mesajele dispar automat după 30 de minute. Nu există un istoric permanent, chat-ul fiind destinat interacțiunilor imediate.'**
+  String get helpChatPersistenceBody;
+
+  /// No description provided for @helpChatPrivacyTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Confidențialitate și Siguranță'**
+  String get helpChatPrivacyTitle;
+
+  /// No description provided for @helpChatPrivacyBody.
+  ///
+  /// In ro, this message translates to:
+  /// **'Accesul la chat este validat pe baza locației tale GPS actuale. Dacă te muți într-o altă parte a orașului, aplicația te va conecta automat la chat-ul specific acelei zone.'**
+  String get helpChatPrivacyBody;
+
+  /// No description provided for @helpChatTipOMW.
+  ///
+  /// In ro, this message translates to:
+  /// **'Sfat: Folosește butonul OMW pentru a anunța rapid vecinii că ești în drum spre ei sau ești disponibil în zonă.'**
+  String get helpChatTipOMW;
+
+  /// No description provided for @helpLassoTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Instrumentul Lasso (Bagheta Magică)'**
+  String get helpLassoTitle;
+
+  /// No description provided for @helpLassoBody.
+  ///
+  /// In ro, this message translates to:
+  /// **'Instrumentul Lasso îți permite să selectezi mai mulți vecini de pe hartă dintr-o singură mișcare, prin încercuirea lor.'**
+  String get helpLassoBody;
+
+  /// No description provided for @helpLassoHowToTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Cum se folosește?'**
+  String get helpLassoHowToTitle;
+
+  /// No description provided for @helpLassoHowToBody.
+  ///
+  /// In ro, this message translates to:
+  /// **'1. Apasă pe pictograma \"Baghetă Magică\" din colțul dreapta-sus al hărții.\n2. Desenează un cerc cu degetul în jurul vecinilor pe care vrei să îi contactezi.\n3. Se va deschide un meniu cu grupul capturat și opțiuni pentru a le trimite o cerere de tip \"Broadcast\".'**
+  String get helpLassoHowToBody;
+
+  /// No description provided for @helpLassoTip.
+  ///
+  /// In ro, this message translates to:
+  /// **'Sfat: Folosește Lasso pentru a găsi rapid o echipă de vecini pentru o activitate comună sau o cerere de transport partajat!'**
+  String get helpLassoTip;
+
+  /// No description provided for @helpRadarTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Butonul Scanează (radar vecini)'**
+  String get helpRadarTitle;
+
+  /// No description provided for @helpRadarBody.
+  ///
+  /// In ro, this message translates to:
+  /// **'Butonul Scanează pornește scanarea în overlay-ul radar timp de aproximativ 5 secunde, apoi se închide automat. În acest interval nu poți redimensiona cercul.'**
+  String get helpRadarBody;
+
+  /// No description provided for @helpRadarWhatTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Ce „scanează”?'**
+  String get helpRadarWhatTitle;
+
+  /// No description provided for @helpRadarWhatBody.
+  ///
+  /// In ro, this message translates to:
+  /// **'Nu este scanare Bluetooth, Wi‑Fi sau de dispozitive noi. Aplicația listează vecinii care sunt deja afișați pe hartă și se află în interiorul cercului radar (distanța se calculează față de centrul și raza cercului).'**
+  String get helpRadarWhatBody;
+
+  /// No description provided for @helpRadarResultsTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Unde apar rezultatele?'**
+  String get helpRadarResultsTitle;
+
+  /// No description provided for @helpRadarResultsBody.
+  ///
+  /// In ro, this message translates to:
+  /// **'Dacă există cel puțin un vecin în cerc, se deschide o foaie de jos cu lista. Dacă nu e nimeni, vei vedea un mesaj scurt că nu s-a găsit niciun vecin în radar.'**
+  String get helpRadarResultsBody;
+
+  /// No description provided for @helpRadarNextTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Ce poți face după?'**
+  String get helpRadarNextTitle;
+
+  /// No description provided for @helpRadarNextBody.
+  ///
+  /// In ro, this message translates to:
+  /// **'Din foaia de jos poți folosi acțiunea de grup (ex. cerere broadcast) când funcția este complet activă; până atunci aplicația poate afișa un mesaj că este în curs de activare.'**
+  String get helpRadarNextBody;
+
+  /// No description provided for @helpRadarTip.
+  ///
+  /// In ro, this message translates to:
+  /// **'Sfat: Mută sau mărește cercul înainte de Scanează, ca să acoperi zona care te interesează—în rezultate pot apărea doar vecinii deja vizibili pe hartă.'**
+  String get helpRadarTip;
+
+  /// No description provided for @helpMapDropsTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Interactive Map Drops (Locații în Chat)'**
+  String get helpMapDropsTitle;
+
+  /// No description provided for @helpMapDropsBody.
+  ///
+  /// In ro, this message translates to:
+  /// **'Map Drops sunt marcaje de locație partajate în chat-ul de cartier, care îți permit să călătorești instantaneu pe hartă.'**
+  String get helpMapDropsBody;
+
+  /// No description provided for @helpMapDropsFlyTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Animația Cinematică \"FlyTo\"'**
+  String get helpMapDropsFlyTitle;
+
+  /// No description provided for @helpMapDropsFlyBody.
+  ///
+  /// In ro, this message translates to:
+  /// **'Atunci când un vecin partajează o locație, apasă pe cardul interactiv din chat. Aplicația va închide chat-ul și va executa un zbor cinematic direct către acel punct exact pe hartă.'**
+  String get helpMapDropsFlyBody;
+
+  /// No description provided for @helpMapDropsPinsTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Pini Temporari'**
+  String get helpMapDropsPinsTitle;
+
+  /// No description provided for @helpMapDropsPinsBody.
+  ///
+  /// In ro, this message translates to:
+  /// **'După finalizarea zborului, vei vedea un pin pulsatoriu pe hartă. Acesta te ajută să identifici exact locul unde a fost făcut \"drop-ul\", oferind context vizual precis pentru mesajul vecinului.'**
+  String get helpMapDropsPinsBody;
+
+  /// No description provided for @helpBoxesPurposeTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'La ce servesc'**
+  String get helpBoxesPurposeTitle;
+
+  /// No description provided for @helpBoxesPurposeBody.
+  ///
+  /// In ro, this message translates to:
+  /// **'Pe hartă există două tipuri de cutii legate de tokenii Nabour: (1) cutii la oferte business — comerciantul poate seta un plafon opțional; le deschizi lângă magazin și primești tokeni plus un cod de reducere la acel magazin. (2) cutii comunitare — orice utilizator poate plasa o cutie la locația sa curentă; altcineva o deschide la fața locului și primește tokeni; plasatorul este informat când cutia e deschisă.'**
+  String get helpBoxesPurposeBody;
+
+  /// No description provided for @helpBoxesTokensTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Tokeni — cum se colectează și cheltuiesc'**
+  String get helpBoxesTokensTitle;
+
+  /// No description provided for @helpBoxesTokensBody.
+  ///
+  /// In ro, this message translates to:
+  /// **'• Plasare cutie comunitară: 50 de tokeni sunt reținuți prin server (garanție) și apar în istoricul portofelului.\n• Deschidere cutie comunitară (alt utilizator, la aprox. 100 m): primești 50 de tokeni; cutia este marcată deschisă.\n• Deschidere cutie la ofertă business: primești 50 de tokeni și un cod de reducere, cu respectarea regulii o deschidere pe zi per magazin și a plafonului setat de comerciant.\n• Dacă politica serverului blochează creditarea până la integrarea plăților, deschiderea poate eșua cu mesajul corespunzător.'**
+  String get helpBoxesTokensBody;
+
+  /// No description provided for @helpBoxesCommunityStepsTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Cutii comunitare — pașii'**
+  String get helpBoxesCommunityStepsTitle;
+
+  /// No description provided for @helpBoxesCommunityStepsBody.
+  ///
+  /// In ro, this message translates to:
+  /// **'1) De pe hartă, plasezi o cutie la poziția curentă (ai nevoie de tokeni suficienți). Limită: până la 20 de cutii active per cont.\n2) Utilizatorii din apropiere văd cutiile pe hartă; propriile tale cutii nu îți apar ca să le deschizi tu.\n3) Apeși pe cutie, te apropii (aprox. 100 m), confirmi — serverul verifică distanța și identitatea.\n4) Plasatorul primește înregistrare în notificări și o notificare push când cineva deschide cutia.\n5) Din meniu → „Activitate cutii” vezi rezumatul, cutiile plasate, deschiderile tale și deschiderile la cutiile tale.'**
+  String get helpBoxesCommunityStepsBody;
+
+  /// No description provided for @helpBoxesBusinessStepsTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Cutii la oferte business — utilizator și comerciant'**
+  String get helpBoxesBusinessStepsTitle;
+
+  /// No description provided for @helpBoxesBusinessStepsBody.
+  ///
+  /// In ro, this message translates to:
+  /// **'Comerciantul publică o ofertă și poate atașa un plafon de cutii (cost suplimentar în tokeni la publicare sau la mărirea plafonului). Deschizi cutia de pe hartă, lângă locație; primești tokeni și un cod de reducere. În magazin, comerciantul deschide panoul business și folosește „Validează cod” astfel încât codul să fie marcat folosit. Codurile sunt păstrate securizat; doar funcțiile cloud le creează sau validează.'**
+  String get helpBoxesBusinessStepsBody;
+
+  /// No description provided for @helpBoxesActivityScreenTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Ecranul „Activitate cutii” (meniu)'**
+  String get helpBoxesActivityScreenTitle;
+
+  /// No description provided for @helpBoxesActivityScreenBody.
+  ///
+  /// In ro, this message translates to:
+  /// **'File: Rezumat (estimări tokeni din deschideri și din plasări), Plasate (comunitate), Deschise de tine (comunitate + business), Deschideri la cutiile tale (notificări). Codurile de reducere sunt afișate parțial mascate.'**
+  String get helpBoxesActivityScreenBody;
+
+  /// No description provided for @helpBoxesPrivacyRulesTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Confidențialitate și reguli'**
+  String get helpBoxesPrivacyRulesTitle;
+
+  /// No description provided for @helpBoxesPrivacyRulesBody.
+  ///
+  /// In ro, this message translates to:
+  /// **'Operațiile sensibile (coduri de reducere, deschideri) se fac pe server. Regulile Firestore împiedică falsificarea din aplicație; citirile respectă autentificarea.'**
+  String get helpBoxesPrivacyRulesBody;
+
+  /// No description provided for @helpBoxesWhoTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Cine ce face'**
+  String get helpBoxesWhoTitle;
+
+  /// No description provided for @helpBoxesWhoBody.
+  ///
+  /// In ro, this message translates to:
+  /// **'• Orice utilizator: hartă, plasare cutii comunitare dacă are tokeni, deschidere cutii când distanța și regulile permit, meniul „Activitate cutii”.\n• Plasator: primește notificări la deschiderea cutiilor comunitare.\n• Comerciant: configurează certificatele și plafoanele, validează codurile după ce clientul a deschis cutia.'**
+  String get helpBoxesWhoBody;
+
+  /// No description provided for @helpBoxesNotesTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Note'**
+  String get helpBoxesNotesTitle;
+
+  /// No description provided for @helpBoxesNotesBody.
+  ///
+  /// In ro, this message translates to:
+  /// **'Listarea cutiilor din jur este potrivită pentru volum moderat; la scară foarte mare poate fi nevoie de indexare geografică mai strictă. Expirarea sau returnarea automată a garanției dacă nimeni nu deschide o cutie comunitară nu este inclusă aici și poate fi adăugată ulterior.'**
+  String get helpBoxesNotesBody;
+
+  /// No description provided for @helpBoxesTip.
+  ///
+  /// In ro, this message translates to:
+  /// **'Sfat: Dacă deschiderea eșuează, verifică precizia GPS, conexiunea, soldul tokenilor și dacă creditarea este activă pe server în mediul tău.'**
+  String get helpBoxesTip;
+
+  /// No description provided for @helpTransfersP2PTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Transfer de tokeni între utilizatori'**
+  String get helpTransfersP2PTitle;
+
+  /// No description provided for @helpTransfersP2PAboutTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Despre funcție'**
+  String get helpTransfersP2PAboutTitle;
+
+  /// No description provided for @helpTransfersP2PAboutBody.
+  ///
+  /// In ro, this message translates to:
+  /// **'Din meniul lateral, deschide „Transfer tokeni” pentru a trimite tokeni Nabour către alt cont sau pentru a cere cuiva să îți trimită tokeni. Soldurile și înregistrările din jurnal sunt actualizate pe server; ai nevoie de ID-ul de utilizator al celeilalte persoane (UID Firebase).'**
+  String get helpTransfersP2PAboutBody;
+
+  /// No description provided for @helpTransfersP2PWalletTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Portofel transferabil'**
+  String get helpTransfersP2PWalletTitle;
+
+  /// No description provided for @helpTransfersP2PWalletBody.
+  ///
+  /// In ro, this message translates to:
+  /// **'Acest ecran arată soldul de tokeni transferabili (nu este același indicator ca bara de utilizare lunară din partea de sus a meniului). Dacă portofelul lipsește sau este înghețat, transferurile și cererile sunt blocate până când contul este eligibil.'**
+  String get helpTransfersP2PWalletBody;
+
+  /// No description provided for @helpTransfersP2PDirectTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Transfer direct'**
+  String get helpTransfersP2PDirectTitle;
+
+  /// No description provided for @helpTransfersP2PDirectBody.
+  ///
+  /// In ro, this message translates to:
+  /// **'Trimite tokeni imediat către ID-ul destinatarului. Nu poți transfera către propriul cont. Suma trebuie să fie un număr întreg de tokeni, în intervalul permis. Poți adăuga o notă opțională.'**
+  String get helpTransfersP2PDirectBody;
+
+  /// No description provided for @helpTransfersP2PRequestTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Cerere de plată'**
+  String get helpTransfersP2PRequestTitle;
+
+  /// No description provided for @helpTransfersP2PRequestBody.
+  ///
+  /// In ro, this message translates to:
+  /// **'Ceri altui utilizator (plătitorul) să îți trimită tokeni. Acesta primește o cerere în așteptare și poate accepta sau refuza. La acceptare, tokenii se mută din portofelul său transferabil în al tău. Cererile pot expira dacă nu primesc răspuns la timp.'**
+  String get helpTransfersP2PRequestBody;
+
+  /// No description provided for @helpTransfersP2PRequestsTabTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Filă „Cereri”'**
+  String get helpTransfersP2PRequestsTabTitle;
+
+  /// No description provided for @helpTransfersP2PRequestsTabBody.
+  ///
+  /// In ro, this message translates to:
+  /// **'• Ca plătitor: poți accepta sau refuza cererile primite; la refuz poți adăuga un motiv opțional.\n• Ca inițiator al cererii: poți anula o cerere creată de tine cât timp este în așteptare.'**
+  String get helpTransfersP2PRequestsTabBody;
+
+  /// No description provided for @helpTransfersP2PHistoryTabTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Filă „Istoric”'**
+  String get helpTransfersP2PHistoryTabTitle;
+
+  /// No description provided for @helpTransfersP2PHistoryTabBody.
+  ///
+  /// In ro, this message translates to:
+  /// **'Afișează transferurile directe recente și cererile de plată rezolvate. Trage în jos pentru reîmprospătare.'**
+  String get helpTransfersP2PHistoryTabBody;
+
+  /// No description provided for @helpTransfersP2PTip.
+  ///
+  /// In ro, this message translates to:
+  /// **'Distribuie ID-ul de utilizator doar persoanelor în care ai încredere. Verifică din nou ID-ul înainte de a confirma un transfer sau o cerere.'**
+  String get helpTransfersP2PTip;
+
+  /// No description provided for @helpDriverActivationStepCheckConditions.
+  ///
+  /// In ro, this message translates to:
+  /// **'1. Verifică condițiile'**
+  String get helpDriverActivationStepCheckConditions;
+
+  /// No description provided for @helpDriverActivationStepCheckConditionsBody.
+  ///
+  /// In ro, this message translates to:
+  /// **'Trebuie să ai permis de conducere valabil, experiență de minim 2 ani și vârsta de minim 21 de ani.'**
+  String get helpDriverActivationStepCheckConditionsBody;
+
+  /// No description provided for @helpDriverActivationStepPrepareDocs.
+  ///
+  /// In ro, this message translates to:
+  /// **'2. Pregătește documentele'**
+  String get helpDriverActivationStepPrepareDocs;
+
+  /// No description provided for @helpDriverActivationStepPrepareDocsBody.
+  ///
+  /// In ro, this message translates to:
+  /// **'Ai nevoie de: permis de conducere, carte de identitate, certificat de înmatriculare auto, ITP valabil și asigurarea RCA.'**
+  String get helpDriverActivationStepPrepareDocsBody;
+
+  /// No description provided for @helpDriverActivationStepCompleteApp.
+  ///
+  /// In ro, this message translates to:
+  /// **'3. Completează aplicația'**
+  String get helpDriverActivationStepCompleteApp;
+
+  /// No description provided for @helpDriverActivationStepCompleteAppBody.
+  ///
+  /// In ro, this message translates to:
+  /// **'Accesează secțiunea \"Carieră\" din meniul principal și completează formularul online cu datele tale.'**
+  String get helpDriverActivationStepCompleteAppBody;
+
+  /// No description provided for @helpDriverActivationStepSubmitDocs.
+  ///
+  /// In ro, this message translates to:
+  /// **'4. Transmite documentele'**
+  String get helpDriverActivationStepSubmitDocs;
+
+  /// No description provided for @helpDriverActivationStepSubmitDocsBody.
+  ///
+  /// In ro, this message translates to:
+  /// **'Încarcă fotografii clare cu toate documentele necesare prin platforma online.'**
+  String get helpDriverActivationStepSubmitDocsBody;
+
+  /// No description provided for @helpDriverActivationStepVerification.
+  ///
+  /// In ro, this message translates to:
+  /// **'5. Verificarea aplicației'**
+  String get helpDriverActivationStepVerification;
+
+  /// No description provided for @helpDriverActivationStepVerificationBody.
+  ///
+  /// In ro, this message translates to:
+  /// **'Echipa noastră va verifica documentele în maxim 48 de ore lucrătoare.'**
+  String get helpDriverActivationStepVerificationBody;
+
+  /// No description provided for @helpDriverActivationStepReceiveCode.
+  ///
+  /// In ro, this message translates to:
+  /// **'6. Primește codul de activare'**
+  String get helpDriverActivationStepReceiveCode;
+
+  /// No description provided for @helpDriverActivationStepReceiveCodeBody.
+  ///
+  /// In ro, this message translates to:
+  /// **'După aprobare, vei primi un cod unic prin email/SMS pentru activarea contului de șofer.'**
+  String get helpDriverActivationStepReceiveCodeBody;
+
+  /// No description provided for @helpDriverActivationStepActivateAccount.
+  ///
+  /// In ro, this message translates to:
+  /// **'7. Activează contul'**
+  String get helpDriverActivationStepActivateAccount;
+
+  /// No description provided for @helpDriverActivationStepActivateAccountBody.
+  ///
+  /// In ro, this message translates to:
+  /// **'Introdu codul în aplicație și începe să câștigi bani conducând!'**
+  String get helpDriverActivationStepActivateAccountBody;
+
+  /// No description provided for @helpDriverActivationTipHeader.
+  ///
+  /// In ro, this message translates to:
+  /// **'💡 Sfat util:'**
+  String get helpDriverActivationTipHeader;
+
+  /// No description provided for @helpDriverActivationTipBody.
+  ///
+  /// In ro, this message translates to:
+  /// **'Asigură-te că toate documentele sunt valabile și fotografiile sunt clare pentru o procesare rapidă.'**
+  String get helpDriverActivationTipBody;
+
+  /// No description provided for @helpSearchHint.
+  ///
+  /// In ro, this message translates to:
+  /// **'Caută în articole...'**
+  String get helpSearchHint;
+
+  /// No description provided for @helpCategoryRideIssues.
+  ///
+  /// In ro, this message translates to:
+  /// **'Probleme de cursă'**
+  String get helpCategoryRideIssues;
+
+  /// No description provided for @helpCategorySafetySOS.
+  ///
+  /// In ro, this message translates to:
+  /// **'Siguranță & SOS'**
+  String get helpCategorySafetySOS;
+
+  /// No description provided for @helpCategoryNabourFeatures.
+  ///
+  /// In ro, this message translates to:
+  /// **'Funcții Nabour'**
+  String get helpCategoryNabourFeatures;
+
+  /// No description provided for @helpCategoryPaymentsWallet.
+  ///
+  /// In ro, this message translates to:
+  /// **'Plăți & Portofel'**
+  String get helpCategoryPaymentsWallet;
+
+  /// No description provided for @helpCategorySettingsAccount.
+  ///
+  /// In ro, this message translates to:
+  /// **'Setări & Cont'**
+  String get helpCategorySettingsAccount;
+
+  /// No description provided for @helpStillNeedHelp.
+  ///
+  /// In ro, this message translates to:
+  /// **'Ai nevoie de ajutor?'**
+  String get helpStillNeedHelp;
+
+  /// No description provided for @helpContactSupport.
+  ///
+  /// In ro, this message translates to:
+  /// **'Contactează echipa de suport'**
+  String get helpContactSupport;
+
+  /// No description provided for @helpContactButton.
+  ///
+  /// In ro, this message translates to:
+  /// **'Contactează'**
+  String get helpContactButton;
+
+  /// No description provided for @helpRideSharingTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Curse Partajate'**
+  String get helpRideSharingTitle;
+
+  /// No description provided for @chatGalleryPhoto.
+  ///
+  /// In ro, this message translates to:
+  /// **'Fotografie din galerie'**
+  String get chatGalleryPhoto;
+
+  /// No description provided for @chatGif.
+  ///
+  /// In ro, this message translates to:
+  /// **'GIF'**
+  String get chatGif;
+
+  /// No description provided for @driverHoursLimit.
+  ///
+  /// In ro, this message translates to:
+  /// **'Limită ore condus'**
+  String get driverHoursLimit;
+
+  /// No description provided for @driverHoursWarningBody.
+  ///
+  /// In ro, this message translates to:
+  /// **'Ai condus {hours} ore astăzi.\nMai ai {remaining} ore disponibile.\n\nConsideră o pauză pentru siguranța ta și a pasagerilor.'**
+  String driverHoursWarningBody(String hours, String remaining);
+
+  /// No description provided for @goOffline.
+  ///
+  /// In ro, this message translates to:
+  /// **'Ieși offline'**
+  String get goOffline;
+
+  /// No description provided for @driverHoursReachedLimitTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Limită de 10 ore atinsă'**
+  String get driverHoursReachedLimitTitle;
+
+  /// No description provided for @driverHoursReachedLimitBody.
+  ///
+  /// In ro, this message translates to:
+  /// **'Ai condus 10 ore consecutive.\nDin motive de siguranță ai fost deconectat automat.\n\nTe poți reconecta după o perioadă de odihnă.'**
+  String get driverHoursReachedLimitBody;
+
+  /// No description provided for @ridesCompletedToday.
+  ///
+  /// In ro, this message translates to:
+  /// **'{count} curse finalizate azi.'**
+  String ridesCompletedToday(int count);
+
+  /// No description provided for @viewAllRides.
+  ///
+  /// In ro, this message translates to:
+  /// **'Vezi toate cele {count} curse'**
+  String viewAllRides(int count);
+
+  /// No description provided for @driverSessionBannerCritical.
+  ///
+  /// In ro, this message translates to:
+  /// **'Limită de 10 ore atinsă. Te rog ieși offline.'**
+  String get driverSessionBannerCritical;
+
+  /// No description provided for @driverSessionBannerWarning.
+  ///
+  /// In ro, this message translates to:
+  /// **'Sesiune: {hours}h • Rămân {remaining}h'**
+  String driverSessionBannerWarning(String hours, String remaining);
+
+  /// No description provided for @driverSessionBannerNormal.
+  ///
+  /// In ro, this message translates to:
+  /// **'Sesiune: {hours}h'**
+  String driverSessionBannerNormal(String hours);
+
+  /// No description provided for @helpToday.
+  ///
+  /// In ro, this message translates to:
+  /// **'Ajutor Azi'**
+  String get helpToday;
+
+  /// No description provided for @tokens.
+  ///
+  /// In ro, this message translates to:
+  /// **'Tokeni'**
+  String get tokens;
+
+  /// No description provided for @rideSummary_thankYouGoodbye.
+  ///
+  /// In ro, this message translates to:
+  /// **'Vă mulțumim și la revedere!'**
+  String get rideSummary_thankYouGoodbye;
+
+  /// No description provided for @rideSummary_tipRegistered.
+  ///
+  /// In ro, this message translates to:
+  /// **'Bacșișul de {amount} {currency} a fost înregistrat.'**
+  String rideSummary_tipRegistered(String amount, String currency);
+
+  /// No description provided for @rideSummary_redirectToMapInSeconds.
+  ///
+  /// In ro, this message translates to:
+  /// **'Te redirecționăm la hartă în {seconds} secunde...'**
+  String rideSummary_redirectToMapInSeconds(String seconds);
+
+  /// No description provided for @rideSummary_submitRatingButton.
+  ///
+  /// In ro, this message translates to:
+  /// **'Trimite Evaluarea'**
+  String get rideSummary_submitRatingButton;
+
+  /// No description provided for @rideSummary_skipRatingButton.
+  ///
+  /// In ro, this message translates to:
+  /// **'Omite evaluarea'**
+  String get rideSummary_skipRatingButton;
+
+  /// No description provided for @rideSummary_ratingSentSuccess.
+  ///
+  /// In ro, this message translates to:
+  /// **'Evaluarea a fost trimisă cu succes!'**
+  String get rideSummary_ratingSentSuccess;
+
+  /// No description provided for @rideSummary_backToMap.
+  ///
+  /// In ro, this message translates to:
+  /// **'Înapoi la hartă'**
+  String get rideSummary_backToMap;
+
+  /// No description provided for @rideSummary_rideDetails.
+  ///
+  /// In ro, this message translates to:
+  /// **'Detalii Cursă'**
+  String get rideSummary_rideDetails;
+
+  /// No description provided for @rideSummary_distance.
+  ///
+  /// In ro, this message translates to:
+  /// **'Distanța'**
+  String get rideSummary_distance;
+
+  /// No description provided for @rideSummary_duration.
+  ///
+  /// In ro, this message translates to:
+  /// **'Durata'**
+  String get rideSummary_duration;
+
+  /// No description provided for @rideSummary_rideCost.
+  ///
+  /// In ro, this message translates to:
+  /// **'Cost Cursă'**
+  String get rideSummary_rideCost;
+
+  /// No description provided for @rideSummary_freeRideSupport.
+  ///
+  /// In ro, this message translates to:
+  /// **'Gratuit - Sprijin Vecini'**
+  String get rideSummary_freeRideSupport;
+
+  /// No description provided for @rideSummary_driverTipOptional.
+  ///
+  /// In ro, this message translates to:
+  /// **'💰 Bacșiș pentru șofer (opțional)'**
+  String get rideSummary_driverTipOptional;
+
+  /// No description provided for @rideSummary_thankDriverTipText.
+  ///
+  /// In ro, this message translates to:
+  /// **'Mulțumește șoferului pentru o călătorie plăcută!'**
+  String get rideSummary_thankDriverTipText;
+
+  /// No description provided for @rideSummary_otherAmountLabel.
+  ///
+  /// In ro, this message translates to:
+  /// **'Altă sumă ({currency})'**
+  String rideSummary_otherAmountLabel(String currency);
+
+  /// No description provided for @rideSummary_noTipButton.
+  ///
+  /// In ro, this message translates to:
+  /// **'Fără bacșiș'**
+  String get rideSummary_noTipButton;
+
+  /// No description provided for @rideSummary_tipSelected.
+  ///
+  /// In ro, this message translates to:
+  /// **'Bacșiș selectat: {amount} {currency}'**
+  String rideSummary_tipSelected(String amount, String currency);
+
+  /// No description provided for @safety_sosButtonLabel.
+  ///
+  /// In ro, this message translates to:
+  /// **'112 — SOS'**
+  String get safety_sosButtonLabel;
+
+  /// No description provided for @safety_locationUnavailable.
+  ///
+  /// In ro, this message translates to:
+  /// **'(locație indisponibilă)'**
+  String get safety_locationUnavailable;
+
+  /// No description provided for @safety_defaultNabourUser.
+  ///
+  /// In ro, this message translates to:
+  /// **'Utilizator Nabour'**
+  String get safety_defaultNabourUser;
+
+  /// No description provided for @safety_emergencySmsBody.
+  ///
+  /// In ro, this message translates to:
+  /// **'🆘 URGENȚĂ! {name} are nevoie de ajutor!\nLocație: {location}\nApăsați linkul pentru a vedea pe hartă.'**
+  String safety_emergencySmsBody(String name, String location);
+
+  /// No description provided for @safety_emergencyAlertSent.
+  ///
+  /// In ro, this message translates to:
+  /// **'🆘 Alertă de urgență trimisă. Se apelează 112...'**
+  String get safety_emergencyAlertSent;
+
+  /// No description provided for @safety_shareTripBody.
+  ///
+  /// In ro, this message translates to:
+  /// **'📍 Urmăresc călătoria mea cu Nabour!\nLocația mea curentă: {location}'**
+  String safety_shareTripBody(String location);
+
+  /// No description provided for @safety_shareTripNoLocation.
+  ///
+  /// In ro, this message translates to:
+  /// **'🚗 Călătoresc cu Nabour. Locația nu este disponibilă momentan.'**
+  String get safety_shareTripNoLocation;
+
+  /// No description provided for @safety_couldNotCreateTrackingLink.
+  ///
+  /// In ro, this message translates to:
+  /// **'Nu s-a putut crea link-ul de urmărire'**
+  String get safety_couldNotCreateTrackingLink;
+
+  /// No description provided for @safety_deleteContactTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Șterge contact'**
+  String get safety_deleteContactTitle;
+
+  /// No description provided for @safety_deleteContactConfirmation.
+  ///
+  /// In ro, this message translates to:
+  /// **'Ștergi \"{name}\" din contactele de încredere?'**
+  String safety_deleteContactConfirmation(String name);
+
+  /// No description provided for @safety_emergencyButtonTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Buton de urgență'**
+  String get safety_emergencyButtonTitle;
+
+  /// No description provided for @safety_emergencyButtonSubtitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Apelează 112 și trimite locația ta\ntuturor contactelor de încredere'**
+  String get safety_emergencyButtonSubtitle;
+
+  /// No description provided for @safety_shareTripTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Partajează călătoria'**
+  String get safety_shareTripTitle;
+
+  /// No description provided for @safety_activeRideDetected.
+  ///
+  /// In ro, this message translates to:
+  /// **'Cursă activă detectată'**
+  String get safety_activeRideDetected;
+
+  /// No description provided for @safety_sendCurrentLocation.
+  ///
+  /// In ro, this message translates to:
+  /// **'Trimite locația ta curentă'**
+  String get safety_sendCurrentLocation;
+
+  /// No description provided for @safety_gettingLocation.
+  ///
+  /// In ro, this message translates to:
+  /// **'Se obține locația...'**
+  String get safety_gettingLocation;
+
+  /// No description provided for @safety_shareLocationButton.
+  ///
+  /// In ro, this message translates to:
+  /// **'Partajează locația'**
+  String get safety_shareLocationButton;
+
+  /// No description provided for @safety_liveLinkActive.
+  ///
+  /// In ro, this message translates to:
+  /// **'Link live activ — reîmpartășește'**
+  String get safety_liveLinkActive;
+
+  /// No description provided for @safety_safeRideSharePath.
+  ///
+  /// In ro, this message translates to:
+  /// **'Safe Ride Live — partajează traseu'**
+  String get safety_safeRideSharePath;
+
+  /// No description provided for @safety_noContactsAdded.
+  ///
+  /// In ro, this message translates to:
+  /// **'Niciun contact adăugat'**
+  String get safety_noContactsAdded;
+
+  /// No description provided for @safety_addContactsDescription.
+  ///
+  /// In ro, this message translates to:
+  /// **'Adaugă familia sau prietenii. Ei vor primi\nlocația ta în caz de urgență.'**
+  String get safety_addContactsDescription;
+
+  /// No description provided for @rideSummary_totalCost.
+  ///
+  /// In ro, this message translates to:
+  /// **'Cost Total'**
+  String get rideSummary_totalCost;
+
+  /// No description provided for @safety_destinationLabelPrefix.
+  ///
+  /// In ro, this message translates to:
+  /// **'Destinație: {destination}'**
+  String safety_destinationLabelPrefix(String destination);
 }
 
 class _AppLocalizationsDelegate

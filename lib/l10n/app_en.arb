@@ -498,8 +498,8 @@
   
   "safetyCenter": "Safety Center",
   "addContact": "Add contact",
-  "emergencyAssistanceButton": "Emergency Assistance Button",
-  "emergencyAssistanceButtonDesc": "During any ride, you have the 112 button in the corner of the screen to quickly contact emergency services.",
+  "safety_emergencyAssistanceButton": "Emergency Assistance Button",
+  "safety_emergencyAssistanceButtonDesc": "During any ride, you have the 112 button in the corner of the screen to quickly contact emergency services.",
   "tripSharing": "Trip Sharing",
   "tripSharingDesc": "You can share ride details and route in real-time with friends or family for added safety.",
   "verifiedDrivers": "Verified Drivers",
@@ -1260,9 +1260,9 @@
   
   "pleaseSelectRatingBeforeSubmit": "Please select a rating before submitting.",
   "errorSubmittingRating": "Error submitting rating. Please try again.",
-  "thankYouForRide": "Thank you for the ride!",
-  "howWasExperience": "How was your experience?",
-  "leaveCommentOptional": "Leave a comment (optional)",
+  "rideSummary_thankYouForRide": "Thank you for the ride!",
+  "rideSummary_howWasExperience": "How was your experience?",
+  "rideSummary_leaveCommentOptional": "Leave a comment (optional)",
   "noTip": "No tip",
   
   "thanksForRating": "Thanks for rating!",
@@ -1732,6 +1732,12 @@
   "drawerMenuPlaces": "Places",
   "drawerMenuExplorations": "Explorations",
   "drawerMenuSyncContacts": "Sync contacts",
+  "drawerShowHomeOnMap": "Show Home (favorite) on map\n(only for you)",
+  "drawerOrientationMarkerOnMap": "Orientation marker on map\n(long-press on the map after enabling)",
+  "drawerHideHomeOnMap": "Hide Home from map\n(only the favorite marker)",
+  "drawerHideOrientationMarker": "Hide orientation marker\n(remove pin from the map)",
+  "drawerActiveContactsOnMap": "Active contacts on map",
+  "drawerIdCopied": "ID copied to clipboard.",
   "drawerSyncContactsDialogTitle": "Why sync contacts?",
   "drawerSyncContactsDialogBody": "The map only shows people who are in your phone contacts and also use Nabour.\n\nIf you added a new contact or a friend just joined, tap Sync to refresh who can appear on the social map.",
   "drawerSyncContactsDialogOk": "Got it",
@@ -1748,7 +1754,32 @@
   "warmupScheduleTitle": "Plan ahead",
   "warmupScheduleSubtitle": "Post early — neighbors confirm when they're free.",
   "warmupWhyTitle": "Why Nabour?",
-  "warmupCtaOpenMap": "Open map",
+  "warmupCtaOpenMap": "Go to map",
+  "warmupSubtitle": "Your Neighborhood Hub",
+  "warmupExampleRidesCount": "{count} Active Rides Nearby",
+  "@warmupExampleRidesCount": {
+    "placeholders": {
+      "count": { "type": "String" }
+    }
+  },
+  "warmupExampleDealsCount": "{count} New Deals Today",
+  "@warmupExampleDealsCount": {
+    "placeholders": {
+      "count": { "type": "String" }
+    }
+  },
+  "warmupExampleMessagesCount": "{count} New Messages",
+  "@warmupExampleMessagesCount": {
+    "placeholders": {
+      "count": { "type": "String" }
+    }
+  },
+  "warmupExampleRide1": "Sarah B. (2 min) → Downtown",
+  "warmupExampleRide2": "Mike K. (5 min) → Station",
+  "warmupExampleOffer1": "The Daily Grind: 20% off all coffees",
+  "warmupExampleOffer2": "Urban Bites: Free side with any main",
+  "warmupExampleChat1": "Alex: Anyone want to join the park walk...?",
+  "warmupExampleChat2": "Chloe: Heard a loud bang on Elm St...",
   "warmupSwipeDownHint": "Or swipe down to close",
 
   "warmupHeroNeighborsTitle": "Rides with neighbors",
@@ -1971,5 +2002,1107 @@
   "businessOffersNoNearbyOffers": "Come back later for nearby offers.",
   "businessOffersManageFilters": "Manage filters",
   "businessOffersResetCategory": "Reset category",
-  "businessOffersAllCategories": "All categories"
+  "businessOffersAllCategories": "All categories",
+  "mapGhostDurationTitle": "How long are you visible to neighbors?",
+  "mapGhostDurationSubtitle": "Neighbors will see you as a bubble on the map.",
+  "mapGhostOneHourLabel": "1 hour",
+  "mapGhostOneHourSub": "Useful for a short outing",
+  "mapGhostFourHoursLabel": "4 hours",
+  "mapGhostFourHoursSub": "Useful for an afternoon",
+  "mapGhostUntilTomorrowLabel": "Until tomorrow",
+  "mapGhostUntilTomorrowSub": "Resets at midnight",
+  "mapGhostPermanentLabel": "Permanent",
+  "mapGhostPermanentSub": "You remain visible until you manually disable it",
+  "mapGhostInvisibleLabel": "Invisible (ghost mode)",
+  "mapGhostInvisibleSub": "You do not appear on the map; profile marks ghostMode in account (synced across devices).",
+  "mapDeleteMomentTitle": "Delete this moment?",
+  "mapDeleteMomentContent": "The post will disappear from the map for everyone.",
+  "mapMomentDeleted": "Moment deleted.",
+  "mapMomentDeleteError": "Could not delete the moment. Please try again.",
+  "mapDeleteOrCancelPost": "Delete / cancel post",
+  "mapPinNameLabel": "Name",
+  "mapPinNameHint": "e.g.: main entrance",
+  "mapPinNameTitle": "Marker name",
+  "mapOrientationPinSaved": "Orientation marker saved on map.",
+  "mapEditHomeAddressTitle": "Edit Home address",
+  "mapEditHomeAddressSubtitle": "Change location from Saved addresses",
+  "mapHideHomeFromMapTitle": "Hide Home from map",
+  "mapMoveOrientationMarkerTitle": "Move marker",
+  "mapMoveOrientationMarkerWithName": "\"{name}\" · then long-press on the map at the new location",
+  "@mapMoveOrientationMarkerWithName": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "mapMoveOrientationMarkerNoName": "Then long-press on the map at the new location",
+  "mapLongPressForNewMarker": "Long-press on the map for the new marker.",
+  "mapRemoveOrientationMarkerTitle": "Remove orientation marker",
+  "mapMarkerRemoved": "Marker removed.",
+  "mapSaveHomeFirst": "Save the \"Home\" address in favorites (with map position), then try again.",
+  "mapHomeShownForYou": "Favorite Home is shown on map (only for you).",
+  "mapHomeNotShown": "Home is not shown on map.",
+  "mapHomeNoLongerShown": "Home is no longer shown on map.",
+  "mapNoOrientationMarker": "You do not have an orientation marker on the map.",
+  "mapOrientationMarkerRemovedFromMap": "Orientation marker was removed from map.",
+  "mapEmojiRemoved": "Your emoji was removed from the map.",
+  "mapEmojiDeleteError": "Could not delete emoji. Please try again.",
+  "mapMomentExpired": "Expired",
+  "mapMomentExpiresInMinutes": "~{minutes} min until it disappears from the map",
+  "@mapMomentExpiresInMinutes": {
+    "placeholders": {
+      "minutes": { "type": "int" }
+    }
+  },
+  "mapMomentExpiresSoon": "Will disappear from the map soon",
+  "mapArrivedAtDestination": "You arrived at destination: {destination}",
+  "@mapArrivedAtDestination": {
+    "placeholders": {
+      "destination": { "type": "String" }
+    }
+  },
+  "mapDestinationUnset": "Destination not set",
+  "mapRideBroadcastWantsToGo": "Wants to go to: {destination}",
+  "@mapRideBroadcastWantsToGo": {
+    "placeholders": {
+      "destination": { "type": "String" }
+    }
+  },
+  "mapSeeRequestAndOfferRide": "SEE REQUEST AND OFFER RIDE",
+  "mapAcceptRideError": "Error accepting ride: {error}",
+  "@mapAcceptRideError": {
+    "placeholders": {
+      "error": { "type": "String" }
+    }
+  },
+  "mapPickupExternalNavigation": "Pickup: external navigation",
+  "mapDestinationExternalNavigation": "Destination: external navigation",
+  "mapClosePanel": "Close panel",
+  "mapWaitingGpsLocation": "Waiting for GPS location...",
+  "mapCreateRideError": "Error creating ride: {error}",
+  "@mapCreateRideError": {
+    "placeholders": {
+      "error": { "type": "String" }
+    }
+  },
+  "mapWaitingGpsToPlaceBox": "Waiting for GPS position to place the box here.",
+  "mapPlace": "Place",
+  "mapBoxPlaced": "Box placed! (-{tokens} tokens)",
+  "@mapBoxPlaced": {
+    "placeholders": {
+      "tokens": { "type": "int" }
+    }
+  },
+  "mapPoiLoadError": "Error loading POIs: {error}",
+  "@mapPoiLoadError": {
+    "placeholders": {
+      "error": { "type": "String" }
+    }
+  },
+  "mapNavigateToMarkedPlace": "Navigate to marked place",
+  "mapDeleteMarkerAndRestart": "Delete marker and start again",
+  "mapSpotReserved": "Spot reserved! You have 3 minutes to arrive.",
+  "mapAddToFavoriteAddresses": "Add to favorite addresses",
+  "mapNavigateWithExternalApps": "Navigate with Google Maps / Waze",
+  "mapSpotAlreadyReserved": "Sorry, the spot has already been reserved.",
+  "chatImageTooLargePrivate": "Image is still too large after compression (max ~1.8 MB). Try a smaller photo.",
+  "chatImageTooLargeGeneral": "Image is too large (max ~7 MB).",
+  "chatImageUploadFailed": "Could not upload image.",
+  "chatPhotoLabel": "Photo",
+  "chatVoiceMessageLabel": "Voice message",
+  "chatMessageSendFailed": "Message could not be sent.",
+  "chatGifLabel": "GIF",
+  "chatPhoneNotAvailable": "Phone number is not available.",
+  "chatCallFailed": "Could not start the call.",
+  "chatMessagesLoadFailed": "Could not load messages.",
+  "chatTyping": "typing...",
+  "chatEndToEndEncrypted": "Messages are end-to-end encrypted.",
+  "chatToday": "Today",
+  "chatYesterday": "Yesterday",
+  "chatQuickReplyHere": "I am here 👋",
+  "chatQuickReplyIn2Min": "Coming in 2 min ⏱️",
+  "chatQuickReplyIn5Min": "Coming in 5 min ⏱️",
+  "chatQuickReplyArrived": "Have you arrived? 📍",
+  "chatQuickReplyThanks": "Thanks! 🙏",
+  "chatQuickReplyOk": "OK 👍",
+  "you": "You",
+  "chatVoiceMessageSendFailed": "Voice message could not be sent.",
+  "chatReply": "Reply",
+  "chatCopy": "Copy",
+  "chatMessageCopied": "Message copied.",
+  "chatChooseGif": "Choose GIF",
+  "chatSearchHint": "Search…",
+  "privateChatNotAuthenticated": "You are not authenticated.",
+  "privateChatReaction": "Reaction",
+  "privateChatNewChat": "New chat",
+  "privateChatAddContactsToChoose": "Add contacts in your address book or friends so you can choose a person.",
+  "privateChatOnMap": "On map",
+  "privateChatNoPeopleYet": "You don't have people in contacts or confirmed friends yet.",
+  "privateChatAddContactsOrAcceptSuggestions": "Add contacts or accept requests in the Suggestions tab to start private conversations.",
+  "privateChatConversationsHint": "Private conversations - same messages as from a neighbor profile on the map.",
+  "privateChatOnMapNowTapToWrite": "On map now - tap to write",
+  "privateChatTapToSendMessage": "Tap to send a message",
+  "chatLocationLabel": "Location"
+  ,
+  "friendSuggestionsUserFallback": "User",
+  "friendSuggestionsAlreadyFriends": "You are already friends in Nabour.",
+  "friendSuggestionsRequestAlreadySent": "You already sent a request to this person.",
+  "friendSuggestionsRequestSent": "Friend request sent!",
+  "friendSuggestionsRequestPermissionDenied": "We are not allowed to write this request (Firebase rules). Contact support.",
+  "friendSuggestionsRequestFailed": "Could not send the request. Please try again.",
+  "friendSuggestionsAcceptedFrom": "You accepted the request from {name}! ✓",
+  "@friendSuggestionsAcceptedFrom": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "friendSuggestionsFriendFallback": "friend",
+  "friendSuggestionsPermissionAcceptDenied": "We are not allowed to accept this request (Firebase rules).",
+  "friendSuggestionsAcceptFailed": "Could not accept the request. Please try again.",
+  "friendSuggestionsRejected": "Request rejected.",
+  "friendSuggestionsRejectFailed": "Could not reject the request. Please try again.",
+  "friendSuggestionsThisUser": "this user",
+  "friendSuggestionsRemoveTitle": "Remove friend",
+  "friendSuggestionsRemoveConfirm": "Are you sure you want to remove {name} from your list? You will no longer see each other on the map as Nabour friends until you send requests again.",
+  "@friendSuggestionsRemoveConfirm": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "friendSuggestionsCancel": "Cancel",
+  "friendSuggestionsRemove": "Remove",
+  "friendSuggestionsRemovedFromList": "{name} was removed from your list.",
+  "@friendSuggestionsRemovedFromList": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "friendSuggestionsRemoveFailed": "Could not remove. Please try again.",
+  "friendSuggestionsTabSuggestions": "Suggestions",
+  "friendSuggestionsTabMyFriends": "My friends",
+  "friendSuggestionsTabPrivateChat": "Private chat",
+  "friendSuggestionsSearchHint": "Search in contacts...",
+  "friendSuggestionsIncomingRequests": "Incoming requests ({count})",
+  "@friendSuggestionsIncomingRequests": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "friendSuggestionsAddressBookSuggestions": "Address book suggestions",
+  "friendSuggestionsNoConfirmedFriends": "You don't have confirmed friends yet.\nAccept requests in Suggestions tab or send one yourself.",
+  "friendSuggestionsLoading": "Loading…",
+  "friendSuggestionsOnMapNow": "On map now",
+  "friendSuggestionsNabourFriend": "Nabour friend",
+  "friendSuggestionsSendsRequest": "sent you a friend request",
+  "friendSuggestionsReject": "Reject",
+  "friendSuggestionsAccept": "Accept",
+  "friendSuggestionsIntroOne": "{count} INTRODUCTION",
+  "@friendSuggestionsIntroOne": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "friendSuggestionsIntroMany": "{count} INTRODUCTIONS",
+  "@friendSuggestionsIntroMany": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "friendSuggestionsFriendsCount": "{count} FRIENDS",
+  "@friendSuggestionsFriendsCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "friendSuggestionsFriendsCount50Plus": "50+ FRIENDS",
+  "friendSuggestionsFriendBadge": "Friend",
+  "friendSuggestionsAdded": "Added",
+  "friendSuggestionsAdd": "Add",
+  "friendSuggestionsBackOnMap": "is back on the map",
+  "disclaimerNoPaymentsTitle": "Nabour does not intermediate payments",
+  "disclaimerNoPaymentsSubtitle": "The app does not intermediate payments between users.",
+  "disclaimerNoPaymentsBody": "Nabour connects neighbors who want to help each other. If a driver chooses to accept or offer a gesture of appreciation, that is exclusively their personal decision and responsibility. The app does not intermediate, request, or process any type of payment.",
+  "disclaimerUsageNotice": "Do not stay in the app for more than 40 minutes per day, monthly average - this can either generate costs or block your usage.",
+  "disclaimerUnderstood": "I understand",
+  "splashStartupError": "A startup error occurred.\nCheck your internet and try again.",
+  "splashRetry": "RETRY",
+  "splashTakingLonger": "Startup is taking longer...",
+  "splashContinueAnyway": "CONTINUE ANYWAY",
+  "splashMadeInRomania": "Made in Romania",
+  "settingsCommunityModeSchool": "School / high school mode",
+  "settingsCommunityModeStandard": "Standard (no community label)",
+  "settingsNowPlayingNotSet": "Not set yet - visible in profile for friends",
+  "settingsVoiceAssistantOnMap": "Voice assistant on map",
+  "settingsVoiceAssistantOnMapSubtitle": "Map button and menu section (currently being improved)",
+  "settingsGhostModeTitle": "Ghost mode (social map)",
+  "settingsGhostModeSubtitle": "Enable \"Invisible\" from the social map menu; it stops RTDB and marks ghostMode in account.",
+  "settingsApproximateLocationTitle": "Approximate location (social map)",
+  "settingsSocialMapSection": "Social map",
+  "settingsNearbyNotificationsTitle": "Notifications \"near me\"",
+  "settingsNearbyAlertRadiusTitle": "Nearby alert radius",
+  "settingsNearbyAlertRadiusSubtitle": "{meters} m (contacts on map)",
+  "@settingsNearbyAlertRadiusSubtitle": {
+    "placeholders": {
+      "meters": { "type": "int" }
+    }
+  },
+  "settingsMusicTitle": "Music (Spotify / Apple Music)",
+  "settingsMusicSubtitle": "Open Spotify or Apple Music",
+  "settingsNowPlayingTitle": "What I'm listening now (profile)",
+  "settingsCommunityModeTitle": "Community / school mode",
+  "settingsLocationHistoryTitle": "Location history (Timeline)",
+  "settingsLocationHistoryStartFailed": "Could not start recording. Grant location access and, on Android, \"Allow all the time\" for recording when app is not open.",
+  "settingsLocationHistoryEnabled": "Location history was enabled (see Android notification while running in background).",
+  "settingsLocationHistoryDisabled": "Location history was disabled.",
+  "settingsLocalHistoryRetentionTitle": "Local history retention",
+  "settingsLocalHistoryRetentionSubtitle": "Keep local data for {days} days",
+  "@settingsLocalHistoryRetentionSubtitle": {
+    "placeholders": {
+      "days": { "type": "int" }
+    }
+  },
+  "settingsDeleteLocalHistoryTitle": "Delete local history",
+  "settingsDeleteLocalHistorySubtitle": "Delete recap, cache and local timeline for this account",
+  "settingsNearbyNotificationRadiusTitle": "Nearby notification radius",
+  "settingsLocalHistoryRetentionSet": "Local retention was set to {days} days.",
+  "@settingsLocalHistoryRetentionSet": {
+    "placeholders": {
+      "days": { "type": "int" }
+    }
+  },
+  "settingsNowPlayingSheetTitle": "What I'm listening now",
+  "settingsNowPlayingSongLabel": "Song / title",
+  "settingsMusicProfileUpdated": "Music profile updated.",
+  "settingsSaveToAccount": "Save to account",
+  "settingsDeleteFromProfile": "Delete from profile",
+  "settingsCommunitySheetTitle": "Community",
+  "settingsCommunityModeSaved": "Community mode saved.",
+  "settingsDeleteLocalHistoryConfirmTitle": "Delete local history?",
+  "settingsDeleteLocalHistoryConfirmContent": "This action deletes local recap and Week in Review cache for current account.",
+  "settingsLocalHistoryDeleted": "Local history was deleted.",
+  "tokenShopChoosePaymentMethodFor": "Choose payment method for {planName}",
+  "@tokenShopChoosePaymentMethodFor": {
+    "placeholders": {
+      "planName": { "type": "String" }
+    }
+  },
+  "tokenShopPayByCard": "Pay by card",
+  "tokenShopPriceWithAutoRenewal": "Price: {price} (Auto-renewal)",
+  "@tokenShopPriceWithAutoRenewal": {
+    "placeholders": {
+      "price": { "type": "String" }
+    }
+  },
+  "tokenShopPayWithTransferableTokens": "Pay with transferable tokens",
+  "tokenShopPriceInTokensNoRenewal": "Price: {tokens} Tokens (No renewal)",
+  "@tokenShopPriceInTokensNoRenewal": {
+    "placeholders": {
+      "tokens": { "type": "int" }
+    }
+  },
+  "tokenShopInsufficientShort": "Insufficient",
+  "tokenShopPlanActivated": "Plan {planName} was activated!",
+  "@tokenShopPlanActivated": {
+    "placeholders": {
+      "planName": { "type": "String" }
+    }
+  },
+  "tokenShopUnlimitedAccessNetworkIntelligence": "Absolute access to network intelligence.",
+  "tokenShopPersonalTokensSubtitle": "Tokens for AI, routes and your features.",
+  "tokenShopTransferablePackagesTitle": "TRANSFERABLE PACKAGES",
+  "tokenShopTransferablePackagesSubtitle": "Real tokens that you can send to anyone.",
+  "tokenShopTransferablePackageTitle": "Transferable package: {tokens} Tokens",
+  "@tokenShopTransferablePackageTitle": {
+    "placeholders": {
+      "tokens": { "type": "int" }
+    }
+  },
+  "tokenShopTxPurchaseTransferablePackage": "TRANSFERABLE package purchase: {label}",
+  "@tokenShopTxPurchaseTransferablePackage": {
+    "placeholders": {
+      "label": { "type": "String" }
+    }
+  },
+  "tokenShopTransferableWalletSuffix": " (in transferable wallet)",
+  "neighborhoodChatMuted": "Chat muted",
+  "neighborhoodChatSoundOn": "Sound enabled",
+  "neighborhoodChatGpsDisabled": "GPS disabled. Enable location for chat.",
+  "neighborhoodChatGpsPermissionDenied": "GPS permission denied.",
+  "neighborhoodChatInvalidServerResponse": "Neighborhood chat: invalid server response (H3 roomId).",
+  "neighborhoodChatFunctionsUnavailable": "Neighborhood chat: Functions unavailable ({code}).",
+  "@neighborhoodChatFunctionsUnavailable": {
+    "placeholders": {
+      "code": { "type": "String" }
+    }
+  },
+  "neighborhoodChatActivationFailed": "Could not activate neighborhood chat.",
+  "neighborhoodChatLocationResolveFailed": "Could not determine location.",
+  "neighborhoodChatInappropriateMessage": "Inappropriate message.",
+  "neighborhoodChatOnMyWay": "I'm on my way!",
+  "neighborhoodChatMarkedLocation": "I marked a location on the map",
+  "neighborhoodChatTitle": "Neighborhood chat",
+  "neighborhoodChatInviteNeighbors": "Invite neighbors",
+  "neighborhoodChatNoAccessOrRulesChanged": "You do not have access to this chat or security rules changed. Retry after re-authentication.",
+  "neighborhoodChatNoRecentMessages": "No recent messages",
+  "neighborhoodChatEmptyHint": "Say \"Hi\" to neighbors or send a location. Messages disappear after 30 minutes.",
+  "neighborhoodChatSendLocationTooltip": "Send your location",
+  "neighborhoodChatInviteText": "Come to Nabour neighborhood chat! We are neighbors in H3 zone: {roomId}",
+  "@neighborhoodChatInviteText": {
+    "placeholders": {
+      "roomId": { "type": "String" }
+    }
+  },
+  "neighborhoodChatInfoBody1": "This is an ephemeral space for neighbors in the same H3 zone (approx. 1km²).",
+  "neighborhoodChatInfoBody2": "• Messages disappear automatically after 30 minutes.\n• You can send location or text messages.\n• Respect neighbors and keep the community clean!",
+  "neighborhoodChatFlyToHint": "Tap for \"FlyTo\" animation to the point marked by the neighbor.",
+  "neighborhoodChatSeeOnMap": "SEE ON MAP",
+  "placesHubTabLearned": "Learned",
+  "placesHubTabFavorites": "Favorites",
+  "placesHubTabRecommendations": "Recommendations",
+  "placesHubNoLearnedPlaces": "We don't have learned places yet. Keep the app open on the map - we detect areas where you stay longer (private, on device).",
+  "placesHubFrequentArea": "Frequent area ({minutes} accumulated min)",
+  "@placesHubFrequentArea": {
+    "placeholders": {
+      "minutes": { "type": "int" }
+    }
+  },
+  "placesHubVisitsConfidence": "{visits} visits - confidence {confidence}%",
+  "@placesHubVisitsConfidence": {
+    "placeholders": {
+      "visits": { "type": "int" },
+      "confidence": { "type": "int" }
+    }
+  },
+  "placesHubFavoritesHint": "Your saved addresses also appear on the map as \"home / work\" when you are nearby.",
+  "placesHubManageFavoriteAddresses": "Manage favorite addresses",
+  "placesHubDiscoverNeighborhood": "Discover the neighborhood",
+  "placesHubDiscoverNeighborhoodHint": "Enable visibility on the social map to see requests, moments and neighbors. Learned places are enriched automatically from your movement.",
+  "placesHubFriendsNearbyTitle": "Friends nearby",
+  "placesHubFriendsNearbySubtitle": "On the main map you can see contacts that added you and are close.",
+  "placesHubPreviewTitle": "Preview",
+  "rideBroadcastDeleteRequestTitle": "Delete request",
+  "rideBroadcastDeleteRequestConfirm": "Are you sure you want to delete this request from your history?",
+  "rideBroadcastFeedTitle": "Neighborhood requests",
+  "rideBroadcastActiveRadiusTooltip": "In \"Active\" tab we show requests within max {km} km from your current location (when available).",
+  "@rideBroadcastActiveRadiusTooltip": {
+    "placeholders": {
+      "km": { "type": "int" }
+    }
+  },
+  "rideBroadcastTabActive": "Active",
+  "rideBroadcastTabMapBubbles": "Map bubbles",
+  "rideBroadcastTabMyHistory": "My history",
+  "rideBroadcastVisibleOnlyForYouNoContacts": "Request is visible only to you: no other Nabour users were found in your contacts with phone matching their profile.",
+  "rideBroadcastVisibleForYouAndContacts": "Request is visible for you and for another {people} from contacts.",
+  "@rideBroadcastVisibleForYouAndContacts": {
+    "placeholders": {
+      "people": { "type": "String" }
+    }
+  },
+  "rideBroadcastEnableLocationForMapRequest": "Enable location to place a map request.",
+  "rideBroadcastRequestRide": "Request ride",
+  "rideBroadcastMapRequest": "Map request",
+  "rideBroadcastBubblesLoadFailed": "Could not load bubbles. Pull down to retry.\n{error}",
+  "@rideBroadcastBubblesLoadFailed": {
+    "placeholders": {
+      "error": { "type": "String" }
+    }
+  },
+  "rideBroadcastNoBubbleInRadius": "No bubble within {km} km radius",
+  "@rideBroadcastNoBubbleInRadius": {
+    "placeholders": {
+      "km": { "type": "int" }
+    }
+  },
+  "rideBroadcastNoActiveBubbleHere": "No active bubble here",
+  "rideBroadcastBubblesOutsideRadiusHint": "There are active bubbles, but they are farther than {km} km from your current location. Check map or refresh GPS (pull down).",
+  "@rideBroadcastBubblesOutsideRadiusHint": {
+    "placeholders": {
+      "km": { "type": "int" }
+    }
+  },
+  "rideBroadcastBubblesVisibilityHint": "Bubbles are visible on map for about one hour from posting, then disappear. Place one from map menu. If you just opened this screen, pull down to sync.",
+  "rideBroadcastNoPostedRequestYet": "No request posted yet",
+  "rideBroadcastNoActiveRequest": "No active request",
+  "rideBroadcastBeFirstHint": "Be the first in your neighborhood to post a ride request.",
+  "rideBroadcastFriendPostedButNotVisibleHint": "If a friend posted but you cannot see it: pull down to refresh, verify you have them in contacts with the same number as in Nabour profile, and contact permission is granted.",
+  "rideBroadcastNoRequestInRadius": "No request within {km} km radius",
+  "@rideBroadcastNoRequestInRadius": {
+    "placeholders": {
+      "km": { "type": "int" }
+    }
+  },
+  "rideBroadcastIncludedButFarHint": "There are requests where you are included, but they are farther from your current location. Move closer or enable location for accurate filters.",
+  "rideBroadcastWaitingFriendHint": "If you are waiting for a nearby friend, also verify contacts and Nabour profile with the same phone number.",
+  "rideBroadcastDeleteMapRequestTitle": "Delete map request?",
+  "rideBroadcastDeleteMapRequestConfirm": "The bubble will disappear for all neighbors; this action cannot be undone.",
+  "rideBroadcastMapBubbleDeleted": "Map bubble deleted.",
+  "rideBroadcastDeleteFailed": "Could not delete: {error}",
+  "@rideBroadcastDeleteFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "rideBroadcastDeleteFromMapTooltip": "Delete from map",
+  "rideBroadcastPlaced": "Posted: {value}",
+  "@rideBroadcastPlaced": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "rideBroadcastExpiresMapBubble": "Expires: {value} (~1 h after posting)",
+  "@rideBroadcastExpiresMapBubble": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "rideBroadcastDistanceFromYou": "About {km} km from you",
+  "@rideBroadcastDistanceFromYou": {
+    "placeholders": {
+      "km": {
+        "type": "String"
+      }
+    }
+  },
+  "rideBroadcastCancelRequestTitle": "Cancel request",
+  "rideBroadcastCancelRequestConfirm": "Are you sure you want to cancel this request?",
+  "rideBroadcastNo": "No",
+  "rideBroadcastYesCancel": "Yes, cancel",
+  "rideBroadcastPersonalCar": "Personal car",
+  "rideBroadcastOfferSendFailed": "Could not send offer: {error}",
+  "@rideBroadcastOfferSendFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "rideBroadcastReplySendFailed": "Could not send reply: {error}",
+  "@rideBroadcastReplySendFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "rideBroadcastDriverFallback": "Driver",
+  "rideBroadcastConfirmRideTitle": "Confirm ride",
+  "rideBroadcastRideCompletedQuestion": "Was the ride completed?",
+  "rideBroadcastNotCompleted": "Not completed",
+  "rideBroadcastCompletedYes": "Yes, completed",
+  "rideBroadcastReasonDriverNoShow": "Driver did not show up",
+  "rideBroadcastReasonPassengerCancelled": "Passenger canceled",
+  "rideBroadcastReasonAnotherCar": "Another car",
+  "rideBroadcastReasonOther": "Other reason",
+  "rideBroadcastReasonTitle": "Reason",
+  "rideBroadcastExpiresIn": "Expires in {value}",
+  "@rideBroadcastExpiresIn": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "rideBroadcastMyRequest": "My request",
+  "rideBroadcastAvailableDrivers": "Available drivers",
+  "rideBroadcastReplies": "Replies",
+  "rideBroadcastReplyHint": "You can send multiple messages - tap send for each",
+  "rideBroadcastOffersOne": "{count} offer",
+  "@rideBroadcastOffersOne": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "rideBroadcastOffersMany": "{count} offers",
+  "@rideBroadcastOffersMany": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "rideBroadcastOfferSent": "Offer sent",
+  "rideBroadcastIOffer": "I can offer",
+  "rideBroadcastStatusDone": "✅ Completed",
+  "rideBroadcastStatusNotDone": "❌ Not completed",
+  "rideBroadcastStatusAccepted": "🤝 Accepted",
+  "rideBroadcastStatusCancelled": "🚫 Cancelled",
+  "rideBroadcastStatusActive": "🕐 Active",
+  "rideBroadcastStatusExpired": "⏱ Expired",
+  "rideBroadcastDriverWithName": "Driver: {name}",
+  "@rideBroadcastDriverWithName": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "rideBroadcastReasonWithValue": "Reason: {value}",
+  "@rideBroadcastReasonWithValue": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "rideBroadcastTooManyActiveRequests": "You already have {max} active requests. Close one or wait for expiration (30 min) before posting another.",
+  "@rideBroadcastTooManyActiveRequests": {
+    "placeholders": {
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "rideBroadcastErrorWithMessage": "Error: {error}",
+  "@rideBroadcastErrorWithMessage": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "rideBroadcastAskRideTitle": "Request a ride",
+  "rideBroadcastPostVisibilityHint": "Your request will be visible to people in your contacts for 30 minutes.",
+  "rideBroadcastQuickSelectOrWrite": "Quick select or write",
+  "rideBroadcastYourMessageRequired": "Your message *",
+  "rideBroadcastMessageHint": "Where do you want to go? Any useful details...",
+  "rideBroadcastDestinationOptional": "Destination (optional)",
+  "rideBroadcastDestinationHint": "e.g. market, station, airport...",
+  "rideBroadcastPostRequest": "Post request",
+  "rideBroadcastExpiresAfterThirtyMinutes": "Request expires automatically after 30 minutes."
+  ,
+  "searchDriverFallback": "Driver",
+  "searchDriverSearchingNearby": "Searching for nearby drivers...",
+  "searchDriverFoundWaitConfirm": "Driver found! Waiting for your confirmation.",
+  "searchDriverRideCancelled": "The ride was cancelled.",
+  "searchDriverNoDriverAvailable": "Sorry, no driver was available.",
+  "searchDriverUnknownRideStatus": "Unknown ride status: {status}",
+  "@searchDriverUnknownRideStatus": {
+    "placeholders": {
+      "status": {
+        "type": "String"
+      }
+    }
+  },
+  "searchDriverConfirmError": "Error confirming driver: {error}",
+  "@searchDriverConfirmError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "searchDriverDeclinedResuming": "You declined the driver. Resuming search...",
+  "searchDriverDeclineError": "Error declining driver: {error}",
+  "@searchDriverDeclineError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "searchDriverCancelError": "Error cancelling: {error}",
+  "@searchDriverCancelError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "searchDriverSearchingTitle": "Searching drivers",
+  "searchDriverPremiumHintTitle": "Premium Tip",
+  "searchDriverPremiumHintBody": "Stay on this screen for a faster pickup.",
+  "searchDriverFoundTitle": "Driver found",
+  "searchDriverArrivesIn": "Arrives in",
+  "searchDriverDistanceLabel": "Distance",
+  "searchDriverNabourDriverFallback": "Nabour Driver",
+  "searchDriverStandardCategory": "Standard Category",
+  "rideRequestStatusSearching": "Searching drivers",
+  "rideRequestStatusPending": "Pending",
+  "rideRequestStatusDriverFound": "Driver found",
+  "rideRequestStatusAccepted": "Accepted",
+  "rideRequestStatusDriverArrived": "Driver arrived",
+  "rideRequestStatusInProgress": "In progress",
+  "rideRequestStatusDriverRejected": "Driver rejected",
+  "rideRequestStatusDriverDeclined": "Driver declined",
+  "rideRequestTimeoutInternet": "Waiting time expired. Please check your internet connection.",
+  "rideRequestRouteCalcError": "Route calculation error: {error}",
+  "@rideRequestRouteCalcError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "rideRequestActiveRideDetected": "Active ride detected",
+  "rideRequestStatusLabel": "Ride status",
+  "rideRequestIdLabel": "Ride ID",
+  "rideRequestCancelPreviousRide": "Cancel previous ride",
+  "rideRequestCancelPreviousRideError": "Error cancelling previous ride: {error}",
+  "@rideRequestCancelPreviousRideError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "rideRequestCreateRideError": "Error creating ride: {error}",
+  "@rideRequestCreateRideError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "rideRequestWhereTo": "Where to?",
+  "rideRequestChooseRide": "Choose a ride",
+  "rideRequestOrChooseCategory": "or choose a category",
+  "rideRequestSearchInProgress": "Searching...",
+  "rideRequestConfirmAndRequest": "Confirm & Request Ride",
+  "rideRequestAnyCategoryAvailable": "Any available category",
+  "rideRequestFastestDriverInArea": "Fastest available driver in your area",
+  "rideRequestAnyCategorySubtitle": "Fastest available driver.",
+  "rideRequestFamilySubtitle": "Extra space for family and luggage.",
+  "rideRequestEnergySubtitle": "Travel eco with an electric car.",
+  "rideRequestUtilitySubtitle": "Van or utility (up to 3.5t). Ideal for moving.",
+  "rideRequestUserNotAuthenticated": "Error: User is not authenticated."
+  ,
+  "mapArrivalInstruction": "You arrived at destination!",
+  "mapArrivedTitle": "You arrived!",
+  "mapFinalDestinationTitle": "Final destination",
+  "mapOpenNavigationToDestinationHint": "Open navigation app to destination. Then return to map.",
+  "mapPassengerStatusDriverFound": "Driver found - waiting for your confirmation",
+  "mapPassengerStatusDriverOnWay": "Driver is on the way to you",
+  "mapPassengerStatusDriverAtPickup": "Driver at pickup - open navigation to destination",
+  "mapPassengerStatusInProgress": "Ride in progress",
+  "mapPassengerStatusGeneric": "Ride: {status}",
+  "@mapPassengerStatusGeneric": {
+    "placeholders": {
+      "status": {
+        "type": "String"
+      }
+    }
+  },
+  "mapNavigationToPickupTitle": "Navigation to pickup",
+  "mapExternalNavigationNoRouteHint": "Navigation app (no in-app route in Nabour).",
+  "mapOpenSameDestinationAsDriver": "Open the same destination as the driver in your navigation app.",
+  "mapLongPressToSetLandmark": "Long press on map to set landmark.",
+  "mapCloseCancelPlacement": "Close (cancel placement)",
+  "mapCommunityMysteryBoxTitle": "Community Mystery Box",
+  "mapCommunityMysteryBoxDescription": "You place a box at current location. Cost: {tokens} tokens. First user opening it on site receives the same tokens - you will be notified when this happens.",
+  "@mapCommunityMysteryBoxDescription": {
+    "placeholders": {
+      "tokens": {
+        "type": "int"
+      }
+    }
+  },
+  "mapShortMessageOptional": "Short message (optional)",
+  "mapShortMessageHint": "e.g. Top bonus - have fun!",
+  "mapPhoneNumberUnavailable": "Phone number unavailable"
+  ,
+  "neighborFallback": "Neighbor",
+  "mapReactionSent": "Reaction sent: {reaction}",
+  "@mapReactionSent": {
+    "placeholders": {
+      "reaction": {
+        "type": "String"
+      }
+    }
+  },
+  "mapHonkedNeighbor": "You honked at {name}!",
+  "@mapHonkedNeighbor": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "mapEtaMessageToNeighbor": "📍 I am heading your way! Estimated ETA: {minutes} min.",
+  "@mapEtaMessageToNeighbor": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "mapEtaSentTo": "ETA sent to {name}",
+  "@mapEtaSentTo": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "mapNeighborhoodBubbleContext": "The bubble appears near {name} on the map. Visible to neighbors for ~1 hour.",
+  "@mapNeighborhoodBubbleContext": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "mapEmojiPlacedNear": "Emoji placed near {name} on the map",
+  "@mapEmojiPlacedNear": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "mapCannotPlaceEmoji": "Could not place emoji on the map",
+  "mapPersonNotVisibleSendFromList": "This person is not visible on the map now. You can send a friend request from the list (+).",
+  "mapContactsVisibilityHint": "On the map you only see accepted friends or phone contacts who have a Nabour account. Add numbers to contacts or accept a request from Suggestions.",
+  "mapSyncingContacts": "Syncing contacts...",
+  "mapSyncComplete": "Sync complete: {count} names found.",
+  "@mapSyncComplete": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "mapEnableDriverProfileHint": "Enable driver profile and add your car to use driver mode.",
+  "mapIntermediateStopAdded": "{name} added as an intermediate stop",
+  "@mapIntermediateStopAdded": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "mapStopRemoved": "{name} removed from stops",
+  "@mapStopRemoved": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "mapNoPoiFoundInArea": "No {category} found in the area",
+  "@mapNoPoiFoundInArea": {
+    "placeholders": {
+      "category": {
+        "type": "String"
+      }
+    }
+  },
+  "mapHonkReceived": "📣 {name} honked at you!",
+  "@mapHonkReceived": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "mapCalculatingRoute": "Calculating route...",
+  "mapCannotGetLocationEnableGps": "Could not get location. Enable GPS.",
+  "mapRouteUnavailableCheckConnection": "Route unavailable. Check connection.",
+  "mapContinueOnRoute": "Continue on route.",
+  "mapAneighbor": "A neighbor",
+  "mapSosNearbyTitle": "🆘 NEARBY SOS: {name}",
+  "@mapSosNearbyTitle": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "mapSosNearbyBody": "Active emergency nearby! Check radar on map.",
+  "mapSosTtsAlert": "Attention! S.O.S. alert nearby from {name}. Proximity radar is now active.",
+  "@mapSosTtsAlert": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "mapCriticalZone": "CRITICAL ZONE",
+  "mapSosActiveTitle": "🆘 S.O.S. ACTIVE",
+  "mapNoContactsInRadarCircle": "None of your contacts with location in this area are inside the scan circle right now.",
+  "mapStopNavigationFirst": "Stop navigation first from the top banner.",
+  "mapWaitingGpsTryAgain": "Waiting for GPS position. Try again in a few seconds.",
+  "mapGpsLocationUnavailableYet": "GPS location is not available yet",
+  "mapSetPickupError": "Error setting pickup: {error}",
+  "@mapSetPickupError": {
+    "placeholders": {
+      "error": { "type": "String" }
+    }
+  },
+  "mapSetDestinationError": "Error setting destination: {error}",
+  "@mapSetDestinationError": {
+    "placeholders": {
+      "error": { "type": "String" }
+    }
+  },
+  "mapMaxIntermediateStops": "Maximum {count} intermediate stops allowed",
+  "@mapMaxIntermediateStops": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "mapStopAlreadyAdded": "This stop is already added",
+  "mapAddStopError": "Error adding stop: {error}",
+  "@mapAddStopError": {
+    "placeholders": {
+      "error": { "type": "String" }
+    }
+  },
+  "mapRouteCalculationError": "Route calculation error: {error}",
+  "@mapRouteCalculationError": {
+    "placeholders": {
+      "error": { "type": "String" }
+    }
+  },
+  "mapRouteSetupError": "Route setup error: {error}",
+  "@mapRouteSetupError": {
+    "placeholders": {
+      "error": { "type": "String" }
+    }
+  },
+  "mapCouldNotCalculateRoute": "Could not calculate route",
+  "mapFlashlightUnavailable": "Flashlight is not available on this device",
+  "mapFlashlightActivationError": "Error activating flashlight",
+  "mapSpotAnnouncedAvailable": "Spot has been announced as available.",
+  "mapCouldNotAnnounceTryAgain": "Could not announce. Please try again.",
+  "mapSelectionCancelled": "Map selection was canceled."
+  ,
+  "mapNeighborNearbyTitle": "{avatar} {name} is nearby!",
+  "@mapNeighborNearbyTitle": {
+    "placeholders": {
+      "avatar": { "type": "String" },
+      "name": { "type": "String" }
+    }
+  },
+  "mapNeighborNearbyBody": "At {meters} m - social map 📍",
+  "@mapNeighborNearbyBody": {
+    "placeholders": {
+      "meters": { "type": "int" }
+    }
+  },
+  "mapPickupIndex": "Pickup {index}",
+  "@mapPickupIndex": {
+    "placeholders": {
+      "index": { "type": "int" }
+    }
+  },
+  "mapPickupPointSelected": "Pickup point selected",
+  "helpChatGuideTitle": "Neighborhood Chat usage guide",
+  "helpChatGuideIntro": "The neighborhood chat is designed to instantly connect you with neighbors in your vicinity.",
+  "helpChatWhoSeesTitle": "Who sees the messages?",
+  "helpChatWhoSeesBody": "Sent messages are visible to all users who are in the same geographic area as you at the time of use.",
+  "helpChatCoverageTitle": "Radius and Coverage Area",
+  "helpChatCoverageBody": "The system divides the city into hexagons with a side of approximately 3.2 km (an area of about 36 km²). It's a vast area, ideal to cover an entire neighborhood or a sector.",
+  "helpChatPersistenceTitle": "Message persistence",
+  "helpChatPersistenceBody": "To keep conversations fresh and relevant, messages disappear automatically after 30 minutes. There is no permanent history, the chat being intended for immediate interactions.",
+  "helpChatPrivacyTitle": "Privacy and Safety",
+  "helpChatPrivacyBody": "Chat access is validated based on your current GPS location. If you move to another part of the city, the app will automatically connect you to the specific chat for that area.",
+  "helpChatTipOMW": "Tip: Use the OMW button to quickly announce to neighbors that you are on your way to them or available in the area.",
+  "helpLassoTitle": "Lasso Tool (Magic Wand)",
+  "helpLassoBody": "The Lasso tool allows you to select multiple neighbors on the map by drawing a circle around them.",
+  "helpLassoHowToTitle": "How to use it?",
+  "helpLassoHowToBody": "1. Tap the \"Magic Wand\" icon in the top right of the map.\n2. Draw a circle around the neighbors you want to contact.\n3. A menu will appear showing the captured group and options to send a broadcast request.",
+  "helpLassoTip": "Tip: Use Lasso to quickly find a neighbor team for a common activity or a shared ride request!",
+  "helpRadarTitle": "Scan button (neighbor radar)",
+  "helpRadarBody": "The Scan button runs the radar overlay for about 5 seconds, then closes automatically. During this time you cannot resize the circle.",
+  "helpRadarWhatTitle": "What does it scan?",
+  "helpRadarWhatBody": "It does not scan Bluetooth, Wi‑Fi, or new devices. It lists neighbors who are already shown on the map and whose position falls inside your radar circle (distance is computed from the circle center and radius).",
+  "helpRadarResultsTitle": "Where do results appear?",
+  "helpRadarResultsBody": "If at least one neighbor is in the circle, a bottom sheet opens with the list. If there is no one, you will see a short message that no neighbors were found in the radar.",
+  "helpRadarNextTitle": "What can you do next?",
+  "helpRadarNextBody": "From the sheet you can use the group action (e.g. broadcast request) when that feature is fully enabled; until then the app may show a notice that it is being rolled out.",
+  "helpRadarTip": "Tip: Move or resize the circle before tapping Scan so it covers the area you care about—only neighbors already visible on the map can appear in the results.",
+  "helpMapDropsTitle": "Interactive Map Drops",
+  "helpMapDropsBody": "Map Drops are special location markers shared in the neighborhood chat that let you travel through the map instantly.",
+  "helpMapDropsFlyTitle": "The \"FlyTo\" Animation",
+  "helpMapDropsFlyBody": "When a neighbor shares a location, tap on the interactive card in the chat. The app will close the chat and perform a cinematic flight directly to that exact spot on the map.",
+  "helpMapDropsPinsTitle": "Transient Pins",
+  "helpMapDropsPinsBody": "After the flight, you will see a pulsing pin on the map. This helps you identify exactly where the \"drop\" was made, providing precise visual context for the neighbor's message.",
+  "helpBoxesPurposeTitle": "Purpose",
+  "helpBoxesPurposeBody": "On the map you can use two related features tied to Nabour tokens: (1) boxes at business offers — the merchant can set an optional limit; you open them near the store and get tokens plus a discount code for the shop. (2) Community boxes — any user can place a box at their current location; someone else opens it on the spot and gets tokens; the placer is notified when it is opened.",
+  "helpBoxesTokensTitle": "Tokens — how they move",
+  "helpBoxesTokensBody": "• Placing a community box: 50 tokens are reserved via the server (stake) and recorded in your wallet history.\n• Opening a community box (as another user, within about 100 m): you receive 50 tokens; the box is marked as opened.\n• Opening a business-offer box: you receive 50 tokens and a discount code, subject to daily-per-store rules and any cap the merchant set.\n• Amounts may follow app settings; if server policy blocks crediting until payments are enabled, opening may fail with that message.",
+  "helpBoxesCommunityStepsTitle": "Community boxes — user flow",
+  "helpBoxesCommunityStepsBody": "1) From the map, place a box at your current position (you need enough tokens). Up to 20 active boxes per account.\n2) Nearby users see community boxes on the map; your own boxes are not shown to you as boxes to open.\n3) Tap a box, get close (~100 m), confirm — the server checks distance and identity.\n4) The placer receives an in-app notification entry and a push when someone opens their box.\n5) Under Menu → “Box activity” you can see summaries, your placed boxes, your opens, and opens of your boxes.",
+  "helpBoxesBusinessStepsTitle": "Business-offer boxes — user & merchant flow",
+  "helpBoxesBusinessStepsBody": "The merchant publishes an offer and may attach a mystery-box cap (extra token cost when creating or increasing the cap). You open the box from the map near the location; you get tokens and a redemption code. At the store, the merchant opens the business panel and uses “Validate box code” so the code is marked used. Codes are stored securely; only cloud functions create or validate them.",
+  "helpBoxesActivityScreenTitle": "Activity screen (menu)",
+  "helpBoxesActivityScreenBody": "Tabs: Summary (estimated tokens from opens and stake from placements), Placed community boxes, Your opens (community + business log), Notifications when others open your community boxes. Redemption codes are shown masked for safety.",
+  "helpBoxesPrivacyRulesTitle": "Privacy & rules",
+  "helpBoxesPrivacyRulesBody": "Sensitive collections (redemption codes, box writes) are handled on the server. Firestore rules prevent clients from forging opens or codes; reads follow authentication rules.",
+  "helpBoxesWhoTitle": "Who does what",
+  "helpBoxesWhoBody": "• Any user: browse the map, place community boxes if they have tokens, open community or business boxes when conditions are met, review “Box activity”.\n• Placer: gets notified when a community box is opened.\n• Merchant: configures offers and caps, validates discount codes after a customer opens a box.",
+  "helpBoxesNotesTitle": "Notes",
+  "helpBoxesNotesBody": "Listing many boxes around you is optimized for moderate scale; very large usage may need stronger geo indexing later. Automatic refund or expiry of community stakes if nobody opens a box is not described here and may be added later.",
+  "helpBoxesTip": "Tip: If opening fails, check GPS accuracy, internet, wallet balance, and whether credits are enabled on the server for your environment.",
+  "helpTransfersP2PTitle": "Token transfers between users",
+  "helpTransfersP2PAboutTitle": "What it is",
+  "helpTransfersP2PAboutBody": "From the side menu, open “Token transfer” to move Nabour tokens to another account or to ask someone to send you tokens. Balances and ledger entries are updated on the server; you need the other person’s user ID (Firebase UID).",
+  "helpTransfersP2PWalletTitle": "Transferable wallet",
+  "helpTransfersP2PWalletBody": "This screen shows the transferable token balance (not the same view as the monthly usage bar at the top of the menu). If the wallet is frozen or missing, transfers and requests will be blocked until the account is eligible.",
+  "helpTransfersP2PDirectTitle": "Direct transfer",
+  "helpTransfersP2PDirectBody": "You send tokens immediately to the recipient’s user ID. You cannot transfer to yourself. Amounts must be a whole number of tokens within the allowed range. An optional note can be attached.",
+  "helpTransfersP2PRequestTitle": "Payment request",
+  "helpTransfersP2PRequestBody": "You ask another user (the payer) to send you tokens. They receive a pending request and can accept or decline. If they accept, tokens move from their transferable wallet to yours. Requests expire after a limited time if not answered.",
+  "helpTransfersP2PRequestsTabTitle": "Requests tab",
+  "helpTransfersP2PRequestsTabBody": "• As payer: you can accept or decline incoming requests; you may add an optional reason when declining.\n• As requester: you can cancel a request you created while it is still pending.",
+  "helpTransfersP2PHistoryTabTitle": "History tab",
+  "helpTransfersP2PHistoryTabBody": "Shows recent direct transfers and resolved payment requests. Pull down to refresh.",
+  "helpTransfersP2PTip": "Only share your user ID with people you trust. Double-check the ID before confirming a transfer or request.",
+  "helpDriverActivationStepCheckConditions": "1. Check conditions",
+  "helpDriverActivationStepCheckConditionsBody": "You must have a valid driver's license, at least 2 years of experience, and be at least 21 years old.",
+  "helpDriverActivationStepPrepareDocs": "2. Prepare documents",
+  "helpDriverActivationStepPrepareDocsBody": "You need: driver's license, ID card, vehicle registration certificate, valid ITP, and RCA insurance.",
+  "helpDriverActivationStepCompleteApp": "3. Complete application",
+  "helpDriverActivationStepCompleteAppBody": "Access the 'Career' section in the main menu and complete the online form with your details.",
+  "helpDriverActivationStepSubmitDocs": "4. Submit documents",
+  "helpDriverActivationStepSubmitDocsBody": "Upload clear photos of all required documents through the online platform.",
+  "helpDriverActivationStepVerification": "5. Application verification",
+  "helpDriverActivationStepVerificationBody": "Our team will verify the documents within 48 business hours.",
+  "helpDriverActivationStepReceiveCode": "6. Receive activation code",
+  "helpDriverActivationStepReceiveCodeBody": "After approval, you will receive a unique code via email/SMS to activate the driver account.",
+  "helpDriverActivationStepActivateAccount": "7. Activate account",
+  "helpDriverActivationStepActivateAccountBody": "Enter the code in the app and start earning money by driving!",
+  "helpDriverActivationTipHeader": "💡 Useful tip:",
+  "helpDriverActivationTipBody": "Ensure all documents are valid and photos are clear for fast processing.",
+  "applyNow": "Apply Now",
+  "helpSearchHint": "Search help articles...",
+  "helpCategoryRideIssues": "Ride Issues",
+  "helpCategorySafetySOS": "Safety & SOS",
+  "helpCategoryNabourFeatures": "Nabour Features",
+  "helpCategoryPaymentsWallet": "Payments & Wallet",
+  "helpCategorySettingsAccount": "Settings & Account",
+  "helpStillNeedHelp": "Still need help?",
+  "helpContactSupport": "Contact our support team",
+  "helpContactButton": "Contact",
+  "helpRideSharingTitle": "Ride Sharing",
+  "chatGalleryPhoto": "Gallery Photo",
+  "chatGif": "GIF",
+  "chatMessageSendFailed": "Message could not be sent.",
+  "driverHoursLimit": "Driving hours limit",
+  "driverHoursWarningBody": "You have driven {hours} hours today.\nYou have {remaining} hours left.\n\nConsider taking a break for your safety and the passengers'.",
+  "@driverHoursWarningBody": {
+    "placeholders": {
+      "hours": { "type": "String" },
+      "remaining": { "type": "String" }
+    }
+  },
+  "goOffline": "Go Offline",
+  "driverHoursReachedLimitTitle": "10 hours limit reached",
+  "driverHoursReachedLimitBody": "You have driven 10 consecutive hours.\nFor safety reasons, you have been automatically disconnected.\n\nYou can reconnect after a rest period.",
+  "ridesCompletedToday": "{count} rides completed today.",
+  "@ridesCompletedToday": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "viewAllRides": "View all {count} rides",
+  "@viewAllRides": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "driverSessionBannerCritical": "10 hours limit reached. Please go offline.",
+  "driverSessionBannerWarning": "Session: {hours}h • Remaining {remaining}h",
+  "@driverSessionBannerWarning": {
+    "placeholders": {
+      "hours": { "type": "String" },
+      "remaining": { "type": "String" }
+    }
+  },
+  "driverSessionBannerNormal": "Session: {hours}h",
+  "@driverSessionBannerNormal": {
+    "placeholders": {
+      "hours": { "type": "String" }
+    }
+  },
+  "helpToday": "Help Today",
+  "tokens": "Tokens",
+  "waitingForPassengerConfirmation": "Waiting for passenger confirmation",
+  "confirmedGoToPassenger": "Confirmed. Go to passenger",
+  "rideSummary_thankYouGoodbye": "Thank you and goodbye!",
+  "rideSummary_tipRegistered": "A tip of {amount} {currency} has been recorded.",
+  "@rideSummary_tipRegistered": {
+    "placeholders": {
+      "amount": { "type": "String" },
+      "currency": { "type": "String" }
+    }
+  },
+  "rideSummary_redirectToMapInSeconds": "Redirecting to map in {seconds} seconds...",
+  "@rideSummary_redirectToMapInSeconds": {
+    "placeholders": {
+      "seconds": { "type": "String" }
+    }
+  },
+  "rideSummary_submitRatingButton": "Submit Rating",
+  "rideSummary_skipRatingButton": "Skip Rating",
+  "rideSummary_ratingSentSuccess": "Rating sent successfully!",
+  "rideSummary_backToMap": "Back to Map",
+  "rideSummary_rideDetails": "Ride Details",
+  "rideSummary_distance": "Distance",
+  "rideSummary_duration": "Duration",
+  "rideSummary_rideCost": "Ride Cost",
+  "rideSummary_freeRideSupport": "Free - Neighbors Support",
+  "rideSummary_driverTipOptional": "💰 Driver Tip (optional)",
+  "rideSummary_thankDriverTipText": "Thank the driver for a pleasant trip!",
+  "rideSummary_otherAmountLabel": "Other amount ({currency})",
+  "@rideSummary_otherAmountLabel": {
+    "placeholders": {
+      "currency": { "type": "String" }
+    }
+  },
+  "rideSummary_noTipButton": "No tip",
+  "rideSummary_tipSelected": "Tip selected: {amount} {currency}",
+  "@rideSummary_tipSelected": {
+    "placeholders": {
+      "amount": { "type": "String" },
+      "currency": { "type": "String" }
+    }
+  },
+  "safety_sosButtonLabel": "112 — SOS",
+  "safety_locationUnavailable": "(location unavailable)",
+  "safety_defaultNabourUser": "Nabour User",
+  "safety_emergencySmsBody": "🆘 EMERGENCY! {name} needs help!\nLocation: {location}\nClick to see on map.",
+  "@safety_emergencySmsBody": {
+    "placeholders": {
+      "name": { "type": "String" },
+      "location": { "type": "String" }
+    }
+  },
+  "safety_emergencyAlertSent": "🆘 Emergency alert sent. Calling 112...",
+  "safety_shareTripBody": "📍 Tracking my Nabour trip!\nCurrent location: {location}",
+  "@safety_shareTripBody": {
+    "placeholders": {
+      "location": { "type": "String" }
+    }
+  },
+  "safety_shareTripNoLocation": "🚗 I'm riding with Nabour. Location unavailable at the moment.",
+  "safety_couldNotCreateTrackingLink": "Could not create tracking link",
+  "safety_deleteContactTitle": "Delete contact",
+  "safety_deleteContactConfirmation": "Delete {name} from trusted contacts?",
+  "@safety_deleteContactConfirmation": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "safety_emergencyButtonTitle": "Emergency Button",
+  "safety_emergencyButtonSubtitle": "Call 112 and send your location\nto all trusted contacts",
+  "safety_shareTripTitle": "Share Trip",
+  "safety_activeRideDetected": "Active ride detected",
+  "safety_sendCurrentLocation": "Send current location",
+  "safety_gettingLocation": "Getting location...",
+  "safety_shareLocationButton": "Share location",
+  "safety_liveLinkActive": "Live link active — re-share",
+  "safety_safeRideSharePath": "Safe Ride Live — share path",
+  "safety_noContactsAdded": "No contacts added",
+  "safety_addContactsDescription": "Add family or friends. They will receive\nyour location in case of emergency.",
+  "rideSummary_totalCost": "Total Cost",
+  "safety_destinationLabelPrefix": "Destination: {destination}",
+  "@safety_destinationLabelPrefix": {
+    "placeholders": {
+      "destination": { "type": "String" }
+    }
+  }
 }
+

@@ -98,11 +98,11 @@ class _SafetyScreenState extends State<SafetyScreen>
           children: [
             const Icon(Icons.emergency, color: Colors.red, size: 28),
             const SizedBox(width: 8),
-            Text(l10n.emergencyAssistanceButton,
+            Text(l10n.safety_emergencyAssistanceButton,
                 style: const TextStyle(color: Colors.red)),
           ],
         ),
-        content: Text(l10n.emergencyAssistanceButtonDesc),
+        content: Text(l10n.safety_emergencyAssistanceButtonDesc),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
@@ -111,8 +111,8 @@ class _SafetyScreenState extends State<SafetyScreen>
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('112 — SOS',
-                style: TextStyle(color: Colors.white)),
+            child: Text(l10n.safety_sosButtonLabel,
+                style: const TextStyle(color: Colors.white)),
           ),
         ],
       ),
@@ -140,10 +140,10 @@ class _SafetyScreenState extends State<SafetyScreen>
 
     final locationText = position != null
         ? 'https://maps.google.com/?q=${position.latitude},${position.longitude}'
-        : '(locație indisponibilă)';
+        : l10n.safety_locationUnavailable;
 
     final uid = FirebaseAuth.instance.currentUser?.uid;
-    final userName = FirebaseAuth.instance.currentUser?.displayName ?? 'Utilizator Nabour';
+    final userName = FirebaseAuth.instance.currentUser?.displayName ?? l10n.safety_defaultNabourUser;
 
     // 2. Log emergency to Firestore
     if (uid != null) {
@@ -163,9 +163,7 @@ class _SafetyScreenState extends State<SafetyScreen>
     // 3. Send SMS to all trusted contacts
     if (_contacts.isNotEmpty) {
       final smsBody = Uri.encodeComponent(
-        '🆘 URGENȚĂ! $userName are nevoie de ajutor!\n'
-        'Locație: $locationText\n'
-        'Apăsați linkul pentru a vedea pe hartă.',
+        l10n.safety_emergencySmsBody(userName, locationText),
       );
       for (final contact in _contacts) {
         final smsUri = Uri.parse('sms:${contact.phoneNumber}?body=$smsBody');
@@ -188,9 +186,9 @@ class _SafetyScreenState extends State<SafetyScreen>
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         backgroundColor: Colors.red.shade700,
-        content: const Text(
-          '🆘 Alertă de urgență trimisă. Se apelează 112...',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        content: Text(
+          l10n.safety_emergencyAlertSent,
+          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
       ),
     );
@@ -199,6 +197,7 @@ class _SafetyScreenState extends State<SafetyScreen>
   // ── TRIP SHARING ────────────────────────────────────────────────────────────
 
   Future<void> _shareTrip() async {
+    final l10n = AppLocalizations.of(context)!;
     setState(() => _isSharingTrip = true);
 
     Position? position;
@@ -222,14 +221,12 @@ class _SafetyScreenState extends State<SafetyScreen>
     if (position != null) {
       final mapsLink =
           'https://maps.google.com/?q=${position.latitude},${position.longitude}';
-      shareText = '📍 Urmăresc călătoria mea cu Nabour!\n'
-          'Locația mea curentă: $mapsLink';
+      shareText = l10n.safety_shareTripBody(mapsLink);
       if (_activeRideDestination != null) {
-        shareText += '\nDestinație: $_activeRideDestination';
+        shareText += '\n${l10n.safety_destinationLabelPrefix(_activeRideDestination!)}';
       }
     } else {
-      shareText = '🚗 Călătoresc cu Nabour. '
-          'Locația nu este disponibilă momentan.';
+      shareText = l10n.safety_shareTripNoLocation;
     }
 
     await SharePlus.instance.share(ShareParams(text: shareText));
@@ -239,6 +236,7 @@ class _SafetyScreenState extends State<SafetyScreen>
   }
 
   Future<void> _startSafeRideTracking() async {
+    final l10n = AppLocalizations.of(context)!;
     if (_activeRideId == null) return;
     setState(() => _isCreatingSafeRide = true);
     try {
@@ -254,7 +252,7 @@ class _SafetyScreenState extends State<SafetyScreen>
     } catch (_) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Nu s-a putut crea link-ul de urmărire')),
+        SnackBar(content: Text(l10n.safety_couldNotCreateTrackingLink)),
       );
     } finally {
       if (mounted) setState(() => _isCreatingSafeRide = false);
@@ -329,8 +327,8 @@ class _SafetyScreenState extends State<SafetyScreen>
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (_) => AlertDialog(
-        title: const Text('Șterge contact'),
-        content: Text('Ștergi "${contact.name}" din contactele de încredere?'),
+        title: Text(l10n.safety_deleteContactTitle),
+        content: Text(l10n.safety_deleteContactConfirmation(contact.name)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
@@ -436,6 +434,7 @@ class _SafetyScreenState extends State<SafetyScreen>
   }
 
   Widget _buildSOSCard(bool isDark) {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       decoration: BoxDecoration(
         gradient: LinearGradient(
@@ -457,9 +456,9 @@ class _SafetyScreenState extends State<SafetyScreen>
         children: [
           const Icon(Icons.emergency, color: Colors.white, size: 36),
           const SizedBox(height: 8),
-          const Text(
-            'Buton de urgență',
-            style: TextStyle(
+          Text(
+            l10n.safety_emergencyButtonTitle,
+            style: const TextStyle(
               color: Colors.white,
               fontSize: 18,
               fontWeight: FontWeight.bold,
@@ -467,7 +466,7 @@ class _SafetyScreenState extends State<SafetyScreen>
           ),
           const SizedBox(height: 6),
           Text(
-            'Apelează 112 și trimite locația ta\ntuturor contactelor de încredere',
+            l10n.safety_emergencyButtonSubtitle,
             textAlign: TextAlign.center,
             style: TextStyle(
               color: Colors.white.withValues(alpha: 0.85),
@@ -528,6 +527,7 @@ class _SafetyScreenState extends State<SafetyScreen>
   }
 
   Widget _buildShareTripCard(bool isDark) {
+    final l10n = AppLocalizations.of(context)!;
     return Card(
       elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -552,16 +552,16 @@ class _SafetyScreenState extends State<SafetyScreen>
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
-                        'Partajează călătoria',
-                        style: TextStyle(
+                      Text(
+                        l10n.safety_shareTripTitle,
+                        style: const TextStyle(
                             fontSize: 16, fontWeight: FontWeight.bold),
                       ),
                       const SizedBox(height: 2),
                       Text(
                         _activeRideId != null
-                            ? 'Cursă activă detectată'
-                            : 'Trimite locația ta curentă',
+                            ? l10n.safety_activeRideDetected
+                            : l10n.safety_sendCurrentLocation,
                         style: TextStyle(
                             color: Colors.grey.shade600, fontSize: 13),
                       ),
@@ -585,7 +585,7 @@ class _SafetyScreenState extends State<SafetyScreen>
                     const SizedBox(width: 6),
                     Expanded(
                       child: Text(
-                        'Destinație: $_activeRideDestination',
+                        l10n.safety_destinationLabelPrefix(_activeRideDestination!),
                         style: TextStyle(
                             color: Colors.blue.shade800, fontSize: 13),
                         overflow: TextOverflow.ellipsis,
@@ -608,8 +608,8 @@ class _SafetyScreenState extends State<SafetyScreen>
                       )
                     : const Icon(Icons.share),
                 label: Text(_isSharingTrip
-                    ? 'Se obține locația...'
-                    : 'Partajează locația'),
+                    ? l10n.safety_gettingLocation
+                    : l10n.safety_shareLocationButton),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.blue.shade600,
                   foregroundColor: Colors.white,
@@ -634,8 +634,8 @@ class _SafetyScreenState extends State<SafetyScreen>
                         )
                       : const Icon(Icons.gps_fixed),
                   label: Text(_safeRideTrackingUrl != null
-                      ? 'Link live activ — reîmpartășește'
-                      : 'Safe Ride Live — partajează traseu'),
+                      ? l10n.safety_liveLinkActive
+                      : l10n.safety_safeRideSharePath),
                   style: OutlinedButton.styleFrom(
                     foregroundColor: Colors.green.shade700,
                     side: BorderSide(color: Colors.green.shade400),
@@ -707,7 +707,7 @@ class _SafetyScreenState extends State<SafetyScreen>
                   size: 48, color: Colors.grey.shade400),
               const SizedBox(height: 12),
               Text(
-                'Niciun contact adăugat',
+                l10n.safety_noContactsAdded,
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
@@ -716,7 +716,7 @@ class _SafetyScreenState extends State<SafetyScreen>
               ),
               const SizedBox(height: 6),
               Text(
-                'Adaugă familia sau prietenii. Ei vor primi\nlocația ta în caz de urgență.',
+                l10n.safety_addContactsDescription,
                 textAlign: TextAlign.center,
                 style: TextStyle(color: Colors.grey.shade500, fontSize: 13),
               ),

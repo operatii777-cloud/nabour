@@ -1204,10 +1204,10 @@ class AppLocalizationsRo extends AppLocalizations {
 
   @override
   String get waitingForPassengerConfirmation =>
-      'Aștepți confirmarea pasagerului';
+      'Așteaptă confirmarea pasagerului';
 
   @override
-  String get confirmedGoToPassenger => 'Confirmată - Mergi spre pasager';
+  String get confirmedGoToPassenger => 'Confirmat. Mergi la pasager';
 
   @override
   String get earningsTodayShort => 'Fapte Bune';
@@ -1237,10 +1237,11 @@ class AppLocalizationsRo extends AppLocalizations {
   String get addContact => 'Adaugă contact';
 
   @override
-  String get emergencyAssistanceButton => 'Butonul de Asistență de Urgență';
+  String get safety_emergencyAssistanceButton =>
+      'Butonul de Asistență de Urgență';
 
   @override
-  String get emergencyAssistanceButtonDesc =>
+  String get safety_emergencyAssistanceButtonDesc =>
       'În timpul oricărei curse, aveți la dispoziție butonul 112 în colțul ecranului pentru a contacta rapid serviciile de urgență.';
 
   @override
@@ -2679,13 +2680,14 @@ class AppLocalizationsRo extends AppLocalizations {
       'Eroare la trimiterea evaluării. Încercați din nou.';
 
   @override
-  String get thankYouForRide => 'Vă mulțumim pentru călătorie!';
+  String get rideSummary_thankYouForRide => 'Vă mulțumim pentru călătorie!';
 
   @override
-  String get howWasExperience => 'Cum a fost experiența?';
+  String get rideSummary_howWasExperience => 'Cum a fost experiența?';
 
   @override
-  String get leaveCommentOptional => 'Lasă un comentariu (opțional)';
+  String get rideSummary_leaveCommentOptional =>
+      'Lasă un comentariu (opțional)';
 
   @override
   String get thanksForRating => 'Mulțumim pentru evaluare!';
@@ -3887,6 +3889,28 @@ class AppLocalizationsRo extends AppLocalizations {
   String get drawerMenuSyncContacts => 'Sincronizează contactele';
 
   @override
+  String get drawerShowHomeOnMap =>
+      'Afișează Acasă (favorite) pe hartă\n(doar pentru tine)';
+
+  @override
+  String get drawerOrientationMarkerOnMap =>
+      'Reper orientare pe hartă\n(ține apăsat pe hartă după activare)';
+
+  @override
+  String get drawerHideHomeOnMap =>
+      'Ascunde Acasă de pe hartă\n(doar markerul favorite)';
+
+  @override
+  String get drawerHideOrientationMarker =>
+      'Ascunde reper orientare\n(elimină acul de pe hartă)';
+
+  @override
+  String get drawerActiveContactsOnMap => 'Contacte active pe hartă';
+
+  @override
+  String get drawerIdCopied => 'ID copiat în clipboard.';
+
+  @override
   String get drawerSyncContactsDialogTitle => 'De ce sincronizare?';
 
   @override
@@ -3934,7 +3958,44 @@ class AppLocalizationsRo extends AppLocalizations {
   String get warmupWhyTitle => 'De ce Nabour?';
 
   @override
-  String get warmupCtaOpenMap => 'Deschide harta';
+  String get warmupCtaOpenMap => 'Mergi la hartă';
+
+  @override
+  String get warmupSubtitle => 'Centrul comunității tale';
+
+  @override
+  String warmupExampleRidesCount(String count) {
+    return '$count Curse Active în Apropiere';
+  }
+
+  @override
+  String warmupExampleDealsCount(String count) {
+    return '$count Oferte Noi Astăzi';
+  }
+
+  @override
+  String warmupExampleMessagesCount(String count) {
+    return '$count Mesaje Noi';
+  }
+
+  @override
+  String get warmupExampleRide1 => 'Sarah B. (2 min) → Centru';
+
+  @override
+  String get warmupExampleRide2 => 'Mihai K. (5 min) → Gară';
+
+  @override
+  String get warmupExampleOffer1 => 'The Daily Grind: 20% reducere la cafea';
+
+  @override
+  String get warmupExampleOffer2 =>
+      'Urban Bites: Garnitură gratis la orice fel';
+
+  @override
+  String get warmupExampleChat1 => 'Alex: Cine vrea la o plimbare în parc...?';
+
+  @override
+  String get warmupExampleChat2 => 'Chloe: S-a auzit un zgomot pe Elm St...';
 
   @override
   String get warmupSwipeDownHint => 'Sau trage în jos pentru a închide';
@@ -4404,4 +4465,2049 @@ class AppLocalizationsRo extends AppLocalizations {
 
   @override
   String get businessOffersAllCategories => 'Toate categoriile';
+
+  @override
+  String get mapGhostDurationTitle => 'Cât timp ești vizibil vecinilor?';
+
+  @override
+  String get mapGhostDurationSubtitle =>
+      'Vecinii te vor vedea ca bulă pe hartă.';
+
+  @override
+  String get mapGhostOneHourLabel => '1 oră';
+
+  @override
+  String get mapGhostOneHourSub => 'Util pentru o ieșire scurtă';
+
+  @override
+  String get mapGhostFourHoursLabel => '4 ore';
+
+  @override
+  String get mapGhostFourHoursSub => 'Util pentru o după-amiază';
+
+  @override
+  String get mapGhostUntilTomorrowLabel => 'Până mâine';
+
+  @override
+  String get mapGhostUntilTomorrowSub => 'Se resetează la miezul nopții';
+
+  @override
+  String get mapGhostPermanentLabel => 'Permanent';
+
+  @override
+  String get mapGhostPermanentSub => 'Rămâi vizibil până dezactivezi manual';
+
+  @override
+  String get mapGhostInvisibleLabel => 'Invizibil (mod fantomă)';
+
+  @override
+  String get mapGhostInvisibleSub =>
+      'Nu apari pe hartă; profilul marchează ghostMode în cont (sync între dispozitive).';
+
+  @override
+  String get mapDeleteMomentTitle => 'Ștergi momentul?';
+
+  @override
+  String get mapDeleteMomentContent =>
+      'Postarea va dispărea de pe hartă pentru toți.';
+
+  @override
+  String get mapMomentDeleted => 'Momentul a fost șters.';
+
+  @override
+  String get mapMomentDeleteError => 'Nu s-a putut șterge. Încearcă din nou.';
+
+  @override
+  String get mapDeleteOrCancelPost => 'Șterge / anulează postarea';
+
+  @override
+  String get mapPinNameLabel => 'Denumire';
+
+  @override
+  String get mapPinNameHint => 'ex.: intrarea principală';
+
+  @override
+  String get mapPinNameTitle => 'Denumire reper';
+
+  @override
+  String get mapOrientationPinSaved =>
+      'Reperul de orientare a fost salvat pe hartă.';
+
+  @override
+  String get mapEditHomeAddressTitle => 'Editează adresa Acasă';
+
+  @override
+  String get mapEditHomeAddressSubtitle => 'Schimbi poziția din Adrese salvate';
+
+  @override
+  String get mapHideHomeFromMapTitle => 'Ascunde Acasă de pe hartă';
+
+  @override
+  String get mapMoveOrientationMarkerTitle => 'Mută reperul';
+
+  @override
+  String mapMoveOrientationMarkerWithName(String name) {
+    return '„$name” · apoi ține apăsat pe hartă la noul loc';
+  }
+
+  @override
+  String get mapMoveOrientationMarkerNoName =>
+      'Apoi ține apăsat pe hartă la noul loc';
+
+  @override
+  String get mapLongPressForNewMarker =>
+      'Ține apăsat pe hartă pentru noul reper.';
+
+  @override
+  String get mapRemoveOrientationMarkerTitle => 'Elimină reperul de orientare';
+
+  @override
+  String get mapMarkerRemoved => 'Reperul a fost eliminat.';
+
+  @override
+  String get mapSaveHomeFirst =>
+      'Salvează adresa „Acasă” în favorite (cu poziție pe hartă), apoi încearcă din nou.';
+
+  @override
+  String get mapHomeShownForYou =>
+      'Acasă din favorite este afișată pe hartă (doar pentru tine).';
+
+  @override
+  String get mapHomeNotShown => 'Acasă nu este afișată pe hartă.';
+
+  @override
+  String get mapHomeNoLongerShown => 'Acasă nu mai este afișată pe hartă.';
+
+  @override
+  String get mapNoOrientationMarker => 'Nu ai un reper de orientare pe hartă.';
+
+  @override
+  String get mapOrientationMarkerRemovedFromMap =>
+      'Reperul de orientare a fost eliminat de pe hartă.';
+
+  @override
+  String get mapEmojiRemoved => 'Emoji-ul tău a fost scos de pe hartă';
+
+  @override
+  String get mapEmojiDeleteError =>
+      'Nu am putut șterge emoji-ul. Încearcă din nou.';
+
+  @override
+  String get mapMomentExpired => 'Expirat';
+
+  @override
+  String mapMomentExpiresInMinutes(int minutes) {
+    return '~$minutes min până dispare de pe hartă';
+  }
+
+  @override
+  String get mapMomentExpiresSoon => 'Dispare în curând de pe hartă';
+
+  @override
+  String mapArrivedAtDestination(String destination) {
+    return 'Ai ajuns la destinație: $destination';
+  }
+
+  @override
+  String get mapDestinationUnset => 'Destinație nestabilită';
+
+  @override
+  String mapRideBroadcastWantsToGo(String destination) {
+    return 'Vrea să meargă la: $destination';
+  }
+
+  @override
+  String get mapSeeRequestAndOfferRide => 'VEZI CEREREA ȘI OFERĂ CURSĂ';
+
+  @override
+  String mapAcceptRideError(String error) {
+    return 'Eroare la acceptarea cursei: $error';
+  }
+
+  @override
+  String get mapPickupExternalNavigation => 'Pickup: navigație externă';
+
+  @override
+  String get mapDestinationExternalNavigation =>
+      'Destinație: navigație externă';
+
+  @override
+  String get mapClosePanel => 'Închide panoul';
+
+  @override
+  String get mapWaitingGpsLocation => 'Așteptăm localizarea GPS...';
+
+  @override
+  String mapCreateRideError(String error) {
+    return 'Eroare la crearea cursei: $error';
+  }
+
+  @override
+  String get mapWaitingGpsToPlaceBox =>
+      'Așteptăm poziția GPS pentru a plasa cutia aici.';
+
+  @override
+  String get mapPlace => 'Plasează';
+
+  @override
+  String mapBoxPlaced(int tokens) {
+    return 'Cutie plasată! (-$tokens tokeni)';
+  }
+
+  @override
+  String mapPoiLoadError(String error) {
+    return 'Eroare la încărcarea POI-urilor: $error';
+  }
+
+  @override
+  String get mapNavigateToMarkedPlace => 'Navighează la locul marcat';
+
+  @override
+  String get mapDeleteMarkerAndRestart => 'Șterge marcajul și începe din nou';
+
+  @override
+  String get mapSpotReserved => 'Loc rezervat! Ai 3 minute să ajungi.';
+
+  @override
+  String get mapAddToFavoriteAddresses => 'Adaugă la adrese favorite';
+
+  @override
+  String get mapNavigateWithExternalApps => 'Navighează cu Google Maps / Waze';
+
+  @override
+  String get mapSpotAlreadyReserved =>
+      'Ne pare rău, locul a fost deja rezervat.';
+
+  @override
+  String get chatImageTooLargePrivate =>
+      'Imaginea e încă prea mare după compresie (max ~1,8 MB). Încearcă o poză mai mică.';
+
+  @override
+  String get chatImageTooLargeGeneral => 'Imaginea e prea mare (max ~7 MB).';
+
+  @override
+  String get chatImageUploadFailed => 'Nu s-a putut încărca imaginea.';
+
+  @override
+  String get chatPhotoLabel => 'Fotografie';
+
+  @override
+  String get chatVoiceMessageLabel => 'Mesaj vocal';
+
+  @override
+  String get chatMessageSendFailed => 'Mesajul nu a putut fi trimis.';
+
+  @override
+  String get chatGifLabel => 'GIF';
+
+  @override
+  String get chatPhoneNotAvailable => 'Numărul de telefon nu este disponibil.';
+
+  @override
+  String get chatCallFailed => 'Nu s-a putut iniția apelul.';
+
+  @override
+  String get chatMessagesLoadFailed => 'Nu s-au putut încărca mesajele.';
+
+  @override
+  String get chatTyping => 'scrie...';
+
+  @override
+  String get chatEndToEndEncrypted => 'Mesajele sunt criptate end-to-end.';
+
+  @override
+  String get chatToday => 'Astăzi';
+
+  @override
+  String get chatYesterday => 'Ieri';
+
+  @override
+  String get chatQuickReplyHere => 'Sunt aici 👋';
+
+  @override
+  String get chatQuickReplyIn2Min => 'Vin în 2 min ⏱️';
+
+  @override
+  String get chatQuickReplyIn5Min => 'Vin în 5 min ⏱️';
+
+  @override
+  String get chatQuickReplyArrived => 'Ai ajuns? 📍';
+
+  @override
+  String get chatQuickReplyThanks => 'Mulțumesc! 🙏';
+
+  @override
+  String get chatQuickReplyOk => 'OK 👍';
+
+  @override
+  String get you => 'Tu';
+
+  @override
+  String get chatVoiceMessageSendFailed =>
+      'Mesajul vocal nu a putut fi trimis.';
+
+  @override
+  String get chatReply => 'Răspunde';
+
+  @override
+  String get chatCopy => 'Copiază';
+
+  @override
+  String get chatMessageCopied => 'Mesaj copiat.';
+
+  @override
+  String get chatChooseGif => 'Alege GIF';
+
+  @override
+  String get chatSearchHint => 'Caută…';
+
+  @override
+  String get privateChatNotAuthenticated => 'Nu ești autentificat.';
+
+  @override
+  String get privateChatReaction => 'Reacție';
+
+  @override
+  String get privateChatNewChat => 'Chat nou';
+
+  @override
+  String get privateChatAddContactsToChoose =>
+      'Adaugă contacte în agendă sau prieteni ca să poți alege o persoană.';
+
+  @override
+  String get privateChatOnMap => 'Pe hartă';
+
+  @override
+  String get privateChatNoPeopleYet =>
+      'Nu ai încă persoane în agendă sau prieteni confirmați.';
+
+  @override
+  String get privateChatAddContactsOrAcceptSuggestions =>
+      'Adaugă contacte sau acceptă cereri în tab-ul Sugestii ca să poți începe conversații private.';
+
+  @override
+  String get privateChatConversationsHint =>
+      'Conversații private — aceleași mesaje ca din profilul unui vecin pe hartă.';
+
+  @override
+  String get privateChatOnMapNowTapToWrite =>
+      'Pe hartă acum — apasă pentru a scrie';
+
+  @override
+  String get privateChatTapToSendMessage => 'Apasă pentru a trimite un mesaj';
+
+  @override
+  String get chatLocationLabel => 'Locație';
+
+  @override
+  String get friendSuggestionsUserFallback => 'Utilizator';
+
+  @override
+  String get friendSuggestionsAlreadyFriends =>
+      'Sunteți deja prieteni în Nabour.';
+
+  @override
+  String get friendSuggestionsRequestAlreadySent =>
+      'Ai trimis deja o cerere către această persoană.';
+
+  @override
+  String get friendSuggestionsRequestSent => 'Cerere de prietenie trimisă!';
+
+  @override
+  String get friendSuggestionsRequestPermissionDenied =>
+      'Nu avem voie să scriem cererea (reguli Firebase). Contactează suportul.';
+
+  @override
+  String get friendSuggestionsRequestFailed =>
+      'Nu am putut trimite cererea. Încearcă din nou.';
+
+  @override
+  String friendSuggestionsAcceptedFrom(String name) {
+    return 'Ai acceptat cererea de la $name! ✓';
+  }
+
+  @override
+  String get friendSuggestionsFriendFallback => 'prieten';
+
+  @override
+  String get friendSuggestionsPermissionAcceptDenied =>
+      'Nu avem voie să acceptăm (reguli Firebase).';
+
+  @override
+  String get friendSuggestionsAcceptFailed =>
+      'Nu am putut accepta cererea. Încearcă din nou.';
+
+  @override
+  String get friendSuggestionsRejected => 'Cererea a fost refuzată.';
+
+  @override
+  String get friendSuggestionsRejectFailed =>
+      'Nu am putut refuza cererea. Încearcă din nou.';
+
+  @override
+  String get friendSuggestionsThisUser => 'acest utilizator';
+
+  @override
+  String get friendSuggestionsRemoveTitle => 'Elimină din prieteni';
+
+  @override
+  String friendSuggestionsRemoveConfirm(String name) {
+    return 'Sigur vrei să îl elimini pe $name din lista ta? Nu vei mai vedea reciproc pe hartă ca prieteni Nabour până nu retrimiteți cereri.';
+  }
+
+  @override
+  String get friendSuggestionsCancel => 'Anulează';
+
+  @override
+  String get friendSuggestionsRemove => 'Elimină';
+
+  @override
+  String friendSuggestionsRemovedFromList(String name) {
+    return '$name a fost eliminat din lista ta.';
+  }
+
+  @override
+  String get friendSuggestionsRemoveFailed =>
+      'Nu am putut elimina. Încearcă din nou.';
+
+  @override
+  String get friendSuggestionsTabSuggestions => 'Sugestii';
+
+  @override
+  String get friendSuggestionsTabMyFriends => 'Prietenii mei';
+
+  @override
+  String get friendSuggestionsTabPrivateChat => 'Chat individual';
+
+  @override
+  String get friendSuggestionsSearchHint => 'Caută în agendă...';
+
+  @override
+  String friendSuggestionsIncomingRequests(int count) {
+    return 'Cereri primite ($count)';
+  }
+
+  @override
+  String get friendSuggestionsAddressBookSuggestions => 'Sugestii din agendă';
+
+  @override
+  String get friendSuggestionsNoConfirmedFriends =>
+      'Nu ai încă prieteni confirmați.\nAcceptă cereri în tab-ul Sugestii sau trimite tu o cerere.';
+
+  @override
+  String get friendSuggestionsLoading => 'Se încarcă…';
+
+  @override
+  String get friendSuggestionsOnMapNow => 'Pe hartă acum';
+
+  @override
+  String get friendSuggestionsNabourFriend => 'Prieten Nabour';
+
+  @override
+  String get friendSuggestionsSendsRequest =>
+      'îți trimite o cerere de prietenie';
+
+  @override
+  String get friendSuggestionsReject => 'Refuză';
+
+  @override
+  String get friendSuggestionsAccept => 'Acceptă';
+
+  @override
+  String friendSuggestionsIntroOne(int count) {
+    return '$count INTRODUCERE';
+  }
+
+  @override
+  String friendSuggestionsIntroMany(int count) {
+    return '$count INTRODUCERI';
+  }
+
+  @override
+  String friendSuggestionsFriendsCount(int count) {
+    return '$count DE PRIETENI';
+  }
+
+  @override
+  String get friendSuggestionsFriendsCount50Plus => '50+ DE PRIETENI';
+
+  @override
+  String get friendSuggestionsFriendBadge => 'Prieten';
+
+  @override
+  String get friendSuggestionsAdded => 'Adăugat';
+
+  @override
+  String get friendSuggestionsAdd => 'Adaugă';
+
+  @override
+  String get friendSuggestionsBackOnMap => 'este din nou pe hartă';
+
+  @override
+  String get disclaimerNoPaymentsTitle => 'Nabour nu intermediază plăți';
+
+  @override
+  String get disclaimerNoPaymentsSubtitle =>
+      'Aplicația nu intermediază plăți între utilizatori.';
+
+  @override
+  String get disclaimerNoPaymentsBody =>
+      'Nabour conectează vecini care vor să se ajute reciproc. Dacă un șofer alege să accepte sau să ofere un gest de apreciere, aceasta este exclusiv decizia și responsabilitatea sa personală. Aplicația nu intermediază, nu solicită și nu procesează niciun fel de plată.';
+
+  @override
+  String get disclaimerUsageNotice =>
+      'Nu sta în aplicație mai mult de 40 de minute pe zi, în medie pe lună — aceasta fie generează costuri, fie te blochează la utilizare.';
+
+  @override
+  String get disclaimerUnderstood => 'Am înțeles';
+
+  @override
+  String get splashStartupError =>
+      'A apărut o eroare la pornire.\nVerifică internetul și încearcă din nou.';
+
+  @override
+  String get splashRetry => 'REÎNCEARCĂ';
+
+  @override
+  String get splashTakingLonger => 'Pornirea durează mai mult...';
+
+  @override
+  String get splashContinueAnyway => 'CONTINUĂ ORICUM';
+
+  @override
+  String get splashMadeInRomania => 'Fabricat în România';
+
+  @override
+  String get settingsCommunityModeSchool => 'Mod școală / liceu';
+
+  @override
+  String get settingsCommunityModeStandard =>
+      'Standard (fără etichetă comunitate)';
+
+  @override
+  String get settingsNowPlayingNotSet =>
+      'Nu e setat — vizibil în profil pentru prieteni';
+
+  @override
+  String get settingsVoiceAssistantOnMap => 'Asistent vocal pe hartă';
+
+  @override
+  String get settingsVoiceAssistantOnMapSubtitle =>
+      'Buton pe hartă și secțiunea din meniu (în curs de îmbunătățiri)';
+
+  @override
+  String get settingsGhostModeTitle => 'Mod fantomă (hartă socială)';
+
+  @override
+  String get settingsGhostModeSubtitle =>
+      'Activezi „Invizibil” din meniul hărții sociale; oprește RTDB și marchează ghostMode în cont.';
+
+  @override
+  String get settingsApproximateLocationTitle =>
+      'Locație aproximativă (hartă socială)';
+
+  @override
+  String get settingsSocialMapSection => 'Hartă socială';
+
+  @override
+  String get settingsNearbyNotificationsTitle => 'Notificări „aproape de mine”';
+
+  @override
+  String get settingsNearbyAlertRadiusTitle => 'Rază alertă apropiere';
+
+  @override
+  String settingsNearbyAlertRadiusSubtitle(int meters) {
+    return '$meters m (contacte pe hartă)';
+  }
+
+  @override
+  String get settingsMusicTitle => 'Muzică (Spotify / Apple Music)';
+
+  @override
+  String get settingsMusicSubtitle => 'Deschide Spotify sau Apple Music';
+
+  @override
+  String get settingsNowPlayingTitle => 'Ce ascult acum (profil)';
+
+  @override
+  String get settingsCommunityModeTitle => 'Mod comunitate / școală';
+
+  @override
+  String get settingsLocationHistoryTitle => 'Istoric locație (Timeline)';
+
+  @override
+  String get settingsLocationHistoryStartFailed =>
+      'Nu s-a putut porni înregistrarea. Acordă acces la locație și, pe Android, „Permite tot timpul” pentru înregistrare când aplicația nu e deschisă.';
+
+  @override
+  String get settingsLocationHistoryEnabled =>
+      'Istoricul locației a fost activat (vezi notificarea pe Android când rulează în fundal).';
+
+  @override
+  String get settingsLocationHistoryDisabled =>
+      'Istoricul locației a fost dezactivat.';
+
+  @override
+  String get settingsLocalHistoryRetentionTitle => 'Retenție istoric local';
+
+  @override
+  String settingsLocalHistoryRetentionSubtitle(int days) {
+    return 'Păstrează datele locale $days zile';
+  }
+
+  @override
+  String get settingsDeleteLocalHistoryTitle => 'Șterge istoricul local';
+
+  @override
+  String get settingsDeleteLocalHistorySubtitle =>
+      'Șterge recap, cache și timeline local pentru acest cont';
+
+  @override
+  String get settingsNearbyNotificationRadiusTitle =>
+      'Rază notificare apropiere';
+
+  @override
+  String settingsLocalHistoryRetentionSet(int days) {
+    return 'Retenția locală a fost setată la $days zile.';
+  }
+
+  @override
+  String get settingsNowPlayingSheetTitle => 'Ce ascult acum';
+
+  @override
+  String get settingsNowPlayingSongLabel => 'Piesă / titlu';
+
+  @override
+  String get settingsMusicProfileUpdated => 'Profil muzical actualizat.';
+
+  @override
+  String get settingsSaveToAccount => 'Salvează în cont';
+
+  @override
+  String get settingsDeleteFromProfile => 'Șterge din profil';
+
+  @override
+  String get settingsCommunitySheetTitle => 'Comunitate';
+
+  @override
+  String get settingsCommunityModeSaved => 'Mod comunitate salvat.';
+
+  @override
+  String get settingsDeleteLocalHistoryConfirmTitle =>
+      'Ștergi istoricul local?';
+
+  @override
+  String get settingsDeleteLocalHistoryConfirmContent =>
+      'Această acțiune șterge recap-ul și cache-ul local Week in Review pentru contul curent.';
+
+  @override
+  String get settingsLocalHistoryDeleted => 'Istoricul local a fost șters.';
+
+  @override
+  String tokenShopChoosePaymentMethodFor(String planName) {
+    return 'Alege metoda de plată pentru $planName';
+  }
+
+  @override
+  String get tokenShopPayByCard => 'Plată cu cardul';
+
+  @override
+  String tokenShopPriceWithAutoRenewal(String price) {
+    return 'Preț: $price (Reînnoire automată)';
+  }
+
+  @override
+  String get tokenShopPayWithTransferableTokens =>
+      'Plătește cu tokeni transferabili';
+
+  @override
+  String tokenShopPriceInTokensNoRenewal(int tokens) {
+    return 'Preț: $tokens tokeni (Fără reînnoire)';
+  }
+
+  @override
+  String get tokenShopInsufficientShort => 'Insuficient';
+
+  @override
+  String tokenShopPlanActivated(String planName) {
+    return 'Planul $planName a fost activat!';
+  }
+
+  @override
+  String get tokenShopUnlimitedAccessNetworkIntelligence =>
+      'Acces absolut la inteligența rețelei.';
+
+  @override
+  String get tokenShopPersonalTokensSubtitle =>
+      'Tokeni pentru AI, rute și funcțiile tale.';
+
+  @override
+  String get tokenShopTransferablePackagesTitle => 'PACHETE TRANSFERABILE';
+
+  @override
+  String get tokenShopTransferablePackagesSubtitle =>
+      'Tokeni reali pe care îi poți trimite oricui.';
+
+  @override
+  String tokenShopTransferablePackageTitle(int tokens) {
+    return 'Pachet transferabil: $tokens tokeni';
+  }
+
+  @override
+  String tokenShopTxPurchaseTransferablePackage(String label) {
+    return 'Cumpărare pachet TRANSFERABIL: $label';
+  }
+
+  @override
+  String get tokenShopTransferableWalletSuffix =>
+      ' (în portofelul transferabil)';
+
+  @override
+  String get neighborhoodChatMuted => 'Chat silențios';
+
+  @override
+  String get neighborhoodChatSoundOn => 'Sunet activat';
+
+  @override
+  String get neighborhoodChatGpsDisabled =>
+      'GPS dezactivat. Activează locația pentru chat.';
+
+  @override
+  String get neighborhoodChatGpsPermissionDenied => 'Permisiune GPS refuzată.';
+
+  @override
+  String get neighborhoodChatInvalidServerResponse =>
+      'Chat cartier: răspuns invalid de la server (roomId H3).';
+
+  @override
+  String neighborhoodChatFunctionsUnavailable(String code) {
+    return 'Chat cartier: Functions indisponibile ($code).';
+  }
+
+  @override
+  String get neighborhoodChatActivationFailed => 'Nu s-a putut activa chat-ul.';
+
+  @override
+  String get neighborhoodChatLocationResolveFailed =>
+      'Nu s-a putut determina locația.';
+
+  @override
+  String get neighborhoodChatInappropriateMessage => 'Mesaj inadecvat.';
+
+  @override
+  String get neighborhoodChatOnMyWay => 'Sunt pe drum!';
+
+  @override
+  String get neighborhoodChatMarkedLocation => 'Am marcat o locație pe hartă';
+
+  @override
+  String get neighborhoodChatTitle => 'Chat cartier';
+
+  @override
+  String get neighborhoodChatInviteNeighbors => 'Invită vecini';
+
+  @override
+  String get neighborhoodChatNoAccessOrRulesChanged =>
+      'Nu ai acces la acest chat sau regulile de securitate s-au schimbat. Reîncearcă după ce te autentifici din nou.';
+
+  @override
+  String get neighborhoodChatNoRecentMessages => 'Niciun mesaj recent';
+
+  @override
+  String get neighborhoodChatEmptyHint =>
+      'Spune „Bună” vecinilor sau trimite o locație. Mesajele dispar după 30 minute.';
+
+  @override
+  String get neighborhoodChatSendLocationTooltip => 'Trimite locația ta';
+
+  @override
+  String neighborhoodChatInviteText(String roomId) {
+    return 'Vino în chat-ul cartierului Nabour! Suntem vecini în zona H3: $roomId';
+  }
+
+  @override
+  String get neighborhoodChatInfoBody1 =>
+      'Acesta este un spațiu efemer pentru vecinii din aceeași zonă H3 (aprox. 1km²).';
+
+  @override
+  String get neighborhoodChatInfoBody2 =>
+      '• Mesajele dispar automat după 30 de minute.\n• Poți trimite locația sau mesaje text.\n• Respectă vecinii și păstrează comunitatea curată!';
+
+  @override
+  String get neighborhoodChatFlyToHint =>
+      'Apasă pentru animația \"FlyTo\" către punctul marcat de vecin.';
+
+  @override
+  String get neighborhoodChatSeeOnMap => 'VEZI PE HARTĂ';
+
+  @override
+  String get placesHubTabLearned => 'Învățate';
+
+  @override
+  String get placesHubTabFavorites => 'Favorite';
+
+  @override
+  String get placesHubTabRecommendations => 'Recomandări';
+
+  @override
+  String get placesHubNoLearnedPlaces =>
+      'Încă nu avem locuri învățate. Rămâi cu aplicația deschisă pe hartă — detectăm zonele unde stai mai mult (confidențial, pe telefon).';
+
+  @override
+  String placesHubFrequentArea(int minutes) {
+    return 'Zonă frecventată ($minutes min acumulate)';
+  }
+
+  @override
+  String placesHubVisitsConfidence(int visits, int confidence) {
+    return '$visits vizite · încredere $confidence%';
+  }
+
+  @override
+  String get placesHubFavoritesHint =>
+      'Adresele tale salvate apar și pe hartă ca „acasă / serviciu” când ești aproape.';
+
+  @override
+  String get placesHubManageFavoriteAddresses => 'Gestionează adrese favorite';
+
+  @override
+  String get placesHubDiscoverNeighborhood => 'Descoperă cartierul';
+
+  @override
+  String get placesHubDiscoverNeighborhoodHint =>
+      'Activează vizibilitatea pe harta socială ca să vezi cereri, momente și vecini. Locurile învățate se îmbogățesc automat din mișcarea ta.';
+
+  @override
+  String get placesHubFriendsNearbyTitle => 'Prieteni în zonă';
+
+  @override
+  String get placesHubFriendsNearbySubtitle =>
+      'Pe harta principală vezi contactele care te-au adăugat și sunt aproape.';
+
+  @override
+  String get placesHubPreviewTitle => 'Previzualizare';
+
+  @override
+  String get rideBroadcastDeleteRequestTitle => 'Șterge cererea';
+
+  @override
+  String get rideBroadcastDeleteRequestConfirm =>
+      'Ești sigur că vrei să ștergi această cerere din istoricul tău?';
+
+  @override
+  String get rideBroadcastFeedTitle => 'Cereri din cartier';
+
+  @override
+  String rideBroadcastActiveRadiusTooltip(int km) {
+    return 'În tab-ul „Active” afișăm cererile în cel mult $km km față de locația ta curentă (când locația e disponibilă).';
+  }
+
+  @override
+  String get rideBroadcastTabActive => 'Active';
+
+  @override
+  String get rideBroadcastTabMapBubbles => 'Bule pe hartă';
+
+  @override
+  String get rideBroadcastTabMyHistory => 'Istoricul meu';
+
+  @override
+  String get rideBroadcastVisibleOnlyForYouNoContacts =>
+      'Cererea e vizibilă doar pentru tine: în agendă nu am găsit alți utilizatori Nabour cu numărul din profilul lor.';
+
+  @override
+  String rideBroadcastVisibleForYouAndContacts(String people) {
+    return 'Cererea e vizibilă pentru tine și pentru încă $people din agendă.';
+  }
+
+  @override
+  String get rideBroadcastEnableLocationForMapRequest =>
+      'Activează locația ca să plasezi o cerere pe hartă.';
+
+  @override
+  String get rideBroadcastRequestRide => 'Cer o cursă';
+
+  @override
+  String get rideBroadcastMapRequest => 'Cerere pe hartă';
+
+  @override
+  String rideBroadcastBubblesLoadFailed(String error) {
+    return 'Nu s-au putut încărca bulele. Trage în jos pentru reîncercare.\n$error';
+  }
+
+  @override
+  String rideBroadcastNoBubbleInRadius(int km) {
+    return 'Nicio bulă în raza de $km km';
+  }
+
+  @override
+  String get rideBroadcastNoActiveBubbleHere => 'Nicio bulă activă aici';
+
+  @override
+  String rideBroadcastBubblesOutsideRadiusHint(int km) {
+    return 'Există bule active, dar sunt peste $km km față de locația curentă. Verifică pe hartă sau actualizează GPS-ul (trage în jos).';
+  }
+
+  @override
+  String get rideBroadcastBubblesVisibilityHint =>
+      'Bulele sunt vizibile pe hartă cam o oră de la plasare, apoi dispar. Plasează una din meniul hărții. Dacă tocmai ai deschis ecranul, trage în jos pentru sincron.';
+
+  @override
+  String get rideBroadcastNoPostedRequestYet => 'Nicio cerere postată încă';
+
+  @override
+  String get rideBroadcastNoActiveRequest => 'Nicio cerere activă';
+
+  @override
+  String get rideBroadcastBeFirstHint =>
+      'Fii primul din cartier care postează o cerere de cursă.';
+
+  @override
+  String get rideBroadcastFriendPostedButNotVisibleHint =>
+      'Dacă un prieten a postat dar nu vezi: trage în jos pentru reîmprospătare, verifică că îl ai în agendă cu același număr ca în profilul Nabour și că ai permisiune la contacte.';
+
+  @override
+  String rideBroadcastNoRequestInRadius(int km) {
+    return 'Nicio cerere în raza de $km km';
+  }
+
+  @override
+  String get rideBroadcastIncludedButFarHint =>
+      'Există cereri în care ești inclus, dar sunt mai departe față de locația ta curentă. Te apropii sau pornești locația pentru filtre corecte.';
+
+  @override
+  String get rideBroadcastWaitingFriendHint =>
+      'Dacă aștepți de la un prieten apropiat, verifică și agendă + profilul Nabour cu același număr.';
+
+  @override
+  String get rideBroadcastDeleteMapRequestTitle =>
+      'Ștergi cererea de pe hartă?';
+
+  @override
+  String get rideBroadcastDeleteMapRequestConfirm =>
+      'Bula dispare pentru toți vecinii; acțiunea nu poate fi anulată.';
+
+  @override
+  String get rideBroadcastMapBubbleDeleted =>
+      'Bula a fost ștearsă de pe hartă.';
+
+  @override
+  String rideBroadcastDeleteFailed(String error) {
+    return 'Nu s-a putut șterge: $error';
+  }
+
+  @override
+  String get rideBroadcastDeleteFromMapTooltip => 'Șterge de pe hartă';
+
+  @override
+  String rideBroadcastPlaced(String value) {
+    return 'Plasată: $value';
+  }
+
+  @override
+  String rideBroadcastExpiresMapBubble(String value) {
+    return 'Expiră: $value (≈1 h după plasare)';
+  }
+
+  @override
+  String rideBroadcastDistanceFromYou(String km) {
+    return 'La ~$km km față de tine';
+  }
+
+  @override
+  String get rideBroadcastCancelRequestTitle => 'Anulează cererea';
+
+  @override
+  String get rideBroadcastCancelRequestConfirm =>
+      'Ești sigur că vrei să anulezi această cerere?';
+
+  @override
+  String get rideBroadcastNo => 'Nu';
+
+  @override
+  String get rideBroadcastYesCancel => 'Da, anulează';
+
+  @override
+  String get rideBroadcastPersonalCar => 'Mașină personală';
+
+  @override
+  String rideBroadcastOfferSendFailed(String error) {
+    return 'Nu s-a putut trimite oferta: $error';
+  }
+
+  @override
+  String rideBroadcastReplySendFailed(String error) {
+    return 'Nu s-a putut trimite răspunsul: $error';
+  }
+
+  @override
+  String get rideBroadcastDriverFallback => 'Șofer';
+
+  @override
+  String get rideBroadcastConfirmRideTitle => 'Confirmă cursa';
+
+  @override
+  String get rideBroadcastRideCompletedQuestion => 'Cursa s-a efectuat?';
+
+  @override
+  String get rideBroadcastNotCompleted => 'Nu s-a efectuat';
+
+  @override
+  String get rideBroadcastCompletedYes => 'Da, s-a efectuat';
+
+  @override
+  String get rideBroadcastReasonDriverNoShow => 'Șoferul nu a mai venit';
+
+  @override
+  String get rideBroadcastReasonPassengerCancelled => 'Pasagerul a anulat';
+
+  @override
+  String get rideBroadcastReasonAnotherCar => 'Altă mașină';
+
+  @override
+  String get rideBroadcastReasonOther => 'Alt motiv';
+
+  @override
+  String get rideBroadcastReasonTitle => 'Motivul';
+
+  @override
+  String rideBroadcastExpiresIn(String value) {
+    return 'Expiră în $value';
+  }
+
+  @override
+  String get rideBroadcastMyRequest => 'Cererea mea';
+
+  @override
+  String get rideBroadcastAvailableDrivers => 'Șoferi disponibili';
+
+  @override
+  String get rideBroadcastReplies => 'Răspunsuri';
+
+  @override
+  String get rideBroadcastReplyHint =>
+      'Poți trimite mai multe mesaje - apasă trimitere pentru fiecare';
+
+  @override
+  String rideBroadcastOffersOne(int count) {
+    return '$count ofertă';
+  }
+
+  @override
+  String rideBroadcastOffersMany(int count) {
+    return '$count oferte';
+  }
+
+  @override
+  String get rideBroadcastOfferSent => 'Ofertă trimisă';
+
+  @override
+  String get rideBroadcastIOffer => 'Mă ofer';
+
+  @override
+  String get rideBroadcastStatusDone => '✅ Efectuată';
+
+  @override
+  String get rideBroadcastStatusNotDone => '❌ Neefectuată';
+
+  @override
+  String get rideBroadcastStatusAccepted => '🤝 Acceptată';
+
+  @override
+  String get rideBroadcastStatusCancelled => '🚫 Anulată';
+
+  @override
+  String get rideBroadcastStatusActive => '🕐 Activă';
+
+  @override
+  String get rideBroadcastStatusExpired => '⏱ Expirată';
+
+  @override
+  String rideBroadcastDriverWithName(String name) {
+    return 'Șofer: $name';
+  }
+
+  @override
+  String rideBroadcastReasonWithValue(String value) {
+    return 'Motiv: $value';
+  }
+
+  @override
+  String rideBroadcastTooManyActiveRequests(int max) {
+    return 'Ai deja $max cereri active. Închide sau așteaptă expirarea uneia (30 min) înainte de o nouă postare.';
+  }
+
+  @override
+  String rideBroadcastErrorWithMessage(String error) {
+    return 'Eroare: $error';
+  }
+
+  @override
+  String get rideBroadcastAskRideTitle => 'Cer o cursă';
+
+  @override
+  String get rideBroadcastPostVisibilityHint =>
+      'Cererea ta va fi vizibilă persoanelor din agenda ta timp de 30 de minute.';
+
+  @override
+  String get rideBroadcastQuickSelectOrWrite => 'Selectează rapid sau scrie';
+
+  @override
+  String get rideBroadcastYourMessageRequired => 'Mesajul tău *';
+
+  @override
+  String get rideBroadcastMessageHint =>
+      'Unde vrei să mergi? Orice detaliu util...';
+
+  @override
+  String get rideBroadcastDestinationOptional => 'Destinație (opțional)';
+
+  @override
+  String get rideBroadcastDestinationHint =>
+      'ex: supermarket, stație, aeroport...';
+
+  @override
+  String get rideBroadcastPostRequest => 'Postează cererea';
+
+  @override
+  String get rideBroadcastExpiresAfterThirtyMinutes =>
+      'Cererea expiră automat după 30 de minute.';
+
+  @override
+  String get searchDriverFallback => 'Șofer';
+
+  @override
+  String get searchDriverSearchingNearby => 'Se caută șoferi în apropiere...';
+
+  @override
+  String get searchDriverFoundWaitConfirm =>
+      'Șofer găsit! Așteaptă confirmarea ta.';
+
+  @override
+  String get searchDriverRideCancelled => 'Cursa a fost anulată.';
+
+  @override
+  String get searchDriverNoDriverAvailable =>
+      'Ne pare rău, niciun șofer nu a fost disponibil.';
+
+  @override
+  String searchDriverUnknownRideStatus(String status) {
+    return 'Stare cursă necunoscută: $status';
+  }
+
+  @override
+  String searchDriverConfirmError(String error) {
+    return 'Eroare la confirmarea șoferului: $error';
+  }
+
+  @override
+  String get searchDriverDeclinedResuming =>
+      'Ai refuzat șoferul. Se reia căutarea...';
+
+  @override
+  String searchDriverDeclineError(String error) {
+    return 'Eroare la refuzarea șoferului: $error';
+  }
+
+  @override
+  String searchDriverCancelError(String error) {
+    return 'Eroare la anulare: $error';
+  }
+
+  @override
+  String get searchDriverSearchingTitle => 'Se caută șoferi';
+
+  @override
+  String get searchDriverPremiumHintTitle => 'Sugestie Premium';
+
+  @override
+  String get searchDriverPremiumHintBody =>
+      'Rămâi pe ecran pentru o preluare mai rapidă.';
+
+  @override
+  String get searchDriverFoundTitle => 'Șofer găsit';
+
+  @override
+  String get searchDriverArrivesIn => 'Sosește în';
+
+  @override
+  String get searchDriverDistanceLabel => 'Distanță';
+
+  @override
+  String get searchDriverNabourDriverFallback => 'Șofer Nabour';
+
+  @override
+  String get searchDriverStandardCategory => 'Categoria Standard';
+
+  @override
+  String get rideRequestStatusSearching => 'Căutare șoferi';
+
+  @override
+  String get rideRequestStatusPending => 'În așteptare';
+
+  @override
+  String get rideRequestStatusDriverFound => 'Șofer găsit';
+
+  @override
+  String get rideRequestStatusAccepted => 'Acceptată';
+
+  @override
+  String get rideRequestStatusDriverArrived => 'Șoferul a ajuns';
+
+  @override
+  String get rideRequestStatusInProgress => 'În curs';
+
+  @override
+  String get rideRequestStatusDriverRejected => 'Șofer respins';
+
+  @override
+  String get rideRequestStatusDriverDeclined => 'Șofer a refuzat';
+
+  @override
+  String get rideRequestTimeoutInternet =>
+      'A expirat timpul de așteptare. Te rugăm să verifici conexiunea la internet.';
+
+  @override
+  String rideRequestRouteCalcError(String error) {
+    return 'Eroare la calcularea rutei: $error';
+  }
+
+  @override
+  String get rideRequestActiveRideDetected => 'Cursă activă detectată';
+
+  @override
+  String get rideRequestStatusLabel => 'Status cursă';
+
+  @override
+  String get rideRequestIdLabel => 'ID cursă';
+
+  @override
+  String get rideRequestCancelPreviousRide => 'Anulează cursa precedentă';
+
+  @override
+  String rideRequestCancelPreviousRideError(String error) {
+    return 'Eroare la anularea cursei precedente: $error';
+  }
+
+  @override
+  String rideRequestCreateRideError(String error) {
+    return 'Eroare la crearea cursei: $error';
+  }
+
+  @override
+  String get rideRequestWhereTo => 'Unde mergem?';
+
+  @override
+  String get rideRequestChooseRide => 'Alege o cursă';
+
+  @override
+  String get rideRequestOrChooseCategory => 'sau alege categoria';
+
+  @override
+  String get rideRequestSearchInProgress => 'Căutare în curs...';
+
+  @override
+  String get rideRequestConfirmAndRequest => 'Confirmă și solicită cursa';
+
+  @override
+  String get rideRequestAnyCategoryAvailable => 'Orice categorie disponibilă';
+
+  @override
+  String get rideRequestFastestDriverInArea =>
+      'Cel mai rapid șofer disponibil din zonă';
+
+  @override
+  String get rideRequestAnyCategorySubtitle =>
+      'Cel mai rapid șofer disponibil.';
+
+  @override
+  String get rideRequestFamilySubtitle =>
+      'Spațiu extra pentru familie și bagaje.';
+
+  @override
+  String get rideRequestEnergySubtitle =>
+      'Călătorește eco cu o mașină electrică.';
+
+  @override
+  String get rideRequestUtilitySubtitle =>
+      'Dubă sau utilitar (până la 3.5t). Ideal pentru mutări.';
+
+  @override
+  String get rideRequestUserNotAuthenticated =>
+      'Eroare: Utilizatorul nu este autentificat.';
+
+  @override
+  String get mapArrivalInstruction => 'Ai sosit la destinație!';
+
+  @override
+  String get mapArrivedTitle => 'Ai sosit!';
+
+  @override
+  String get mapFinalDestinationTitle => 'Destinație finală';
+
+  @override
+  String get mapOpenNavigationToDestinationHint =>
+      'Deschide în aplicația de navigație spre destinație. Revii apoi la hartă.';
+
+  @override
+  String get mapPassengerStatusDriverFound =>
+      'Șofer găsit - așteaptă confirmarea ta';
+
+  @override
+  String get mapPassengerStatusDriverOnWay => 'Șofer în drum spre tine';
+
+  @override
+  String get mapPassengerStatusDriverAtPickup =>
+      'Șofer la pickup - deschide navigația spre destinație';
+
+  @override
+  String get mapPassengerStatusInProgress => 'Cursă în desfășurare';
+
+  @override
+  String mapPassengerStatusGeneric(String status) {
+    return 'Cursă: $status';
+  }
+
+  @override
+  String get mapNavigationToPickupTitle => 'Navigare spre pickup';
+
+  @override
+  String get mapExternalNavigationNoRouteHint =>
+      'Aplicație de navigație (fără rută în Nabour).';
+
+  @override
+  String get mapOpenSameDestinationAsDriver =>
+      'Deschide aceeași destinație ca și șoferul în app-ul de navigație.';
+
+  @override
+  String get mapLongPressToSetLandmark =>
+      'Ține apăsat pe hartă pentru a fixa reperul.';
+
+  @override
+  String get mapCloseCancelPlacement => 'Închide (anulează plasarea)';
+
+  @override
+  String get mapCommunityMysteryBoxTitle => 'Mystery Box comunitar';
+
+  @override
+  String mapCommunityMysteryBoxDescription(int tokens) {
+    return 'Plasezi o cutie la locația curentă. Cost: $tokens tokeni. Primul utilizator care o deschide la fața locului primește aceiași tokeni - tu vei primi o notificare când se întâmplă.';
+  }
+
+  @override
+  String get mapShortMessageOptional => 'Mesaj scurt (opțional)';
+
+  @override
+  String get mapShortMessageHint => 'ex: Bonus pe vârf - distracție plăcută!';
+
+  @override
+  String get mapPhoneNumberUnavailable => 'Număr de telefon indisponibil';
+
+  @override
+  String get neighborFallback => 'Vecin';
+
+  @override
+  String mapReactionSent(String reaction) {
+    return 'Reacție trimisă: $reaction';
+  }
+
+  @override
+  String mapHonkedNeighbor(String name) {
+    return 'L-ai claxonat pe $name!';
+  }
+
+  @override
+  String mapEtaMessageToNeighbor(int minutes) {
+    return '📍 Vin spre tine! ETA estimat: $minutes min.';
+  }
+
+  @override
+  String mapEtaSentTo(String name) {
+    return 'ETA trimis lui $name';
+  }
+
+  @override
+  String mapNeighborhoodBubbleContext(String name) {
+    return 'Bula apare lângă $name pe hartă. Vizibilă vecinilor ~1 oră.';
+  }
+
+  @override
+  String mapEmojiPlacedNear(String name) {
+    return 'Emoji plasat lângă $name pe hartă';
+  }
+
+  @override
+  String get mapCannotPlaceEmoji => 'Nu am putut plasa emoji-ul pe hartă';
+
+  @override
+  String get mapPersonNotVisibleSendFromList =>
+      'Persoana nu e vizibilă pe hartă acum. Poți trimite cerere de prietenie din listă (+).';
+
+  @override
+  String get mapContactsVisibilityHint =>
+      'Pe hartă apar doar prietenii acceptați sau contactele din telefon care au cont Nabour. Adaugă numerele în agendă sau acceptă o cerere din Sugestii.';
+
+  @override
+  String get mapSyncingContacts => 'Sincronizez contactele...';
+
+  @override
+  String mapSyncComplete(int count) {
+    return 'Sincronizare completă: $count nume găsite.';
+  }
+
+  @override
+  String get mapEnableDriverProfileHint =>
+      'Activează profilul de șofer și adaugă mașina ca să folosești modul șofer.';
+
+  @override
+  String mapIntermediateStopAdded(String name) {
+    return '$name adăugat ca oprire intermediară';
+  }
+
+  @override
+  String mapStopRemoved(String name) {
+    return '$name eliminat din opriri';
+  }
+
+  @override
+  String mapNoPoiFoundInArea(String category) {
+    return 'Niciun $category găsit în zonă';
+  }
+
+  @override
+  String mapHonkReceived(String name) {
+    return '📣 $name te-a claxonat!';
+  }
+
+  @override
+  String get mapCalculatingRoute => 'Se calculează traseul...';
+
+  @override
+  String get mapCannotGetLocationEnableGps =>
+      'Nu am putut obține locația. Activează GPS-ul.';
+
+  @override
+  String get mapRouteUnavailableCheckConnection =>
+      'Traseu indisponibil. Verifică conexiunea.';
+
+  @override
+  String get mapContinueOnRoute => 'Continuă pe traseu.';
+
+  @override
+  String get mapAneighbor => 'Un vecin';
+
+  @override
+  String mapSosNearbyTitle(String name) {
+    return '🆘 SOS PROXIMITATE: $name';
+  }
+
+  @override
+  String get mapSosNearbyBody =>
+      'Urgență activă în apropiere! Verifică radarul pe hartă.';
+
+  @override
+  String mapSosTtsAlert(String name) {
+    return 'Atenție! ALERTĂ S.O.S. în apropiere de la $name. Radarul de proximitate este activat.';
+  }
+
+  @override
+  String get mapCriticalZone => 'ZONĂ CRITICĂ';
+
+  @override
+  String get mapSosActiveTitle => '🆘 S.O.S. ACTIV';
+
+  @override
+  String get mapNoContactsInRadarCircle =>
+      'Nimeni din contactele tale cu poziție în zonă nu e în cercul de scanare acum.';
+
+  @override
+  String get mapStopNavigationFirst =>
+      'Oprește mai întâi navigarea din bannerul de sus.';
+
+  @override
+  String get mapWaitingGpsTryAgain =>
+      'Așteptăm poziția GPS. Încearcă din nou în câteva secunde.';
+
+  @override
+  String get mapGpsLocationUnavailableYet =>
+      'Locația GPS nu este disponibilă încă';
+
+  @override
+  String mapSetPickupError(String error) {
+    return 'Eroare la setarea pickup: $error';
+  }
+
+  @override
+  String mapSetDestinationError(String error) {
+    return 'Eroare la setarea destinației: $error';
+  }
+
+  @override
+  String mapMaxIntermediateStops(int count) {
+    return 'Maximum $count opriri intermediare permise';
+  }
+
+  @override
+  String get mapStopAlreadyAdded => 'Această oprire este deja adăugată';
+
+  @override
+  String mapAddStopError(String error) {
+    return 'Eroare la adăugarea opririi: $error';
+  }
+
+  @override
+  String mapRouteCalculationError(String error) {
+    return 'Eroare la calcularea rutei: $error';
+  }
+
+  @override
+  String mapRouteSetupError(String error) {
+    return 'Eroare la configurarea rutei: $error';
+  }
+
+  @override
+  String get mapCouldNotCalculateRoute => 'Nu s-a putut calcula ruta';
+
+  @override
+  String get mapFlashlightUnavailable =>
+      'Lanterna nu este disponibilă pe acest dispozitiv';
+
+  @override
+  String get mapFlashlightActivationError => 'Eroare la activarea lanternei';
+
+  @override
+  String get mapSpotAnnouncedAvailable => 'Locul a fost anunțat disponibil.';
+
+  @override
+  String get mapCouldNotAnnounceTryAgain =>
+      'Nu s-a putut anunța. Încearcă din nou.';
+
+  @override
+  String get mapSelectionCancelled => 'Selecția pe hartă a fost anulată.';
+
+  @override
+  String mapNeighborNearbyTitle(String avatar, String name) {
+    return '$avatar $name e aproape!';
+  }
+
+  @override
+  String mapNeighborNearbyBody(int meters) {
+    return 'La $meters m - harta socială 📍';
+  }
+
+  @override
+  String mapPickupIndex(int index) {
+    return 'Pickup $index';
+  }
+
+  @override
+  String get mapPickupPointSelected => 'Punct de preluare selectat';
+
+  @override
+  String get helpChatGuideTitle => 'Ghid utilizare Chat Cartier';
+
+  @override
+  String get helpChatGuideIntro =>
+      'Chat-ul de cartier este conceput să te conecteze instantaneu cu vecinii aflați în proximitatea ta.';
+
+  @override
+  String get helpChatWhoSeesTitle => 'Cine vede mesajele?';
+
+  @override
+  String get helpChatWhoSeesBody =>
+      'Mesajele trimise sunt vizibile pentru toți utilizatorii care se află în aceeași zonă geografică cu tine în momentul utilizării.';
+
+  @override
+  String get helpChatCoverageTitle => 'Raza și Aria de acoperire';
+
+  @override
+  String get helpChatCoverageBody =>
+      'Sistemul împarte orașul în hexagoane cu latura de aproximativ 3.2 km (o suprafață de circa 36 km²). Este o zonă vastă, ideală pentru a acoperi un cartier întreg sau un sector.';
+
+  @override
+  String get helpChatPersistenceTitle => 'Persistența mesajelor';
+
+  @override
+  String get helpChatPersistenceBody =>
+      'Pentru a păstra conversațiile proaspete și relevante, mesajele dispar automat după 30 de minute. Nu există un istoric permanent, chat-ul fiind destinat interacțiunilor imediate.';
+
+  @override
+  String get helpChatPrivacyTitle => 'Confidențialitate și Siguranță';
+
+  @override
+  String get helpChatPrivacyBody =>
+      'Accesul la chat este validat pe baza locației tale GPS actuale. Dacă te muți într-o altă parte a orașului, aplicația te va conecta automat la chat-ul specific acelei zone.';
+
+  @override
+  String get helpChatTipOMW =>
+      'Sfat: Folosește butonul OMW pentru a anunța rapid vecinii că ești în drum spre ei sau ești disponibil în zonă.';
+
+  @override
+  String get helpLassoTitle => 'Instrumentul Lasso (Bagheta Magică)';
+
+  @override
+  String get helpLassoBody =>
+      'Instrumentul Lasso îți permite să selectezi mai mulți vecini de pe hartă dintr-o singură mișcare, prin încercuirea lor.';
+
+  @override
+  String get helpLassoHowToTitle => 'Cum se folosește?';
+
+  @override
+  String get helpLassoHowToBody =>
+      '1. Apasă pe pictograma \"Baghetă Magică\" din colțul dreapta-sus al hărții.\n2. Desenează un cerc cu degetul în jurul vecinilor pe care vrei să îi contactezi.\n3. Se va deschide un meniu cu grupul capturat și opțiuni pentru a le trimite o cerere de tip \"Broadcast\".';
+
+  @override
+  String get helpLassoTip =>
+      'Sfat: Folosește Lasso pentru a găsi rapid o echipă de vecini pentru o activitate comună sau o cerere de transport partajat!';
+
+  @override
+  String get helpRadarTitle => 'Butonul Scanează (radar vecini)';
+
+  @override
+  String get helpRadarBody =>
+      'Butonul Scanează pornește scanarea în overlay-ul radar timp de aproximativ 5 secunde, apoi se închide automat. În acest interval nu poți redimensiona cercul.';
+
+  @override
+  String get helpRadarWhatTitle => 'Ce „scanează”?';
+
+  @override
+  String get helpRadarWhatBody =>
+      'Nu este scanare Bluetooth, Wi‑Fi sau de dispozitive noi. Aplicația listează vecinii care sunt deja afișați pe hartă și se află în interiorul cercului radar (distanța se calculează față de centrul și raza cercului).';
+
+  @override
+  String get helpRadarResultsTitle => 'Unde apar rezultatele?';
+
+  @override
+  String get helpRadarResultsBody =>
+      'Dacă există cel puțin un vecin în cerc, se deschide o foaie de jos cu lista. Dacă nu e nimeni, vei vedea un mesaj scurt că nu s-a găsit niciun vecin în radar.';
+
+  @override
+  String get helpRadarNextTitle => 'Ce poți face după?';
+
+  @override
+  String get helpRadarNextBody =>
+      'Din foaia de jos poți folosi acțiunea de grup (ex. cerere broadcast) când funcția este complet activă; până atunci aplicația poate afișa un mesaj că este în curs de activare.';
+
+  @override
+  String get helpRadarTip =>
+      'Sfat: Mută sau mărește cercul înainte de Scanează, ca să acoperi zona care te interesează—în rezultate pot apărea doar vecinii deja vizibili pe hartă.';
+
+  @override
+  String get helpMapDropsTitle => 'Interactive Map Drops (Locații în Chat)';
+
+  @override
+  String get helpMapDropsBody =>
+      'Map Drops sunt marcaje de locație partajate în chat-ul de cartier, care îți permit să călătorești instantaneu pe hartă.';
+
+  @override
+  String get helpMapDropsFlyTitle => 'Animația Cinematică \"FlyTo\"';
+
+  @override
+  String get helpMapDropsFlyBody =>
+      'Atunci când un vecin partajează o locație, apasă pe cardul interactiv din chat. Aplicația va închide chat-ul și va executa un zbor cinematic direct către acel punct exact pe hartă.';
+
+  @override
+  String get helpMapDropsPinsTitle => 'Pini Temporari';
+
+  @override
+  String get helpMapDropsPinsBody =>
+      'După finalizarea zborului, vei vedea un pin pulsatoriu pe hartă. Acesta te ajută să identifici exact locul unde a fost făcut \"drop-ul\", oferind context vizual precis pentru mesajul vecinului.';
+
+  @override
+  String get helpBoxesPurposeTitle => 'La ce servesc';
+
+  @override
+  String get helpBoxesPurposeBody =>
+      'Pe hartă există două tipuri de cutii legate de tokenii Nabour: (1) cutii la oferte business — comerciantul poate seta un plafon opțional; le deschizi lângă magazin și primești tokeni plus un cod de reducere la acel magazin. (2) cutii comunitare — orice utilizator poate plasa o cutie la locația sa curentă; altcineva o deschide la fața locului și primește tokeni; plasatorul este informat când cutia e deschisă.';
+
+  @override
+  String get helpBoxesTokensTitle => 'Tokeni — cum se colectează și cheltuiesc';
+
+  @override
+  String get helpBoxesTokensBody =>
+      '• Plasare cutie comunitară: 50 de tokeni sunt reținuți prin server (garanție) și apar în istoricul portofelului.\n• Deschidere cutie comunitară (alt utilizator, la aprox. 100 m): primești 50 de tokeni; cutia este marcată deschisă.\n• Deschidere cutie la ofertă business: primești 50 de tokeni și un cod de reducere, cu respectarea regulii o deschidere pe zi per magazin și a plafonului setat de comerciant.\n• Dacă politica serverului blochează creditarea până la integrarea plăților, deschiderea poate eșua cu mesajul corespunzător.';
+
+  @override
+  String get helpBoxesCommunityStepsTitle => 'Cutii comunitare — pașii';
+
+  @override
+  String get helpBoxesCommunityStepsBody =>
+      '1) De pe hartă, plasezi o cutie la poziția curentă (ai nevoie de tokeni suficienți). Limită: până la 20 de cutii active per cont.\n2) Utilizatorii din apropiere văd cutiile pe hartă; propriile tale cutii nu îți apar ca să le deschizi tu.\n3) Apeși pe cutie, te apropii (aprox. 100 m), confirmi — serverul verifică distanța și identitatea.\n4) Plasatorul primește înregistrare în notificări și o notificare push când cineva deschide cutia.\n5) Din meniu → „Activitate cutii” vezi rezumatul, cutiile plasate, deschiderile tale și deschiderile la cutiile tale.';
+
+  @override
+  String get helpBoxesBusinessStepsTitle =>
+      'Cutii la oferte business — utilizator și comerciant';
+
+  @override
+  String get helpBoxesBusinessStepsBody =>
+      'Comerciantul publică o ofertă și poate atașa un plafon de cutii (cost suplimentar în tokeni la publicare sau la mărirea plafonului). Deschizi cutia de pe hartă, lângă locație; primești tokeni și un cod de reducere. În magazin, comerciantul deschide panoul business și folosește „Validează cod” astfel încât codul să fie marcat folosit. Codurile sunt păstrate securizat; doar funcțiile cloud le creează sau validează.';
+
+  @override
+  String get helpBoxesActivityScreenTitle =>
+      'Ecranul „Activitate cutii” (meniu)';
+
+  @override
+  String get helpBoxesActivityScreenBody =>
+      'File: Rezumat (estimări tokeni din deschideri și din plasări), Plasate (comunitate), Deschise de tine (comunitate + business), Deschideri la cutiile tale (notificări). Codurile de reducere sunt afișate parțial mascate.';
+
+  @override
+  String get helpBoxesPrivacyRulesTitle => 'Confidențialitate și reguli';
+
+  @override
+  String get helpBoxesPrivacyRulesBody =>
+      'Operațiile sensibile (coduri de reducere, deschideri) se fac pe server. Regulile Firestore împiedică falsificarea din aplicație; citirile respectă autentificarea.';
+
+  @override
+  String get helpBoxesWhoTitle => 'Cine ce face';
+
+  @override
+  String get helpBoxesWhoBody =>
+      '• Orice utilizator: hartă, plasare cutii comunitare dacă are tokeni, deschidere cutii când distanța și regulile permit, meniul „Activitate cutii”.\n• Plasator: primește notificări la deschiderea cutiilor comunitare.\n• Comerciant: configurează certificatele și plafoanele, validează codurile după ce clientul a deschis cutia.';
+
+  @override
+  String get helpBoxesNotesTitle => 'Note';
+
+  @override
+  String get helpBoxesNotesBody =>
+      'Listarea cutiilor din jur este potrivită pentru volum moderat; la scară foarte mare poate fi nevoie de indexare geografică mai strictă. Expirarea sau returnarea automată a garanției dacă nimeni nu deschide o cutie comunitară nu este inclusă aici și poate fi adăugată ulterior.';
+
+  @override
+  String get helpBoxesTip =>
+      'Sfat: Dacă deschiderea eșuează, verifică precizia GPS, conexiunea, soldul tokenilor și dacă creditarea este activă pe server în mediul tău.';
+
+  @override
+  String get helpTransfersP2PTitle => 'Transfer de tokeni între utilizatori';
+
+  @override
+  String get helpTransfersP2PAboutTitle => 'Despre funcție';
+
+  @override
+  String get helpTransfersP2PAboutBody =>
+      'Din meniul lateral, deschide „Transfer tokeni” pentru a trimite tokeni Nabour către alt cont sau pentru a cere cuiva să îți trimită tokeni. Soldurile și înregistrările din jurnal sunt actualizate pe server; ai nevoie de ID-ul de utilizator al celeilalte persoane (UID Firebase).';
+
+  @override
+  String get helpTransfersP2PWalletTitle => 'Portofel transferabil';
+
+  @override
+  String get helpTransfersP2PWalletBody =>
+      'Acest ecran arată soldul de tokeni transferabili (nu este același indicator ca bara de utilizare lunară din partea de sus a meniului). Dacă portofelul lipsește sau este înghețat, transferurile și cererile sunt blocate până când contul este eligibil.';
+
+  @override
+  String get helpTransfersP2PDirectTitle => 'Transfer direct';
+
+  @override
+  String get helpTransfersP2PDirectBody =>
+      'Trimite tokeni imediat către ID-ul destinatarului. Nu poți transfera către propriul cont. Suma trebuie să fie un număr întreg de tokeni, în intervalul permis. Poți adăuga o notă opțională.';
+
+  @override
+  String get helpTransfersP2PRequestTitle => 'Cerere de plată';
+
+  @override
+  String get helpTransfersP2PRequestBody =>
+      'Ceri altui utilizator (plătitorul) să îți trimită tokeni. Acesta primește o cerere în așteptare și poate accepta sau refuza. La acceptare, tokenii se mută din portofelul său transferabil în al tău. Cererile pot expira dacă nu primesc răspuns la timp.';
+
+  @override
+  String get helpTransfersP2PRequestsTabTitle => 'Filă „Cereri”';
+
+  @override
+  String get helpTransfersP2PRequestsTabBody =>
+      '• Ca plătitor: poți accepta sau refuza cererile primite; la refuz poți adăuga un motiv opțional.\n• Ca inițiator al cererii: poți anula o cerere creată de tine cât timp este în așteptare.';
+
+  @override
+  String get helpTransfersP2PHistoryTabTitle => 'Filă „Istoric”';
+
+  @override
+  String get helpTransfersP2PHistoryTabBody =>
+      'Afișează transferurile directe recente și cererile de plată rezolvate. Trage în jos pentru reîmprospătare.';
+
+  @override
+  String get helpTransfersP2PTip =>
+      'Distribuie ID-ul de utilizator doar persoanelor în care ai încredere. Verifică din nou ID-ul înainte de a confirma un transfer sau o cerere.';
+
+  @override
+  String get helpDriverActivationStepCheckConditions =>
+      '1. Verifică condițiile';
+
+  @override
+  String get helpDriverActivationStepCheckConditionsBody =>
+      'Trebuie să ai permis de conducere valabil, experiență de minim 2 ani și vârsta de minim 21 de ani.';
+
+  @override
+  String get helpDriverActivationStepPrepareDocs => '2. Pregătește documentele';
+
+  @override
+  String get helpDriverActivationStepPrepareDocsBody =>
+      'Ai nevoie de: permis de conducere, carte de identitate, certificat de înmatriculare auto, ITP valabil și asigurarea RCA.';
+
+  @override
+  String get helpDriverActivationStepCompleteApp => '3. Completează aplicația';
+
+  @override
+  String get helpDriverActivationStepCompleteAppBody =>
+      'Accesează secțiunea \"Carieră\" din meniul principal și completează formularul online cu datele tale.';
+
+  @override
+  String get helpDriverActivationStepSubmitDocs => '4. Transmite documentele';
+
+  @override
+  String get helpDriverActivationStepSubmitDocsBody =>
+      'Încarcă fotografii clare cu toate documentele necesare prin platforma online.';
+
+  @override
+  String get helpDriverActivationStepVerification =>
+      '5. Verificarea aplicației';
+
+  @override
+  String get helpDriverActivationStepVerificationBody =>
+      'Echipa noastră va verifica documentele în maxim 48 de ore lucrătoare.';
+
+  @override
+  String get helpDriverActivationStepReceiveCode =>
+      '6. Primește codul de activare';
+
+  @override
+  String get helpDriverActivationStepReceiveCodeBody =>
+      'După aprobare, vei primi un cod unic prin email/SMS pentru activarea contului de șofer.';
+
+  @override
+  String get helpDriverActivationStepActivateAccount => '7. Activează contul';
+
+  @override
+  String get helpDriverActivationStepActivateAccountBody =>
+      'Introdu codul în aplicație și începe să câștigi bani conducând!';
+
+  @override
+  String get helpDriverActivationTipHeader => '💡 Sfat util:';
+
+  @override
+  String get helpDriverActivationTipBody =>
+      'Asigură-te că toate documentele sunt valabile și fotografiile sunt clare pentru o procesare rapidă.';
+
+  @override
+  String get helpSearchHint => 'Caută în articole...';
+
+  @override
+  String get helpCategoryRideIssues => 'Probleme de cursă';
+
+  @override
+  String get helpCategorySafetySOS => 'Siguranță & SOS';
+
+  @override
+  String get helpCategoryNabourFeatures => 'Funcții Nabour';
+
+  @override
+  String get helpCategoryPaymentsWallet => 'Plăți & Portofel';
+
+  @override
+  String get helpCategorySettingsAccount => 'Setări & Cont';
+
+  @override
+  String get helpStillNeedHelp => 'Ai nevoie de ajutor?';
+
+  @override
+  String get helpContactSupport => 'Contactează echipa de suport';
+
+  @override
+  String get helpContactButton => 'Contactează';
+
+  @override
+  String get helpRideSharingTitle => 'Curse Partajate';
+
+  @override
+  String get chatGalleryPhoto => 'Fotografie din galerie';
+
+  @override
+  String get chatGif => 'GIF';
+
+  @override
+  String get driverHoursLimit => 'Limită ore condus';
+
+  @override
+  String driverHoursWarningBody(String hours, String remaining) {
+    return 'Ai condus $hours ore astăzi.\nMai ai $remaining ore disponibile.\n\nConsideră o pauză pentru siguranța ta și a pasagerilor.';
+  }
+
+  @override
+  String get goOffline => 'Ieși offline';
+
+  @override
+  String get driverHoursReachedLimitTitle => 'Limită de 10 ore atinsă';
+
+  @override
+  String get driverHoursReachedLimitBody =>
+      'Ai condus 10 ore consecutive.\nDin motive de siguranță ai fost deconectat automat.\n\nTe poți reconecta după o perioadă de odihnă.';
+
+  @override
+  String ridesCompletedToday(int count) {
+    return '$count curse finalizate azi.';
+  }
+
+  @override
+  String viewAllRides(int count) {
+    return 'Vezi toate cele $count curse';
+  }
+
+  @override
+  String get driverSessionBannerCritical =>
+      'Limită de 10 ore atinsă. Te rog ieși offline.';
+
+  @override
+  String driverSessionBannerWarning(String hours, String remaining) {
+    return 'Sesiune: ${hours}h • Rămân ${remaining}h';
+  }
+
+  @override
+  String driverSessionBannerNormal(String hours) {
+    return 'Sesiune: ${hours}h';
+  }
+
+  @override
+  String get helpToday => 'Ajutor Azi';
+
+  @override
+  String get tokens => 'Tokeni';
+
+  @override
+  String get rideSummary_thankYouGoodbye => 'Vă mulțumim și la revedere!';
+
+  @override
+  String rideSummary_tipRegistered(String amount, String currency) {
+    return 'Bacșișul de $amount $currency a fost înregistrat.';
+  }
+
+  @override
+  String rideSummary_redirectToMapInSeconds(String seconds) {
+    return 'Te redirecționăm la hartă în $seconds secunde...';
+  }
+
+  @override
+  String get rideSummary_submitRatingButton => 'Trimite Evaluarea';
+
+  @override
+  String get rideSummary_skipRatingButton => 'Omite evaluarea';
+
+  @override
+  String get rideSummary_ratingSentSuccess =>
+      'Evaluarea a fost trimisă cu succes!';
+
+  @override
+  String get rideSummary_backToMap => 'Înapoi la hartă';
+
+  @override
+  String get rideSummary_rideDetails => 'Detalii Cursă';
+
+  @override
+  String get rideSummary_distance => 'Distanța';
+
+  @override
+  String get rideSummary_duration => 'Durata';
+
+  @override
+  String get rideSummary_rideCost => 'Cost Cursă';
+
+  @override
+  String get rideSummary_freeRideSupport => 'Gratuit - Sprijin Vecini';
+
+  @override
+  String get rideSummary_driverTipOptional =>
+      '💰 Bacșiș pentru șofer (opțional)';
+
+  @override
+  String get rideSummary_thankDriverTipText =>
+      'Mulțumește șoferului pentru o călătorie plăcută!';
+
+  @override
+  String rideSummary_otherAmountLabel(String currency) {
+    return 'Altă sumă ($currency)';
+  }
+
+  @override
+  String get rideSummary_noTipButton => 'Fără bacșiș';
+
+  @override
+  String rideSummary_tipSelected(String amount, String currency) {
+    return 'Bacșiș selectat: $amount $currency';
+  }
+
+  @override
+  String get safety_sosButtonLabel => '112 — SOS';
+
+  @override
+  String get safety_locationUnavailable => '(locație indisponibilă)';
+
+  @override
+  String get safety_defaultNabourUser => 'Utilizator Nabour';
+
+  @override
+  String safety_emergencySmsBody(String name, String location) {
+    return '🆘 URGENȚĂ! $name are nevoie de ajutor!\nLocație: $location\nApăsați linkul pentru a vedea pe hartă.';
+  }
+
+  @override
+  String get safety_emergencyAlertSent =>
+      '🆘 Alertă de urgență trimisă. Se apelează 112...';
+
+  @override
+  String safety_shareTripBody(String location) {
+    return '📍 Urmăresc călătoria mea cu Nabour!\nLocația mea curentă: $location';
+  }
+
+  @override
+  String get safety_shareTripNoLocation =>
+      '🚗 Călătoresc cu Nabour. Locația nu este disponibilă momentan.';
+
+  @override
+  String get safety_couldNotCreateTrackingLink =>
+      'Nu s-a putut crea link-ul de urmărire';
+
+  @override
+  String get safety_deleteContactTitle => 'Șterge contact';
+
+  @override
+  String safety_deleteContactConfirmation(String name) {
+    return 'Ștergi \"$name\" din contactele de încredere?';
+  }
+
+  @override
+  String get safety_emergencyButtonTitle => 'Buton de urgență';
+
+  @override
+  String get safety_emergencyButtonSubtitle =>
+      'Apelează 112 și trimite locația ta\ntuturor contactelor de încredere';
+
+  @override
+  String get safety_shareTripTitle => 'Partajează călătoria';
+
+  @override
+  String get safety_activeRideDetected => 'Cursă activă detectată';
+
+  @override
+  String get safety_sendCurrentLocation => 'Trimite locația ta curentă';
+
+  @override
+  String get safety_gettingLocation => 'Se obține locația...';
+
+  @override
+  String get safety_shareLocationButton => 'Partajează locația';
+
+  @override
+  String get safety_liveLinkActive => 'Link live activ — reîmpartășește';
+
+  @override
+  String get safety_safeRideSharePath => 'Safe Ride Live — partajează traseu';
+
+  @override
+  String get safety_noContactsAdded => 'Niciun contact adăugat';
+
+  @override
+  String get safety_addContactsDescription =>
+      'Adaugă familia sau prietenii. Ei vor primi\nlocația ta în caz de urgență.';
+
+  @override
+  String get rideSummary_totalCost => 'Cost Total';
+
+  @override
+  String safety_destinationLabelPrefix(String destination) {
+    return 'Destinație: $destination';
+  }
 }

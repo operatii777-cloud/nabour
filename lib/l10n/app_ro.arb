@@ -496,8 +496,8 @@
   
   "safetyCenter": "Centrul de Siguranță",
   "addContact": "Adaugă contact",
-  "emergencyAssistanceButton": "Butonul de Asistență de Urgență",
-  "emergencyAssistanceButtonDesc": "În timpul oricărei curse, aveți la dispoziție butonul 112 în colțul ecranului pentru a contacta rapid serviciile de urgență.",
+  "safety_emergencyAssistanceButton": "Butonul de Asistență de Urgență",
+  "safety_emergencyAssistanceButtonDesc": "În timpul oricărei curse, aveți la dispoziție butonul 112 în colțul ecranului pentru a contacta rapid serviciile de urgență.",
   "tripSharing": "Partajarea Traseului",
   "tripSharingDesc": "Puteți partaja detaliile cursei și traseul în timp real cu prietenii sau familia pentru un plus de siguranță.",
   "verifiedDrivers": "Șoferi Verificați",
@@ -1258,9 +1258,9 @@
   
   "pleaseSelectRatingBeforeSubmit": "Vă rugăm selectați un rating înainte de a trimite.",
   "errorSubmittingRating": "Eroare la trimiterea evaluării. Încercați din nou.",
-  "thankYouForRide": "Vă mulțumim pentru călătorie!",
-  "howWasExperience": "Cum a fost experiența?",
-  "leaveCommentOptional": "Lasă un comentariu (opțional)",
+  "rideSummary_thankYouForRide": "Vă mulțumim pentru călătorie!",
+  "rideSummary_howWasExperience": "Cum a fost experiența?",
+  "rideSummary_leaveCommentOptional": "Lasă un comentariu (opțional)",
   "noTip": "Fără bacșiș",
   
   "thanksForRating": "Mulțumim pentru evaluare!",
@@ -1730,6 +1730,12 @@
   "drawerMenuPlaces": "Locuri",
   "drawerMenuExplorations": "Explorări",
   "drawerMenuSyncContacts": "Sincronizează contactele",
+  "drawerShowHomeOnMap": "Afișează Acasă (favorite) pe hartă\n(doar pentru tine)",
+  "drawerOrientationMarkerOnMap": "Reper orientare pe hartă\n(ține apăsat pe hartă după activare)",
+  "drawerHideHomeOnMap": "Ascunde Acasă de pe hartă\n(doar markerul favorite)",
+  "drawerHideOrientationMarker": "Ascunde reper orientare\n(elimină acul de pe hartă)",
+  "drawerActiveContactsOnMap": "Contacte active pe hartă",
+  "drawerIdCopied": "ID copiat în clipboard.",
   "drawerSyncContactsDialogTitle": "De ce sincronizare?",
   "drawerSyncContactsDialogBody": "Aplicația îți arată pe hartă doar persoanele care sunt în agenda ta și care folosesc Nabour.\n\nDacă ai adăugat un contact nou sau un prieten tocmai s-a înscris, apasă „Sincronizează” pentru a actualiza lista de vizibilitate pe harta socială.",
   "drawerSyncContactsDialogOk": "Înțeles",
@@ -1746,7 +1752,32 @@
   "warmupScheduleTitle": "Planifică mai târziu",
   "warmupScheduleSubtitle": "Anunță din timp — vecinii confirmă când sunt liberi.",
   "warmupWhyTitle": "De ce Nabour?",
-  "warmupCtaOpenMap": "Deschide harta",
+  "warmupCtaOpenMap": "Mergi la hartă",
+  "warmupSubtitle": "Centrul comunității tale",
+  "warmupExampleRidesCount": "{count} Curse Active în Apropiere",
+  "@warmupExampleRidesCount": {
+    "placeholders": {
+      "count": { "type": "String" }
+    }
+  },
+  "warmupExampleDealsCount": "{count} Oferte Noi Astăzi",
+  "@warmupExampleDealsCount": {
+    "placeholders": {
+      "count": { "type": "String" }
+    }
+  },
+  "warmupExampleMessagesCount": "{count} Mesaje Noi",
+  "@warmupExampleMessagesCount": {
+    "placeholders": {
+      "count": { "type": "String" }
+    }
+  },
+  "warmupExampleRide1": "Sarah B. (2 min) → Centru",
+  "warmupExampleRide2": "Mihai K. (5 min) → Gară",
+  "warmupExampleOffer1": "The Daily Grind: 20% reducere la cafea",
+  "warmupExampleOffer2": "Urban Bites: Garnitură gratis la orice fel",
+  "warmupExampleChat1": "Alex: Cine vrea la o plimbare în parc...?",
+  "warmupExampleChat2": "Chloe: S-a auzit un zgomot pe Elm St...",
   "warmupSwipeDownHint": "Sau trage în jos pentru a închide",
 
   "warmupHeroNeighborsTitle": "Curse între vecini",
@@ -1969,5 +2000,1106 @@
   "businessOffersNoNearbyOffers": "Revino mai târziu pentru oferte noi în apropiere.",
   "businessOffersManageFilters": "Gestionează filtrele",
   "businessOffersResetCategory": "Resetează categoria",
-  "businessOffersAllCategories": "Toate categoriile"
+  "businessOffersAllCategories": "Toate categoriile",
+  "mapGhostDurationTitle": "Cât timp ești vizibil vecinilor?",
+  "mapGhostDurationSubtitle": "Vecinii te vor vedea ca bulă pe hartă.",
+  "mapGhostOneHourLabel": "1 oră",
+  "mapGhostOneHourSub": "Util pentru o ieșire scurtă",
+  "mapGhostFourHoursLabel": "4 ore",
+  "mapGhostFourHoursSub": "Util pentru o după-amiază",
+  "mapGhostUntilTomorrowLabel": "Până mâine",
+  "mapGhostUntilTomorrowSub": "Se resetează la miezul nopții",
+  "mapGhostPermanentLabel": "Permanent",
+  "mapGhostPermanentSub": "Rămâi vizibil până dezactivezi manual",
+  "mapGhostInvisibleLabel": "Invizibil (mod fantomă)",
+  "mapGhostInvisibleSub": "Nu apari pe hartă; profilul marchează ghostMode în cont (sync între dispozitive).",
+  "mapDeleteMomentTitle": "Ștergi momentul?",
+  "mapDeleteMomentContent": "Postarea va dispărea de pe hartă pentru toți.",
+  "mapMomentDeleted": "Momentul a fost șters.",
+  "mapMomentDeleteError": "Nu s-a putut șterge. Încearcă din nou.",
+  "mapDeleteOrCancelPost": "Șterge / anulează postarea",
+  "mapPinNameLabel": "Denumire",
+  "mapPinNameHint": "ex.: intrarea principală",
+  "mapPinNameTitle": "Denumire reper",
+  "mapOrientationPinSaved": "Reperul de orientare a fost salvat pe hartă.",
+  "mapEditHomeAddressTitle": "Editează adresa Acasă",
+  "mapEditHomeAddressSubtitle": "Schimbi poziția din Adrese salvate",
+  "mapHideHomeFromMapTitle": "Ascunde Acasă de pe hartă",
+  "mapMoveOrientationMarkerTitle": "Mută reperul",
+  "mapMoveOrientationMarkerWithName": "„{name}” · apoi ține apăsat pe hartă la noul loc",
+  "@mapMoveOrientationMarkerWithName": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "mapMoveOrientationMarkerNoName": "Apoi ține apăsat pe hartă la noul loc",
+  "mapLongPressForNewMarker": "Ține apăsat pe hartă pentru noul reper.",
+  "mapRemoveOrientationMarkerTitle": "Elimină reperul de orientare",
+  "mapMarkerRemoved": "Reperul a fost eliminat.",
+  "mapSaveHomeFirst": "Salvează adresa „Acasă” în favorite (cu poziție pe hartă), apoi încearcă din nou.",
+  "mapHomeShownForYou": "Acasă din favorite este afișată pe hartă (doar pentru tine).",
+  "mapHomeNotShown": "Acasă nu este afișată pe hartă.",
+  "mapHomeNoLongerShown": "Acasă nu mai este afișată pe hartă.",
+  "mapNoOrientationMarker": "Nu ai un reper de orientare pe hartă.",
+  "mapOrientationMarkerRemovedFromMap": "Reperul de orientare a fost eliminat de pe hartă.",
+  "mapEmojiRemoved": "Emoji-ul tău a fost scos de pe hartă",
+  "mapEmojiDeleteError": "Nu am putut șterge emoji-ul. Încearcă din nou.",
+  "mapMomentExpired": "Expirat",
+  "mapMomentExpiresInMinutes": "~{minutes} min până dispare de pe hartă",
+  "@mapMomentExpiresInMinutes": {
+    "placeholders": {
+      "minutes": { "type": "int" }
+    }
+  },
+  "mapMomentExpiresSoon": "Dispare în curând de pe hartă",
+  "mapArrivedAtDestination": "Ai ajuns la destinație: {destination}",
+  "@mapArrivedAtDestination": {
+    "placeholders": {
+      "destination": { "type": "String" }
+    }
+  },
+  "mapDestinationUnset": "Destinație nestabilită",
+  "mapRideBroadcastWantsToGo": "Vrea să meargă la: {destination}",
+  "@mapRideBroadcastWantsToGo": {
+    "placeholders": {
+      "destination": { "type": "String" }
+    }
+  },
+  "mapSeeRequestAndOfferRide": "VEZI CEREREA ȘI OFERĂ CURSĂ",
+  "mapAcceptRideError": "Eroare la acceptarea cursei: {error}",
+  "@mapAcceptRideError": {
+    "placeholders": {
+      "error": { "type": "String" }
+    }
+  },
+  "mapPickupExternalNavigation": "Pickup: navigație externă",
+  "mapDestinationExternalNavigation": "Destinație: navigație externă",
+  "mapClosePanel": "Închide panoul",
+  "mapWaitingGpsLocation": "Așteptăm localizarea GPS...",
+  "mapCreateRideError": "Eroare la crearea cursei: {error}",
+  "@mapCreateRideError": {
+    "placeholders": {
+      "error": { "type": "String" }
+    }
+  },
+  "mapWaitingGpsToPlaceBox": "Așteptăm poziția GPS pentru a plasa cutia aici.",
+  "mapPlace": "Plasează",
+  "mapBoxPlaced": "Cutie plasată! (-{tokens} tokeni)",
+  "@mapBoxPlaced": {
+    "placeholders": {
+      "tokens": { "type": "int" }
+    }
+  },
+  "mapPoiLoadError": "Eroare la încărcarea POI-urilor: {error}",
+  "@mapPoiLoadError": {
+    "placeholders": {
+      "error": { "type": "String" }
+    }
+  },
+  "mapNavigateToMarkedPlace": "Navighează la locul marcat",
+  "mapDeleteMarkerAndRestart": "Șterge marcajul și începe din nou",
+  "mapSpotReserved": "Loc rezervat! Ai 3 minute să ajungi.",
+  "mapAddToFavoriteAddresses": "Adaugă la adrese favorite",
+  "mapNavigateWithExternalApps": "Navighează cu Google Maps / Waze",
+  "mapSpotAlreadyReserved": "Ne pare rău, locul a fost deja rezervat.",
+  "chatImageTooLargePrivate": "Imaginea e încă prea mare după compresie (max ~1,8 MB). Încearcă o poză mai mică.",
+  "chatImageTooLargeGeneral": "Imaginea e prea mare (max ~7 MB).",
+  "chatImageUploadFailed": "Nu s-a putut încărca imaginea.",
+  "chatPhotoLabel": "Fotografie",
+  "chatVoiceMessageLabel": "Mesaj vocal",
+  "chatMessageSendFailed": "Mesajul nu a putut fi trimis.",
+  "chatGifLabel": "GIF",
+  "chatPhoneNotAvailable": "Numărul de telefon nu este disponibil.",
+  "chatCallFailed": "Nu s-a putut iniția apelul.",
+  "chatMessagesLoadFailed": "Nu s-au putut încărca mesajele.",
+  "chatTyping": "scrie...",
+  "chatEndToEndEncrypted": "Mesajele sunt criptate end-to-end.",
+  "chatToday": "Astăzi",
+  "chatYesterday": "Ieri",
+  "chatQuickReplyHere": "Sunt aici 👋",
+  "chatQuickReplyIn2Min": "Vin în 2 min ⏱️",
+  "chatQuickReplyIn5Min": "Vin în 5 min ⏱️",
+  "chatQuickReplyArrived": "Ai ajuns? 📍",
+  "chatQuickReplyThanks": "Mulțumesc! 🙏",
+  "chatQuickReplyOk": "OK 👍",
+  "you": "Tu",
+  "chatVoiceMessageSendFailed": "Mesajul vocal nu a putut fi trimis.",
+  "chatReply": "Răspunde",
+  "chatCopy": "Copiază",
+  "chatMessageCopied": "Mesaj copiat.",
+  "chatChooseGif": "Alege GIF",
+  "chatSearchHint": "Caută…",
+  "privateChatNotAuthenticated": "Nu ești autentificat.",
+  "privateChatReaction": "Reacție",
+  "privateChatNewChat": "Chat nou",
+  "privateChatAddContactsToChoose": "Adaugă contacte în agendă sau prieteni ca să poți alege o persoană.",
+  "privateChatOnMap": "Pe hartă",
+  "privateChatNoPeopleYet": "Nu ai încă persoane în agendă sau prieteni confirmați.",
+  "privateChatAddContactsOrAcceptSuggestions": "Adaugă contacte sau acceptă cereri în tab-ul Sugestii ca să poți începe conversații private.",
+  "privateChatConversationsHint": "Conversații private — aceleași mesaje ca din profilul unui vecin pe hartă.",
+  "privateChatOnMapNowTapToWrite": "Pe hartă acum — apasă pentru a scrie",
+  "privateChatTapToSendMessage": "Apasă pentru a trimite un mesaj",
+  "chatLocationLabel": "Locație"
+  ,
+  "friendSuggestionsUserFallback": "Utilizator",
+  "friendSuggestionsAlreadyFriends": "Sunteți deja prieteni în Nabour.",
+  "friendSuggestionsRequestAlreadySent": "Ai trimis deja o cerere către această persoană.",
+  "friendSuggestionsRequestSent": "Cerere de prietenie trimisă!",
+  "friendSuggestionsRequestPermissionDenied": "Nu avem voie să scriem cererea (reguli Firebase). Contactează suportul.",
+  "friendSuggestionsRequestFailed": "Nu am putut trimite cererea. Încearcă din nou.",
+  "friendSuggestionsAcceptedFrom": "Ai acceptat cererea de la {name}! ✓",
+  "@friendSuggestionsAcceptedFrom": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "friendSuggestionsFriendFallback": "prieten",
+  "friendSuggestionsPermissionAcceptDenied": "Nu avem voie să acceptăm (reguli Firebase).",
+  "friendSuggestionsAcceptFailed": "Nu am putut accepta cererea. Încearcă din nou.",
+  "friendSuggestionsRejected": "Cererea a fost refuzată.",
+  "friendSuggestionsRejectFailed": "Nu am putut refuza cererea. Încearcă din nou.",
+  "friendSuggestionsThisUser": "acest utilizator",
+  "friendSuggestionsRemoveTitle": "Elimină din prieteni",
+  "friendSuggestionsRemoveConfirm": "Sigur vrei să îl elimini pe {name} din lista ta? Nu vei mai vedea reciproc pe hartă ca prieteni Nabour până nu retrimiteți cereri.",
+  "@friendSuggestionsRemoveConfirm": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "friendSuggestionsCancel": "Anulează",
+  "friendSuggestionsRemove": "Elimină",
+  "friendSuggestionsRemovedFromList": "{name} a fost eliminat din lista ta.",
+  "@friendSuggestionsRemovedFromList": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "friendSuggestionsRemoveFailed": "Nu am putut elimina. Încearcă din nou.",
+  "friendSuggestionsTabSuggestions": "Sugestii",
+  "friendSuggestionsTabMyFriends": "Prietenii mei",
+  "friendSuggestionsTabPrivateChat": "Chat individual",
+  "friendSuggestionsSearchHint": "Caută în agendă...",
+  "friendSuggestionsIncomingRequests": "Cereri primite ({count})",
+  "@friendSuggestionsIncomingRequests": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "friendSuggestionsAddressBookSuggestions": "Sugestii din agendă",
+  "friendSuggestionsNoConfirmedFriends": "Nu ai încă prieteni confirmați.\nAcceptă cereri în tab-ul Sugestii sau trimite tu o cerere.",
+  "friendSuggestionsLoading": "Se încarcă…",
+  "friendSuggestionsOnMapNow": "Pe hartă acum",
+  "friendSuggestionsNabourFriend": "Prieten Nabour",
+  "friendSuggestionsSendsRequest": "îți trimite o cerere de prietenie",
+  "friendSuggestionsReject": "Refuză",
+  "friendSuggestionsAccept": "Acceptă",
+  "friendSuggestionsIntroOne": "{count} INTRODUCERE",
+  "@friendSuggestionsIntroOne": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "friendSuggestionsIntroMany": "{count} INTRODUCERI",
+  "@friendSuggestionsIntroMany": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "friendSuggestionsFriendsCount": "{count} DE PRIETENI",
+  "@friendSuggestionsFriendsCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "friendSuggestionsFriendsCount50Plus": "50+ DE PRIETENI",
+  "friendSuggestionsFriendBadge": "Prieten",
+  "friendSuggestionsAdded": "Adăugat",
+  "friendSuggestionsAdd": "Adaugă",
+  "friendSuggestionsBackOnMap": "este din nou pe hartă",
+  "disclaimerNoPaymentsTitle": "Nabour nu intermediază plăți",
+  "disclaimerNoPaymentsSubtitle": "Aplicația nu intermediază plăți între utilizatori.",
+  "disclaimerNoPaymentsBody": "Nabour conectează vecini care vor să se ajute reciproc. Dacă un șofer alege să accepte sau să ofere un gest de apreciere, aceasta este exclusiv decizia și responsabilitatea sa personală. Aplicația nu intermediază, nu solicită și nu procesează niciun fel de plată.",
+  "disclaimerUsageNotice": "Nu sta în aplicație mai mult de 40 de minute pe zi, în medie pe lună — aceasta fie generează costuri, fie te blochează la utilizare.",
+  "disclaimerUnderstood": "Am înțeles",
+  "splashStartupError": "A apărut o eroare la pornire.\nVerifică internetul și încearcă din nou.",
+  "splashRetry": "REÎNCEARCĂ",
+  "splashTakingLonger": "Pornirea durează mai mult...",
+  "splashContinueAnyway": "CONTINUĂ ORICUM",
+  "splashMadeInRomania": "Fabricat în România",
+  "settingsCommunityModeSchool": "Mod școală / liceu",
+  "settingsCommunityModeStandard": "Standard (fără etichetă comunitate)",
+  "settingsNowPlayingNotSet": "Nu e setat — vizibil în profil pentru prieteni",
+  "settingsVoiceAssistantOnMap": "Asistent vocal pe hartă",
+  "settingsVoiceAssistantOnMapSubtitle": "Buton pe hartă și secțiunea din meniu (în curs de îmbunătățiri)",
+  "settingsGhostModeTitle": "Mod fantomă (hartă socială)",
+  "settingsGhostModeSubtitle": "Activezi „Invizibil” din meniul hărții sociale; oprește RTDB și marchează ghostMode în cont.",
+  "settingsApproximateLocationTitle": "Locație aproximativă (hartă socială)",
+  "settingsSocialMapSection": "Hartă socială",
+  "settingsNearbyNotificationsTitle": "Notificări „aproape de mine”",
+  "settingsNearbyAlertRadiusTitle": "Rază alertă apropiere",
+  "settingsNearbyAlertRadiusSubtitle": "{meters} m (contacte pe hartă)",
+  "@settingsNearbyAlertRadiusSubtitle": {
+    "placeholders": {
+      "meters": { "type": "int" }
+    }
+  },
+  "settingsMusicTitle": "Muzică (Spotify / Apple Music)",
+  "settingsMusicSubtitle": "Deschide Spotify sau Apple Music",
+  "settingsNowPlayingTitle": "Ce ascult acum (profil)",
+  "settingsCommunityModeTitle": "Mod comunitate / școală",
+  "settingsLocationHistoryTitle": "Istoric locație (Timeline)",
+  "settingsLocationHistoryStartFailed": "Nu s-a putut porni înregistrarea. Acordă acces la locație și, pe Android, „Permite tot timpul” pentru înregistrare când aplicația nu e deschisă.",
+  "settingsLocationHistoryEnabled": "Istoricul locației a fost activat (vezi notificarea pe Android când rulează în fundal).",
+  "settingsLocationHistoryDisabled": "Istoricul locației a fost dezactivat.",
+  "settingsLocalHistoryRetentionTitle": "Retenție istoric local",
+  "settingsLocalHistoryRetentionSubtitle": "Păstrează datele locale {days} zile",
+  "@settingsLocalHistoryRetentionSubtitle": {
+    "placeholders": {
+      "days": { "type": "int" }
+    }
+  },
+  "settingsDeleteLocalHistoryTitle": "Șterge istoricul local",
+  "settingsDeleteLocalHistorySubtitle": "Șterge recap, cache și timeline local pentru acest cont",
+  "settingsNearbyNotificationRadiusTitle": "Rază notificare apropiere",
+  "settingsLocalHistoryRetentionSet": "Retenția locală a fost setată la {days} zile.",
+  "@settingsLocalHistoryRetentionSet": {
+    "placeholders": {
+      "days": { "type": "int" }
+    }
+  },
+  "settingsNowPlayingSheetTitle": "Ce ascult acum",
+  "settingsNowPlayingSongLabel": "Piesă / titlu",
+  "settingsMusicProfileUpdated": "Profil muzical actualizat.",
+  "settingsSaveToAccount": "Salvează în cont",
+  "settingsDeleteFromProfile": "Șterge din profil",
+  "settingsCommunitySheetTitle": "Comunitate",
+  "settingsCommunityModeSaved": "Mod comunitate salvat.",
+  "settingsDeleteLocalHistoryConfirmTitle": "Ștergi istoricul local?",
+  "settingsDeleteLocalHistoryConfirmContent": "Această acțiune șterge recap-ul și cache-ul local Week in Review pentru contul curent.",
+  "settingsLocalHistoryDeleted": "Istoricul local a fost șters.",
+  "tokenShopChoosePaymentMethodFor": "Alege metoda de plată pentru {planName}",
+  "@tokenShopChoosePaymentMethodFor": {
+    "placeholders": {
+      "planName": { "type": "String" }
+    }
+  },
+  "tokenShopPayByCard": "Plată cu cardul",
+  "tokenShopPriceWithAutoRenewal": "Preț: {price} (Reînnoire automată)",
+  "@tokenShopPriceWithAutoRenewal": {
+    "placeholders": {
+      "price": { "type": "String" }
+    }
+  },
+  "tokenShopPayWithTransferableTokens": "Plătește cu tokeni transferabili",
+  "tokenShopPriceInTokensNoRenewal": "Preț: {tokens} tokeni (Fără reînnoire)",
+  "@tokenShopPriceInTokensNoRenewal": {
+    "placeholders": {
+      "tokens": { "type": "int" }
+    }
+  },
+  "tokenShopInsufficientShort": "Insuficient",
+  "tokenShopPlanActivated": "Planul {planName} a fost activat!",
+  "@tokenShopPlanActivated": {
+    "placeholders": {
+      "planName": { "type": "String" }
+    }
+  },
+  "tokenShopUnlimitedAccessNetworkIntelligence": "Acces absolut la inteligența rețelei.",
+  "tokenShopPersonalTokensSubtitle": "Tokeni pentru AI, rute și funcțiile tale.",
+  "tokenShopTransferablePackagesTitle": "PACHETE TRANSFERABILE",
+  "tokenShopTransferablePackagesSubtitle": "Tokeni reali pe care îi poți trimite oricui.",
+  "tokenShopTransferablePackageTitle": "Pachet transferabil: {tokens} tokeni",
+  "@tokenShopTransferablePackageTitle": {
+    "placeholders": {
+      "tokens": { "type": "int" }
+    }
+  },
+  "tokenShopTxPurchaseTransferablePackage": "Cumpărare pachet TRANSFERABIL: {label}",
+  "@tokenShopTxPurchaseTransferablePackage": {
+    "placeholders": {
+      "label": { "type": "String" }
+    }
+  },
+  "tokenShopTransferableWalletSuffix": " (în portofelul transferabil)",
+  "neighborhoodChatMuted": "Chat silențios",
+  "neighborhoodChatSoundOn": "Sunet activat",
+  "neighborhoodChatGpsDisabled": "GPS dezactivat. Activează locația pentru chat.",
+  "neighborhoodChatGpsPermissionDenied": "Permisiune GPS refuzată.",
+  "neighborhoodChatInvalidServerResponse": "Chat cartier: răspuns invalid de la server (roomId H3).",
+  "neighborhoodChatFunctionsUnavailable": "Chat cartier: Functions indisponibile ({code}).",
+  "@neighborhoodChatFunctionsUnavailable": {
+    "placeholders": {
+      "code": { "type": "String" }
+    }
+  },
+  "neighborhoodChatActivationFailed": "Nu s-a putut activa chat-ul.",
+  "neighborhoodChatLocationResolveFailed": "Nu s-a putut determina locația.",
+  "neighborhoodChatInappropriateMessage": "Mesaj inadecvat.",
+  "neighborhoodChatOnMyWay": "Sunt pe drum!",
+  "neighborhoodChatMarkedLocation": "Am marcat o locație pe hartă",
+  "neighborhoodChatTitle": "Chat cartier",
+  "neighborhoodChatInviteNeighbors": "Invită vecini",
+  "neighborhoodChatNoAccessOrRulesChanged": "Nu ai acces la acest chat sau regulile de securitate s-au schimbat. Reîncearcă după ce te autentifici din nou.",
+  "neighborhoodChatNoRecentMessages": "Niciun mesaj recent",
+  "neighborhoodChatEmptyHint": "Spune „Bună” vecinilor sau trimite o locație. Mesajele dispar după 30 minute.",
+  "neighborhoodChatSendLocationTooltip": "Trimite locația ta",
+  "neighborhoodChatInviteText": "Vino în chat-ul cartierului Nabour! Suntem vecini în zona H3: {roomId}",
+  "@neighborhoodChatInviteText": {
+    "placeholders": {
+      "roomId": { "type": "String" }
+    }
+  },
+  "neighborhoodChatInfoBody1": "Acesta este un spațiu efemer pentru vecinii din aceeași zonă H3 (aprox. 1km²).",
+  "neighborhoodChatInfoBody2": "• Mesajele dispar automat după 30 de minute.\n• Poți trimite locația sau mesaje text.\n• Respectă vecinii și păstrează comunitatea curată!",
+  "neighborhoodChatFlyToHint": "Apasă pentru animația \"FlyTo\" către punctul marcat de vecin.",
+  "neighborhoodChatSeeOnMap": "VEZI PE HARTĂ",
+  "placesHubTabLearned": "Învățate",
+  "placesHubTabFavorites": "Favorite",
+  "placesHubTabRecommendations": "Recomandări",
+  "placesHubNoLearnedPlaces": "Încă nu avem locuri învățate. Rămâi cu aplicația deschisă pe hartă — detectăm zonele unde stai mai mult (confidențial, pe telefon).",
+  "placesHubFrequentArea": "Zonă frecventată ({minutes} min acumulate)",
+  "@placesHubFrequentArea": {
+    "placeholders": {
+      "minutes": { "type": "int" }
+    }
+  },
+  "placesHubVisitsConfidence": "{visits} vizite · încredere {confidence}%",
+  "@placesHubVisitsConfidence": {
+    "placeholders": {
+      "visits": { "type": "int" },
+      "confidence": { "type": "int" }
+    }
+  },
+  "placesHubFavoritesHint": "Adresele tale salvate apar și pe hartă ca „acasă / serviciu” când ești aproape.",
+  "placesHubManageFavoriteAddresses": "Gestionează adrese favorite",
+  "placesHubDiscoverNeighborhood": "Descoperă cartierul",
+  "placesHubDiscoverNeighborhoodHint": "Activează vizibilitatea pe harta socială ca să vezi cereri, momente și vecini. Locurile învățate se îmbogățesc automat din mișcarea ta.",
+  "placesHubFriendsNearbyTitle": "Prieteni în zonă",
+  "placesHubFriendsNearbySubtitle": "Pe harta principală vezi contactele care te-au adăugat și sunt aproape.",
+  "placesHubPreviewTitle": "Previzualizare",
+  "rideBroadcastDeleteRequestTitle": "Șterge cererea",
+  "rideBroadcastDeleteRequestConfirm": "Ești sigur că vrei să ștergi această cerere din istoricul tău?",
+  "rideBroadcastFeedTitle": "Cereri din cartier",
+  "rideBroadcastActiveRadiusTooltip": "În tab-ul „Active” afișăm cererile în cel mult {km} km față de locația ta curentă (când locația e disponibilă).",
+  "@rideBroadcastActiveRadiusTooltip": {
+    "placeholders": {
+      "km": { "type": "int" }
+    }
+  },
+  "rideBroadcastTabActive": "Active",
+  "rideBroadcastTabMapBubbles": "Bule pe hartă",
+  "rideBroadcastTabMyHistory": "Istoricul meu",
+  "rideBroadcastVisibleOnlyForYouNoContacts": "Cererea e vizibilă doar pentru tine: în agendă nu am găsit alți utilizatori Nabour cu numărul din profilul lor.",
+  "rideBroadcastVisibleForYouAndContacts": "Cererea e vizibilă pentru tine și pentru încă {people} din agendă.",
+  "@rideBroadcastVisibleForYouAndContacts": {
+    "placeholders": {
+      "people": { "type": "String" }
+    }
+  },
+  "rideBroadcastEnableLocationForMapRequest": "Activează locația ca să plasezi o cerere pe hartă.",
+  "rideBroadcastRequestRide": "Cer o cursă",
+  "rideBroadcastMapRequest": "Cerere pe hartă",
+  "rideBroadcastBubblesLoadFailed": "Nu s-au putut încărca bulele. Trage în jos pentru reîncercare.\n{error}",
+  "@rideBroadcastBubblesLoadFailed": {
+    "placeholders": {
+      "error": { "type": "String" }
+    }
+  },
+  "rideBroadcastNoBubbleInRadius": "Nicio bulă în raza de {km} km",
+  "@rideBroadcastNoBubbleInRadius": {
+    "placeholders": {
+      "km": { "type": "int" }
+    }
+  },
+  "rideBroadcastNoActiveBubbleHere": "Nicio bulă activă aici",
+  "rideBroadcastBubblesOutsideRadiusHint": "Există bule active, dar sunt peste {km} km față de locația curentă. Verifică pe hartă sau actualizează GPS-ul (trage în jos).",
+  "@rideBroadcastBubblesOutsideRadiusHint": {
+    "placeholders": {
+      "km": { "type": "int" }
+    }
+  },
+  "rideBroadcastBubblesVisibilityHint": "Bulele sunt vizibile pe hartă cam o oră de la plasare, apoi dispar. Plasează una din meniul hărții. Dacă tocmai ai deschis ecranul, trage în jos pentru sincron.",
+  "rideBroadcastNoPostedRequestYet": "Nicio cerere postată încă",
+  "rideBroadcastNoActiveRequest": "Nicio cerere activă",
+  "rideBroadcastBeFirstHint": "Fii primul din cartier care postează o cerere de cursă.",
+  "rideBroadcastFriendPostedButNotVisibleHint": "Dacă un prieten a postat dar nu vezi: trage în jos pentru reîmprospătare, verifică că îl ai în agendă cu același număr ca în profilul Nabour și că ai permisiune la contacte.",
+  "rideBroadcastNoRequestInRadius": "Nicio cerere în raza de {km} km",
+  "@rideBroadcastNoRequestInRadius": {
+    "placeholders": {
+      "km": { "type": "int" }
+    }
+  },
+  "rideBroadcastIncludedButFarHint": "Există cereri în care ești inclus, dar sunt mai departe față de locația ta curentă. Te apropii sau pornești locația pentru filtre corecte.",
+  "rideBroadcastWaitingFriendHint": "Dacă aștepți de la un prieten apropiat, verifică și agendă + profilul Nabour cu același număr.",
+  "rideBroadcastDeleteMapRequestTitle": "Ștergi cererea de pe hartă?",
+  "rideBroadcastDeleteMapRequestConfirm": "Bula dispare pentru toți vecinii; acțiunea nu poate fi anulată.",
+  "rideBroadcastMapBubbleDeleted": "Bula a fost ștearsă de pe hartă.",
+  "rideBroadcastDeleteFailed": "Nu s-a putut șterge: {error}",
+  "@rideBroadcastDeleteFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "rideBroadcastDeleteFromMapTooltip": "Șterge de pe hartă",
+  "rideBroadcastPlaced": "Plasată: {value}",
+  "@rideBroadcastPlaced": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "rideBroadcastExpiresMapBubble": "Expiră: {value} (≈1 h după plasare)",
+  "@rideBroadcastExpiresMapBubble": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "rideBroadcastDistanceFromYou": "La ~{km} km față de tine",
+  "@rideBroadcastDistanceFromYou": {
+    "placeholders": {
+      "km": {
+        "type": "String"
+      }
+    }
+  },
+  "rideBroadcastCancelRequestTitle": "Anulează cererea",
+  "rideBroadcastCancelRequestConfirm": "Ești sigur că vrei să anulezi această cerere?",
+  "rideBroadcastNo": "Nu",
+  "rideBroadcastYesCancel": "Da, anulează",
+  "rideBroadcastPersonalCar": "Mașină personală",
+  "rideBroadcastOfferSendFailed": "Nu s-a putut trimite oferta: {error}",
+  "@rideBroadcastOfferSendFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "rideBroadcastReplySendFailed": "Nu s-a putut trimite răspunsul: {error}",
+  "@rideBroadcastReplySendFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "rideBroadcastDriverFallback": "Șofer",
+  "rideBroadcastConfirmRideTitle": "Confirmă cursa",
+  "rideBroadcastRideCompletedQuestion": "Cursa s-a efectuat?",
+  "rideBroadcastNotCompleted": "Nu s-a efectuat",
+  "rideBroadcastCompletedYes": "Da, s-a efectuat",
+  "rideBroadcastReasonDriverNoShow": "Șoferul nu a mai venit",
+  "rideBroadcastReasonPassengerCancelled": "Pasagerul a anulat",
+  "rideBroadcastReasonAnotherCar": "Altă mașină",
+  "rideBroadcastReasonOther": "Alt motiv",
+  "rideBroadcastReasonTitle": "Motivul",
+  "rideBroadcastExpiresIn": "Expiră în {value}",
+  "@rideBroadcastExpiresIn": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "rideBroadcastMyRequest": "Cererea mea",
+  "rideBroadcastAvailableDrivers": "Șoferi disponibili",
+  "rideBroadcastReplies": "Răspunsuri",
+  "rideBroadcastReplyHint": "Poți trimite mai multe mesaje - apasă trimitere pentru fiecare",
+  "rideBroadcastOffersOne": "{count} ofertă",
+  "@rideBroadcastOffersOne": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "rideBroadcastOffersMany": "{count} oferte",
+  "@rideBroadcastOffersMany": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "rideBroadcastOfferSent": "Ofertă trimisă",
+  "rideBroadcastIOffer": "Mă ofer",
+  "rideBroadcastStatusDone": "✅ Efectuată",
+  "rideBroadcastStatusNotDone": "❌ Neefectuată",
+  "rideBroadcastStatusAccepted": "🤝 Acceptată",
+  "rideBroadcastStatusCancelled": "🚫 Anulată",
+  "rideBroadcastStatusActive": "🕐 Activă",
+  "rideBroadcastStatusExpired": "⏱ Expirată",
+  "rideBroadcastDriverWithName": "Șofer: {name}",
+  "@rideBroadcastDriverWithName": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "rideBroadcastReasonWithValue": "Motiv: {value}",
+  "@rideBroadcastReasonWithValue": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "rideBroadcastTooManyActiveRequests": "Ai deja {max} cereri active. Închide sau așteaptă expirarea uneia (30 min) înainte de o nouă postare.",
+  "@rideBroadcastTooManyActiveRequests": {
+    "placeholders": {
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "rideBroadcastErrorWithMessage": "Eroare: {error}",
+  "@rideBroadcastErrorWithMessage": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "rideBroadcastAskRideTitle": "Cer o cursă",
+  "rideBroadcastPostVisibilityHint": "Cererea ta va fi vizibilă persoanelor din agenda ta timp de 30 de minute.",
+  "rideBroadcastQuickSelectOrWrite": "Selectează rapid sau scrie",
+  "rideBroadcastYourMessageRequired": "Mesajul tău *",
+  "rideBroadcastMessageHint": "Unde vrei să mergi? Orice detaliu util...",
+  "rideBroadcastDestinationOptional": "Destinație (opțional)",
+  "rideBroadcastDestinationHint": "ex: supermarket, stație, aeroport...",
+  "rideBroadcastPostRequest": "Postează cererea",
+  "rideBroadcastExpiresAfterThirtyMinutes": "Cererea expiră automat după 30 de minute.",
+  "searchDriverFallback": "Șofer",
+  "searchDriverSearchingNearby": "Se caută șoferi în apropiere...",
+  "searchDriverFoundWaitConfirm": "Șofer găsit! Așteaptă confirmarea ta.",
+  "searchDriverRideCancelled": "Cursa a fost anulată.",
+  "searchDriverNoDriverAvailable": "Ne pare rău, niciun șofer nu a fost disponibil.",
+  "searchDriverUnknownRideStatus": "Stare cursă necunoscută: {status}",
+  "@searchDriverUnknownRideStatus": {
+    "placeholders": {
+      "status": {
+        "type": "String"
+      }
+    }
+  },
+  "searchDriverConfirmError": "Eroare la confirmarea șoferului: {error}",
+  "@searchDriverConfirmError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "searchDriverDeclinedResuming": "Ai refuzat șoferul. Se reia căutarea...",
+  "searchDriverDeclineError": "Eroare la refuzarea șoferului: {error}",
+  "@searchDriverDeclineError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "searchDriverCancelError": "Eroare la anulare: {error}",
+  "@searchDriverCancelError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "searchDriverSearchingTitle": "Se caută șoferi",
+  "searchDriverPremiumHintTitle": "Sugestie Premium",
+  "searchDriverPremiumHintBody": "Rămâi pe ecran pentru o preluare mai rapidă.",
+  "searchDriverFoundTitle": "Șofer găsit",
+  "searchDriverArrivesIn": "Sosește în",
+  "searchDriverDistanceLabel": "Distanță",
+  "searchDriverNabourDriverFallback": "Șofer Nabour",
+  "searchDriverStandardCategory": "Categoria Standard",
+  "rideRequestStatusSearching": "Căutare șoferi",
+  "rideRequestStatusPending": "În așteptare",
+  "rideRequestStatusDriverFound": "Șofer găsit",
+  "rideRequestStatusAccepted": "Acceptată",
+  "rideRequestStatusDriverArrived": "Șoferul a ajuns",
+  "rideRequestStatusInProgress": "În curs",
+  "rideRequestStatusDriverRejected": "Șofer respins",
+  "rideRequestStatusDriverDeclined": "Șofer a refuzat",
+  "rideRequestTimeoutInternet": "A expirat timpul de așteptare. Te rugăm să verifici conexiunea la internet.",
+  "rideRequestRouteCalcError": "Eroare la calcularea rutei: {error}",
+  "@rideRequestRouteCalcError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "rideRequestActiveRideDetected": "Cursă activă detectată",
+  "rideRequestStatusLabel": "Status cursă",
+  "rideRequestIdLabel": "ID cursă",
+  "rideRequestCancelPreviousRide": "Anulează cursa precedentă",
+  "rideRequestCancelPreviousRideError": "Eroare la anularea cursei precedente: {error}",
+  "@rideRequestCancelPreviousRideError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "rideRequestCreateRideError": "Eroare la crearea cursei: {error}",
+  "@rideRequestCreateRideError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "rideRequestWhereTo": "Unde mergem?",
+  "rideRequestChooseRide": "Alege o cursă",
+  "rideRequestOrChooseCategory": "sau alege categoria",
+  "rideRequestSearchInProgress": "Căutare în curs...",
+  "rideRequestConfirmAndRequest": "Confirmă și solicită cursa",
+  "rideRequestAnyCategoryAvailable": "Orice categorie disponibilă",
+  "rideRequestFastestDriverInArea": "Cel mai rapid șofer disponibil din zonă",
+  "rideRequestAnyCategorySubtitle": "Cel mai rapid șofer disponibil.",
+  "rideRequestFamilySubtitle": "Spațiu extra pentru familie și bagaje.",
+  "rideRequestEnergySubtitle": "Călătorește eco cu o mașină electrică.",
+  "rideRequestUtilitySubtitle": "Dubă sau utilitar (până la 3.5t). Ideal pentru mutări.",
+  "rideRequestUserNotAuthenticated": "Eroare: Utilizatorul nu este autentificat."
+  ,
+  "mapArrivalInstruction": "Ai sosit la destinație!",
+  "mapArrivedTitle": "Ai sosit!",
+  "mapFinalDestinationTitle": "Destinație finală",
+  "mapOpenNavigationToDestinationHint": "Deschide în aplicația de navigație spre destinație. Revii apoi la hartă.",
+  "mapPassengerStatusDriverFound": "Șofer găsit - așteaptă confirmarea ta",
+  "mapPassengerStatusDriverOnWay": "Șofer în drum spre tine",
+  "mapPassengerStatusDriverAtPickup": "Șofer la pickup - deschide navigația spre destinație",
+  "mapPassengerStatusInProgress": "Cursă în desfășurare",
+  "mapPassengerStatusGeneric": "Cursă: {status}",
+  "@mapPassengerStatusGeneric": {
+    "placeholders": {
+      "status": {
+        "type": "String"
+      }
+    }
+  },
+  "mapNavigationToPickupTitle": "Navigare spre pickup",
+  "mapExternalNavigationNoRouteHint": "Aplicație de navigație (fără rută în Nabour).",
+  "mapOpenSameDestinationAsDriver": "Deschide aceeași destinație ca și șoferul în app-ul de navigație.",
+  "mapLongPressToSetLandmark": "Ține apăsat pe hartă pentru a fixa reperul.",
+  "mapCloseCancelPlacement": "Închide (anulează plasarea)",
+  "mapCommunityMysteryBoxTitle": "Mystery Box comunitar",
+  "mapCommunityMysteryBoxDescription": "Plasezi o cutie la locația curentă. Cost: {tokens} tokeni. Primul utilizator care o deschide la fața locului primește aceiași tokeni - tu vei primi o notificare când se întâmplă.",
+  "@mapCommunityMysteryBoxDescription": {
+    "placeholders": {
+      "tokens": {
+        "type": "int"
+      }
+    }
+  },
+  "mapShortMessageOptional": "Mesaj scurt (opțional)",
+  "mapShortMessageHint": "ex: Bonus pe vârf - distracție plăcută!",
+  "mapPhoneNumberUnavailable": "Număr de telefon indisponibil"
+  ,
+  "neighborFallback": "Vecin",
+  "mapReactionSent": "Reacție trimisă: {reaction}",
+  "@mapReactionSent": {
+    "placeholders": {
+      "reaction": {
+        "type": "String"
+      }
+    }
+  },
+  "mapHonkedNeighbor": "L-ai claxonat pe {name}!",
+  "@mapHonkedNeighbor": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "mapEtaMessageToNeighbor": "📍 Vin spre tine! ETA estimat: {minutes} min.",
+  "@mapEtaMessageToNeighbor": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "mapEtaSentTo": "ETA trimis lui {name}",
+  "@mapEtaSentTo": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "mapNeighborhoodBubbleContext": "Bula apare lângă {name} pe hartă. Vizibilă vecinilor ~1 oră.",
+  "@mapNeighborhoodBubbleContext": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "mapEmojiPlacedNear": "Emoji plasat lângă {name} pe hartă",
+  "@mapEmojiPlacedNear": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "mapCannotPlaceEmoji": "Nu am putut plasa emoji-ul pe hartă",
+  "mapPersonNotVisibleSendFromList": "Persoana nu e vizibilă pe hartă acum. Poți trimite cerere de prietenie din listă (+).",
+  "mapContactsVisibilityHint": "Pe hartă apar doar prietenii acceptați sau contactele din telefon care au cont Nabour. Adaugă numerele în agendă sau acceptă o cerere din Sugestii.",
+  "mapSyncingContacts": "Sincronizez contactele...",
+  "mapSyncComplete": "Sincronizare completă: {count} nume găsite.",
+  "@mapSyncComplete": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "mapEnableDriverProfileHint": "Activează profilul de șofer și adaugă mașina ca să folosești modul șofer.",
+  "mapIntermediateStopAdded": "{name} adăugat ca oprire intermediară",
+  "@mapIntermediateStopAdded": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "mapStopRemoved": "{name} eliminat din opriri",
+  "@mapStopRemoved": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "mapNoPoiFoundInArea": "Niciun {category} găsit în zonă",
+  "@mapNoPoiFoundInArea": {
+    "placeholders": {
+      "category": {
+        "type": "String"
+      }
+    }
+  },
+  "mapHonkReceived": "📣 {name} te-a claxonat!",
+  "@mapHonkReceived": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "mapCalculatingRoute": "Se calculează traseul...",
+  "mapCannotGetLocationEnableGps": "Nu am putut obține locația. Activează GPS-ul.",
+  "mapRouteUnavailableCheckConnection": "Traseu indisponibil. Verifică conexiunea.",
+  "mapContinueOnRoute": "Continuă pe traseu.",
+  "mapAneighbor": "Un vecin",
+  "mapSosNearbyTitle": "🆘 SOS PROXIMITATE: {name}",
+  "@mapSosNearbyTitle": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "mapSosNearbyBody": "Urgență activă în apropiere! Verifică radarul pe hartă.",
+  "mapSosTtsAlert": "Atenție! ALERTĂ S.O.S. în apropiere de la {name}. Radarul de proximitate este activat.",
+  "@mapSosTtsAlert": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "mapCriticalZone": "ZONĂ CRITICĂ",
+  "mapSosActiveTitle": "🆘 S.O.S. ACTIV",
+  "mapNoContactsInRadarCircle": "Nimeni din contactele tale cu poziție în zonă nu e în cercul de scanare acum.",
+  "mapStopNavigationFirst": "Oprește mai întâi navigarea din bannerul de sus.",
+  "mapWaitingGpsTryAgain": "Așteptăm poziția GPS. Încearcă din nou în câteva secunde.",
+  "mapGpsLocationUnavailableYet": "Locația GPS nu este disponibilă încă",
+  "mapSetPickupError": "Eroare la setarea pickup: {error}",
+  "@mapSetPickupError": {
+    "placeholders": {
+      "error": { "type": "String" }
+    }
+  },
+  "mapSetDestinationError": "Eroare la setarea destinației: {error}",
+  "@mapSetDestinationError": {
+    "placeholders": {
+      "error": { "type": "String" }
+    }
+  },
+  "mapMaxIntermediateStops": "Maximum {count} opriri intermediare permise",
+  "@mapMaxIntermediateStops": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "mapStopAlreadyAdded": "Această oprire este deja adăugată",
+  "mapAddStopError": "Eroare la adăugarea opririi: {error}",
+  "@mapAddStopError": {
+    "placeholders": {
+      "error": { "type": "String" }
+    }
+  },
+  "mapRouteCalculationError": "Eroare la calcularea rutei: {error}",
+  "@mapRouteCalculationError": {
+    "placeholders": {
+      "error": { "type": "String" }
+    }
+  },
+  "mapRouteSetupError": "Eroare la configurarea rutei: {error}",
+  "@mapRouteSetupError": {
+    "placeholders": {
+      "error": { "type": "String" }
+    }
+  },
+  "mapCouldNotCalculateRoute": "Nu s-a putut calcula ruta",
+  "mapFlashlightUnavailable": "Lanterna nu este disponibilă pe acest dispozitiv",
+  "mapFlashlightActivationError": "Eroare la activarea lanternei",
+  "mapSpotAnnouncedAvailable": "Locul a fost anunțat disponibil.",
+  "mapCouldNotAnnounceTryAgain": "Nu s-a putut anunța. Încearcă din nou.",
+  "mapSelectionCancelled": "Selecția pe hartă a fost anulată."
+  ,
+  "mapNeighborNearbyTitle": "{avatar} {name} e aproape!",
+  "@mapNeighborNearbyTitle": {
+    "placeholders": {
+      "avatar": { "type": "String" },
+      "name": { "type": "String" }
+    }
+  },
+  "mapNeighborNearbyBody": "La {meters} m - harta socială 📍",
+  "@mapNeighborNearbyBody": {
+    "placeholders": {
+      "meters": { "type": "int" }
+    }
+  },
+  "mapPickupIndex": "Pickup {index}",
+  "@mapPickupIndex": {
+    "placeholders": {
+      "index": { "type": "int" }
+    }
+  },
+  "mapPickupPointSelected": "Punct de preluare selectat",
+  "helpChatGuideTitle": "Ghid utilizare Chat Cartier",
+  "helpChatGuideIntro": "Chat-ul de cartier este conceput să te conecteze instantaneu cu vecinii aflați în proximitatea ta.",
+  "helpChatWhoSeesTitle": "Cine vede mesajele?",
+  "helpChatWhoSeesBody": "Mesajele trimise sunt vizibile pentru toți utilizatorii care se află în aceeași zonă geografică cu tine în momentul utilizării.",
+  "helpChatCoverageTitle": "Raza și Aria de acoperire",
+  "helpChatCoverageBody": "Sistemul împarte orașul în hexagoane cu latura de aproximativ 3.2 km (o suprafață de circa 36 km²). Este o zonă vastă, ideală pentru a acoperi un cartier întreg sau un sector.",
+  "helpChatPersistenceTitle": "Persistența mesajelor",
+  "helpChatPersistenceBody": "Pentru a păstra conversațiile proaspete și relevante, mesajele dispar automat după 30 de minute. Nu există un istoric permanent, chat-ul fiind destinat interacțiunilor imediate.",
+  "helpChatPrivacyTitle": "Confidențialitate și Siguranță",
+  "helpChatPrivacyBody": "Accesul la chat este validat pe baza locației tale GPS actuale. Dacă te muți într-o altă parte a orașului, aplicația te va conecta automat la chat-ul specific acelei zone.",
+  "helpChatTipOMW": "Sfat: Folosește butonul OMW pentru a anunța rapid vecinii că ești în drum spre ei sau ești disponibil în zonă.",
+  "helpLassoTitle": "Instrumentul Lasso (Bagheta Magică)",
+  "helpLassoBody": "Instrumentul Lasso îți permite să selectezi mai mulți vecini de pe hartă dintr-o singură mișcare, prin încercuirea lor.",
+  "helpLassoHowToTitle": "Cum se folosește?",
+  "helpLassoHowToBody": "1. Apasă pe pictograma \"Baghetă Magică\" din colțul dreapta-sus al hărții.\n2. Desenează un cerc cu degetul în jurul vecinilor pe care vrei să îi contactezi.\n3. Se va deschide un meniu cu grupul capturat și opțiuni pentru a le trimite o cerere de tip \"Broadcast\".",
+  "helpLassoTip": "Sfat: Folosește Lasso pentru a găsi rapid o echipă de vecini pentru o activitate comună sau o cerere de transport partajat!",
+  "helpRadarTitle": "Butonul Scanează (radar vecini)",
+  "helpRadarBody": "Butonul Scanează pornește scanarea în overlay-ul radar timp de aproximativ 5 secunde, apoi se închide automat. În acest interval nu poți redimensiona cercul.",
+  "helpRadarWhatTitle": "Ce „scanează”?",
+  "helpRadarWhatBody": "Nu este scanare Bluetooth, Wi‑Fi sau de dispozitive noi. Aplicația listează vecinii care sunt deja afișați pe hartă și se află în interiorul cercului radar (distanța se calculează față de centrul și raza cercului).",
+  "helpRadarResultsTitle": "Unde apar rezultatele?",
+  "helpRadarResultsBody": "Dacă există cel puțin un vecin în cerc, se deschide o foaie de jos cu lista. Dacă nu e nimeni, vei vedea un mesaj scurt că nu s-a găsit niciun vecin în radar.",
+  "helpRadarNextTitle": "Ce poți face după?",
+  "helpRadarNextBody": "Din foaia de jos poți folosi acțiunea de grup (ex. cerere broadcast) când funcția este complet activă; până atunci aplicația poate afișa un mesaj că este în curs de activare.",
+  "helpRadarTip": "Sfat: Mută sau mărește cercul înainte de Scanează, ca să acoperi zona care te interesează—în rezultate pot apărea doar vecinii deja vizibili pe hartă.",
+  "helpMapDropsTitle": "Interactive Map Drops (Locații în Chat)",
+  "helpMapDropsBody": "Map Drops sunt marcaje de locație partajate în chat-ul de cartier, care îți permit să călătorești instantaneu pe hartă.",
+  "helpMapDropsFlyTitle": "Animația Cinematică \"FlyTo\"",
+  "helpMapDropsFlyBody": "Atunci când un vecin partajează o locație, apasă pe cardul interactiv din chat. Aplicația va închide chat-ul și va executa un zbor cinematic direct către acel punct exact pe hartă.",
+  "helpMapDropsPinsTitle": "Pini Temporari",
+  "helpMapDropsPinsBody": "După finalizarea zborului, vei vedea un pin pulsatoriu pe hartă. Acesta te ajută să identifici exact locul unde a fost făcut \"drop-ul\", oferind context vizual precis pentru mesajul vecinului.",
+  "helpBoxesPurposeTitle": "La ce servesc",
+  "helpBoxesPurposeBody": "Pe hartă există două tipuri de cutii legate de tokenii Nabour: (1) cutii la oferte business — comerciantul poate seta un plafon opțional; le deschizi lângă magazin și primești tokeni plus un cod de reducere la acel magazin. (2) cutii comunitare — orice utilizator poate plasa o cutie la locația sa curentă; altcineva o deschide la fața locului și primește tokeni; plasatorul este informat când cutia e deschisă.",
+  "helpBoxesTokensTitle": "Tokeni — cum se colectează și cheltuiesc",
+  "helpBoxesTokensBody": "• Plasare cutie comunitară: 50 de tokeni sunt reținuți prin server (garanție) și apar în istoricul portofelului.\n• Deschidere cutie comunitară (alt utilizator, la aprox. 100 m): primești 50 de tokeni; cutia este marcată deschisă.\n• Deschidere cutie la ofertă business: primești 50 de tokeni și un cod de reducere, cu respectarea regulii o deschidere pe zi per magazin și a plafonului setat de comerciant.\n• Dacă politica serverului blochează creditarea până la integrarea plăților, deschiderea poate eșua cu mesajul corespunzător.",
+  "helpBoxesCommunityStepsTitle": "Cutii comunitare — pașii",
+  "helpBoxesCommunityStepsBody": "1) De pe hartă, plasezi o cutie la poziția curentă (ai nevoie de tokeni suficienți). Limită: până la 20 de cutii active per cont.\n2) Utilizatorii din apropiere văd cutiile pe hartă; propriile tale cutii nu îți apar ca să le deschizi tu.\n3) Apeși pe cutie, te apropii (aprox. 100 m), confirmi — serverul verifică distanța și identitatea.\n4) Plasatorul primește înregistrare în notificări și o notificare push când cineva deschide cutia.\n5) Din meniu → „Activitate cutii” vezi rezumatul, cutiile plasate, deschiderile tale și deschiderile la cutiile tale.",
+  "helpBoxesBusinessStepsTitle": "Cutii la oferte business — utilizator și comerciant",
+  "helpBoxesBusinessStepsBody": "Comerciantul publică o ofertă și poate atașa un plafon de cutii (cost suplimentar în tokeni la publicare sau la mărirea plafonului). Deschizi cutia de pe hartă, lângă locație; primești tokeni și un cod de reducere. În magazin, comerciantul deschide panoul business și folosește „Validează cod” astfel încât codul să fie marcat folosit. Codurile sunt păstrate securizat; doar funcțiile cloud le creează sau validează.",
+  "helpBoxesActivityScreenTitle": "Ecranul „Activitate cutii” (meniu)",
+  "helpBoxesActivityScreenBody": "File: Rezumat (estimări tokeni din deschideri și din plasări), Plasate (comunitate), Deschise de tine (comunitate + business), Deschideri la cutiile tale (notificări). Codurile de reducere sunt afișate parțial mascate.",
+  "helpBoxesPrivacyRulesTitle": "Confidențialitate și reguli",
+  "helpBoxesPrivacyRulesBody": "Operațiile sensibile (coduri de reducere, deschideri) se fac pe server. Regulile Firestore împiedică falsificarea din aplicație; citirile respectă autentificarea.",
+  "helpBoxesWhoTitle": "Cine ce face",
+  "helpBoxesWhoBody": "• Orice utilizator: hartă, plasare cutii comunitare dacă are tokeni, deschidere cutii când distanța și regulile permit, meniul „Activitate cutii”.\n• Plasator: primește notificări la deschiderea cutiilor comunitare.\n• Comerciant: configurează certificatele și plafoanele, validează codurile după ce clientul a deschis cutia.",
+  "helpBoxesNotesTitle": "Note",
+  "helpBoxesNotesBody": "Listarea cutiilor din jur este potrivită pentru volum moderat; la scară foarte mare poate fi nevoie de indexare geografică mai strictă. Expirarea sau returnarea automată a garanției dacă nimeni nu deschide o cutie comunitară nu este inclusă aici și poate fi adăugată ulterior.",
+  "helpBoxesTip": "Sfat: Dacă deschiderea eșuează, verifică precizia GPS, conexiunea, soldul tokenilor și dacă creditarea este activă pe server în mediul tău.",
+  "helpTransfersP2PTitle": "Transfer de tokeni între utilizatori",
+  "helpTransfersP2PAboutTitle": "Despre funcție",
+  "helpTransfersP2PAboutBody": "Din meniul lateral, deschide „Transfer tokeni” pentru a trimite tokeni Nabour către alt cont sau pentru a cere cuiva să îți trimită tokeni. Soldurile și înregistrările din jurnal sunt actualizate pe server; ai nevoie de ID-ul de utilizator al celeilalte persoane (UID Firebase).",
+  "helpTransfersP2PWalletTitle": "Portofel transferabil",
+  "helpTransfersP2PWalletBody": "Acest ecran arată soldul de tokeni transferabili (nu este același indicator ca bara de utilizare lunară din partea de sus a meniului). Dacă portofelul lipsește sau este înghețat, transferurile și cererile sunt blocate până când contul este eligibil.",
+  "helpTransfersP2PDirectTitle": "Transfer direct",
+  "helpTransfersP2PDirectBody": "Trimite tokeni imediat către ID-ul destinatarului. Nu poți transfera către propriul cont. Suma trebuie să fie un număr întreg de tokeni, în intervalul permis. Poți adăuga o notă opțională.",
+  "helpTransfersP2PRequestTitle": "Cerere de plată",
+  "helpTransfersP2PRequestBody": "Ceri altui utilizator (plătitorul) să îți trimită tokeni. Acesta primește o cerere în așteptare și poate accepta sau refuza. La acceptare, tokenii se mută din portofelul său transferabil în al tău. Cererile pot expira dacă nu primesc răspuns la timp.",
+  "helpTransfersP2PRequestsTabTitle": "Filă „Cereri”",
+  "helpTransfersP2PRequestsTabBody": "• Ca plătitor: poți accepta sau refuza cererile primite; la refuz poți adăuga un motiv opțional.\n• Ca inițiator al cererii: poți anula o cerere creată de tine cât timp este în așteptare.",
+  "helpTransfersP2PHistoryTabTitle": "Filă „Istoric”",
+  "helpTransfersP2PHistoryTabBody": "Afișează transferurile directe recente și cererile de plată rezolvate. Trage în jos pentru reîmprospătare.",
+  "helpTransfersP2PTip": "Distribuie ID-ul de utilizator doar persoanelor în care ai încredere. Verifică din nou ID-ul înainte de a confirma un transfer sau o cerere.",
+  "helpDriverActivationStepCheckConditions": "1. Verifică condițiile",
+  "helpDriverActivationStepCheckConditionsBody": "Trebuie să ai permis de conducere valabil, experiență de minim 2 ani și vârsta de minim 21 de ani.",
+  "helpDriverActivationStepPrepareDocs": "2. Pregătește documentele",
+  "helpDriverActivationStepPrepareDocsBody": "Ai nevoie de: permis de conducere, carte de identitate, certificat de înmatriculare auto, ITP valabil și asigurarea RCA.",
+  "helpDriverActivationStepCompleteApp": "3. Completează aplicația",
+  "helpDriverActivationStepCompleteAppBody": "Accesează secțiunea \"Carieră\" din meniul principal și completează formularul online cu datele tale.",
+  "helpDriverActivationStepSubmitDocs": "4. Transmite documentele",
+  "helpDriverActivationStepSubmitDocsBody": "Încarcă fotografii clare cu toate documentele necesare prin platforma online.",
+  "helpDriverActivationStepVerification": "5. Verificarea aplicației",
+  "helpDriverActivationStepVerificationBody": "Echipa noastră va verifica documentele în maxim 48 de ore lucrătoare.",
+  "helpDriverActivationStepReceiveCode": "6. Primește codul de activare",
+  "helpDriverActivationStepReceiveCodeBody": "După aprobare, vei primi un cod unic prin email/SMS pentru activarea contului de șofer.",
+  "helpDriverActivationStepActivateAccount": "7. Activează contul",
+  "helpDriverActivationStepActivateAccountBody": "Introdu codul în aplicație și începe să câștigi bani conducând!",
+  "helpDriverActivationTipHeader": "💡 Sfat util:",
+  "helpDriverActivationTipBody": "Asigură-te că toate documentele sunt valabile și fotografiile sunt clare pentru o procesare rapidă.",
+  "applyNow": "Aplică acum",
+  "helpSearchHint": "Caută în articole...",
+  "helpCategoryRideIssues": "Probleme de cursă",
+  "helpCategorySafetySOS": "Siguranță & SOS",
+  "helpCategoryNabourFeatures": "Funcții Nabour",
+  "helpCategoryPaymentsWallet": "Plăți & Portofel",
+  "helpCategorySettingsAccount": "Setări & Cont",
+  "helpStillNeedHelp": "Ai nevoie de ajutor?",
+  "helpContactSupport": "Contactează echipa de suport",
+  "helpContactButton": "Contactează",
+  "helpRideSharingTitle": "Curse Partajate",
+  "chatGalleryPhoto": "Fotografie din galerie",
+  "chatGif": "GIF",
+  "chatMessageSendFailed": "Mesajul nu a putut fi trimis.",
+  "driverHoursLimit": "Limită ore condus",
+  "driverHoursWarningBody": "Ai condus {hours} ore astăzi.\nMai ai {remaining} ore disponibile.\n\nConsideră o pauză pentru siguranța ta și a pasagerilor.",
+  "@driverHoursWarningBody": {
+    "placeholders": {
+      "hours": { "type": "String" },
+      "remaining": { "type": "String" }
+    }
+  },
+  "goOffline": "Ieși offline",
+  "driverHoursReachedLimitTitle": "Limită de 10 ore atinsă",
+  "driverHoursReachedLimitBody": "Ai condus 10 ore consecutive.\nDin motive de siguranță ai fost deconectat automat.\n\nTe poți reconecta după o perioadă de odihnă.",
+  "ridesCompletedToday": "{count} curse finalizate azi.",
+  "@ridesCompletedToday": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "viewAllRides": "Vezi toate cele {count} curse",
+  "@viewAllRides": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "driverSessionBannerCritical": "Limită de 10 ore atinsă. Te rog ieși offline.",
+  "driverSessionBannerWarning": "Sesiune: {hours}h • Rămân {remaining}h",
+  "@driverSessionBannerWarning": {
+    "placeholders": {
+      "hours": { "type": "String" },
+      "remaining": { "type": "String" }
+    }
+  },
+  "driverSessionBannerNormal": "Sesiune: {hours}h",
+  "@driverSessionBannerNormal": {
+    "placeholders": {
+      "hours": { "type": "String" }
+    }
+  },
+  "helpToday": "Ajutor Azi",
+  "tokens": "Tokeni",
+  "waitingForPassengerConfirmation": "Așteaptă confirmarea pasagerului",
+  "confirmedGoToPassenger": "Confirmat. Mergi la pasager",
+  "rideSummary_thankYouGoodbye": "Vă mulțumim și la revedere!",
+  "rideSummary_tipRegistered": "Bacșișul de {amount} {currency} a fost înregistrat.",
+  "@rideSummary_tipRegistered": {
+    "placeholders": {
+      "amount": { "type": "String" },
+      "currency": { "type": "String" }
+    }
+  },
+  "rideSummary_redirectToMapInSeconds": "Te redirecționăm la hartă în {seconds} secunde...",
+  "@rideSummary_redirectToMapInSeconds": {
+    "placeholders": {
+      "seconds": { "type": "String" }
+    }
+  },
+  "rideSummary_submitRatingButton": "Trimite Evaluarea",
+  "rideSummary_skipRatingButton": "Omite evaluarea",
+  "rideSummary_ratingSentSuccess": "Evaluarea a fost trimisă cu succes!",
+  "rideSummary_backToMap": "Înapoi la hartă",
+  "rideSummary_rideDetails": "Detalii Cursă",
+  "rideSummary_distance": "Distanța",
+  "rideSummary_duration": "Durata",
+  "rideSummary_rideCost": "Cost Cursă",
+  "rideSummary_freeRideSupport": "Gratuit - Sprijin Vecini",
+  "rideSummary_driverTipOptional": "💰 Bacșiș pentru șofer (opțional)",
+  "rideSummary_thankDriverTipText": "Mulțumește șoferului pentru o călătorie plăcută!",
+  "rideSummary_otherAmountLabel": "Altă sumă ({currency})",
+  "@rideSummary_otherAmountLabel": {
+    "placeholders": {
+      "currency": { "type": "String" }
+    }
+  },
+  "rideSummary_noTipButton": "Fără bacșiș",
+  "rideSummary_tipSelected": "Bacșiș selectat: {amount} {currency}",
+  "@rideSummary_tipSelected": {
+    "placeholders": {
+      "amount": { "type": "String" },
+      "currency": { "type": "String" }
+    }
+  },
+  "safety_sosButtonLabel": "112 — SOS",
+  "safety_locationUnavailable": "(locație indisponibilă)",
+  "safety_defaultNabourUser": "Utilizator Nabour",
+  "safety_emergencySmsBody": "🆘 URGENȚĂ! {name} are nevoie de ajutor!\nLocație: {location}\nApăsați linkul pentru a vedea pe hartă.",
+  "@safety_emergencySmsBody": {
+    "placeholders": {
+      "name": { "type": "String" },
+      "location": { "type": "String" }
+    }
+  },
+  "safety_emergencyAlertSent": "🆘 Alertă de urgență trimisă. Se apelează 112...",
+  "safety_shareTripBody": "📍 Urmăresc călătoria mea cu Nabour!\nLocația mea curentă: {location}",
+  "@safety_shareTripBody": {
+    "placeholders": {
+      "location": { "type": "String" }
+    }
+  },
+  "safety_shareTripNoLocation": "🚗 Călătoresc cu Nabour. Locația nu este disponibilă momentan.",
+  "safety_couldNotCreateTrackingLink": "Nu s-a putut crea link-ul de urmărire",
+  "safety_deleteContactTitle": "Șterge contact",
+  "safety_deleteContactConfirmation": "Ștergi \"{name}\" din contactele de încredere?",
+  "@safety_deleteContactConfirmation": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "safety_emergencyButtonTitle": "Buton de urgență",
+  "safety_emergencyButtonSubtitle": "Apelează 112 și trimite locația ta\ntuturor contactelor de încredere",
+  "safety_shareTripTitle": "Partajează călătoria",
+  "safety_activeRideDetected": "Cursă activă detectată",
+  "safety_sendCurrentLocation": "Trimite locația ta curentă",
+  "safety_gettingLocation": "Se obține locația...",
+  "safety_shareLocationButton": "Partajează locația",
+  "safety_liveLinkActive": "Link live activ — reîmpartășește",
+  "safety_safeRideSharePath": "Safe Ride Live — partajează traseu",
+  "safety_noContactsAdded": "Niciun contact adăugat",
+  "safety_addContactsDescription": "Adaugă familia sau prietenii. Ei vor primi\nlocația ta în caz de urgență.",
+  "rideSummary_totalCost": "Cost Total",
+  "safety_destinationLabelPrefix": "Destinație: {destination}",
+  "@safety_destinationLabelPrefix": {
+    "placeholders": {
+      "destination": { "type": "String" }
+    }
+  }
 }
+

@@ -242,6 +242,7 @@ class _RideSummaryScreenState extends State<RideSummaryScreen> {
         body: FutureBuilder<Ride>(
           future: _rideFuture,
           builder: (context, snapshot) {
+            final l10n = AppLocalizations.of(context)!;
             if (snapshot.connectionState == ConnectionState.waiting || _isRoleLoading) {
               return _buildSkeleton();
             }
@@ -283,22 +284,22 @@ class _RideSummaryScreenState extends State<RideSummaryScreen> {
                   children: [
                     const Icon(Icons.favorite, size: 64, color: Colors.red),
                     const SizedBox(height: 24),
-                    const Text(
-                      'Vă mulțumim și la revedere!',
-                      style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                    Text(
+                      l10n.rideSummary_thankYouGoodbye,
+                      style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 16),
                     if (_selectedTip > 0) 
                       Text(
-                        'Bacșișul de ${_selectedTip.toStringAsFixed(0)} LEI a fost înregistrat.',
+                        l10n.rideSummary_tipRegistered(_selectedTip.toStringAsFixed(0), l10n.ron),
                         style: TextStyle(fontSize: 16, color: Colors.green.shade700),
                         textAlign: TextAlign.center,
                       ),
                     const SizedBox(height: 24),
-                    const Text(
-                      'Te redirecționăm la hartă în 3 secunde...',
-                      style: TextStyle(fontSize: 14, color: Colors.grey),
+                    Text(
+                      l10n.rideSummary_redirectToMapInSeconds("3"),
+                      style: const TextStyle(fontSize: 14, color: Colors.grey),
                       textAlign: TextAlign.center,
                     ),
                   ],
@@ -318,7 +319,7 @@ class _RideSummaryScreenState extends State<RideSummaryScreen> {
                       final l10n = AppLocalizations.of(context)!;
                       return Center(
                         child: Text(
-                          l10n.thankYouForRide,
+                          l10n.rideSummary_thankYouForRide,
                           style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
                           textAlign: TextAlign.center,
                         ),
@@ -333,7 +334,7 @@ class _RideSummaryScreenState extends State<RideSummaryScreen> {
                       final l10n = AppLocalizations.of(context)!;
                       return Center(
                         child: Text(
-                          l10n.howWasExperience,
+                          l10n.rideSummary_howWasExperience,
                           style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
                         ),
                       );
@@ -373,7 +374,7 @@ class _RideSummaryScreenState extends State<RideSummaryScreen> {
                         enabled: !_hasSubmitted,
                         decoration: InputDecoration(
                           border: const OutlineInputBorder(),
-                          labelText: l10n.leaveCommentOptional,
+                          labelText: l10n.rideSummary_leaveCommentOptional,
                         ),
                         maxLines: 3,
                       );
@@ -399,9 +400,9 @@ class _RideSummaryScreenState extends State<RideSummaryScreen> {
                                   valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                                 ),
                               )
-                            : const Text(
-                                'Trimite Evaluarea',
-                                style: TextStyle(color: Colors.white, fontSize: 16),
+                            : Text(
+                                l10n.rideSummary_submitRatingButton,
+                                style: const TextStyle(color: Colors.white, fontSize: 16),
                               ),
                       ),
                     ),
@@ -413,9 +414,9 @@ class _RideSummaryScreenState extends State<RideSummaryScreen> {
                         style: TextButton.styleFrom(
                           padding: const EdgeInsets.symmetric(vertical: 16),
                         ),
-                        child: const Text(
-                          'Omite evaluarea',
-                          style: TextStyle(fontSize: 16),
+                        child: Text(
+                          l10n.rideSummary_skipRatingButton,
+                          style: const TextStyle(fontSize: 16),
                         ),
                       ),
                     ),
@@ -428,14 +429,14 @@ class _RideSummaryScreenState extends State<RideSummaryScreen> {
                         borderRadius: BorderRadius.circular(8),
                         border: Border.all(color: Colors.green.shade200),
                       ),
-                      child: const Row(
+                      child: Row(
                         children: [
-                          Icon(Icons.check_circle, color: Colors.green),
-                          SizedBox(width: 12),
+                          const Icon(Icons.check_circle, color: Colors.green),
+                          const SizedBox(width: 12),
                           Expanded(
                             child: Text(
-                              'Evaluarea a fost trimisă cu succes!',
-                              style: TextStyle(
+                              l10n.rideSummary_ratingSentSuccess,
+                              style: const TextStyle(
                                 color: Colors.green,
                                 fontWeight: FontWeight.w500,
                               ),
@@ -452,9 +453,9 @@ class _RideSummaryScreenState extends State<RideSummaryScreen> {
                         style: ElevatedButton.styleFrom(
                           padding: const EdgeInsets.symmetric(vertical: 16),
                         ),
-                        child: const Text(
-                          'Înapoi la hartă',
-                          style: TextStyle(fontSize: 16),
+                        child: Text(
+                          l10n.rideSummary_backToMap,
+                          style: const TextStyle(fontSize: 16),
                         ),
                       ),
                     ),
@@ -544,25 +545,25 @@ class _RideSummaryScreenState extends State<RideSummaryScreen> {
   }
 
   Widget _buildSummaryCard(Ride ride) {
-
+    final l10n = AppLocalizations.of(context)!;
     return Card(
       elevation: 4,
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            const Text(
-              'Detalii Cursă', 
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)
+            Text(
+              l10n.rideSummary_rideDetails, 
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)
             ),
             const Divider(),
-            _buildDetailRow('Distanța:', '${ride.distance.toStringAsFixed(1)} km'),
-            _buildDetailRow('Durata:', '${ride.durationInMinutes?.toStringAsFixed(0) ?? "0"} min'),
+            _buildDetailRow('${l10n.rideSummary_distance}:', '${ride.distance.toStringAsFixed(1)} km'),
+            _buildDetailRow('${l10n.rideSummary_duration}:', '${ride.durationInMinutes?.toStringAsFixed(0) ?? "0"} min'),
             const Divider(),
             if (ride.totalCost > 0)
-              _buildDetailRow('Cost Total:', '${ride.totalCost.toStringAsFixed(2)} RON', isTotal: true)
+              _buildDetailRow('${l10n.rideSummary_totalCost}:', '${ride.totalCost.toStringAsFixed(2)} ${l10n.ron}', isTotal: true)
             else
-              _buildDetailRow('Cost Cursă:', 'Gratuit - Sprijin Vecini', isTotal: true),
+              _buildDetailRow('${l10n.rideSummary_rideCost}:', l10n.rideSummary_freeRideSupport, isTotal: true),
           ],
         ),
       ),
@@ -598,6 +599,7 @@ class _RideSummaryScreenState extends State<RideSummaryScreen> {
 
   // ✅ ADĂUGAT: Secțiunea de bacșiș pentru pasageri
   Widget _buildTipSection() {
+    final l10n = AppLocalizations.of(context)!;
     return Card(
       elevation: 2,
       child: Padding(
@@ -605,14 +607,14 @@ class _RideSummaryScreenState extends State<RideSummaryScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              '💰 Bacșiș pentru șofer (opțional)',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+            Text(
+              l10n.rideSummary_driverTipOptional,
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
             ),
             const SizedBox(height: 8),
-            const Text(
-              'Mulțumește șoferului pentru o călătorie plăcută!',
-              style: TextStyle(fontSize: 14, color: Colors.grey),
+            Text(
+              l10n.rideSummary_thankDriverTipText,
+              style: const TextStyle(fontSize: 14, color: Colors.grey),
             ),
             const SizedBox(height: 16),
             
@@ -636,9 +638,9 @@ class _RideSummaryScreenState extends State<RideSummaryScreen> {
                   child: TextField(
                     controller: _customTipController,
                     enabled: !_hasSubmitted,
-                    decoration: const InputDecoration(
-                      border: OutlineInputBorder(),
-                      labelText: 'Altă sumă (LEI)',
+                    decoration: InputDecoration(
+                      border: const OutlineInputBorder(),
+                      labelText: l10n.rideSummary_otherAmountLabel(l10n.ron),
                       isDense: true,
                     ),
                     keyboardType: TextInputType.number,
@@ -662,7 +664,7 @@ class _RideSummaryScreenState extends State<RideSummaryScreen> {
                     backgroundColor: Colors.grey.shade300,
                     foregroundColor: Colors.black87,
                   ),
-                  child: const Text('Fără bacșiș'),
+                  child: Text(l10n.rideSummary_noTipButton),
                 ),
               ],
             ),
@@ -681,7 +683,10 @@ class _RideSummaryScreenState extends State<RideSummaryScreen> {
                     Icon(Icons.check_circle, color: Colors.green.shade600, size: 20),
                     const SizedBox(width: 8),
                     Text(
-                      'Bacșiș selectat: ${_selectedTip.toStringAsFixed(0)} LEI',
+                      l10n.rideSummary_tipSelected(
+                        _selectedTip.toStringAsFixed(0),
+                        l10n.ron,
+                      ),
                       style: TextStyle(color: Colors.green.shade700, fontWeight: FontWeight.w500),
                     ),
                   ],
@@ -695,6 +700,7 @@ class _RideSummaryScreenState extends State<RideSummaryScreen> {
   }
 
   Widget _buildTipButton(double amount) {
+    final l10n = AppLocalizations.of(context)!;
     final isSelected = _selectedTip == amount;
     return ElevatedButton(
       onPressed: _hasSubmitted ? null : () {
@@ -708,7 +714,7 @@ class _RideSummaryScreenState extends State<RideSummaryScreen> {
         foregroundColor: isSelected ? Colors.white : Colors.black87,
         padding: const EdgeInsets.symmetric(vertical: 12),
       ),
-      child: Text('${amount.toInt()} LEI'),
+      child: Text('${amount.toInt()} ${l10n.ron}'),
     );
   }
 }

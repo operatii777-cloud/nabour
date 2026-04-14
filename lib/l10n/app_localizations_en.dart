@@ -1192,7 +1192,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'Waiting for passenger confirmation';
 
   @override
-  String get confirmedGoToPassenger => 'Confirmed - Go to passenger';
+  String get confirmedGoToPassenger => 'Confirmed. Go to passenger';
 
   @override
   String get earningsTodayShort => 'Earnings Today';
@@ -1221,10 +1221,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get addContact => 'Add contact';
 
   @override
-  String get emergencyAssistanceButton => 'Emergency Assistance Button';
+  String get safety_emergencyAssistanceButton => 'Emergency Assistance Button';
 
   @override
-  String get emergencyAssistanceButtonDesc =>
+  String get safety_emergencyAssistanceButtonDesc =>
       'During any ride, you have the 112 button in the corner of the screen to quickly contact emergency services.';
 
   @override
@@ -2641,13 +2641,13 @@ class AppLocalizationsEn extends AppLocalizations {
       'Error submitting rating. Please try again.';
 
   @override
-  String get thankYouForRide => 'Thank you for the ride!';
+  String get rideSummary_thankYouForRide => 'Thank you for the ride!';
 
   @override
-  String get howWasExperience => 'How was your experience?';
+  String get rideSummary_howWasExperience => 'How was your experience?';
 
   @override
-  String get leaveCommentOptional => 'Leave a comment (optional)';
+  String get rideSummary_leaveCommentOptional => 'Leave a comment (optional)';
 
   @override
   String get thanksForRating => 'Thanks for rating!';
@@ -3842,6 +3842,28 @@ class AppLocalizationsEn extends AppLocalizations {
   String get drawerMenuSyncContacts => 'Sync contacts';
 
   @override
+  String get drawerShowHomeOnMap =>
+      'Show Home (favorite) on map\n(only for you)';
+
+  @override
+  String get drawerOrientationMarkerOnMap =>
+      'Orientation marker on map\n(long-press on the map after enabling)';
+
+  @override
+  String get drawerHideHomeOnMap =>
+      'Hide Home from map\n(only the favorite marker)';
+
+  @override
+  String get drawerHideOrientationMarker =>
+      'Hide orientation marker\n(remove pin from the map)';
+
+  @override
+  String get drawerActiveContactsOnMap => 'Active contacts on map';
+
+  @override
+  String get drawerIdCopied => 'ID copied to clipboard.';
+
+  @override
   String get drawerSyncContactsDialogTitle => 'Why sync contacts?';
 
   @override
@@ -3889,7 +3911,44 @@ class AppLocalizationsEn extends AppLocalizations {
   String get warmupWhyTitle => 'Why Nabour?';
 
   @override
-  String get warmupCtaOpenMap => 'Open map';
+  String get warmupCtaOpenMap => 'Go to map';
+
+  @override
+  String get warmupSubtitle => 'Your Neighborhood Hub';
+
+  @override
+  String warmupExampleRidesCount(String count) {
+    return '$count Active Rides Nearby';
+  }
+
+  @override
+  String warmupExampleDealsCount(String count) {
+    return '$count New Deals Today';
+  }
+
+  @override
+  String warmupExampleMessagesCount(String count) {
+    return '$count New Messages';
+  }
+
+  @override
+  String get warmupExampleRide1 => 'Sarah B. (2 min) → Downtown';
+
+  @override
+  String get warmupExampleRide2 => 'Mike K. (5 min) → Station';
+
+  @override
+  String get warmupExampleOffer1 => 'The Daily Grind: 20% off all coffees';
+
+  @override
+  String get warmupExampleOffer2 => 'Urban Bites: Free side with any main';
+
+  @override
+  String get warmupExampleChat1 =>
+      'Alex: Anyone want to join the park walk...?';
+
+  @override
+  String get warmupExampleChat2 => 'Chloe: Heard a loud bang on Elm St...';
 
   @override
   String get warmupSwipeDownHint => 'Or swipe down to close';
@@ -4358,4 +4417,2036 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get businessOffersAllCategories => 'All categories';
+
+  @override
+  String get mapGhostDurationTitle => 'How long are you visible to neighbors?';
+
+  @override
+  String get mapGhostDurationSubtitle =>
+      'Neighbors will see you as a bubble on the map.';
+
+  @override
+  String get mapGhostOneHourLabel => '1 hour';
+
+  @override
+  String get mapGhostOneHourSub => 'Useful for a short outing';
+
+  @override
+  String get mapGhostFourHoursLabel => '4 hours';
+
+  @override
+  String get mapGhostFourHoursSub => 'Useful for an afternoon';
+
+  @override
+  String get mapGhostUntilTomorrowLabel => 'Until tomorrow';
+
+  @override
+  String get mapGhostUntilTomorrowSub => 'Resets at midnight';
+
+  @override
+  String get mapGhostPermanentLabel => 'Permanent';
+
+  @override
+  String get mapGhostPermanentSub =>
+      'You remain visible until you manually disable it';
+
+  @override
+  String get mapGhostInvisibleLabel => 'Invisible (ghost mode)';
+
+  @override
+  String get mapGhostInvisibleSub =>
+      'You do not appear on the map; profile marks ghostMode in account (synced across devices).';
+
+  @override
+  String get mapDeleteMomentTitle => 'Delete this moment?';
+
+  @override
+  String get mapDeleteMomentContent =>
+      'The post will disappear from the map for everyone.';
+
+  @override
+  String get mapMomentDeleted => 'Moment deleted.';
+
+  @override
+  String get mapMomentDeleteError =>
+      'Could not delete the moment. Please try again.';
+
+  @override
+  String get mapDeleteOrCancelPost => 'Delete / cancel post';
+
+  @override
+  String get mapPinNameLabel => 'Name';
+
+  @override
+  String get mapPinNameHint => 'e.g.: main entrance';
+
+  @override
+  String get mapPinNameTitle => 'Marker name';
+
+  @override
+  String get mapOrientationPinSaved => 'Orientation marker saved on map.';
+
+  @override
+  String get mapEditHomeAddressTitle => 'Edit Home address';
+
+  @override
+  String get mapEditHomeAddressSubtitle =>
+      'Change location from Saved addresses';
+
+  @override
+  String get mapHideHomeFromMapTitle => 'Hide Home from map';
+
+  @override
+  String get mapMoveOrientationMarkerTitle => 'Move marker';
+
+  @override
+  String mapMoveOrientationMarkerWithName(String name) {
+    return '\"$name\" · then long-press on the map at the new location';
+  }
+
+  @override
+  String get mapMoveOrientationMarkerNoName =>
+      'Then long-press on the map at the new location';
+
+  @override
+  String get mapLongPressForNewMarker =>
+      'Long-press on the map for the new marker.';
+
+  @override
+  String get mapRemoveOrientationMarkerTitle => 'Remove orientation marker';
+
+  @override
+  String get mapMarkerRemoved => 'Marker removed.';
+
+  @override
+  String get mapSaveHomeFirst =>
+      'Save the \"Home\" address in favorites (with map position), then try again.';
+
+  @override
+  String get mapHomeShownForYou =>
+      'Favorite Home is shown on map (only for you).';
+
+  @override
+  String get mapHomeNotShown => 'Home is not shown on map.';
+
+  @override
+  String get mapHomeNoLongerShown => 'Home is no longer shown on map.';
+
+  @override
+  String get mapNoOrientationMarker =>
+      'You do not have an orientation marker on the map.';
+
+  @override
+  String get mapOrientationMarkerRemovedFromMap =>
+      'Orientation marker was removed from map.';
+
+  @override
+  String get mapEmojiRemoved => 'Your emoji was removed from the map.';
+
+  @override
+  String get mapEmojiDeleteError => 'Could not delete emoji. Please try again.';
+
+  @override
+  String get mapMomentExpired => 'Expired';
+
+  @override
+  String mapMomentExpiresInMinutes(int minutes) {
+    return '~$minutes min until it disappears from the map';
+  }
+
+  @override
+  String get mapMomentExpiresSoon => 'Will disappear from the map soon';
+
+  @override
+  String mapArrivedAtDestination(String destination) {
+    return 'You arrived at destination: $destination';
+  }
+
+  @override
+  String get mapDestinationUnset => 'Destination not set';
+
+  @override
+  String mapRideBroadcastWantsToGo(String destination) {
+    return 'Wants to go to: $destination';
+  }
+
+  @override
+  String get mapSeeRequestAndOfferRide => 'SEE REQUEST AND OFFER RIDE';
+
+  @override
+  String mapAcceptRideError(String error) {
+    return 'Error accepting ride: $error';
+  }
+
+  @override
+  String get mapPickupExternalNavigation => 'Pickup: external navigation';
+
+  @override
+  String get mapDestinationExternalNavigation =>
+      'Destination: external navigation';
+
+  @override
+  String get mapClosePanel => 'Close panel';
+
+  @override
+  String get mapWaitingGpsLocation => 'Waiting for GPS location...';
+
+  @override
+  String mapCreateRideError(String error) {
+    return 'Error creating ride: $error';
+  }
+
+  @override
+  String get mapWaitingGpsToPlaceBox =>
+      'Waiting for GPS position to place the box here.';
+
+  @override
+  String get mapPlace => 'Place';
+
+  @override
+  String mapBoxPlaced(int tokens) {
+    return 'Box placed! (-$tokens tokens)';
+  }
+
+  @override
+  String mapPoiLoadError(String error) {
+    return 'Error loading POIs: $error';
+  }
+
+  @override
+  String get mapNavigateToMarkedPlace => 'Navigate to marked place';
+
+  @override
+  String get mapDeleteMarkerAndRestart => 'Delete marker and start again';
+
+  @override
+  String get mapSpotReserved => 'Spot reserved! You have 3 minutes to arrive.';
+
+  @override
+  String get mapAddToFavoriteAddresses => 'Add to favorite addresses';
+
+  @override
+  String get mapNavigateWithExternalApps => 'Navigate with Google Maps / Waze';
+
+  @override
+  String get mapSpotAlreadyReserved =>
+      'Sorry, the spot has already been reserved.';
+
+  @override
+  String get chatImageTooLargePrivate =>
+      'Image is still too large after compression (max ~1.8 MB). Try a smaller photo.';
+
+  @override
+  String get chatImageTooLargeGeneral => 'Image is too large (max ~7 MB).';
+
+  @override
+  String get chatImageUploadFailed => 'Could not upload image.';
+
+  @override
+  String get chatPhotoLabel => 'Photo';
+
+  @override
+  String get chatVoiceMessageLabel => 'Voice message';
+
+  @override
+  String get chatMessageSendFailed => 'Message could not be sent.';
+
+  @override
+  String get chatGifLabel => 'GIF';
+
+  @override
+  String get chatPhoneNotAvailable => 'Phone number is not available.';
+
+  @override
+  String get chatCallFailed => 'Could not start the call.';
+
+  @override
+  String get chatMessagesLoadFailed => 'Could not load messages.';
+
+  @override
+  String get chatTyping => 'typing...';
+
+  @override
+  String get chatEndToEndEncrypted => 'Messages are end-to-end encrypted.';
+
+  @override
+  String get chatToday => 'Today';
+
+  @override
+  String get chatYesterday => 'Yesterday';
+
+  @override
+  String get chatQuickReplyHere => 'I am here 👋';
+
+  @override
+  String get chatQuickReplyIn2Min => 'Coming in 2 min ⏱️';
+
+  @override
+  String get chatQuickReplyIn5Min => 'Coming in 5 min ⏱️';
+
+  @override
+  String get chatQuickReplyArrived => 'Have you arrived? 📍';
+
+  @override
+  String get chatQuickReplyThanks => 'Thanks! 🙏';
+
+  @override
+  String get chatQuickReplyOk => 'OK 👍';
+
+  @override
+  String get you => 'You';
+
+  @override
+  String get chatVoiceMessageSendFailed => 'Voice message could not be sent.';
+
+  @override
+  String get chatReply => 'Reply';
+
+  @override
+  String get chatCopy => 'Copy';
+
+  @override
+  String get chatMessageCopied => 'Message copied.';
+
+  @override
+  String get chatChooseGif => 'Choose GIF';
+
+  @override
+  String get chatSearchHint => 'Search…';
+
+  @override
+  String get privateChatNotAuthenticated => 'You are not authenticated.';
+
+  @override
+  String get privateChatReaction => 'Reaction';
+
+  @override
+  String get privateChatNewChat => 'New chat';
+
+  @override
+  String get privateChatAddContactsToChoose =>
+      'Add contacts in your address book or friends so you can choose a person.';
+
+  @override
+  String get privateChatOnMap => 'On map';
+
+  @override
+  String get privateChatNoPeopleYet =>
+      'You don\'t have people in contacts or confirmed friends yet.';
+
+  @override
+  String get privateChatAddContactsOrAcceptSuggestions =>
+      'Add contacts or accept requests in the Suggestions tab to start private conversations.';
+
+  @override
+  String get privateChatConversationsHint =>
+      'Private conversations - same messages as from a neighbor profile on the map.';
+
+  @override
+  String get privateChatOnMapNowTapToWrite => 'On map now - tap to write';
+
+  @override
+  String get privateChatTapToSendMessage => 'Tap to send a message';
+
+  @override
+  String get chatLocationLabel => 'Location';
+
+  @override
+  String get friendSuggestionsUserFallback => 'User';
+
+  @override
+  String get friendSuggestionsAlreadyFriends =>
+      'You are already friends in Nabour.';
+
+  @override
+  String get friendSuggestionsRequestAlreadySent =>
+      'You already sent a request to this person.';
+
+  @override
+  String get friendSuggestionsRequestSent => 'Friend request sent!';
+
+  @override
+  String get friendSuggestionsRequestPermissionDenied =>
+      'We are not allowed to write this request (Firebase rules). Contact support.';
+
+  @override
+  String get friendSuggestionsRequestFailed =>
+      'Could not send the request. Please try again.';
+
+  @override
+  String friendSuggestionsAcceptedFrom(String name) {
+    return 'You accepted the request from $name! ✓';
+  }
+
+  @override
+  String get friendSuggestionsFriendFallback => 'friend';
+
+  @override
+  String get friendSuggestionsPermissionAcceptDenied =>
+      'We are not allowed to accept this request (Firebase rules).';
+
+  @override
+  String get friendSuggestionsAcceptFailed =>
+      'Could not accept the request. Please try again.';
+
+  @override
+  String get friendSuggestionsRejected => 'Request rejected.';
+
+  @override
+  String get friendSuggestionsRejectFailed =>
+      'Could not reject the request. Please try again.';
+
+  @override
+  String get friendSuggestionsThisUser => 'this user';
+
+  @override
+  String get friendSuggestionsRemoveTitle => 'Remove friend';
+
+  @override
+  String friendSuggestionsRemoveConfirm(String name) {
+    return 'Are you sure you want to remove $name from your list? You will no longer see each other on the map as Nabour friends until you send requests again.';
+  }
+
+  @override
+  String get friendSuggestionsCancel => 'Cancel';
+
+  @override
+  String get friendSuggestionsRemove => 'Remove';
+
+  @override
+  String friendSuggestionsRemovedFromList(String name) {
+    return '$name was removed from your list.';
+  }
+
+  @override
+  String get friendSuggestionsRemoveFailed =>
+      'Could not remove. Please try again.';
+
+  @override
+  String get friendSuggestionsTabSuggestions => 'Suggestions';
+
+  @override
+  String get friendSuggestionsTabMyFriends => 'My friends';
+
+  @override
+  String get friendSuggestionsTabPrivateChat => 'Private chat';
+
+  @override
+  String get friendSuggestionsSearchHint => 'Search in contacts...';
+
+  @override
+  String friendSuggestionsIncomingRequests(int count) {
+    return 'Incoming requests ($count)';
+  }
+
+  @override
+  String get friendSuggestionsAddressBookSuggestions =>
+      'Address book suggestions';
+
+  @override
+  String get friendSuggestionsNoConfirmedFriends =>
+      'You don\'t have confirmed friends yet.\nAccept requests in Suggestions tab or send one yourself.';
+
+  @override
+  String get friendSuggestionsLoading => 'Loading…';
+
+  @override
+  String get friendSuggestionsOnMapNow => 'On map now';
+
+  @override
+  String get friendSuggestionsNabourFriend => 'Nabour friend';
+
+  @override
+  String get friendSuggestionsSendsRequest => 'sent you a friend request';
+
+  @override
+  String get friendSuggestionsReject => 'Reject';
+
+  @override
+  String get friendSuggestionsAccept => 'Accept';
+
+  @override
+  String friendSuggestionsIntroOne(int count) {
+    return '$count INTRODUCTION';
+  }
+
+  @override
+  String friendSuggestionsIntroMany(int count) {
+    return '$count INTRODUCTIONS';
+  }
+
+  @override
+  String friendSuggestionsFriendsCount(int count) {
+    return '$count FRIENDS';
+  }
+
+  @override
+  String get friendSuggestionsFriendsCount50Plus => '50+ FRIENDS';
+
+  @override
+  String get friendSuggestionsFriendBadge => 'Friend';
+
+  @override
+  String get friendSuggestionsAdded => 'Added';
+
+  @override
+  String get friendSuggestionsAdd => 'Add';
+
+  @override
+  String get friendSuggestionsBackOnMap => 'is back on the map';
+
+  @override
+  String get disclaimerNoPaymentsTitle =>
+      'Nabour does not intermediate payments';
+
+  @override
+  String get disclaimerNoPaymentsSubtitle =>
+      'The app does not intermediate payments between users.';
+
+  @override
+  String get disclaimerNoPaymentsBody =>
+      'Nabour connects neighbors who want to help each other. If a driver chooses to accept or offer a gesture of appreciation, that is exclusively their personal decision and responsibility. The app does not intermediate, request, or process any type of payment.';
+
+  @override
+  String get disclaimerUsageNotice =>
+      'Do not stay in the app for more than 40 minutes per day, monthly average - this can either generate costs or block your usage.';
+
+  @override
+  String get disclaimerUnderstood => 'I understand';
+
+  @override
+  String get splashStartupError =>
+      'A startup error occurred.\nCheck your internet and try again.';
+
+  @override
+  String get splashRetry => 'RETRY';
+
+  @override
+  String get splashTakingLonger => 'Startup is taking longer...';
+
+  @override
+  String get splashContinueAnyway => 'CONTINUE ANYWAY';
+
+  @override
+  String get splashMadeInRomania => 'Made in Romania';
+
+  @override
+  String get settingsCommunityModeSchool => 'School / high school mode';
+
+  @override
+  String get settingsCommunityModeStandard => 'Standard (no community label)';
+
+  @override
+  String get settingsNowPlayingNotSet =>
+      'Not set yet - visible in profile for friends';
+
+  @override
+  String get settingsVoiceAssistantOnMap => 'Voice assistant on map';
+
+  @override
+  String get settingsVoiceAssistantOnMapSubtitle =>
+      'Map button and menu section (currently being improved)';
+
+  @override
+  String get settingsGhostModeTitle => 'Ghost mode (social map)';
+
+  @override
+  String get settingsGhostModeSubtitle =>
+      'Enable \"Invisible\" from the social map menu; it stops RTDB and marks ghostMode in account.';
+
+  @override
+  String get settingsApproximateLocationTitle =>
+      'Approximate location (social map)';
+
+  @override
+  String get settingsSocialMapSection => 'Social map';
+
+  @override
+  String get settingsNearbyNotificationsTitle => 'Notifications \"near me\"';
+
+  @override
+  String get settingsNearbyAlertRadiusTitle => 'Nearby alert radius';
+
+  @override
+  String settingsNearbyAlertRadiusSubtitle(int meters) {
+    return '$meters m (contacts on map)';
+  }
+
+  @override
+  String get settingsMusicTitle => 'Music (Spotify / Apple Music)';
+
+  @override
+  String get settingsMusicSubtitle => 'Open Spotify or Apple Music';
+
+  @override
+  String get settingsNowPlayingTitle => 'What I\'m listening now (profile)';
+
+  @override
+  String get settingsCommunityModeTitle => 'Community / school mode';
+
+  @override
+  String get settingsLocationHistoryTitle => 'Location history (Timeline)';
+
+  @override
+  String get settingsLocationHistoryStartFailed =>
+      'Could not start recording. Grant location access and, on Android, \"Allow all the time\" for recording when app is not open.';
+
+  @override
+  String get settingsLocationHistoryEnabled =>
+      'Location history was enabled (see Android notification while running in background).';
+
+  @override
+  String get settingsLocationHistoryDisabled =>
+      'Location history was disabled.';
+
+  @override
+  String get settingsLocalHistoryRetentionTitle => 'Local history retention';
+
+  @override
+  String settingsLocalHistoryRetentionSubtitle(int days) {
+    return 'Keep local data for $days days';
+  }
+
+  @override
+  String get settingsDeleteLocalHistoryTitle => 'Delete local history';
+
+  @override
+  String get settingsDeleteLocalHistorySubtitle =>
+      'Delete recap, cache and local timeline for this account';
+
+  @override
+  String get settingsNearbyNotificationRadiusTitle =>
+      'Nearby notification radius';
+
+  @override
+  String settingsLocalHistoryRetentionSet(int days) {
+    return 'Local retention was set to $days days.';
+  }
+
+  @override
+  String get settingsNowPlayingSheetTitle => 'What I\'m listening now';
+
+  @override
+  String get settingsNowPlayingSongLabel => 'Song / title';
+
+  @override
+  String get settingsMusicProfileUpdated => 'Music profile updated.';
+
+  @override
+  String get settingsSaveToAccount => 'Save to account';
+
+  @override
+  String get settingsDeleteFromProfile => 'Delete from profile';
+
+  @override
+  String get settingsCommunitySheetTitle => 'Community';
+
+  @override
+  String get settingsCommunityModeSaved => 'Community mode saved.';
+
+  @override
+  String get settingsDeleteLocalHistoryConfirmTitle => 'Delete local history?';
+
+  @override
+  String get settingsDeleteLocalHistoryConfirmContent =>
+      'This action deletes local recap and Week in Review cache for current account.';
+
+  @override
+  String get settingsLocalHistoryDeleted => 'Local history was deleted.';
+
+  @override
+  String tokenShopChoosePaymentMethodFor(String planName) {
+    return 'Choose payment method for $planName';
+  }
+
+  @override
+  String get tokenShopPayByCard => 'Pay by card';
+
+  @override
+  String tokenShopPriceWithAutoRenewal(String price) {
+    return 'Price: $price (Auto-renewal)';
+  }
+
+  @override
+  String get tokenShopPayWithTransferableTokens =>
+      'Pay with transferable tokens';
+
+  @override
+  String tokenShopPriceInTokensNoRenewal(int tokens) {
+    return 'Price: $tokens Tokens (No renewal)';
+  }
+
+  @override
+  String get tokenShopInsufficientShort => 'Insufficient';
+
+  @override
+  String tokenShopPlanActivated(String planName) {
+    return 'Plan $planName was activated!';
+  }
+
+  @override
+  String get tokenShopUnlimitedAccessNetworkIntelligence =>
+      'Absolute access to network intelligence.';
+
+  @override
+  String get tokenShopPersonalTokensSubtitle =>
+      'Tokens for AI, routes and your features.';
+
+  @override
+  String get tokenShopTransferablePackagesTitle => 'TRANSFERABLE PACKAGES';
+
+  @override
+  String get tokenShopTransferablePackagesSubtitle =>
+      'Real tokens that you can send to anyone.';
+
+  @override
+  String tokenShopTransferablePackageTitle(int tokens) {
+    return 'Transferable package: $tokens Tokens';
+  }
+
+  @override
+  String tokenShopTxPurchaseTransferablePackage(String label) {
+    return 'TRANSFERABLE package purchase: $label';
+  }
+
+  @override
+  String get tokenShopTransferableWalletSuffix => ' (in transferable wallet)';
+
+  @override
+  String get neighborhoodChatMuted => 'Chat muted';
+
+  @override
+  String get neighborhoodChatSoundOn => 'Sound enabled';
+
+  @override
+  String get neighborhoodChatGpsDisabled =>
+      'GPS disabled. Enable location for chat.';
+
+  @override
+  String get neighborhoodChatGpsPermissionDenied => 'GPS permission denied.';
+
+  @override
+  String get neighborhoodChatInvalidServerResponse =>
+      'Neighborhood chat: invalid server response (H3 roomId).';
+
+  @override
+  String neighborhoodChatFunctionsUnavailable(String code) {
+    return 'Neighborhood chat: Functions unavailable ($code).';
+  }
+
+  @override
+  String get neighborhoodChatActivationFailed =>
+      'Could not activate neighborhood chat.';
+
+  @override
+  String get neighborhoodChatLocationResolveFailed =>
+      'Could not determine location.';
+
+  @override
+  String get neighborhoodChatInappropriateMessage => 'Inappropriate message.';
+
+  @override
+  String get neighborhoodChatOnMyWay => 'I\'m on my way!';
+
+  @override
+  String get neighborhoodChatMarkedLocation => 'I marked a location on the map';
+
+  @override
+  String get neighborhoodChatTitle => 'Neighborhood chat';
+
+  @override
+  String get neighborhoodChatInviteNeighbors => 'Invite neighbors';
+
+  @override
+  String get neighborhoodChatNoAccessOrRulesChanged =>
+      'You do not have access to this chat or security rules changed. Retry after re-authentication.';
+
+  @override
+  String get neighborhoodChatNoRecentMessages => 'No recent messages';
+
+  @override
+  String get neighborhoodChatEmptyHint =>
+      'Say \"Hi\" to neighbors or send a location. Messages disappear after 30 minutes.';
+
+  @override
+  String get neighborhoodChatSendLocationTooltip => 'Send your location';
+
+  @override
+  String neighborhoodChatInviteText(String roomId) {
+    return 'Come to Nabour neighborhood chat! We are neighbors in H3 zone: $roomId';
+  }
+
+  @override
+  String get neighborhoodChatInfoBody1 =>
+      'This is an ephemeral space for neighbors in the same H3 zone (approx. 1km²).';
+
+  @override
+  String get neighborhoodChatInfoBody2 =>
+      '• Messages disappear automatically after 30 minutes.\n• You can send location or text messages.\n• Respect neighbors and keep the community clean!';
+
+  @override
+  String get neighborhoodChatFlyToHint =>
+      'Tap for \"FlyTo\" animation to the point marked by the neighbor.';
+
+  @override
+  String get neighborhoodChatSeeOnMap => 'SEE ON MAP';
+
+  @override
+  String get placesHubTabLearned => 'Learned';
+
+  @override
+  String get placesHubTabFavorites => 'Favorites';
+
+  @override
+  String get placesHubTabRecommendations => 'Recommendations';
+
+  @override
+  String get placesHubNoLearnedPlaces =>
+      'We don\'t have learned places yet. Keep the app open on the map - we detect areas where you stay longer (private, on device).';
+
+  @override
+  String placesHubFrequentArea(int minutes) {
+    return 'Frequent area ($minutes accumulated min)';
+  }
+
+  @override
+  String placesHubVisitsConfidence(int visits, int confidence) {
+    return '$visits visits - confidence $confidence%';
+  }
+
+  @override
+  String get placesHubFavoritesHint =>
+      'Your saved addresses also appear on the map as \"home / work\" when you are nearby.';
+
+  @override
+  String get placesHubManageFavoriteAddresses => 'Manage favorite addresses';
+
+  @override
+  String get placesHubDiscoverNeighborhood => 'Discover the neighborhood';
+
+  @override
+  String get placesHubDiscoverNeighborhoodHint =>
+      'Enable visibility on the social map to see requests, moments and neighbors. Learned places are enriched automatically from your movement.';
+
+  @override
+  String get placesHubFriendsNearbyTitle => 'Friends nearby';
+
+  @override
+  String get placesHubFriendsNearbySubtitle =>
+      'On the main map you can see contacts that added you and are close.';
+
+  @override
+  String get placesHubPreviewTitle => 'Preview';
+
+  @override
+  String get rideBroadcastDeleteRequestTitle => 'Delete request';
+
+  @override
+  String get rideBroadcastDeleteRequestConfirm =>
+      'Are you sure you want to delete this request from your history?';
+
+  @override
+  String get rideBroadcastFeedTitle => 'Neighborhood requests';
+
+  @override
+  String rideBroadcastActiveRadiusTooltip(int km) {
+    return 'In \"Active\" tab we show requests within max $km km from your current location (when available).';
+  }
+
+  @override
+  String get rideBroadcastTabActive => 'Active';
+
+  @override
+  String get rideBroadcastTabMapBubbles => 'Map bubbles';
+
+  @override
+  String get rideBroadcastTabMyHistory => 'My history';
+
+  @override
+  String get rideBroadcastVisibleOnlyForYouNoContacts =>
+      'Request is visible only to you: no other Nabour users were found in your contacts with phone matching their profile.';
+
+  @override
+  String rideBroadcastVisibleForYouAndContacts(String people) {
+    return 'Request is visible for you and for another $people from contacts.';
+  }
+
+  @override
+  String get rideBroadcastEnableLocationForMapRequest =>
+      'Enable location to place a map request.';
+
+  @override
+  String get rideBroadcastRequestRide => 'Request ride';
+
+  @override
+  String get rideBroadcastMapRequest => 'Map request';
+
+  @override
+  String rideBroadcastBubblesLoadFailed(String error) {
+    return 'Could not load bubbles. Pull down to retry.\n$error';
+  }
+
+  @override
+  String rideBroadcastNoBubbleInRadius(int km) {
+    return 'No bubble within $km km radius';
+  }
+
+  @override
+  String get rideBroadcastNoActiveBubbleHere => 'No active bubble here';
+
+  @override
+  String rideBroadcastBubblesOutsideRadiusHint(int km) {
+    return 'There are active bubbles, but they are farther than $km km from your current location. Check map or refresh GPS (pull down).';
+  }
+
+  @override
+  String get rideBroadcastBubblesVisibilityHint =>
+      'Bubbles are visible on map for about one hour from posting, then disappear. Place one from map menu. If you just opened this screen, pull down to sync.';
+
+  @override
+  String get rideBroadcastNoPostedRequestYet => 'No request posted yet';
+
+  @override
+  String get rideBroadcastNoActiveRequest => 'No active request';
+
+  @override
+  String get rideBroadcastBeFirstHint =>
+      'Be the first in your neighborhood to post a ride request.';
+
+  @override
+  String get rideBroadcastFriendPostedButNotVisibleHint =>
+      'If a friend posted but you cannot see it: pull down to refresh, verify you have them in contacts with the same number as in Nabour profile, and contact permission is granted.';
+
+  @override
+  String rideBroadcastNoRequestInRadius(int km) {
+    return 'No request within $km km radius';
+  }
+
+  @override
+  String get rideBroadcastIncludedButFarHint =>
+      'There are requests where you are included, but they are farther from your current location. Move closer or enable location for accurate filters.';
+
+  @override
+  String get rideBroadcastWaitingFriendHint =>
+      'If you are waiting for a nearby friend, also verify contacts and Nabour profile with the same phone number.';
+
+  @override
+  String get rideBroadcastDeleteMapRequestTitle => 'Delete map request?';
+
+  @override
+  String get rideBroadcastDeleteMapRequestConfirm =>
+      'The bubble will disappear for all neighbors; this action cannot be undone.';
+
+  @override
+  String get rideBroadcastMapBubbleDeleted => 'Map bubble deleted.';
+
+  @override
+  String rideBroadcastDeleteFailed(String error) {
+    return 'Could not delete: $error';
+  }
+
+  @override
+  String get rideBroadcastDeleteFromMapTooltip => 'Delete from map';
+
+  @override
+  String rideBroadcastPlaced(String value) {
+    return 'Posted: $value';
+  }
+
+  @override
+  String rideBroadcastExpiresMapBubble(String value) {
+    return 'Expires: $value (~1 h after posting)';
+  }
+
+  @override
+  String rideBroadcastDistanceFromYou(String km) {
+    return 'About $km km from you';
+  }
+
+  @override
+  String get rideBroadcastCancelRequestTitle => 'Cancel request';
+
+  @override
+  String get rideBroadcastCancelRequestConfirm =>
+      'Are you sure you want to cancel this request?';
+
+  @override
+  String get rideBroadcastNo => 'No';
+
+  @override
+  String get rideBroadcastYesCancel => 'Yes, cancel';
+
+  @override
+  String get rideBroadcastPersonalCar => 'Personal car';
+
+  @override
+  String rideBroadcastOfferSendFailed(String error) {
+    return 'Could not send offer: $error';
+  }
+
+  @override
+  String rideBroadcastReplySendFailed(String error) {
+    return 'Could not send reply: $error';
+  }
+
+  @override
+  String get rideBroadcastDriverFallback => 'Driver';
+
+  @override
+  String get rideBroadcastConfirmRideTitle => 'Confirm ride';
+
+  @override
+  String get rideBroadcastRideCompletedQuestion => 'Was the ride completed?';
+
+  @override
+  String get rideBroadcastNotCompleted => 'Not completed';
+
+  @override
+  String get rideBroadcastCompletedYes => 'Yes, completed';
+
+  @override
+  String get rideBroadcastReasonDriverNoShow => 'Driver did not show up';
+
+  @override
+  String get rideBroadcastReasonPassengerCancelled => 'Passenger canceled';
+
+  @override
+  String get rideBroadcastReasonAnotherCar => 'Another car';
+
+  @override
+  String get rideBroadcastReasonOther => 'Other reason';
+
+  @override
+  String get rideBroadcastReasonTitle => 'Reason';
+
+  @override
+  String rideBroadcastExpiresIn(String value) {
+    return 'Expires in $value';
+  }
+
+  @override
+  String get rideBroadcastMyRequest => 'My request';
+
+  @override
+  String get rideBroadcastAvailableDrivers => 'Available drivers';
+
+  @override
+  String get rideBroadcastReplies => 'Replies';
+
+  @override
+  String get rideBroadcastReplyHint =>
+      'You can send multiple messages - tap send for each';
+
+  @override
+  String rideBroadcastOffersOne(int count) {
+    return '$count offer';
+  }
+
+  @override
+  String rideBroadcastOffersMany(int count) {
+    return '$count offers';
+  }
+
+  @override
+  String get rideBroadcastOfferSent => 'Offer sent';
+
+  @override
+  String get rideBroadcastIOffer => 'I can offer';
+
+  @override
+  String get rideBroadcastStatusDone => '✅ Completed';
+
+  @override
+  String get rideBroadcastStatusNotDone => '❌ Not completed';
+
+  @override
+  String get rideBroadcastStatusAccepted => '🤝 Accepted';
+
+  @override
+  String get rideBroadcastStatusCancelled => '🚫 Cancelled';
+
+  @override
+  String get rideBroadcastStatusActive => '🕐 Active';
+
+  @override
+  String get rideBroadcastStatusExpired => '⏱ Expired';
+
+  @override
+  String rideBroadcastDriverWithName(String name) {
+    return 'Driver: $name';
+  }
+
+  @override
+  String rideBroadcastReasonWithValue(String value) {
+    return 'Reason: $value';
+  }
+
+  @override
+  String rideBroadcastTooManyActiveRequests(int max) {
+    return 'You already have $max active requests. Close one or wait for expiration (30 min) before posting another.';
+  }
+
+  @override
+  String rideBroadcastErrorWithMessage(String error) {
+    return 'Error: $error';
+  }
+
+  @override
+  String get rideBroadcastAskRideTitle => 'Request a ride';
+
+  @override
+  String get rideBroadcastPostVisibilityHint =>
+      'Your request will be visible to people in your contacts for 30 minutes.';
+
+  @override
+  String get rideBroadcastQuickSelectOrWrite => 'Quick select or write';
+
+  @override
+  String get rideBroadcastYourMessageRequired => 'Your message *';
+
+  @override
+  String get rideBroadcastMessageHint =>
+      'Where do you want to go? Any useful details...';
+
+  @override
+  String get rideBroadcastDestinationOptional => 'Destination (optional)';
+
+  @override
+  String get rideBroadcastDestinationHint => 'e.g. market, station, airport...';
+
+  @override
+  String get rideBroadcastPostRequest => 'Post request';
+
+  @override
+  String get rideBroadcastExpiresAfterThirtyMinutes =>
+      'Request expires automatically after 30 minutes.';
+
+  @override
+  String get searchDriverFallback => 'Driver';
+
+  @override
+  String get searchDriverSearchingNearby => 'Searching for nearby drivers...';
+
+  @override
+  String get searchDriverFoundWaitConfirm =>
+      'Driver found! Waiting for your confirmation.';
+
+  @override
+  String get searchDriverRideCancelled => 'The ride was cancelled.';
+
+  @override
+  String get searchDriverNoDriverAvailable => 'Sorry, no driver was available.';
+
+  @override
+  String searchDriverUnknownRideStatus(String status) {
+    return 'Unknown ride status: $status';
+  }
+
+  @override
+  String searchDriverConfirmError(String error) {
+    return 'Error confirming driver: $error';
+  }
+
+  @override
+  String get searchDriverDeclinedResuming =>
+      'You declined the driver. Resuming search...';
+
+  @override
+  String searchDriverDeclineError(String error) {
+    return 'Error declining driver: $error';
+  }
+
+  @override
+  String searchDriverCancelError(String error) {
+    return 'Error cancelling: $error';
+  }
+
+  @override
+  String get searchDriverSearchingTitle => 'Searching drivers';
+
+  @override
+  String get searchDriverPremiumHintTitle => 'Premium Tip';
+
+  @override
+  String get searchDriverPremiumHintBody =>
+      'Stay on this screen for a faster pickup.';
+
+  @override
+  String get searchDriverFoundTitle => 'Driver found';
+
+  @override
+  String get searchDriverArrivesIn => 'Arrives in';
+
+  @override
+  String get searchDriverDistanceLabel => 'Distance';
+
+  @override
+  String get searchDriverNabourDriverFallback => 'Nabour Driver';
+
+  @override
+  String get searchDriverStandardCategory => 'Standard Category';
+
+  @override
+  String get rideRequestStatusSearching => 'Searching drivers';
+
+  @override
+  String get rideRequestStatusPending => 'Pending';
+
+  @override
+  String get rideRequestStatusDriverFound => 'Driver found';
+
+  @override
+  String get rideRequestStatusAccepted => 'Accepted';
+
+  @override
+  String get rideRequestStatusDriverArrived => 'Driver arrived';
+
+  @override
+  String get rideRequestStatusInProgress => 'In progress';
+
+  @override
+  String get rideRequestStatusDriverRejected => 'Driver rejected';
+
+  @override
+  String get rideRequestStatusDriverDeclined => 'Driver declined';
+
+  @override
+  String get rideRequestTimeoutInternet =>
+      'Waiting time expired. Please check your internet connection.';
+
+  @override
+  String rideRequestRouteCalcError(String error) {
+    return 'Route calculation error: $error';
+  }
+
+  @override
+  String get rideRequestActiveRideDetected => 'Active ride detected';
+
+  @override
+  String get rideRequestStatusLabel => 'Ride status';
+
+  @override
+  String get rideRequestIdLabel => 'Ride ID';
+
+  @override
+  String get rideRequestCancelPreviousRide => 'Cancel previous ride';
+
+  @override
+  String rideRequestCancelPreviousRideError(String error) {
+    return 'Error cancelling previous ride: $error';
+  }
+
+  @override
+  String rideRequestCreateRideError(String error) {
+    return 'Error creating ride: $error';
+  }
+
+  @override
+  String get rideRequestWhereTo => 'Where to?';
+
+  @override
+  String get rideRequestChooseRide => 'Choose a ride';
+
+  @override
+  String get rideRequestOrChooseCategory => 'or choose a category';
+
+  @override
+  String get rideRequestSearchInProgress => 'Searching...';
+
+  @override
+  String get rideRequestConfirmAndRequest => 'Confirm & Request Ride';
+
+  @override
+  String get rideRequestAnyCategoryAvailable => 'Any available category';
+
+  @override
+  String get rideRequestFastestDriverInArea =>
+      'Fastest available driver in your area';
+
+  @override
+  String get rideRequestAnyCategorySubtitle => 'Fastest available driver.';
+
+  @override
+  String get rideRequestFamilySubtitle => 'Extra space for family and luggage.';
+
+  @override
+  String get rideRequestEnergySubtitle => 'Travel eco with an electric car.';
+
+  @override
+  String get rideRequestUtilitySubtitle =>
+      'Van or utility (up to 3.5t). Ideal for moving.';
+
+  @override
+  String get rideRequestUserNotAuthenticated =>
+      'Error: User is not authenticated.';
+
+  @override
+  String get mapArrivalInstruction => 'You arrived at destination!';
+
+  @override
+  String get mapArrivedTitle => 'You arrived!';
+
+  @override
+  String get mapFinalDestinationTitle => 'Final destination';
+
+  @override
+  String get mapOpenNavigationToDestinationHint =>
+      'Open navigation app to destination. Then return to map.';
+
+  @override
+  String get mapPassengerStatusDriverFound =>
+      'Driver found - waiting for your confirmation';
+
+  @override
+  String get mapPassengerStatusDriverOnWay => 'Driver is on the way to you';
+
+  @override
+  String get mapPassengerStatusDriverAtPickup =>
+      'Driver at pickup - open navigation to destination';
+
+  @override
+  String get mapPassengerStatusInProgress => 'Ride in progress';
+
+  @override
+  String mapPassengerStatusGeneric(String status) {
+    return 'Ride: $status';
+  }
+
+  @override
+  String get mapNavigationToPickupTitle => 'Navigation to pickup';
+
+  @override
+  String get mapExternalNavigationNoRouteHint =>
+      'Navigation app (no in-app route in Nabour).';
+
+  @override
+  String get mapOpenSameDestinationAsDriver =>
+      'Open the same destination as the driver in your navigation app.';
+
+  @override
+  String get mapLongPressToSetLandmark => 'Long press on map to set landmark.';
+
+  @override
+  String get mapCloseCancelPlacement => 'Close (cancel placement)';
+
+  @override
+  String get mapCommunityMysteryBoxTitle => 'Community Mystery Box';
+
+  @override
+  String mapCommunityMysteryBoxDescription(int tokens) {
+    return 'You place a box at current location. Cost: $tokens tokens. First user opening it on site receives the same tokens - you will be notified when this happens.';
+  }
+
+  @override
+  String get mapShortMessageOptional => 'Short message (optional)';
+
+  @override
+  String get mapShortMessageHint => 'e.g. Top bonus - have fun!';
+
+  @override
+  String get mapPhoneNumberUnavailable => 'Phone number unavailable';
+
+  @override
+  String get neighborFallback => 'Neighbor';
+
+  @override
+  String mapReactionSent(String reaction) {
+    return 'Reaction sent: $reaction';
+  }
+
+  @override
+  String mapHonkedNeighbor(String name) {
+    return 'You honked at $name!';
+  }
+
+  @override
+  String mapEtaMessageToNeighbor(int minutes) {
+    return '📍 I am heading your way! Estimated ETA: $minutes min.';
+  }
+
+  @override
+  String mapEtaSentTo(String name) {
+    return 'ETA sent to $name';
+  }
+
+  @override
+  String mapNeighborhoodBubbleContext(String name) {
+    return 'The bubble appears near $name on the map. Visible to neighbors for ~1 hour.';
+  }
+
+  @override
+  String mapEmojiPlacedNear(String name) {
+    return 'Emoji placed near $name on the map';
+  }
+
+  @override
+  String get mapCannotPlaceEmoji => 'Could not place emoji on the map';
+
+  @override
+  String get mapPersonNotVisibleSendFromList =>
+      'This person is not visible on the map now. You can send a friend request from the list (+).';
+
+  @override
+  String get mapContactsVisibilityHint =>
+      'On the map you only see accepted friends or phone contacts who have a Nabour account. Add numbers to contacts or accept a request from Suggestions.';
+
+  @override
+  String get mapSyncingContacts => 'Syncing contacts...';
+
+  @override
+  String mapSyncComplete(int count) {
+    return 'Sync complete: $count names found.';
+  }
+
+  @override
+  String get mapEnableDriverProfileHint =>
+      'Enable driver profile and add your car to use driver mode.';
+
+  @override
+  String mapIntermediateStopAdded(String name) {
+    return '$name added as an intermediate stop';
+  }
+
+  @override
+  String mapStopRemoved(String name) {
+    return '$name removed from stops';
+  }
+
+  @override
+  String mapNoPoiFoundInArea(String category) {
+    return 'No $category found in the area';
+  }
+
+  @override
+  String mapHonkReceived(String name) {
+    return '📣 $name honked at you!';
+  }
+
+  @override
+  String get mapCalculatingRoute => 'Calculating route...';
+
+  @override
+  String get mapCannotGetLocationEnableGps =>
+      'Could not get location. Enable GPS.';
+
+  @override
+  String get mapRouteUnavailableCheckConnection =>
+      'Route unavailable. Check connection.';
+
+  @override
+  String get mapContinueOnRoute => 'Continue on route.';
+
+  @override
+  String get mapAneighbor => 'A neighbor';
+
+  @override
+  String mapSosNearbyTitle(String name) {
+    return '🆘 NEARBY SOS: $name';
+  }
+
+  @override
+  String get mapSosNearbyBody => 'Active emergency nearby! Check radar on map.';
+
+  @override
+  String mapSosTtsAlert(String name) {
+    return 'Attention! S.O.S. alert nearby from $name. Proximity radar is now active.';
+  }
+
+  @override
+  String get mapCriticalZone => 'CRITICAL ZONE';
+
+  @override
+  String get mapSosActiveTitle => '🆘 S.O.S. ACTIVE';
+
+  @override
+  String get mapNoContactsInRadarCircle =>
+      'None of your contacts with location in this area are inside the scan circle right now.';
+
+  @override
+  String get mapStopNavigationFirst =>
+      'Stop navigation first from the top banner.';
+
+  @override
+  String get mapWaitingGpsTryAgain =>
+      'Waiting for GPS position. Try again in a few seconds.';
+
+  @override
+  String get mapGpsLocationUnavailableYet =>
+      'GPS location is not available yet';
+
+  @override
+  String mapSetPickupError(String error) {
+    return 'Error setting pickup: $error';
+  }
+
+  @override
+  String mapSetDestinationError(String error) {
+    return 'Error setting destination: $error';
+  }
+
+  @override
+  String mapMaxIntermediateStops(int count) {
+    return 'Maximum $count intermediate stops allowed';
+  }
+
+  @override
+  String get mapStopAlreadyAdded => 'This stop is already added';
+
+  @override
+  String mapAddStopError(String error) {
+    return 'Error adding stop: $error';
+  }
+
+  @override
+  String mapRouteCalculationError(String error) {
+    return 'Route calculation error: $error';
+  }
+
+  @override
+  String mapRouteSetupError(String error) {
+    return 'Route setup error: $error';
+  }
+
+  @override
+  String get mapCouldNotCalculateRoute => 'Could not calculate route';
+
+  @override
+  String get mapFlashlightUnavailable =>
+      'Flashlight is not available on this device';
+
+  @override
+  String get mapFlashlightActivationError => 'Error activating flashlight';
+
+  @override
+  String get mapSpotAnnouncedAvailable =>
+      'Spot has been announced as available.';
+
+  @override
+  String get mapCouldNotAnnounceTryAgain =>
+      'Could not announce. Please try again.';
+
+  @override
+  String get mapSelectionCancelled => 'Map selection was canceled.';
+
+  @override
+  String mapNeighborNearbyTitle(String avatar, String name) {
+    return '$avatar $name is nearby!';
+  }
+
+  @override
+  String mapNeighborNearbyBody(int meters) {
+    return 'At $meters m - social map 📍';
+  }
+
+  @override
+  String mapPickupIndex(int index) {
+    return 'Pickup $index';
+  }
+
+  @override
+  String get mapPickupPointSelected => 'Pickup point selected';
+
+  @override
+  String get helpChatGuideTitle => 'Neighborhood Chat usage guide';
+
+  @override
+  String get helpChatGuideIntro =>
+      'The neighborhood chat is designed to instantly connect you with neighbors in your vicinity.';
+
+  @override
+  String get helpChatWhoSeesTitle => 'Who sees the messages?';
+
+  @override
+  String get helpChatWhoSeesBody =>
+      'Sent messages are visible to all users who are in the same geographic area as you at the time of use.';
+
+  @override
+  String get helpChatCoverageTitle => 'Radius and Coverage Area';
+
+  @override
+  String get helpChatCoverageBody =>
+      'The system divides the city into hexagons with a side of approximately 3.2 km (an area of about 36 km²). It\'s a vast area, ideal to cover an entire neighborhood or a sector.';
+
+  @override
+  String get helpChatPersistenceTitle => 'Message persistence';
+
+  @override
+  String get helpChatPersistenceBody =>
+      'To keep conversations fresh and relevant, messages disappear automatically after 30 minutes. There is no permanent history, the chat being intended for immediate interactions.';
+
+  @override
+  String get helpChatPrivacyTitle => 'Privacy and Safety';
+
+  @override
+  String get helpChatPrivacyBody =>
+      'Chat access is validated based on your current GPS location. If you move to another part of the city, the app will automatically connect you to the specific chat for that area.';
+
+  @override
+  String get helpChatTipOMW =>
+      'Tip: Use the OMW button to quickly announce to neighbors that you are on your way to them or available in the area.';
+
+  @override
+  String get helpLassoTitle => 'Lasso Tool (Magic Wand)';
+
+  @override
+  String get helpLassoBody =>
+      'The Lasso tool allows you to select multiple neighbors on the map by drawing a circle around them.';
+
+  @override
+  String get helpLassoHowToTitle => 'How to use it?';
+
+  @override
+  String get helpLassoHowToBody =>
+      '1. Tap the \"Magic Wand\" icon in the top right of the map.\n2. Draw a circle around the neighbors you want to contact.\n3. A menu will appear showing the captured group and options to send a broadcast request.';
+
+  @override
+  String get helpLassoTip =>
+      'Tip: Use Lasso to quickly find a neighbor team for a common activity or a shared ride request!';
+
+  @override
+  String get helpRadarTitle => 'Scan button (neighbor radar)';
+
+  @override
+  String get helpRadarBody =>
+      'The Scan button runs the radar overlay for about 5 seconds, then closes automatically. During this time you cannot resize the circle.';
+
+  @override
+  String get helpRadarWhatTitle => 'What does it scan?';
+
+  @override
+  String get helpRadarWhatBody =>
+      'It does not scan Bluetooth, Wi‑Fi, or new devices. It lists neighbors who are already shown on the map and whose position falls inside your radar circle (distance is computed from the circle center and radius).';
+
+  @override
+  String get helpRadarResultsTitle => 'Where do results appear?';
+
+  @override
+  String get helpRadarResultsBody =>
+      'If at least one neighbor is in the circle, a bottom sheet opens with the list. If there is no one, you will see a short message that no neighbors were found in the radar.';
+
+  @override
+  String get helpRadarNextTitle => 'What can you do next?';
+
+  @override
+  String get helpRadarNextBody =>
+      'From the sheet you can use the group action (e.g. broadcast request) when that feature is fully enabled; until then the app may show a notice that it is being rolled out.';
+
+  @override
+  String get helpRadarTip =>
+      'Tip: Move or resize the circle before tapping Scan so it covers the area you care about—only neighbors already visible on the map can appear in the results.';
+
+  @override
+  String get helpMapDropsTitle => 'Interactive Map Drops';
+
+  @override
+  String get helpMapDropsBody =>
+      'Map Drops are special location markers shared in the neighborhood chat that let you travel through the map instantly.';
+
+  @override
+  String get helpMapDropsFlyTitle => 'The \"FlyTo\" Animation';
+
+  @override
+  String get helpMapDropsFlyBody =>
+      'When a neighbor shares a location, tap on the interactive card in the chat. The app will close the chat and perform a cinematic flight directly to that exact spot on the map.';
+
+  @override
+  String get helpMapDropsPinsTitle => 'Transient Pins';
+
+  @override
+  String get helpMapDropsPinsBody =>
+      'After the flight, you will see a pulsing pin on the map. This helps you identify exactly where the \"drop\" was made, providing precise visual context for the neighbor\'s message.';
+
+  @override
+  String get helpBoxesPurposeTitle => 'Purpose';
+
+  @override
+  String get helpBoxesPurposeBody =>
+      'On the map you can use two related features tied to Nabour tokens: (1) boxes at business offers — the merchant can set an optional limit; you open them near the store and get tokens plus a discount code for the shop. (2) Community boxes — any user can place a box at their current location; someone else opens it on the spot and gets tokens; the placer is notified when it is opened.';
+
+  @override
+  String get helpBoxesTokensTitle => 'Tokens — how they move';
+
+  @override
+  String get helpBoxesTokensBody =>
+      '• Placing a community box: 50 tokens are reserved via the server (stake) and recorded in your wallet history.\n• Opening a community box (as another user, within about 100 m): you receive 50 tokens; the box is marked as opened.\n• Opening a business-offer box: you receive 50 tokens and a discount code, subject to daily-per-store rules and any cap the merchant set.\n• Amounts may follow app settings; if server policy blocks crediting until payments are enabled, opening may fail with that message.';
+
+  @override
+  String get helpBoxesCommunityStepsTitle => 'Community boxes — user flow';
+
+  @override
+  String get helpBoxesCommunityStepsBody =>
+      '1) From the map, place a box at your current position (you need enough tokens). Up to 20 active boxes per account.\n2) Nearby users see community boxes on the map; your own boxes are not shown to you as boxes to open.\n3) Tap a box, get close (~100 m), confirm — the server checks distance and identity.\n4) The placer receives an in-app notification entry and a push when someone opens their box.\n5) Under Menu → “Box activity” you can see summaries, your placed boxes, your opens, and opens of your boxes.';
+
+  @override
+  String get helpBoxesBusinessStepsTitle =>
+      'Business-offer boxes — user & merchant flow';
+
+  @override
+  String get helpBoxesBusinessStepsBody =>
+      'The merchant publishes an offer and may attach a mystery-box cap (extra token cost when creating or increasing the cap). You open the box from the map near the location; you get tokens and a redemption code. At the store, the merchant opens the business panel and uses “Validate box code” so the code is marked used. Codes are stored securely; only cloud functions create or validate them.';
+
+  @override
+  String get helpBoxesActivityScreenTitle => 'Activity screen (menu)';
+
+  @override
+  String get helpBoxesActivityScreenBody =>
+      'Tabs: Summary (estimated tokens from opens and stake from placements), Placed community boxes, Your opens (community + business log), Notifications when others open your community boxes. Redemption codes are shown masked for safety.';
+
+  @override
+  String get helpBoxesPrivacyRulesTitle => 'Privacy & rules';
+
+  @override
+  String get helpBoxesPrivacyRulesBody =>
+      'Sensitive collections (redemption codes, box writes) are handled on the server. Firestore rules prevent clients from forging opens or codes; reads follow authentication rules.';
+
+  @override
+  String get helpBoxesWhoTitle => 'Who does what';
+
+  @override
+  String get helpBoxesWhoBody =>
+      '• Any user: browse the map, place community boxes if they have tokens, open community or business boxes when conditions are met, review “Box activity”.\n• Placer: gets notified when a community box is opened.\n• Merchant: configures offers and caps, validates discount codes after a customer opens a box.';
+
+  @override
+  String get helpBoxesNotesTitle => 'Notes';
+
+  @override
+  String get helpBoxesNotesBody =>
+      'Listing many boxes around you is optimized for moderate scale; very large usage may need stronger geo indexing later. Automatic refund or expiry of community stakes if nobody opens a box is not described here and may be added later.';
+
+  @override
+  String get helpBoxesTip =>
+      'Tip: If opening fails, check GPS accuracy, internet, wallet balance, and whether credits are enabled on the server for your environment.';
+
+  @override
+  String get helpTransfersP2PTitle => 'Token transfers between users';
+
+  @override
+  String get helpTransfersP2PAboutTitle => 'What it is';
+
+  @override
+  String get helpTransfersP2PAboutBody =>
+      'From the side menu, open “Token transfer” to move Nabour tokens to another account or to ask someone to send you tokens. Balances and ledger entries are updated on the server; you need the other person’s user ID (Firebase UID).';
+
+  @override
+  String get helpTransfersP2PWalletTitle => 'Transferable wallet';
+
+  @override
+  String get helpTransfersP2PWalletBody =>
+      'This screen shows the transferable token balance (not the same view as the monthly usage bar at the top of the menu). If the wallet is frozen or missing, transfers and requests will be blocked until the account is eligible.';
+
+  @override
+  String get helpTransfersP2PDirectTitle => 'Direct transfer';
+
+  @override
+  String get helpTransfersP2PDirectBody =>
+      'You send tokens immediately to the recipient’s user ID. You cannot transfer to yourself. Amounts must be a whole number of tokens within the allowed range. An optional note can be attached.';
+
+  @override
+  String get helpTransfersP2PRequestTitle => 'Payment request';
+
+  @override
+  String get helpTransfersP2PRequestBody =>
+      'You ask another user (the payer) to send you tokens. They receive a pending request and can accept or decline. If they accept, tokens move from their transferable wallet to yours. Requests expire after a limited time if not answered.';
+
+  @override
+  String get helpTransfersP2PRequestsTabTitle => 'Requests tab';
+
+  @override
+  String get helpTransfersP2PRequestsTabBody =>
+      '• As payer: you can accept or decline incoming requests; you may add an optional reason when declining.\n• As requester: you can cancel a request you created while it is still pending.';
+
+  @override
+  String get helpTransfersP2PHistoryTabTitle => 'History tab';
+
+  @override
+  String get helpTransfersP2PHistoryTabBody =>
+      'Shows recent direct transfers and resolved payment requests. Pull down to refresh.';
+
+  @override
+  String get helpTransfersP2PTip =>
+      'Only share your user ID with people you trust. Double-check the ID before confirming a transfer or request.';
+
+  @override
+  String get helpDriverActivationStepCheckConditions => '1. Check conditions';
+
+  @override
+  String get helpDriverActivationStepCheckConditionsBody =>
+      'You must have a valid driver\'s license, at least 2 years of experience, and be at least 21 years old.';
+
+  @override
+  String get helpDriverActivationStepPrepareDocs => '2. Prepare documents';
+
+  @override
+  String get helpDriverActivationStepPrepareDocsBody =>
+      'You need: driver\'s license, ID card, vehicle registration certificate, valid ITP, and RCA insurance.';
+
+  @override
+  String get helpDriverActivationStepCompleteApp => '3. Complete application';
+
+  @override
+  String get helpDriverActivationStepCompleteAppBody =>
+      'Access the \'Career\' section in the main menu and complete the online form with your details.';
+
+  @override
+  String get helpDriverActivationStepSubmitDocs => '4. Submit documents';
+
+  @override
+  String get helpDriverActivationStepSubmitDocsBody =>
+      'Upload clear photos of all required documents through the online platform.';
+
+  @override
+  String get helpDriverActivationStepVerification =>
+      '5. Application verification';
+
+  @override
+  String get helpDriverActivationStepVerificationBody =>
+      'Our team will verify the documents within 48 business hours.';
+
+  @override
+  String get helpDriverActivationStepReceiveCode =>
+      '6. Receive activation code';
+
+  @override
+  String get helpDriverActivationStepReceiveCodeBody =>
+      'After approval, you will receive a unique code via email/SMS to activate the driver account.';
+
+  @override
+  String get helpDriverActivationStepActivateAccount => '7. Activate account';
+
+  @override
+  String get helpDriverActivationStepActivateAccountBody =>
+      'Enter the code in the app and start earning money by driving!';
+
+  @override
+  String get helpDriverActivationTipHeader => '💡 Useful tip:';
+
+  @override
+  String get helpDriverActivationTipBody =>
+      'Ensure all documents are valid and photos are clear for fast processing.';
+
+  @override
+  String get helpSearchHint => 'Search help articles...';
+
+  @override
+  String get helpCategoryRideIssues => 'Ride Issues';
+
+  @override
+  String get helpCategorySafetySOS => 'Safety & SOS';
+
+  @override
+  String get helpCategoryNabourFeatures => 'Nabour Features';
+
+  @override
+  String get helpCategoryPaymentsWallet => 'Payments & Wallet';
+
+  @override
+  String get helpCategorySettingsAccount => 'Settings & Account';
+
+  @override
+  String get helpStillNeedHelp => 'Still need help?';
+
+  @override
+  String get helpContactSupport => 'Contact our support team';
+
+  @override
+  String get helpContactButton => 'Contact';
+
+  @override
+  String get helpRideSharingTitle => 'Ride Sharing';
+
+  @override
+  String get chatGalleryPhoto => 'Gallery Photo';
+
+  @override
+  String get chatGif => 'GIF';
+
+  @override
+  String get driverHoursLimit => 'Driving hours limit';
+
+  @override
+  String driverHoursWarningBody(String hours, String remaining) {
+    return 'You have driven $hours hours today.\nYou have $remaining hours left.\n\nConsider taking a break for your safety and the passengers\'.';
+  }
+
+  @override
+  String get goOffline => 'Go Offline';
+
+  @override
+  String get driverHoursReachedLimitTitle => '10 hours limit reached';
+
+  @override
+  String get driverHoursReachedLimitBody =>
+      'You have driven 10 consecutive hours.\nFor safety reasons, you have been automatically disconnected.\n\nYou can reconnect after a rest period.';
+
+  @override
+  String ridesCompletedToday(int count) {
+    return '$count rides completed today.';
+  }
+
+  @override
+  String viewAllRides(int count) {
+    return 'View all $count rides';
+  }
+
+  @override
+  String get driverSessionBannerCritical =>
+      '10 hours limit reached. Please go offline.';
+
+  @override
+  String driverSessionBannerWarning(String hours, String remaining) {
+    return 'Session: ${hours}h • Remaining ${remaining}h';
+  }
+
+  @override
+  String driverSessionBannerNormal(String hours) {
+    return 'Session: ${hours}h';
+  }
+
+  @override
+  String get helpToday => 'Help Today';
+
+  @override
+  String get tokens => 'Tokens';
+
+  @override
+  String get rideSummary_thankYouGoodbye => 'Thank you and goodbye!';
+
+  @override
+  String rideSummary_tipRegistered(String amount, String currency) {
+    return 'A tip of $amount $currency has been recorded.';
+  }
+
+  @override
+  String rideSummary_redirectToMapInSeconds(String seconds) {
+    return 'Redirecting to map in $seconds seconds...';
+  }
+
+  @override
+  String get rideSummary_submitRatingButton => 'Submit Rating';
+
+  @override
+  String get rideSummary_skipRatingButton => 'Skip Rating';
+
+  @override
+  String get rideSummary_ratingSentSuccess => 'Rating sent successfully!';
+
+  @override
+  String get rideSummary_backToMap => 'Back to Map';
+
+  @override
+  String get rideSummary_rideDetails => 'Ride Details';
+
+  @override
+  String get rideSummary_distance => 'Distance';
+
+  @override
+  String get rideSummary_duration => 'Duration';
+
+  @override
+  String get rideSummary_rideCost => 'Ride Cost';
+
+  @override
+  String get rideSummary_freeRideSupport => 'Free - Neighbors Support';
+
+  @override
+  String get rideSummary_driverTipOptional => '💰 Driver Tip (optional)';
+
+  @override
+  String get rideSummary_thankDriverTipText =>
+      'Thank the driver for a pleasant trip!';
+
+  @override
+  String rideSummary_otherAmountLabel(String currency) {
+    return 'Other amount ($currency)';
+  }
+
+  @override
+  String get rideSummary_noTipButton => 'No tip';
+
+  @override
+  String rideSummary_tipSelected(String amount, String currency) {
+    return 'Tip selected: $amount $currency';
+  }
+
+  @override
+  String get safety_sosButtonLabel => '112 — SOS';
+
+  @override
+  String get safety_locationUnavailable => '(location unavailable)';
+
+  @override
+  String get safety_defaultNabourUser => 'Nabour User';
+
+  @override
+  String safety_emergencySmsBody(String name, String location) {
+    return '🆘 EMERGENCY! $name needs help!\nLocation: $location\nClick to see on map.';
+  }
+
+  @override
+  String get safety_emergencyAlertSent =>
+      '🆘 Emergency alert sent. Calling 112...';
+
+  @override
+  String safety_shareTripBody(String location) {
+    return '📍 Tracking my Nabour trip!\nCurrent location: $location';
+  }
+
+  @override
+  String get safety_shareTripNoLocation =>
+      '🚗 I\'m riding with Nabour. Location unavailable at the moment.';
+
+  @override
+  String get safety_couldNotCreateTrackingLink =>
+      'Could not create tracking link';
+
+  @override
+  String get safety_deleteContactTitle => 'Delete contact';
+
+  @override
+  String safety_deleteContactConfirmation(String name) {
+    return 'Delete $name from trusted contacts?';
+  }
+
+  @override
+  String get safety_emergencyButtonTitle => 'Emergency Button';
+
+  @override
+  String get safety_emergencyButtonSubtitle =>
+      'Call 112 and send your location\nto all trusted contacts';
+
+  @override
+  String get safety_shareTripTitle => 'Share Trip';
+
+  @override
+  String get safety_activeRideDetected => 'Active ride detected';
+
+  @override
+  String get safety_sendCurrentLocation => 'Send current location';
+
+  @override
+  String get safety_gettingLocation => 'Getting location...';
+
+  @override
+  String get safety_shareLocationButton => 'Share location';
+
+  @override
+  String get safety_liveLinkActive => 'Live link active — re-share';
+
+  @override
+  String get safety_safeRideSharePath => 'Safe Ride Live — share path';
+
+  @override
+  String get safety_noContactsAdded => 'No contacts added';
+
+  @override
+  String get safety_addContactsDescription =>
+      'Add family or friends. They will receive\nyour location in case of emergency.';
+
+  @override
+  String get rideSummary_totalCost => 'Total Cost';
+
+  @override
+  String safety_destinationLabelPrefix(String destination) {
+    return 'Destination: $destination';
+  }
 }
