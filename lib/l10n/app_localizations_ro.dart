@@ -3982,10 +3982,10 @@ class AppLocalizationsRo extends AppLocalizations {
   }
 
   @override
-  String get warmupExampleRide1 => 'Sarah B. (2 min) → Centru';
+  String get warmupExampleRide1 => 'Stefan G. (2 min) → Centru';
 
   @override
-  String get warmupExampleRide2 => 'Mihai K. (5 min) → Gară';
+  String get warmupExampleRide2 => 'Laurentiu A. (5 min) → Aeroport';
 
   @override
   String get warmupExampleOffer1 => 'The Daily Grind: 20% reducere la cafea';
@@ -3995,10 +3995,10 @@ class AppLocalizationsRo extends AppLocalizations {
       'Urban Bites: Garnitură gratis la orice fel';
 
   @override
-  String get warmupExampleChat1 => 'Alex: Cine vrea la o plimbare în parc...?';
+  String get warmupExampleChat1 => 'Irina: Cine vrea la o plimbare în parc...?';
 
   @override
-  String get warmupExampleChat2 => 'Chloe: S-a auzit un zgomot pe Elm St...';
+  String get warmupExampleChat2 => 'Claudia: Ofer parcarea mea pentru 8 ore.';
 
   @override
   String get warmupSwipeDownHint => 'Sau trage în jos pentru a închide';

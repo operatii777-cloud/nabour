@@ -1775,12 +1775,12 @@
       "count": { "type": "String" }
     }
   },
-  "warmupExampleRide1": "Sarah B. (2 min) → Downtown",
-  "warmupExampleRide2": "Mike K. (5 min) → Station",
+  "warmupExampleRide1": "Stefan G. (2 min) → Downtown",
+  "warmupExampleRide2": "Laurentiu A. (5 min) → Airport",
   "warmupExampleOffer1": "The Daily Grind: 20% off all coffees",
   "warmupExampleOffer2": "Urban Bites: Free side with any main",
-  "warmupExampleChat1": "Alex: Anyone want to join the park walk...?",
-  "warmupExampleChat2": "Chloe: Heard a loud bang on Elm St...",
+  "warmupExampleChat1": "Irina: Anyone want to join the park walk...?",
+  "warmupExampleChat2": "Claudia: Offering my parking spot for 8 hours.",
   "warmupSwipeDownHint": "Or swipe down to close",
 
   "warmupHeroNeighborsTitle": "Rides with neighbors",

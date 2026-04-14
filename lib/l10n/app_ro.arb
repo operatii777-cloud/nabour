@@ -1772,12 +1772,12 @@
       "count": { "type": "String" }
     }
   },
-  "warmupExampleRide1": "Sarah B. (2 min) → Centru",
-  "warmupExampleRide2": "Mihai K. (5 min) → Gară",
+  "warmupExampleRide1": "Stefan G. (2 min) → Centru",
+  "warmupExampleRide2": "Laurentiu A. (5 min) → Aeroport",
   "warmupExampleOffer1": "The Daily Grind: 20% reducere la cafea",
   "warmupExampleOffer2": "Urban Bites: Garnitură gratis la orice fel",
-  "warmupExampleChat1": "Alex: Cine vrea la o plimbare în parc...?",
-  "warmupExampleChat2": "Chloe: S-a auzit un zgomot pe Elm St...",
+  "warmupExampleChat1": "Irina: Cine vrea la o plimbare în parc...?",
+  "warmupExampleChat2": "Claudia: Ofer parcarea mea pentru 8 ore.",
   "warmupSwipeDownHint": "Sau trage în jos pentru a închide",
 
   "warmupHeroNeighborsTitle": "Curse între vecini",

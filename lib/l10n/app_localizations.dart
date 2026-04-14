@@ -7103,13 +7103,13 @@ abstract class AppLocalizations {
   /// No description provided for @warmupExampleRide1.
   ///
   /// In ro, this message translates to:
-  /// **'Sarah B. (2 min) → Centru'**
+  /// **'Stefan G. (2 min) → Centru'**
   String get warmupExampleRide1;
 
   /// No description provided for @warmupExampleRide2.
   ///
   /// In ro, this message translates to:
-  /// **'Mihai K. (5 min) → Gară'**
+  /// **'Laurentiu A. (5 min) → Aeroport'**
   String get warmupExampleRide2;
 
   /// No description provided for @warmupExampleOffer1.
@@ -7127,13 +7127,13 @@ abstract class AppLocalizations {
   /// No description provided for @warmupExampleChat1.
   ///
   /// In ro, this message translates to:
-  /// **'Alex: Cine vrea la o plimbare în parc...?'**
+  /// **'Irina: Cine vrea la o plimbare în parc...?'**
   String get warmupExampleChat1;
 
   /// No description provided for @warmupExampleChat2.
   ///
   /// In ro, this message translates to:
-  /// **'Chloe: S-a auzit un zgomot pe Elm St...'**
+  /// **'Claudia: Ofer parcarea mea pentru 8 ore.'**
   String get warmupExampleChat2;
 
   /// No description provided for @warmupSwipeDownHint.

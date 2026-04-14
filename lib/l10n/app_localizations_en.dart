@@ -3935,10 +3935,10 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get warmupExampleRide1 => 'Sarah B. (2 min) → Downtown';
+  String get warmupExampleRide1 => 'Stefan G. (2 min) → Downtown';
 
   @override
-  String get warmupExampleRide2 => 'Mike K. (5 min) → Station';
+  String get warmupExampleRide2 => 'Laurentiu A. (5 min) → Airport';
 
   @override
   String get warmupExampleOffer1 => 'The Daily Grind: 20% off all coffees';
@@ -3948,10 +3948,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get warmupExampleChat1 =>
-      'Alex: Anyone want to join the park walk...?';
+      'Irina: Anyone want to join the park walk...?';
 
   @override
-  String get warmupExampleChat2 => 'Chloe: Heard a loud bang on Elm St...';
+  String get warmupExampleChat2 =>
+      'Claudia: Offering my parking spot for 8 hours.';
 
   @override
   String get warmupSwipeDownHint => 'Or swipe down to close';
