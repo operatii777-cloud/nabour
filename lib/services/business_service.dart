@@ -179,7 +179,9 @@ class BusinessService {
       await _offers.doc(offerId).update({
         'viewsCount': FieldValue.increment(1),
       });
-    } catch (_) {}
+    } catch (e) {
+      Logger.debug('incrementViews failed for $offerId: $e', tag: 'BusinessService');
+    }
   }
 
   /// Sterge (dezactivează) un anunț.

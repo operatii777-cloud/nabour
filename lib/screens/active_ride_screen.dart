@@ -104,10 +104,6 @@ class _ActiveRideScreenState extends State<ActiveRideScreen> {
 
   Future<void> _loadMarkerIcons() async {
     try {
-      final d = await DriverIconHelper.getDriverIconBytes();
-      if (mounted) _driverIconBytes = d;
-    } catch (_) {}
-    try {
       final s = await rootBundle.load('assets/images/passenger_icon.png');
       final e = await rootBundle.load('assets/images/pin_icon.png');
       if (mounted) {
@@ -115,7 +111,9 @@ class _ActiveRideScreenState extends State<ActiveRideScreen> {
         _endIconBytes = e.buffer.asUint8List();
         if (_mapReady) unawaited(_syncMapContent());
       }
-    } catch (_) {}
+    } catch (e) {
+      Logger.warning('ActiveRide._loadMarkerIcons failed: $e', tag: 'ACTIVE_RIDE');
+    }
   }
 
   @override
@@ -282,7 +280,9 @@ class _ActiveRideScreenState extends State<ActiveRideScreen> {
         final last = await geo.Geolocator.getLastKnownPosition();
         lat = last?.latitude;
         lng = last?.longitude;
-      } catch (_) {}
+      } catch (e) {
+        Logger.warning('SOS: getLastKnownPosition failed: $e', tag: 'ACTIVE_RIDE');
+      }
     }
     final pt = _driverPointNotifier.value;
     lat ??= pt?.coordinates.lat.toDouble();
@@ -311,10 +311,41 @@ class _ActiveRideScreenState extends State<ActiveRideScreen> {
     final r = await _firestoreService.getRideStream(widget.rideId).first;
     if (!mounted) return;
 
+    await _applyDriverMarkerIconFromRide(r);
+
     await _loadStaticRoute(r);
 
     _subscribeToRideStatusChanges();
     _startDriverLocationTracking();
+  }
+
+  /// Pe hartă: garajul șoferului (pasager vede șoferul; șoferul vede propriul vehicul).
+  Future<void> _applyDriverMarkerIconFromRide(Ride r) async {
+    try {
+      final uidForGarage =
+          widget.isDriverView ? _currentUserId : r.driverId;
+      if (uidForGarage == null || uidForGarage.isEmpty) {
+        if (mounted) {
+          _driverIconBytes = await DriverIconHelper.getDriverIconBytes();
+        }
+        return;
+      }
+      final doc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(uidForGarage)
+          .get();
+      if (!mounted) return;
+      _driverIconBytes =
+          await DriverIconHelper.getDriverMarkerBytesForUserProfile(doc.data());
+      if (_mapReady) {
+        unawaited(_updateDriverAnnotation());
+      }
+    } catch (e) {
+      Logger.warning('Active ride driver marker profile: $e', tag: 'ACTIVE_RIDE');
+      if (mounted) {
+        _driverIconBytes = await DriverIconHelper.getDriverIconBytes();
+      }
+    }
   }
 
   Future<void> _loadStaticRoute(Ride ride) async {
@@ -446,7 +477,9 @@ class _ActiveRideScreenState extends State<ActiveRideScreen> {
           iconSize: 0.28,
           iconAnchor: IconAnchor.BOTTOM,
         ));
-      } catch (_) {}
+      } catch (e) {
+        Logger.debug('Start marker update failed: $e', tag: 'ACTIVE_RIDE');
+      }
     }
 
     if (_endPoint != null && _endIconBytes != null) {
@@ -461,7 +494,9 @@ class _ActiveRideScreenState extends State<ActiveRideScreen> {
           iconSize: 0.42,
           iconAnchor: IconAnchor.BOTTOM,
         ));
-      } catch (_) {}
+      } catch (e) {
+        Logger.debug('End marker update failed: $e', tag: 'ACTIVE_RIDE');
+      }
     }
   }
 

@@ -69,6 +69,8 @@ class _DriverRidePickupScreenState extends State<DriverRidePickupScreen>
   final TextEditingController _pickupCodeController = TextEditingController();
   bool _isVerifyingCode = false;
   bool _codeVerified = false;
+  // Fluxul Nabour este între contacte/prieteni: codul de pickup rămâne dezactivat.
+  bool get _requirePickupCode => false;
   
   // Pickup process states
   PickupState _pickupState = PickupState.approaching;
@@ -159,6 +161,7 @@ class _DriverRidePickupScreenState extends State<DriverRidePickupScreen>
     try {
       final profileDoc = await _firestoreService.getProfileByIdStream(widget.ride.passengerId).first;
       if (profileDoc.exists) {
+        if (!mounted) return;
         setState(() {
           _passengerProfile = UserModel.fromFirestore(profileDoc);
           _isLoading = false;
@@ -166,7 +169,7 @@ class _DriverRidePickupScreenState extends State<DriverRidePickupScreen>
       }
     } catch (e) {
       Logger.error('Error loading passenger profile: $e', error: e);
-      setState(() => _isLoading = false);
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
@@ -187,6 +190,7 @@ class _DriverRidePickupScreenState extends State<DriverRidePickupScreen>
   Future<void> _updateCurrentLocation() async {
     try {
       final position = await geo.Geolocator.getCurrentPosition();
+      if (!mounted) return;
       setState(() => _currentPosition = position);
 
       unawaited(_firestoreService.updateDriverLocation(
@@ -204,6 +208,7 @@ class _DriverRidePickupScreenState extends State<DriverRidePickupScreen>
           widget.ride.startLongitude!,
         );
         
+        if (!mounted) return;
         setState(() {
           _distanceToPickup = distance;
           _isAtPickupLocation = distance <= 50; // Within 50 meters
@@ -232,6 +237,7 @@ class _DriverRidePickupScreenState extends State<DriverRidePickupScreen>
       final route = await _routingService.getRoute(waypoints);
 
       if (route != null && route['duration'] != null) {
+        if (!mounted) return;
         setState(() {
           _etaToPickup = (route['duration'] as num).round();
         });
@@ -270,6 +276,7 @@ class _DriverRidePickupScreenState extends State<DriverRidePickupScreen>
     try {
       // Feature: Wait time fee — use markDriverArrived to record wait start time
       await _firestoreService.markDriverArrived(widget.rideId);
+      if (!mounted) return;
       setState(() {
         _hasNotifiedArrival = true;
         _waitStartTime = DateTime.now();
@@ -332,7 +339,7 @@ class _DriverRidePickupScreenState extends State<DriverRidePickupScreen>
           );
         }
       } else {
-        setState(() => _codeVerified = true);
+        if (mounted) setState(() => _codeVerified = true);
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
@@ -448,6 +455,7 @@ class _DriverRidePickupScreenState extends State<DriverRidePickupScreen>
 
   void _cancelRide() async {
     final reason = await _showCancelDialog();
+    if (!mounted) return;
     if (reason != null) {
       try {
         await _firestoreService.cancelRide(widget.rideId);
@@ -937,15 +945,21 @@ class _DriverRidePickupScreenState extends State<DriverRidePickupScreen>
           const SizedBox(height: 12),
         ],
 
-        if (_pickupState == PickupState.approaching && _isAtPickupLocation) ...[
+        if (_pickupState == PickupState.approaching) ...[
           SizedBox(
             width: double.infinity,
             child: ElevatedButton.icon(
-              onPressed: () => _updatePickupState(PickupState.arrived),
+              onPressed: _isAtPickupLocation
+                  ? () => _updatePickupState(PickupState.arrived)
+                  : () => unawaited(_confirmManualArrivalIfFar()),
               icon: const Icon(Icons.location_on),
-              label: const Text('Am ajuns - Anunță pasagerul'),
+              label: Text(
+                _isAtPickupLocation
+                    ? 'Am ajuns - Anunță pasagerul'
+                    : 'Anunță pasagerul (manual)',
+              ),
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.orange,
+                backgroundColor: _isAtPickupLocation ? Colors.orange : Colors.deepOrange,
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 shape: RoundedRectangleBorder(
@@ -957,8 +971,10 @@ class _DriverRidePickupScreenState extends State<DriverRidePickupScreen>
           const SizedBox(height: 12),
         ],
 
-        // Feature: Pickup code — show code verification when arrived/waiting
-        if ((_pickupState == PickupState.arrived || _pickupState == PickupState.waiting) && !_codeVerified) ...[
+        // Feature toggled OFF: pickup code verification (contacts/friends only flow).
+        if (_requirePickupCode &&
+            (_pickupState == PickupState.arrived || _pickupState == PickupState.waiting) &&
+            !_codeVerified) ...[
           Card(
             elevation: 2,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -1026,7 +1042,9 @@ class _DriverRidePickupScreenState extends State<DriverRidePickupScreen>
           const SizedBox(height: 12),
         ],
 
-        if (_pickupState == PickupState.pickingUp) ...[
+        if (_pickupState == PickupState.pickingUp ||
+            (!_requirePickupCode &&
+                (_pickupState == PickupState.arrived || _pickupState == PickupState.waiting))) ...[
           SizedBox(
             width: double.infinity,
             child: ElevatedButton.icon(
@@ -1050,6 +1068,33 @@ class _DriverRidePickupScreenState extends State<DriverRidePickupScreen>
         ],
       ],
     );
+  }
+
+  Future<void> _confirmManualArrivalIfFar() async {
+    if (!mounted) return;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Confirmi sosirea?'),
+        content: const Text(
+          'GPS-ul indică faptul că nu ești încă în raza pickup-ului. '
+          'Anunți totuși pasagerul că ai ajuns?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Nu'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Da, anunță'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed == true) {
+      _updatePickupState(PickupState.arrived);
+    }
   }
 
   Color _getStatusColor() {

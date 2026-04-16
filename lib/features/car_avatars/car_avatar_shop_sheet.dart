@@ -75,7 +75,7 @@ class _CarAvatarShopSheetState extends State<CarAvatarShopSheet> {
   List<CarCategory> get _categoriesForCurrentSlot =>
       _mapSlot == CarAvatarMapSlot.passenger
           ? const [CarCategory.animals, CarCategory.characters]
-          : CarCategory.values.toList();
+          : const [CarCategory.transport];
 
   bool get _hasUnappliedChanges =>
       _draftDriverId != _selectedDriverId || _draftPassengerId != _selectedPassengerId;
@@ -131,7 +131,9 @@ class _CarAvatarShopSheetState extends State<CarAvatarShopSheet> {
         try {
           fd = await _avatarService.getSelectedAvatarIdForSlot(CarAvatarMapSlot.driver);
           fp = await _avatarService.getSelectedAvatarIdForSlot(CarAvatarMapSlot.passenger);
-        } catch (_) {}
+        } catch (e) {
+          Logger.debug('CarAvatarShop: fallback slot read failed: $e', tag: 'CAR_AVATAR');
+        }
         setState(() {
           _avatars = _avatarService.getAvailableAvatars();
           _purchasedIds = {

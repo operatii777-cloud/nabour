@@ -362,7 +362,9 @@ class PassengerVoiceController extends ChangeNotifier {
         pauseForSeconds: VoiceOrchestrator.initialAddressPauseForSeconds,
         localeId: localeId,
       );
-    } catch (_) {}
+    } catch (e) {
+      Logger.warning('PassengerVoiceController: greet+listen failed: $e', tag: 'VOICE');
+    }
   }
 
   /// Start a single listening session (used by integration loop)

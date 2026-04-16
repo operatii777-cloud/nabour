@@ -529,28 +529,15 @@ class AppDrawer extends StatelessWidget {
                 ),
                 _buildMenuItem(
                   context,
-                  icon: Icons.sync_rounded,
-                  color: Colors.blueGrey,
-                  title: l10n.drawerMenuSyncContacts,
-                  trailing: IconButton(
-                    icon: const Icon(Icons.info_outline_rounded, size: 18),
-                    onPressed: () => _showSyncInfo(context),
-                    visualDensity: VisualDensity.compact,
-                  ),
-                  onTap: () {
-                    Navigator.pop(context);
-                    onRefreshContacts?.call();
-                  },
-                  isSubItem: true,
-                ),
-                _buildMenuItem(
-                  context,
                   icon: Icons.settings_rounded,
                   color: Colors.blueGrey,
                   title: l10n.settings,
                   onTap: () => _navigateTo(
                     context,
-                    SettingsScreen(onManageExclusions: onManageExclusions),
+                    SettingsScreen(
+                      onManageExclusions: onManageExclusions,
+                      onRefreshContacts: onRefreshContacts,
+                    ),
                   ),
                   isSubItem: true,
                 ),
@@ -892,23 +879,6 @@ class AppDrawer extends StatelessWidget {
 
   void _navigateToWithRole(BuildContext context, Widget screen) {
     _navigateTo(context, screen);
-  }
-
-  void _showSyncInfo(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(l10n.drawerSyncContactsDialogTitle),
-        content: Text(l10n.drawerSyncContactsDialogBody),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text(l10n.drawerSyncContactsDialogOk),
-          ),
-        ],
-      ),
-    );
   }
 }
 

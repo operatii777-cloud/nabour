@@ -179,7 +179,9 @@ class ActiveRideTelemetryRtdbService {
             .child('telemetry/active_rides/$rideId/driver_location')
             .onDisconnect()
             .cancel();
-      } catch (_) {}
+      } catch (e) {
+        Logger.debug('ActiveRideTelem: onDisconnect cancel failed: $e', tag: 'RIDE_TELEM');
+      }
       _onDisconnectRideId = null;
     }
 

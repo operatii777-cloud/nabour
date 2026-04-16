@@ -1,16 +1,123 @@
 import 'dart:ui' as ui;
 import 'package:flutter/services.dart';
+import 'package:nabour_app/features/car_avatars/car_avatar_model.dart';
+import 'package:nabour_app/features/car_avatars/car_avatar_service.dart';
+import 'package:nabour_app/utils/logger.dart';
 
-/// Shared marker icon generator (hartă; șofer poate folosi și fluxuri pickup — nu implică ecran pasager „active ride”).
-/// All map icons are generated here so they look identical across both screens.
+/// Shared marker icon generator for map previews (căutare cursă, șoferi în apropiere, pickup).
 class DriverIconHelper {
   static const String _assetPath = 'assets/images/driver_icon.png';
 
   // Cache
   static Uint8List? _cachedDriverBytes;
   static Uint8List? _cachedPassengerBytes;
+  static final Map<String, Uint8List> _garageDriverMarkerPngByAvatarId = {};
 
   // ── Public API ─────────────────────────────────────────────────────────────
+
+  /// Marker PNG pentru un șofer pe baza profilului Firestore (slot garaj „la volan”).
+  /// Aliniat vizual cu randarea din `MapScreen` (pătrat 120px, verificare opacitate).
+  static Future<Uint8List> getDriverMarkerBytesForUserProfile(
+    Map<String, dynamic>? profile,
+  ) async {
+    final raw = CarAvatarService.resolveSlotId(profile, CarAvatarMapSlot.driver);
+    final id = CarAvatarService.coerceDriverAvatarIdForMap(raw);
+    final av = CarAvatarService().getAvatarById(id);
+    if (av.isDefault) {
+      return getDriverIconBytes();
+    }
+    final hit = _garageDriverMarkerPngByAvatarId[id];
+    if (hit != null) return hit;
+
+    try {
+      final bytes = await _renderGarageMapMarkerPng(av.assetPath);
+      _garageDriverMarkerPngByAvatarId[id] = bytes;
+      return bytes;
+    } catch (e, st) {
+      Logger.warning(
+        'Garage driver marker failed for avatar=$id: $e\n$st',
+        tag: 'MAP_MARKER',
+      );
+      return getDriverIconBytes();
+    }
+  }
+
+  static int _countRgbaOpaquePixels(Uint8List rgba, int w, int h, {int minAlpha = 28}) {
+    var n = 0;
+    for (var i = 0; i < w * h; i++) {
+      if (rgba[i * 4 + 3] >= minAlpha) n++;
+    }
+    return n;
+  }
+
+  static Future<Uint8List> _renderGarageMapMarkerPng(String assetPath) async {
+    final ByteData imageBytes = await rootBundle.load(assetPath);
+    final Uint8List sourceBytes = imageBytes.buffer.asUint8List();
+    final codec = await ui.instantiateImageCodec(sourceBytes);
+    final frame = await codec.getNextFrame();
+    final ui.Image decoded = frame.image;
+
+    const double maxSize = 120.0;
+    ui.Image? composed;
+    try {
+      final double srcW = decoded.width.toDouble();
+      final double srcH = decoded.height.toDouble();
+      final double aspectRatio = srcW / srcH;
+
+      double destW, destH;
+      if (aspectRatio > 1.0) {
+        destW = maxSize;
+        destH = maxSize / aspectRatio;
+      } else {
+        destH = maxSize;
+        destW = maxSize * aspectRatio;
+      }
+
+      final double destX = (maxSize - destW) / 2;
+      final double destY = (maxSize - destH) / 2;
+
+      final recorder = ui.PictureRecorder();
+      final canvas = ui.Canvas(recorder, ui.Rect.fromLTWH(0, 0, maxSize, maxSize));
+
+      canvas.drawImageRect(
+        decoded,
+        ui.Rect.fromLTWH(0, 0, srcW, srcH),
+        ui.Rect.fromLTWH(destX, destY, destW, destH),
+        ui.Paint()..isAntiAlias = true..filterQuality = ui.FilterQuality.high,
+      );
+
+      final picture = recorder.endRecording();
+      composed = await picture.toImage(maxSize.toInt(), maxSize.toInt());
+      final img = composed;
+
+      try {
+        final raw = await img.toByteData(format: ui.ImageByteFormat.rawRgba);
+        if (raw != null) {
+          final w = maxSize.toInt();
+          final opaque = _countRgbaOpaquePixels(raw.buffer.asUint8List(), w, w);
+          const minOp = 80;
+          if (opaque < minOp) {
+            Logger.warning(
+              'Garage skin aproape invizibilă ($opaque px) pentru $assetPath — fallback berlină',
+              tag: 'MAP_MARKER',
+            );
+            return getDriverIconBytes();
+          }
+        }
+      } catch (e) {
+        Logger.debug('Verificare opacitate garage marker: $e', tag: 'MAP_MARKER');
+      }
+
+      final byteData = await img.toByteData(format: ui.ImageByteFormat.png);
+      if (byteData == null) {
+        return getDriverIconBytes();
+      }
+      return byteData.buffer.asUint8List();
+    } finally {
+      decoded.dispose();
+      composed?.dispose();
+    }
+  }
 
   /// Blue 3D car icon — used for the driver marker on any map.
   static Future<Uint8List> getDriverIconBytes() async {

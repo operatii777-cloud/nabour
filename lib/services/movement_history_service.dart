@@ -254,7 +254,9 @@ class MovementHistoryService {
       users.remove(user.uid);
       decoded['users'] = users;
       await file.writeAsString(jsonEncode(decoded), flush: true);
-    } catch (_) {}
+    } catch (e) {
+      Logger.warning('removeUserFromLocalCache failed: $e', tag: 'MOVEMENT_HISTORY');
+    }
   }
 
   Future<List<MovementSample>> _loadRemoteSamplesFromFirebase({
@@ -312,7 +314,9 @@ class MovementHistoryService {
             speed: (data['speed'] as num?)?.toDouble(),
           ));
         }
-      } catch (_) {}
+      } catch (e) {
+        Logger.warning('_loadRemoteSamples fallback query failed: $e', tag: 'MOVEMENT_HISTORY');
+      }
     }
 
     out.sort((a, b) => a.timestamp.compareTo(b.timestamp));
@@ -416,7 +420,9 @@ class MovementHistoryService {
         final decoded = jsonDecode(await file.readAsString());
         if (decoded is Map<String, dynamic>) root = decoded;
       }
-    } catch (_) {}
+    } catch (e) {
+      Logger.debug('_saveLocalCache read existing failed: $e', tag: 'MOVEMENT_HISTORY');
+    }
 
     final usersMap = (root['users'] as Map?)?.cast<String, dynamic>() ?? <String, dynamic>{};
     usersMap[user.uid] = <String, dynamic>{

@@ -4,6 +4,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:nabour_app/services/local_notifications_service.dart';
+import 'package:nabour_app/features/mystery_box/comm_mystery_map_refresh.dart';
 import 'package:nabour_app/utils/logger.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 
@@ -184,6 +185,10 @@ class PushNotificationService {
           body: body,
           payload: jsonEncode(message.data),
         );
+        break;
+      case 'community_mystery_placed':
+        // Fără watcher/polling: refresh map doar la eveniment push.
+        CommunityMysteryMapRefresh.instance.notify();
         break;
       default:
         LocalNotificationsService().showSimple(title: title, body: body, payload: jsonEncode(message.data));

@@ -225,7 +225,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get ron => 'RON';
+  String get ron => 'Tokens';
 
   @override
   String get km => 'km';
@@ -385,14 +385,14 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get generalProvisionsText =>
-      'Canceling a ride after assigning a partner driver may incur a cancellation fee to compensate for the time and distance traveled by the driver. Cancellation is free anytime before assigning a partner driver.';
+      'Nabour is a community-based voluntary platform. Rides are provided as mutual help between neighbors. No commercial fees apply.';
 
   @override
-  String get standardWaitTime => 'Standard Wait Time';
+  String get standardWaitTime => 'Wait Time';
 
   @override
   String get standardWaitTimeText =>
-      'After arriving at the pickup location, the partner driver will wait for free for 5 minutes. After this period expires, additional waiting fees may apply or the ride may be canceled, applying the corresponding cancellation fee.';
+      'Please be ready at the pickup location. Drivers are volunteers offering their time to help the community.';
 
   @override
   String get specificCategoryPolicies => 'Category-Specific Policies';
@@ -419,16 +419,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get friendsRideFamily => 'Nabour Family';
 
   @override
-  String get standardCancellationFee => '30 RON';
+  String get standardCancellationFee => 'Voluntary';
 
   @override
-  String get energyCancellationFee => '30 RON';
+  String get energyCancellationFee => 'Voluntary';
 
   @override
-  String get bestCancellationFee => '30 RON';
+  String get bestCancellationFee => 'Voluntary';
 
   @override
-  String get familyCancellationFee => '30 RON';
+  String get familyCancellationFee => 'Voluntary';
 
   @override
   String get standardFreeCancellation =>
@@ -467,7 +467,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get addOrManageCards => 'Add or manage cards';
 
   @override
-  String get cash => 'Cash';
+  String get cash => 'Mutual Help';
 
   @override
   String get selectPaymentMethod => 'Select Payment Method';
@@ -535,11 +535,11 @@ class AppLocalizationsEn extends AppLocalizations {
       'Nabour Cash is your digital balance. You can add funds for faster payments.';
 
   @override
-  String get addFunds => 'Add Funds';
+  String get addFunds => 'Acquire Tokens';
 
   @override
   String get addFundsComingSoon =>
-      'The add funds functionality will be available soon.';
+      'Token acquisition for community support will be available soon.';
 
   @override
   String get paymentMethodDetails => 'Payment Method Details';
@@ -558,7 +558,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get cashPaymentMethod =>
-      'Payment is made directly to the driver in cash.';
+      'This ride is based on mutual help and community support.';
 
   @override
   String get delete => 'Delete';
@@ -666,13 +666,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get paymentMethodsTypes => 'Payment method types:';
 
   @override
-  String get creditDebitCards => '• Credit/debit cards (Visa, Mastercard)';
+  String get creditDebitCards => '• Community Tokens';
 
   @override
-  String get cashPayment => '• Cash (payment is made directly to the driver)';
+  String get cashPayment => '• Voluntary / Mutual Help';
 
   @override
-  String get walletBalance => '• Nabour Cash (wallet balance)';
+  String get walletBalance => '• Nabour Wallet balance';
 
   @override
   String get paymentSecurity => 'Payment security:';
@@ -733,7 +733,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get percentageDiscount => '• Percentage discount (e.g., 10% off)';
 
   @override
-  String get fixedAmountDiscount => '• Fixed amount discount (e.g., 5 RON off)';
+  String get fixedAmountDiscount => '• Fixed token discount';
 
   @override
   String get freeRideVoucher => '• Free ride';
@@ -791,7 +791,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get walletBalanceNeverExpires => 'Nabour Cash balance never expires.';
 
   @override
-  String get earningsToday => 'Earnings Today';
+  String get earningsToday => 'Impact Today';
 
   @override
   String get ridesToday => 'Rides Today';
@@ -1044,7 +1044,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get whereIsDriver => '\"Where is the driver?\"';
 
   @override
-  String get wantToPayCash => '\"I want to pay cash\"';
+  String get wantToPayCash => ' \"I\'m offering mutual help\"';
 
   @override
   String get controlCommands => 'Control commands:';
@@ -1198,7 +1198,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get confirmedGoToPassenger => 'Confirmed. Go to passenger';
 
   @override
-  String get earningsTodayShort => 'Earnings Today';
+  String get earningsTodayShort => 'Community Impact';
 
   @override
   String get completedRidesToday => 'Completed rides today';
@@ -1714,35 +1714,31 @@ class AppLocalizationsEn extends AppLocalizations {
   String get feeAmounts => '💰 Fee amounts';
 
   @override
-  String get lightCleaning => '🧽 Light cleaning: 50-100 RON';
+  String get lightCleaning => '🧽 Light cleaning';
 
   @override
-  String get wipingAndVacuuming =>
-      '• Wiping and vacuuming light traces of dirt';
+  String get wipingAndVacuuming => '• Restoring vehicle cleanliness';
 
   @override
-  String get removingSmallStains => '• Removing small stains from seats';
+  String get removingSmallStains => '• Cleaning small stains';
 
   @override
-  String get intensiveCleaning => '🧼 Intensive cleaning: 150-300 RON';
+  String get intensiveCleaning => '🧼 Intensive cleaning';
 
   @override
-  String get professionalCleaning =>
-      '• Professional cleaning for large stains or odors';
+  String get professionalCleaning => '• Professional restoration';
 
   @override
-  String get deodorizationAndSpecialTreatments =>
-      '• Deodorization and special treatments';
+  String get deodorizationAndSpecialTreatments => '• Odor removal';
 
   @override
-  String get repairsAndReplacements =>
-      '🔧 Repairs and replacements: 200-2000+ RON';
+  String get repairsAndReplacements => '🔧 Repairs and replacements';
 
   @override
-  String get replacingDamagedSeatCovers => '• Replacing damaged seat covers';
+  String get replacingDamagedSeatCovers => '• Fixing damaged covers';
 
   @override
-  String get repairingDamagedComponents => '• Repairing damaged components';
+  String get repairingDamagedComponents => '• Fixing damaged components';
 
   @override
   String get costsDependOnSeverity =>
@@ -1848,7 +1844,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get toBecomeDriverPartner =>
-      'To become a Nabour driver partner, follow these steps:';
+      'To contribute to the Nabour community as a driver, follow these steps:';
 
   @override
   String get checkConditions => '1. Check conditions';
@@ -1897,7 +1893,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get enterCodeInApp =>
-      'Enter the code in the app and start earning money by driving!';
+      'Enter the code in the app and start helping your community by driving!';
 
   @override
   String get usefulTip => '💡 Useful tip:';

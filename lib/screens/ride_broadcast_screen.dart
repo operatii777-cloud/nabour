@@ -232,7 +232,9 @@ class _RideBroadcastFeedScreenState extends State<RideBroadcastFeedScreen>
         ),
       ).timeout(const Duration(seconds: 6));
       if (mounted) setState(() => _userPosition = pos);
-    } catch (_) {}
+    } catch (e) {
+      Logger.debug('RideBroadcast._loadUserPosition failed: $e', tag: 'RIDE_BROADCAST');
+    }
   }
 
   /// Distanța în km față de o postare. Null dacă locația nu e disponibilă.

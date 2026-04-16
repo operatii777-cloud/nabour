@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 
 import 'package:nabour_app/services/nabour_functions.dart';
+import 'package:nabour_app/utils/logger.dart';
 
 /// Excepții trial: document `app_config/trial` cu `exemptEmails` / `exemptUids` (array).
 /// Configurezi din Firebase Console; fără hardcodare în cod.
@@ -22,7 +23,9 @@ class TrialConfigService {
           .call();
     } on FirebaseFunctionsException catch (_) {
       // Fără log zgomot: funcția poate lipsi înainte de deploy sau offline.
-    } catch (_) {}
+    } catch (e) {
+      Logger.warning('ensureTrialAnchorFromServer unexpected error: $e', tag: 'TRIAL');
+    }
   }
 
   Future<bool> isExempt({String? uid, String? email}) async {
@@ -37,7 +40,8 @@ class TrialConfigService {
       if (e != null && emails.contains(e)) return true;
       if (uid != null && uid.isNotEmpty && uids.contains(uid)) return true;
       return false;
-    } catch (_) {
+    } catch (err) {
+      Logger.warning('isExempt Firestore read failed: $err', tag: 'TRIAL');
       return false;
     }
   }

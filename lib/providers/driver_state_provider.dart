@@ -61,6 +61,9 @@ class DriverStateProvider extends ChangeNotifier {
           _driverProfile = snapshot.data();
           _driverCategory = _getCategoryFromProfile(_driverProfile!);
           Logger.info('Driver profile loaded: ${_driverProfile?['displayName']}');
+          // Category arrives async; (re)subscribe so pending rides stream is not stuck
+          // after a late first snapshot or a profile category change.
+          _initializeDriverRideSystem();
           notifyListeners();
         }
       });
@@ -73,10 +76,20 @@ class DriverStateProvider extends ChangeNotifier {
   RideCategory _getCategoryFromProfile(Map<String, dynamic> profile) {
     final categoryStr = profile['driverCategory'] as String?;
     switch (categoryStr) {
-      case 'standard': return RideCategory.standard;
-      case 'energy': return RideCategory.energy;
-      case 'best': return RideCategory.best;
-      default: return RideCategory.standard;
+      case 'any':
+        return RideCategory.any;
+      case 'standard':
+        return RideCategory.standard;
+      case 'family':
+        return RideCategory.family;
+      case 'energy':
+        return RideCategory.energy;
+      case 'best':
+        return RideCategory.best;
+      case 'utility':
+        return RideCategory.utility;
+      default:
+        return RideCategory.standard;
     }
   }
 
@@ -154,6 +167,14 @@ class DriverStateProvider extends ChangeNotifier {
 
       _isDriverAvailable = value;
       notifyListeners();
+
+      // Stream may have emitted pending rides while we awaited Firestore/GPS;
+      // show the first offer now that we are marked available.
+      if (value &&
+          _currentRideOffer == null &&
+          _pendingRides.isNotEmpty) {
+        _showRideOffer(_pendingRides.first);
+      }
 
       Logger.info('Driver availability updated to: $value');
     } catch (e) {

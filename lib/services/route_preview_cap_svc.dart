@@ -101,7 +101,9 @@ class RoutePreviewCaptureService {
     } finally {
       try {
         await snapshotter?.dispose();
-      } catch (_) {}
+      } catch (e) {
+        Logger.debug('RoutePreviewCaptureService: snapshotter dispose failed: $e');
+      }
     }
   }
 
@@ -165,7 +167,9 @@ class RoutePreviewCaptureService {
       watchdog?.cancel();
       try {
         entry.remove();
-      } catch (_) {}
+      } catch (e) {
+        Logger.debug('RoutePreviewCaptureService: overlay entry remove failed: $e');
+      }
       if (!completer.isCompleted) {
         completer.complete(bytes);
       }
@@ -243,7 +247,9 @@ class _OffstageRouteCaptureState extends State<_OffstageRouteCapture> {
         _mapController.fitCamera(
           CameraFit.bounds(bounds: bounds, padding: const EdgeInsets.all(112)),
         );
-      } catch (_) {}
+      } catch (e) {
+        Logger.debug('RoutePreviewCaptureService: fitCamera retry failed: $e');
+      }
     }
 
     await Future<void>.delayed(const Duration(milliseconds: 2000));

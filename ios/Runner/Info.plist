@@ -71,5 +71,7 @@
 		<string>Nabour folosește camera pentru scanarea codurilor Mystery Box la validare.</string>
 		<key>NSMicrophoneUsageDescription</key>
 		<string>Nabour folosește microfonul pentru mesaje vocale în chatul de cartier și pentru asistentul vocal.</string>
+		<key>NSPhotoLibraryAddUsageDescription</key>
+		<string>Nabour salvează imaginea Week Review în galeria ta foto.</string>
 	</dict>
 </plist>

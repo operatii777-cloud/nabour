@@ -12,14 +12,12 @@ class NeighborDisplayCoords {
 class NeighborMarkerDisplayLayout {
   NeighborMarkerDisplayLayout._();
 
-  /// Prietenii mai aproape decât această distanță sunt repoziționați pe spirală (nu se suprapun).
-  /// GPS-ul poate împrăștia puncte „aceeași locație” pe zeci de metri — prag mai mare = grupare mai sigură.
+  /// Prietenii mai aproape decât această distanță sunt repoziționați
+  /// în "trepte" (stack de carduri), astfel încât să nu se suprapună.
+  /// GPS-ul poate împrăștia puncte „aceeași locație” pe zeci de metri —
+  /// prag mai mare = grupare mai sigură.
   static const double mergeDistanceM = 95.0;
-  static const double baseRadiusM = 28.0;
-  static const double spiralStepM = 18.0;
-
-  static final double _goldenAngle =
-      math.pi * (3.0 - math.sqrt(5.0));
+  static const double stairStepM = 18.0;
 
   static Map<String, NeighborDisplayCoords> compute(
     List<NeighborLocation> neighbors,
@@ -68,13 +66,24 @@ class NeighborMarkerDisplayLayout {
       final clat = sumLat / members.length;
       final clng = sumLng / members.length;
       final cosLat = math.cos(clat * math.pi / 180.0).abs().clamp(0.2, 1.0);
+      // Adaptiv: puțini vecini => mai răsfirat, mulți => mai compact.
+      final double scale = switch (members.length) {
+        <= 2 => 1.35,
+        <= 4 => 1.18,
+        <= 7 => 1.0,
+        <= 10 => 0.84,
+        _ => 0.68,
+      };
+      final double stepM = (stairStepM * scale).clamp(8.0, 28.0);
 
       for (var k = 0; k < members.length; k++) {
         final idx = members[k];
-        final theta = k * _goldenAngle;
-        final rM = baseRadiusM + spiralStepM * math.sqrt(k + 1.0);
-        final dLat = (rM * math.cos(theta)) / 111320.0;
-        final dLng = (rM * math.sin(theta)) / (111320.0 * cosLat);
+        // "Pachet de cărți": fiecare următor marker este deplasat
+        // puțin mai jos și spre dreapta (trepte diagonale).
+        final downM = k * stepM;
+        final rightM = k * stepM * 0.58;
+        final dLat = (-downM) / 111320.0;
+        final dLng = rightM / (111320.0 * cosLat);
         result[neighbors[idx].uid] =
             NeighborDisplayCoords(lat: clat + dLat, lng: clng + dLng);
       }

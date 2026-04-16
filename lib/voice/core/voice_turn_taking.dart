@@ -44,6 +44,14 @@ class VoiceTurnTaking {
       ' adica',
       ' deci ',
       ' gen ',
+      ' cumva',
+      ' probabil',
+      ' aproximativ',
+      ' sau chiar',
+      ' si eventual',
+      ' pe la ora',
+      ' pe strada',
+      ' in zona',
     ];
     for (final tail in tailPhrases) {
       if (s.endsWith(tail)) return true;
@@ -66,6 +74,11 @@ class VoiceTurnTaking {
       'mea',
       'si',
       'sau',
+      'ori',
+      'dar',
+      'insa',
+      'deci',
+      'adica',
     };
     if (last.length == 1 && openFunctionWords.contains(last.last)) {
       return true;

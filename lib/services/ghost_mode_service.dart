@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:nabour_app/utils/logger.dart';
 
 /// Mod fantomă Bump-style: blochează publicarea locației sociale (RTDB + Firestore vizibil)
 /// și sincronizează starea pe `users/{uid}` pentru consistență multi-dispozitiv.
@@ -10,15 +11,17 @@ class GhostModeService {
 
   static const _prefKey = 'ghost_mode_social_block';
 
-  bool _blocking = false;
+  bool _blocking = true;
   bool _loaded = false;
 
-  bool get isBlocking => _loaded && _blocking;
+  /// Înainte de [ensureLoaded], considerăm invizibil (fără publicare socială).
+  /// După încărcare: implicit **invizibil** dacă lipsește cheia în prefs (prima instalare).
+  bool get isBlocking => !_loaded || _blocking;
 
   Future<void> ensureLoaded() async {
     if (_loaded) return;
     final p = await SharedPreferences.getInstance();
-    _blocking = p.getBool(_prefKey) ?? false;
+    _blocking = p.getBool(_prefKey) ?? true;
     _loaded = true;
   }
 
@@ -45,6 +48,8 @@ class GhostModeService {
         'socialLocationPaused': block,
         if (block) 'ghostModeAt': FieldValue.serverTimestamp(),
       }, SetOptions(merge: true));
-    } catch (_) {}
+    } catch (e) {
+      Logger.warning('GhostModeService.setBlocking Firestore sync failed: $e', tag: 'GHOST_MODE');
+    }
   }
 }

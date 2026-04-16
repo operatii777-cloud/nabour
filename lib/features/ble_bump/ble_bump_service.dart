@@ -72,7 +72,9 @@ class BleBumpService {
     _running = false;
     try {
       await _channel.invokeMethod('stop');
-    } catch (_) {}
+    } catch (e) {
+      Logger.debug('BLE channel stop failed: $e', tag: 'BLE_BUMP');
+    }
     Logger.info('BLE bump stopped', tag: 'BLE_BUMP');
   }
 

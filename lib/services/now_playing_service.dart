@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:nabour_app/utils/logger.dart';
 
 /// „Ce ascult” manual — afișat în profil / viitor pe hartă (fără SDK Spotify obligatoriu).
 class NowPlayingService {
@@ -28,7 +29,9 @@ class NowPlayingService {
           'updatedAt': FieldValue.serverTimestamp(),
         },
       }, SetOptions(merge: true));
-    } catch (_) {}
+    } catch (e) {
+      Logger.warning('NowPlayingService Firestore write failed: $e', tag: 'NOW_PLAYING');
+    }
   }
 
   Future<void> clear() async {
@@ -38,6 +41,8 @@ class NowPlayingService {
       await FirebaseFirestore.instance.collection('users').doc(uid).set({
         'nowPlaying': FieldValue.delete(),
       }, SetOptions(merge: true));
-    } catch (_) {}
+    } catch (e) {
+      Logger.warning('NowPlayingService Firestore write failed: $e', tag: 'NOW_PLAYING');
+    }
   }
 }

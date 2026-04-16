@@ -22,11 +22,15 @@ import 'package:nabour_app/services/active_ride_telem_rtdb.dart';
 import 'package:nabour_app/services/contacts_service.dart';
 import 'package:nabour_app/services/pax_allowed_drv_uids.dart';
 import 'package:nabour_app/services/pax_drv_search_config.dart';
+import 'package:nabour_app/services/ghost_mode_service.dart';
 import 'package:nabour_app/services/push_notification_service.dart';
 import 'package:nabour_app/services/routing_service.dart';
 import 'package:nabour_app/services/token_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:nabour_app/models/token_wallet_model.dart';
 import 'package:nabour_app/utils/logger.dart';
+import 'package:nabour_app/features/car_avatars/car_avatar_model.dart';
+import 'package:nabour_app/features/car_avatars/car_avatar_service.dart';
 
 enum DateFilter { all, today, lastWeek, lastMonth, last3Months, thisYear }
 
@@ -59,6 +63,10 @@ class DriverEtaResult {
     required this.distanceInKm,
   });
 }
+
+/// Câmp pe `driver_locations`: când e `false`, pasagerul nu desenează avatarul pe hartă
+/// (șoferul poate rămâne în fluxul de curse / ETA).
+const String kDriverLocationShowOnPassengerLiveMap = 'showOnPassengerLiveMap';
 
 class FirestoreService {
   static final FirestoreService _instance = FirestoreService._internal();
@@ -94,6 +102,8 @@ class FirestoreService {
   // UID caching to reduce repeated logs/calls
   String? _cachedUid;
   DateTime? _cachedUidAt;
+  String? _cachedDriverCarAvatarIdForLocation;
+  DateTime? _cachedDriverCarAvatarIdAt;
 
   String? get _uid {
     final now = DateTime.now();
@@ -109,9 +119,91 @@ class FirestoreService {
     return uid;
   }
 
+  /// `true` dacă șoferul a ales vizibilitatea socială și nu e în modul fantomă.
+  /// Cursă activă forțează afișarea pe hartă pentru telemetrie/preluare.
+  Future<bool> _driverShouldShowOnPassengerLiveMap() async {
+    await GhostModeService.instance.ensureLoaded();
+    if (GhostModeService.instance.isBlocking) return false;
+    try {
+      final p = await SharedPreferences.getInstance();
+      return p.getBool('social_map_visible') ?? false;
+    } catch (_) {
+      return false;
+    }
+  }
+
   // GEOHASHING CONSTANTS
   static const double _earthRadius = 6371000; // meters
   static const int _geohashPrecision = 6; // ~1.2km radius
+  static const Duration _driverAvatarLocationCacheTtl = Duration(minutes: 5);
+
+  Future<String> _resolveDriverCarAvatarIdForLocationWrite({
+    bool forceRefresh = false,
+  }) async {
+    final uid = _uid;
+    if (uid == null) return 'default_car';
+    final now = DateTime.now();
+    final cached = _cachedDriverCarAvatarIdForLocation;
+    final cachedAt = _cachedDriverCarAvatarIdAt;
+    if (!forceRefresh &&
+        cached != null &&
+        cachedAt != null &&
+        now.difference(cachedAt) <= _driverAvatarLocationCacheTtl) {
+      return cached;
+    }
+    try {
+      final doc = await _db.collection('users').doc(uid).get();
+      final raw = CarAvatarService.resolveSlotId(
+        doc.data(),
+        CarAvatarMapSlot.driver,
+      );
+      final id = CarAvatarService.coerceDriverAvatarIdForMap(raw);
+      _cachedDriverCarAvatarIdForLocation = id;
+      _cachedDriverCarAvatarIdAt = now;
+      return id;
+    } catch (e) {
+      Logger.warning('Driver avatar resolve for location write failed: $e', tag: 'FIRESTORE');
+      return cached ?? 'default_car';
+    }
+  }
+
+  /// Actualizează imediat flag-ul de afișare pe harta pasagerului (fără debounce la locație).
+  Future<void> mergeDriverPassengerLiveMapVisibilityForCurrentUser(bool show) async {
+    final uid = _uid;
+    if (uid == null) return;
+    try {
+      final ref = _db.collection('driver_locations').doc(uid);
+      final snap = await ref.get();
+      if (!snap.exists) return;
+      await ref.set(
+        {kDriverLocationShowOnPassengerLiveMap: show},
+        SetOptions(merge: true),
+      );
+    } catch (e) {
+      Logger.warning('mergeDriverPassengerLiveMapVisibility: $e', tag: 'FIRESTORE');
+    }
+  }
+
+  /// Re-sincronizează imediat `carAvatarId` din `driver_locations` după schimbări de avatar.
+  Future<void> refreshDriverLocationAvatarNow() async {
+    final uid = _uid;
+    if (uid == null) return;
+    if (!await _driverShouldShowOnPassengerLiveMap()) return;
+    try {
+      final id = await _resolveDriverCarAvatarIdForLocationWrite(forceRefresh: true);
+      await _db.collection('driver_locations').doc(uid).set(
+        <String, dynamic>{
+          'carAvatarId': id,
+          'lastUpdate': Timestamp.now(),
+          'isOnline': true,
+          kDriverLocationShowOnPassengerLiveMap: true,
+        },
+        SetOptions(merge: true),
+      );
+    } catch (e) {
+      Logger.warning('refreshDriverLocationAvatarNow failed: $e', tag: 'FIRESTORE');
+    }
+  }
   
   // OPTIMIZED CACHE METHODS
   T? _getCached<T>(String key) {
@@ -403,7 +495,7 @@ _pendingUpdates.addAll(updates.map((e) => e as Map<String, dynamic>));
             ride.startLongitude!,
           ) / 1000;
           
-          if (distance <= 5.0) {
+          if (distance <= PassengerDriverSearchConfig.maxRadiusKm) {
             nearbyRides.add(ride);
           }
         }
@@ -667,15 +759,20 @@ _pendingUpdates.addAll(updates.map((e) => e as Map<String, dynamic>));
         : const Duration(seconds: 60);
 
     _locationDebouncer?.cancel();
-    _locationDebouncer = Timer(debounce, () {
+    _locationDebouncer = Timer(debounce, () async {
       // Calculate geohash for the new position
       final geohash = _encodeGeohash(position.latitude, position.longitude);
+      final carAvatarId = await _resolveDriverCarAvatarIdForLocationWrite();
+      final showOnPassengerLiveMap =
+          hasActiveRide || await _driverShouldShowOnPassengerLiveMap();
 
       final updateData = <String, dynamic>{
         'position': GeoPoint(position.latitude, position.longitude),
         'geohash': geohash,
         'lastUpdate': Timestamp.now(),
         'isOnline': true,
+        'carAvatarId': carAvatarId,
+        kDriverLocationShowOnPassengerLiveMap: showOnPassengerLiveMap,
       };
 
       if (bearing != null && !bearing.isNaN) {
@@ -899,7 +996,10 @@ _pendingUpdates.addAll(updates.map((e) => e as Map<String, dynamic>));
       final queryResults = await Future.wait(categoryQueries);
 
       final availableDrivers = <Map<String, dynamic>>[];
-      final fiveMinutesAgo = DateTime.now().subtract(const Duration(minutes: 5));
+      // Must exceed worst-case gaps between driver_locations writes (debounced updates
+      // when idle + distanceFilter), otherwise eligible drivers disappear from matching.
+      final driverLocationFreshnessCutoff =
+          DateTime.now().subtract(const Duration(minutes: 15));
 
       // Process all results
       for (final snapshot in queryResults) {
@@ -917,7 +1017,7 @@ _pendingUpdates.addAll(updates.map((e) => e as Map<String, dynamic>));
           final lastUpdate = driverData['lastUpdate'] as Timestamp?;
 
           if (lastUpdate != null &&
-              lastUpdate.toDate().isAfter(fiveMinutesAgo) &&
+              lastUpdate.toDate().isAfter(driverLocationFreshnessCutoff) &&
               driverPosition != null) {
 
             final distance = geolocator.Geolocator.distanceBetween(
@@ -1145,77 +1245,78 @@ _pendingUpdates.addAll(updates.map((e) => e as Map<String, dynamic>));
 
   Future<void> acceptRide(String rideId) async {
     Logger.debug('Accepting ride: $rideId', tag: 'DRIVER');
-    Logger.debug('Current user ID: $_uid', tag: 'DRIVER');
-    Logger.debug('Auth state: ${_auth.currentUser?.uid}', tag: 'DRIVER');
-    Logger.debug('Is user logged in: ${_auth.currentUser != null}', tag: 'DRIVER');
-    
+
     if (_uid == null) {
       Logger.error('Driver not authenticated - _uid is null', tag: 'DRIVER');
       throw Exception("Driver not authenticated. Please log in again.");
     }
-    
-    try {
-      // Verifică dacă documentul există înainte de update
-      final rideDoc = await _db.collection('ride_requests').doc(rideId).get();
-      if (!rideDoc.exists) {
-        Logger.error('Ride document does not exist: $rideId', tag: 'DRIVER');
-        throw Exception("Ride not found: $rideId");
-      }
-      
-      final rideData = rideDoc.data()!;
-      Logger.debug('Current ride status: ${rideData['status']}', tag: 'DRIVER');
-      Logger.debug('Current ride passenger: ${rideData['passengerId']}', tag: 'DRIVER');
-      Logger.debug('Current ride data: $rideData', tag: 'DRIVER');
-      
-      // Verifică dacă utilizatorul curent este șofer și are permisiuni
-      if (rideData['driverId'] != null && rideData['driverId'] != _uid) {
-        Logger.error('Ride already assigned to another driver: ${rideData['driverId']}', tag: 'DRIVER');
-        throw Exception("Ride already assigned to another driver");
-      }
-      
-      // Verifică dacă utilizatorul curent este șofer
-      final userRole = await getUserRole();
-      Logger.debug('Current user role: $userRole', tag: 'DRIVER');
-      
-      if (userRole != UserRole.driver) {
-        Logger.error('User is not a driver: $userRole', tag: 'DRIVER');
-        throw Exception("User is not a driver. Cannot accept rides.");
-      }
-      
-      // Execută imediat, nu prin batch pentru a asigura actualizarea instantanee
-      // Feature: Pickup code — generate a 4-digit code for passenger verification
-      // Uses Random.secure() for cryptographic security
-      final secureRandom = math.Random.secure();
-      final pickupCode = (1000 + secureRandom.nextInt(9000)).toString();
-      final updateData = {
-        'status': 'driver_found',
-        'driverId': _uid,
-        'acceptedAt': FieldValue.serverTimestamp(),
-        'driverAcceptanceStatus': 'accepted',
-        'driverAcceptanceUpdatedAt': FieldValue.serverTimestamp(),
-        'pickupCode': pickupCode,
-      };
-      
-      Logger.debug('Updating ride with data: $updateData', tag: 'DRIVER');
-      
-      await _db.collection('ride_requests').doc(rideId).update(updateData);
 
-      final passengerId = rideData['passengerId'];
-      if (passengerId is String && passengerId.isNotEmpty) {
+    // Verify role before starting transaction (read-only, no race risk)
+    final userRole = await getUserRole();
+    if (userRole != UserRole.driver) {
+      Logger.error('User is not a driver: $userRole', tag: 'DRIVER');
+      throw Exception("User is not a driver. Cannot accept rides.");
+    }
+
+    // Generate pickup code outside transaction (no side effects inside)
+    final secureRandom = math.Random.secure();
+    final pickupCode = (1000 + secureRandom.nextInt(9000)).toString();
+
+    final rideRef = _db.collection('ride_requests').doc(rideId);
+    String? passengerId;
+
+    try {
+      await _db.runTransaction((transaction) async {
+        final rideDoc = await transaction.get(rideRef);
+
+        if (!rideDoc.exists) {
+          throw Exception("Ride not found: $rideId");
+        }
+
+        final data = rideDoc.data()!;
+        final currentStatus = data['status'] as String?;
+        final currentDriverId = data['driverId'];
+
+        // Reject if already accepted by another driver — atomic check
+        if (currentDriverId != null && currentDriverId != _uid) {
+          Logger.warning('acceptRide: ride $rideId already taken by $currentDriverId', tag: 'DRIVER');
+          throw Exception("Ride already assigned to another driver");
+        }
+
+        // Only accept rides that are still available
+        if (currentStatus != null &&
+            currentStatus != 'pending' &&
+            currentStatus != 'searching' &&
+            currentStatus != 'driver_found') {
+          Logger.warning('acceptRide: ride $rideId has unexpected status: $currentStatus', tag: 'DRIVER');
+          throw Exception("Ride no longer available (status: $currentStatus)");
+        }
+
+        passengerId = data['passengerId'] as String?;
+
+        transaction.update(rideRef, {
+          'status': 'driver_found',
+          'driverId': _uid,
+          'acceptedAt': FieldValue.serverTimestamp(),
+          'driverAcceptanceStatus': 'accepted',
+          'driverAcceptanceUpdatedAt': FieldValue.serverTimestamp(),
+          'pickupCode': pickupCode,
+        });
+      });
+
+      if (passengerId != null && passengerId!.isNotEmpty) {
         unawaited(ActiveRideTelemetryRtdbService.instance.ensureRideMeta(
           rideId: rideId,
           driverId: _uid!,
-          passengerId: passengerId,
+          passengerId: passengerId!,
         ));
       }
-      
-      Logger.info('Ride $rideId status updated to driver_found', tag: 'DRIVER');
+
+      Logger.info('Ride $rideId accepted atomically by $_uid', tag: 'DRIVER');
     } catch (e) {
       Logger.error('Error accepting ride: $e', tag: 'DRIVER', error: e);
-      Logger.error('Error type: ${e.runtimeType}', tag: 'DRIVER');
       if (e is FirebaseException) {
-        Logger.error('Firebase error code: ${e.code}', tag: 'DRIVER');
-        Logger.error('Firebase error message: ${e.message}', tag: 'DRIVER');
+        Logger.error('Firebase error code: ${e.code} — ${e.message}', tag: 'DRIVER');
       }
       rethrow;
     }
@@ -2053,6 +2154,8 @@ _pendingUpdates.addAll(updates.map((e) => e as Map<String, dynamic>));
       final position = await _getCachedPosition();
       if (position != null) {
         final geohash = _encodeGeohash(position.latitude, position.longitude);
+        final carAvatarId = await _resolveDriverCarAvatarIdForLocationWrite();
+        final showOnPassengerLiveMap = await _driverShouldShowOnPassengerLiveMap();
         // `_searchDriversInRadius` cere `isOnline == true`; fără asta, pasagerul nu vede
         // șoferul până la primul `updateDriverLocation` (debounce până la ~60s).
         await _db.collection('driver_locations').doc(_uid).set({
@@ -2063,6 +2166,8 @@ _pendingUpdates.addAll(updates.map((e) => e as Map<String, dynamic>));
           'lastUpdate': Timestamp.now(),
           'isOnline': true,
           'geohash': geohash,
+          'carAvatarId': carAvatarId,
+          kDriverLocationShowOnPassengerLiveMap: showOnPassengerLiveMap,
         }, SetOptions(merge: true));
         await _db.collection('drivers').doc(_uid).set({
           'isOnline': true,
@@ -2076,6 +2181,89 @@ _pendingUpdates.addAll(updates.map((e) => e as Map<String, dynamic>));
       await _db.collection('users').doc(_uid).set({
         'driverSessionStartedAt': FieldValue.serverTimestamp(),
       }, SetOptions(merge: true));
+    }
+  }
+
+  /// Șterge `driver_locations` când aplicația intră în fundal: avatarul dispare de pe hărțile altora.
+  /// Nu schimbă `isAvailable` pe `drivers` — la revenire se republică poziția cu
+  /// [restoreDriverLiveMapPresenceAfterForeground].
+  Future<void> hideDriverLiveMapPresenceForAppBackground() async {
+    if (_uid == null) return;
+    final uid = _uid!;
+    _locationDebouncer?.cancel();
+    _locationDebouncer = null;
+    _pendingUpdates.removeWhere(
+      (u) =>
+          (u['collection'] == 'driver_locations' && u['docId'] == uid) ||
+          (u['collection'] == 'drivers' && u['docId'] == uid),
+    );
+    _batchTimer?.cancel();
+    _batchTimer = null;
+    try {
+      await _db.collection('driver_locations').doc(uid).delete();
+      await _db.collection('drivers').doc(uid).set(
+        {'isOnline': false},
+        SetOptions(merge: true),
+      );
+      Logger.debug('Driver live map presence cleared (app background)', tag: 'FIRESTORE');
+    } catch (e, st) {
+      Logger.warning(
+        'hideDriverLiveMapPresenceForAppBackground: $e\n$st',
+        tag: 'FIRESTORE',
+      );
+    }
+  }
+
+  /// După revenirea din fundal: recreează documentul de hartă fără să reseteze `driverSessionStartedAt`.
+  Future<void> restoreDriverLiveMapPresenceAfterForeground({
+    required String displayName,
+    required String licensePlate,
+    required RideCategory category,
+  }) async {
+    if (_uid == null) return;
+    final uid = _uid!;
+    geolocator.Position? position = await _getCachedPosition();
+    position ??= await geolocator.Geolocator.getCurrentPosition(
+      locationSettings: DeprecatedAPIsFix.createLocationSettings(
+        accuracy: geolocator.LocationAccuracy.medium,
+        timeLimit: const Duration(seconds: 8),
+      ),
+    );
+
+    final geohash = _encodeGeohash(position.latitude, position.longitude);
+    final carAvatarId = await _resolveDriverCarAvatarIdForLocationWrite();
+    final showOnPassengerLiveMap = await _driverShouldShowOnPassengerLiveMap();
+    try {
+      await _db.collection('driver_locations').doc(uid).set(
+        {
+          'position': GeoPoint(position.latitude, position.longitude),
+          'displayName': displayName,
+          'licensePlate': licensePlate,
+          'category': category.name,
+          'lastUpdate': Timestamp.now(),
+          'isOnline': true,
+          'geohash': geohash,
+          'carAvatarId': carAvatarId,
+          kDriverLocationShowOnPassengerLiveMap: showOnPassengerLiveMap,
+        },
+        SetOptions(merge: true),
+      );
+      await _db.collection('drivers').doc(uid).set(
+        {
+          'isOnline': true,
+          'isAvailable': true,
+          'currentLatitude': position.latitude,
+          'currentLongitude': position.longitude,
+          'lastLocationAt': FieldValue.serverTimestamp(),
+        },
+        SetOptions(merge: true),
+      );
+      Logger.debug('Driver live map presence restored (app foreground)', tag: 'FIRESTORE');
+    } catch (e, st) {
+      Logger.warning(
+        'restoreDriverLiveMapPresenceAfterForeground: $e\n$st',
+        tag: 'FIRESTORE',
+      );
     }
   }
 
@@ -2636,7 +2824,9 @@ _pendingUpdates.addAll(updates.map((e) => e as Map<String, dynamic>));
       if (raw is String && raw.trim().isNotEmpty) senderPhoto = raw.trim();
       final av = d?['avatar'];
       if (av is String && av.trim().isNotEmpty) senderEmoji = av.trim();
-    } catch (_) {}
+    } catch (e) {
+      Logger.debug('FirestoreService: sender profile fetch failed: $e', tag: 'FIRESTORE');
+    }
     final authPhoto = _auth.currentUser?.photoURL?.trim();
     if ((senderPhoto == null || senderPhoto.isEmpty) &&
         authPhoto != null &&
@@ -3654,7 +3844,7 @@ _pendingUpdates.addAll(updates.map((e) => e as Map<String, dynamic>));
       
       Logger.debug('🧹 Auto cleanup: Checking for stuck rides older than $_stuckRideThresholdMinutes minutes', tag: 'FIRESTORE');
       
-      const stuckStatuses = ['searching', 'driver_found', 'accepted'];
+      const stuckStatuses = ['searching', 'driver_found', 'accepted', 'arrived', 'in_progress'];
       final passengerSnap = await _db.collection('ride_requests')
           .where('passengerId', isEqualTo: _uid)
           .where('status', whereIn: stuckStatuses)
@@ -3687,10 +3877,23 @@ _pendingUpdates.addAll(updates.map((e) => e as Map<String, dynamic>));
         final rideTime = timestamp.toDate();
         final differenceInMinutes = now.difference(rideTime).inMinutes;
         
-        // ✅ Verifică dacă cursa este blocată (prag: searching=5min, driver_found/accepted=10min)
-        // in_progress și arrived NU ajung niciodată aici — sunt excluse din query
+        // ✅ Verifică dacă cursa este blocată (praguri diferențiate pe status)
         final status = data['status'] as String?;
-        final thresholdMinutes = status == 'searching' ? 5 : _stuckRideThresholdMinutes;
+        int thresholdMinutes = _stuckRideThresholdMinutes; // Default 10
+        
+        switch (status) {
+          case 'searching':
+            thresholdMinutes = 5;
+            break;
+          case 'arrived':
+            thresholdMinutes = 20; // 20 min max waiting
+            break;
+          case 'in_progress':
+            thresholdMinutes = 60; // 1h safety net for active rides
+            break;
+          default:
+            thresholdMinutes = _stuckRideThresholdMinutes; // 10 min for driver_found, accepted
+        }
         
         if (differenceInMinutes > thresholdMinutes) {
           final rideId = doc.id;

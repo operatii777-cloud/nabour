@@ -11,7 +11,6 @@ class HelpContent {
       _buildListItem('Asigurați-vă că aveți o conexiune la internet stabilă (Wi-Fi sau date mobile).'),
       _buildListItem('Verificați dacă serviciile de localizare (GPS) ale telefonului sunt activate și aplicația are permisiunea de a le folosi.'),
       _buildListItem('Reporniți aplicația. O simplă repornire poate rezolva probleme temporare de comunicare.'),
-      _buildListItem('Asigurați-vă că aveți o metodă de plată validă înregistrată în secțiunea "Portofel".'),
     ],
     'Timpul de preluare este mai mare decât cel estimat': [
       _buildParagraph(
@@ -22,16 +21,16 @@ class HelpContent {
       ),
     ],
     'Cursa nu a avut loc': [
-      _buildParagraph('Dacă o cursă a fost marcată ca finalizată, dar nu a avut loc, sau dacă șoferul a anulat după ce a pornit, vă rugăm să ne contactați imediat prin secțiunea de suport a cursei respective din "Istoric Curse". Vom investiga situația și vom lua măsurile corespunzătoare, inclusiv rambursarea plății, dacă este cazul.'),
+      _buildParagraph('Dacă o cursă a fost marcată ca finalizată, dar nu a avut loc, sau dacă șoferul a anulat după ce a pornit, vă rugăm să ne contactați imediat prin secțiunea de suport a cursei respective din "Istoric Curse". Vom investiga situația și vom lua măsurile corespunzătoare pentru siguranța comunității.'),
     ],
     'Utilizarea asistenței de urgență': [
       _buildParagraph('Butonul de siguranță "112" este disponibil pe ecranul de cursă activă atât pentru pasageri, cât și pentru șoferi. Acest buton este destinat exclusiv situațiilor de urgență reală.'),
       _buildParagraph('La apăsare, butonul va iniția un apel telefonic direct către numărul unic de urgență 112. Folosiți această funcție cu responsabilitate.'),
     ],
     'Obiecte pierdute': [
-       _buildParagraph(
+      _buildParagraph(
         'Dacă ați uitat un obiect în mașina șoferului, cea mai rapidă metodă de a-l recupera este să contactați direct șoferul. Puteți face acest lucru din detaliile cursei, în secțiunea "Istoric Curse", timp de 24 de ore după finalizarea călătoriei.'),
-       _buildParagraph(
+      _buildParagraph(
         'Dacă au trecut mai mult de 24 de ore sau nu puteți contacta șoferul, vă rugăm să ne scrieți la adresa de suport, furnizând cât mai multe detalii despre cursă și obiectul pierdut.'),
     ],
      'Raportează accident sau eveniment neplăcut': [
@@ -42,32 +41,12 @@ class HelpContent {
     ],
     // --- Alte categorii (placeholder) ---
     'Solicitare comandă livrare': [_buildParagraph('Funcționalitatea de livrare (FriendsDelivery) va fi disponibilă în curând!')],
-    'Probleme de funcționare a aplicației': [_buildParagraph('Dacă întâmpinați erori tehnice, vă rugăm să încercați să reporniți aplicația. Dacă problema persistă, contactați suportul tehnic la support@friendsride.ro, specificând modelul telefonului și versiunea sistemului de operare.')],
-    'Șoferul a deviat de la traseu': [_buildParagraph('Aplicația oferă o rută optimă, dar șoferul poate alege un traseu alternativ pe baza experienței sale pentru a evita blocajele. Dacă devierea este nejustificată și duce la un cost semnificativ mai mare, vă rugăm să ne semnalați acest lucru din detaliile cursei, în istoric.')],
+    'Probleme de funcționare a aplicației': [_buildParagraph('Dacă întâmpinați erori tehnice, vă rugăm să încercați să reporniți aplicația. Dacă problema persistă, contactați suportul tehnic la suport@nabour.ro, specificând modelul telefonului și versiunea sistemului de operare.')],
+    'Șoferul a deviat de la traseu': [_buildParagraph('Aplicația oferă o rută optimă, dar șoferul poate alege un traseu alternativ pe baza experienței sale pentru a evita blocajele. Dacă devierea este nejustificată, vă rugăm să ne semnalați acest lucru din detaliile cursei, în istoric.')],
     
-    // --- MODIFICARE: Conținut actualizat pentru Taxa de Curățenie ---
-    'Taxă curățenie sau daune': [
-      _buildParagraph('Pentru a menține mașinile curate și sigure pentru toți, se poate aplica o taxă suplimentară dacă un pasager murdărește grav sau deteriorează vehiculul.'),
-      _buildSubheading('Când se aplică?'),
-      _buildListItem('Vărsături, mâncare sau băuturi vărsate'),
-      _buildListItem('Noroi pe scaune, urme de animale'),
-      _buildListItem('Zgârieturi, ruperea tapițeriei sau alte daune'),
-      _buildSubheading('Cum funcționează?'),
-      _buildListItem('Șoferul trimite dovezi (foto).'),
-      _buildListItem('Verificăm cererea.'),
-      _buildListItem('Dacă e justificată, taxa e retrasă automat din contul pasagerului.'),
-      _buildSubheading('Cât poate costa?'),
-      _buildListItem('Curățenie ușoară: 30–70 lei'),
-      _buildListItem('Curățenie profesională: 100–400 lei'),
-      _buildListItem('Daune materiale: 200–1.000+ lei'),
-      _buildParagraph('Pasagerii pot contesta taxa din aplicație în 48 de ore.'),
-    ],
-    // --- FINAL MODIFICARE ---
-    
-    'Tarife și plăți': [_buildParagraph('Tarifele noastre sunt calculate dinamic pe baza unei sumei de pornire, a distanței parcurse și a duratei călătoriei. Puteți vedea o estimare a costului înainte de a confirma cursa. Toate plățile sunt procesate în siguranță prin intermediul aplicației.')],
     'Transfer de tokeni între utilizatori': [
       _buildParagraph(
-        'Din meniul lateral, „Transfer tokeni” deschide ecranul unde poți trimite tokeni direct către ID-ul altui utilizator sau poți crea o cerere prin care soliciți tokeni de la cineva. Soldul transferabil este gestionat pe server; verifică ID-ul înainte de a confirma.',
+        'Din meniul lateral, „Transfer tokeni” deschide ecranul warehouse poți trimite tokeni direct către ID-ul altui utilizator sau poți crea o cerere prin care soliciți tokeni de la cineva. Soldul transferabil este gestionat pe server; verifică ID-ul înainte de a confirma.',
       ),
       _buildParagraph(
         'La cereri de plată: plătitorul poate accepta sau refuza; tu poți anula cererea ta cât timp este în așteptare. În fila Istoric vezi transferurile și cererile încheiate.',
@@ -82,13 +61,7 @@ class HelpContent {
     );
   }
 
-  // NOU: Funcție pentru subtitluri
-  static Padding _buildSubheading(String text) {
-    return Padding(
-      padding: const EdgeInsets.only(top: 16.0, bottom: 8.0),
-      child: Text(text, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-    );
-  }
+
 
   static Padding _buildListItem(String text) {
     return Padding(

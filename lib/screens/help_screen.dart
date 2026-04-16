@@ -3,6 +3,8 @@ import 'package:flutter/services.dart';
 import 'package:nabour_app/screens/help_article_screen.dart';
 import 'package:nabour_app/screens/report_form_screen.dart';
 import 'package:nabour_app/screens/career_screen.dart';
+import 'package:nabour_app/screens/about_screen.dart';
+import 'package:nabour_app/screens/legal_screen.dart';
 import 'package:nabour_app/l10n/app_localizations.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:nabour_app/utils/logger.dart';
@@ -40,14 +42,13 @@ class _HelpScreenState extends State<HelpScreen> {
       case 'Nu pot solicita o cursă': {
         return [
           Text(
-            l10n.cannotRequestRideContent,
+            'Dacă întâmpinați probleme la solicitarea unei curse, încercați următoarele soluții:',
             style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 16),
-          Text(l10n.checkInternetConnection),
-          Text(l10n.ensureGpsEnabled),
-          Text(l10n.restartApp),
-          Text(l10n.checkValidPayment),
+          const Text('• Verificați conexiunea la internet (Wi-Fi sau date mobile).'),
+          const Text('• Asigurați-vă că locația GPS este activată.'),
+          const Text('• Încercați să restartați aplicația.'),
           Text(l10n.contactSupportIfPersists),
         ];
       }
@@ -189,249 +190,42 @@ class _HelpScreenState extends State<HelpScreen> {
           ),
         ];
       }
-      case 'cleaningOrDamageFee':
-      case 'Taxă curățenie sau daune': {
-        return [
-          Text(
-            l10n.cleaningFeeTitle,
-            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.red),
-          ),
-          const SizedBox(height: 16),
-          Text(
-            l10n.cleaningFeeIntro,
-            style: const TextStyle(fontSize: 14),
-          ),
-          const SizedBox(height: 20),
-          Text(
-            l10n.whenFeeApplied,
-            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.orange),
-          ),
-          const SizedBox(height: 12),
-          Text(l10n.spillingLiquids),
-          Text(l10n.soilingSeatsOrFloor),
-          Text(l10n.vomitingInVehicle),
-          Text(l10n.smokingInVehicle),
-          Text(l10n.damagingVehicleElements),
-          Text(l10n.leavingFoodOrTrash),
-          Text(l10n.persistentOdors),
-          const SizedBox(height: 20),
-          Text(
-            l10n.howFeeProcessWorks,
-            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.blue),
-          ),
-          const SizedBox(height: 12),
-          Text(l10n.driverDocumentsDamage),
-          Text(l10n.driverReportsIncident),
-          Text(l10n.teamAnalyzesReport),
-          Text(l10n.ifFeeJustified),
-          Text(l10n.feeChargedAutomatically),
-          Text(l10n.passengerCanContest),
-          const SizedBox(height: 20),
-          Text(
-            l10n.feeAmounts,
-            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.green),
-          ),
-          const SizedBox(height: 12),
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Colors.grey.shade100,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.grey.shade300),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  l10n.lightCleaning,
-                  style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
-                ),
-                Text(l10n.wipingAndVacuuming),
-                Text(l10n.removingSmallStains),
-                const SizedBox(height: 12),
-                Text(
-                  l10n.intensiveCleaning,
-                  style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
-                ),
-                Text(l10n.professionalCleaning),
-                Text(l10n.deodorizationAndSpecialTreatments),
-                const SizedBox(height: 12),
-                Text(
-                  l10n.repairsAndReplacements,
-                  style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
-                ),
-                Text(l10n.replacingDamagedSeatCovers),
-                Text(l10n.repairingDamagedComponents),
-                Text(l10n.costsDependOnSeverity),
-              ],
-            ),
-          ),
-          const SizedBox(height: 20),
-          Text(
-            l10n.yourRightsAsPassenger,
-            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.purple),
-          ),
-          const SizedBox(height: 12),
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Colors.blue.shade50,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.blue.shade200),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  l10n.rightToReceivePhotos,
-                  style: const TextStyle(fontWeight: FontWeight.w500),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  l10n.canContestFee,
-                  style: const TextStyle(fontWeight: FontWeight.w500),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  l10n.rightToObjectiveInvestigation,
-                  style: const TextStyle(fontWeight: FontWeight.w500),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  l10n.ifContestationJustified,
-                  style: const TextStyle(fontWeight: FontWeight.w500),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 20),
-          Text(
-            l10n.howToAvoidFee,
-            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.green),
-          ),
-          const SizedBox(height: 12),
-          Text(l10n.doNotConsumeFood),
-          Text(l10n.checkShoesNotDirty),
-          Text(l10n.notifyDriverIfFeelingUnwell),
-          Text(l10n.doNotSmokeInVehicle),
-          Text(l10n.treatVehicleWithRespect),
-          Text(l10n.takeTrashWithYou),
-          const SizedBox(height: 20),
-          Text(
-            l10n.contestationProcess,
-            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.orange),
-          ),
-          const SizedBox(height: 12),
-          Text(l10n.accessRideHistory),
-          Text(l10n.selectRideForContestation),
-          Text(l10n.pressContestFee),
-          Text(l10n.addRelevantEvidence),
-          Text(l10n.teamWillReanalyze),
-          Text(l10n.receiveDetailedResponse),
-          const SizedBox(height: 20),
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Colors.orange.shade50,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.orange.shade200),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  l10n.haveQuestionsOrNeedAssistance,
-                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: Colors.orange),
-                ),
-                const SizedBox(height: 12),
-                Text(l10n.emailSupport),
-                Text(l10n.phoneSupport),
-                Text(l10n.chatInApp),
-                Text(l10n.scheduleSupport),
-              ],
-            ),
-          ),
-          const SizedBox(height: 24),
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Colors.red.shade50,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.red.shade200),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  l10n.importantToRemember,
-                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: Colors.red),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  l10n.feeOnlyAppliedWithClearEvidence,
-                  style: const TextStyle(fontSize: 14, color: Colors.red),
-                ),
-              ],
-            ),
-          ),
-        ];
-      }
       case 'howToActivateDriverMode':
-      case 'Cum activez modul șofer partener Nabour': {
+      case 'Cum devin șofer?':
+      case 'Cum ofer curse vecinilor?': {
         return [
           Text(
-            l10n.toBecomeDriverPartner,
+            'Pentru a începe să oferi curse voluntare vecinilor tăi, urmează acești pași:',
             style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 16),
           Text(
-            l10n.checkConditions,
+            '1. Verifică condițiile',
             style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
           ),
           const SizedBox(height: 4),
-          Text(l10n.validLicenseRequired),
+          Text('Trebuie să ai un permis de conducere valabil și o mașină sigură pentru transport.'),
           const SizedBox(height: 12),
           Text(
-            l10n.prepareDocuments,
+            '2. Completează profilul',
             style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
           ),
           const SizedBox(height: 4),
-          Text(l10n.documentsNeeded),
+          Text('Asigură-te că ai o poză de profil clară și detaliile mașinii completate.'),
           const SizedBox(height: 12),
           Text(
-            l10n.completeApplication,
+            '3. Verificarea identității',
             style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
           ),
           const SizedBox(height: 4),
-          Text(l10n.accessCareerSection),
+          Text('Echipa noastră va verifica documentele transmise pentru siguranța comunității.'),
           const SizedBox(height: 12),
           Text(
-            l10n.submitDocuments,
+            '4. Activează modul Șofer',
             style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
           ),
           const SizedBox(height: 4),
-          Text(l10n.uploadClearPhotos),
-          const SizedBox(height: 12),
-          Text(
-            l10n.applicationVerification,
-            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-          ),
-          const SizedBox(height: 4),
-          Text(l10n.teamWillVerify),
-          const SizedBox(height: 12),
-          Text(
-            l10n.receiveActivationCode,
-            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-          ),
-          const SizedBox(height: 4),
-          Text(l10n.afterApproval),
-          const SizedBox(height: 12),
-          Text(
-            l10n.activateAccount,
-            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-          ),
-          const SizedBox(height: 4),
-          Text(l10n.enterCodeInApp),
+          Text('Odată aprobat, poți activa modul de șofer de pe ecranul principal și poți începe să ajuți vecinii!'),
           const SizedBox(height: 16),
           Container(
             padding: const EdgeInsets.all(12),
@@ -440,337 +234,19 @@ class _HelpScreenState extends State<HelpScreen> {
               borderRadius: BorderRadius.circular(8),
               border: Border.all(color: Colors.blue.shade200),
             ),
-            child: Column(
+            child: const Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  l10n.usefulTip,
-                  style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.blue),
+                  '💡 Importante:',
+                  style: TextStyle(fontWeight: FontWeight.bold, color: Colors.blue),
                 ),
-                const SizedBox(height: 4),
+                SizedBox(height: 4),
                 Text(
-                  l10n.ensureDocumentsValid,
-                  style: const TextStyle(color: Colors.blue),
+                  'Toate cursele Nabour sunt voluntare. Nu se acceptă plăți sau recompense financiare de la pasageri.',
+                  style: TextStyle(color: Colors.blue),
                 ),
               ],
-            ),
-          ),
-        ];
-      }
-      case 'ratesAndPayments':
-      case 'Tarife și plăți': {
-        return [
-          Text(
-            l10n.ratesAndPaymentsInfo,
-            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 16),
-          Text(l10n.ratesCalculatedAutomatically),
-          Text(l10n.paymentMadeAutomatically),
-          Text(l10n.canSeeRateDetails),
-          Text(l10n.inCaseOfPaymentProblems),
-          const SizedBox(height: 16),
-          Text(
-            l10n.forCurrentRatesDetails,
-            style: const TextStyle(fontStyle: FontStyle.italic),
-          ),
-        ];
-      }
-      case 'appFunctioningProblems':
-      case 'Probleme de funcționare a aplicației': {
-        return [
-          Text(
-            l10n.ifAppNotWorkingCorrectly,
-            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 16),
-          Text(l10n.restartApp),
-          Text(l10n.checkInternetConnection),
-          Text(l10n.updateAppToLatest),
-          Text(l10n.restartPhone),
-          Text(l10n.reinstallAppIfPersists),
-          const SizedBox(height: 16),
-          Text(
-            l10n.ifProblemContinues,
-            style: const TextStyle(fontWeight: FontWeight.w500),
-          ),
-        ];
-      }
-      case 'paymentMethods':
-      case 'Metode de plată': {
-        return [
-          Text(
-            l10n.paymentMethodsHelpTitle,
-            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 16),
-          Text(
-            l10n.addingPaymentMethod,
-            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-          ),
-          const SizedBox(height: 8),
-          Text(l10n.goToWalletSection),
-          Text(l10n.tapAddPaymentMethod),
-          Text(l10n.selectCardOrCash),
-          Text(l10n.enterCardDetails),
-          Text(l10n.savePaymentMethod),
-          const SizedBox(height: 16),
-          Text(
-            l10n.managingPaymentMethods,
-            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-          ),
-          const SizedBox(height: 8),
-          Text(l10n.viewAllMethodsInWallet),
-          Text(l10n.editOrDeleteMethods),
-          Text(l10n.setDefaultPaymentMethod),
-          const SizedBox(height: 16),
-          Text(
-            l10n.paymentMethodsTypes,
-            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-          ),
-          const SizedBox(height: 8),
-          Text(l10n.creditDebitCards),
-          Text(l10n.cashPayment),
-          Text(l10n.walletBalance),
-          const SizedBox(height: 16),
-          Text(
-            l10n.paymentSecurity,
-            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-          ),
-          const SizedBox(height: 8),
-          Text(l10n.allPaymentsSecure),
-          Text(l10n.cardDetailsEncrypted),
-          Text(l10n.pciCompliant),
-          const SizedBox(height: 16),
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Colors.blue.shade50,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.blue.shade200),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  l10n.paymentMethodTip,
-                  style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.blue),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  l10n.youCanSendToContact,
-                  style: const TextStyle(color: Colors.blue),
-                ),
-              ],
-            ),
-          ),
-        ];
-      }
-      case 'vouchers':
-      case 'Vouchere': {
-        return [
-          Text(
-            l10n.vouchersHelpTitle,
-            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 16),
-          Text(
-            l10n.addingVoucher,
-            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-          ),
-          const SizedBox(height: 8),
-          Text(l10n.goToWalletSection),
-          Text(l10n.tapVouchersSection),
-          Text(l10n.tapAddVoucherCode),
-          Text(l10n.enterVoucherCode),
-          Text(l10n.applyVoucher),
-          const SizedBox(height: 16),
-          Text(
-            l10n.usingVouchers,
-            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-          ),
-          const SizedBox(height: 8),
-          Text(l10n.vouchersAppliedAutomatically),
-          Text(l10n.checkVoucherStatus),
-          Text(l10n.voucherExpiryInfo),
-          const SizedBox(height: 16),
-          Text(
-            l10n.voucherTypes,
-            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-          ),
-          const SizedBox(height: 8),
-          Text(l10n.percentageDiscount),
-          Text(l10n.fixedAmountDiscount),
-          Text(l10n.freeRideVoucher),
-          const SizedBox(height: 16),
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Colors.orange.shade50,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.orange.shade200),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  l10n.voucherTip,
-                  style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.orange),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  l10n.oneVoucherPerRide,
-                  style: const TextStyle(color: Colors.orange),
-                ),
-              ],
-            ),
-          ),
-        ];
-      }
-      case 'wallet':
-      case 'Portofel': {
-        return [
-          Text(
-            l10n.walletHelpTitle,
-            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 16),
-          Text(
-            l10n.walletOverview,
-            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-          ),
-          const SizedBox(height: 8),
-          Text(l10n.walletOverviewInfo),
-          const SizedBox(height: 16),
-          Text(
-            l10n.friendsRideCash,
-            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-          ),
-          const SizedBox(height: 8),
-          Text(l10n.friendsRideCashInfo),
-          Text(l10n.addFundsToWallet),
-          Text(l10n.useWalletForPayments),
-          const SizedBox(height: 16),
-          Text(
-            l10n.walletSections,
-            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-          ),
-          const SizedBox(height: 8),
-          Text(l10n.paymentMethodsSection),
-          Text(l10n.vouchersSection),
-          Text(l10n.rideProfilesSection),
-          Text(l10n.promotionsSection),
-          const SizedBox(height: 16),
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Colors.green.shade50,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.green.shade200),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  l10n.walletTip,
-                  style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.green),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  l10n.walletBalanceNeverExpires,
-                  style: const TextStyle(color: Colors.green),
-                ),
-              ],
-            ),
-          ),
-        ];
-      }
-      case 'subscriptions':
-      case 'Abonamente și Promoții':
-      case 'Subscriptions and Promotions': {
-        return [
-          Text(
-            l10n.subscriptionsHelpTitle,
-            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 16),
-          Text(l10n.subscriptionsHelpOverview),
-          const SizedBox(height: 16),
-          Text(
-            l10n.subscriptionsHelpPlans,
-            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-          ),
-          const SizedBox(height: 8),
-          Text(l10n.subscriptionsHelpBasic),
-          Text(l10n.subscriptionsHelpPlus),
-          Text(l10n.subscriptionsHelpPremium),
-          const SizedBox(height: 16),
-          Text(
-            l10n.subscriptionsHelpHowToSubscribe,
-            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-          ),
-          const SizedBox(height: 8),
-          Text(l10n.subscriptionsHelpGoToMenu),
-          Text(l10n.subscriptionsHelpTapSubscriptions),
-          Text(l10n.subscriptionsHelpSelectPlan),
-          Text(l10n.subscriptionsHelpCompletePayment),
-          const SizedBox(height: 16),
-          Text(
-            l10n.subscriptionsHelpPromotions,
-            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-          ),
-          const SizedBox(height: 8),
-          Text(l10n.subscriptionsHelpPromotionsInfo),
-          const SizedBox(height: 16),
-          Text(
-            l10n.subscriptionsHelpReferral,
-            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-          ),
-          const SizedBox(height: 8),
-          Text(l10n.subscriptionsHelpReferralInfo),
-        ];
-      }
-      case 'splitPayment':
-      case 'Split Payment':
-      case 'Împărțirea Costului': {
-        return [
-          Text(
-            l10n.splitPaymentHelpTitle,
-            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 16),
-          Text(l10n.splitPaymentHelpOverview),
-          const SizedBox(height: 16),
-          Text(
-            l10n.splitPaymentHelpHowToCreate,
-            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-          ),
-          const SizedBox(height: 8),
-          Text(l10n.splitPaymentHelpAfterRide),
-          Text(l10n.splitPaymentHelpSelectPeople),
-          Text(l10n.splitPaymentHelpShareLink),
-          Text(l10n.splitPaymentHelpParticipantsAccept),
-          const SizedBox(height: 16),
-          Text(
-            l10n.splitPaymentHelpHowToAccept,
-            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-          ),
-          const SizedBox(height: 8),
-          Text(l10n.splitPaymentHelpReceiveLink),
-          Text(l10n.splitPaymentHelpTapAccept),
-          Text(l10n.splitPaymentHelpSelectPayment),
-          Text(l10n.splitPaymentHelpCompletePayment),
-          const SizedBox(height: 16),
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Colors.blue.shade50,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.blue.shade200),
-            ),
-            child: Text(
-              l10n.splitPaymentHelpNote,
-              style: const TextStyle(fontStyle: FontStyle.italic, color: Colors.blue),
             ),
           ),
         ];
@@ -780,29 +256,29 @@ class _HelpScreenState extends State<HelpScreen> {
       case 'Curse Partajate': {
         return [
           Text(
-            l10n.rideSharingHelpTitle,
+            'Curse Partajate Nabour',
             style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 16),
-          Text(l10n.rideSharingHelpOverview),
+          Text('Nabour încurajează partajarea curselor între vecini pentru a reduce traficul și a proteja mediul. Această funcție permite sistemului să cupleze mai mulți pasageri care merg în aceeași direcție.'),
           const SizedBox(height: 16),
           Text(
-            l10n.rideSharingHelpHowToEnable,
+            'Cum funcționează?',
             style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
           ),
           const SizedBox(height: 8),
-          Text(l10n.rideSharingHelpDuringRequest),
-          Text(l10n.rideSharingHelpSystemMatches),
-          Text(l10n.rideSharingHelpIfMatchFound),
+          Text('• Activează opțiunea de partajare la solicitarea cursei.'),
+          Text('• Sistemul te va notifica dacă găsește un alt vecin care se alătură călătoriei.'),
+          Text('• Traseul poate fi ușor optimizat pentru a prelua toți participanții.'),
           const SizedBox(height: 16),
           Text(
-            l10n.rideSharingHelpBenefits,
+            'Beneficii:',
             style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
           ),
           const SizedBox(height: 8),
-          Text(l10n.rideSharingHelpCostReduction),
-          Text(l10n.rideSharingHelpEcoFriendly),
-          Text(l10n.rideSharingHelpSocial),
+          Text('• Socializare cu vecinii din comunitate.'),
+          Text('• Reducerea numărului de mașini pe drum.'),
+          Text('• Zero costuri - spirit de întrajutorare.'),
           const SizedBox(height: 16),
           Container(
             padding: const EdgeInsets.all(16),
@@ -811,9 +287,9 @@ class _HelpScreenState extends State<HelpScreen> {
               borderRadius: BorderRadius.circular(12),
               border: Border.all(color: Colors.green.shade200),
             ),
-            child: Text(
-              l10n.rideSharingHelpNote,
-              style: const TextStyle(fontStyle: FontStyle.italic, color: Colors.green),
+            child: const Text(
+              'Notă: Deoarece Nabour este o platformă voluntară, disponibilitatea curselor partajate depinde de vecinii din zonă.',
+              style: TextStyle(fontStyle: FontStyle.italic, color: Colors.green),
             ),
           ),
         ];
@@ -1716,7 +1192,11 @@ class _HelpScreenState extends State<HelpScreen> {
                 title,
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
-                style: const TextStyle(fontSize: 14.5, fontWeight: FontWeight.w500),
+                style: TextStyle(
+                  fontSize: 14.5,
+                  fontWeight: FontWeight.w500,
+                  color: Theme.of(context).colorScheme.onSurface,
+                ),
               ),
             ),
             Icon(Icons.chevron_right_rounded, color: Colors.grey.shade400, size: 20),
@@ -1732,11 +1212,12 @@ class _HelpScreenState extends State<HelpScreen> {
     required Color headerColor,
     required List<Widget> children,
   }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
       elevation: 0,
-      color: Colors.grey.shade50,
+      color: isDark ? const Color(0xFF1E1E2E) : Colors.grey.shade50,
       child: Theme(
         data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
         child: ExpansionTile(
@@ -1752,10 +1233,10 @@ class _HelpScreenState extends State<HelpScreen> {
           ),
           title: Text(
             title,
-            style: const TextStyle(
-              inherit: false,
+            style: TextStyle(
               fontWeight: FontWeight.w700,
               fontSize: 14,
+              color: Theme.of(context).colorScheme.onSurface,
             ),
           ),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
@@ -1768,9 +1249,10 @@ class _HelpScreenState extends State<HelpScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FF),
+      backgroundColor: isDark ? const Color(0xFF0F0F1A) : const Color(0xFFF8F9FF),
       appBar: AppBar(
         title: Text(l10n.helpCenter),
         elevation: 0,
@@ -1794,7 +1276,7 @@ class _HelpScreenState extends State<HelpScreen> {
                       )
                     : null,
                 filled: true,
-                fillColor: Colors.white,
+                fillColor: isDark ? const Color(0xFF1A1A2E) : Colors.white,
                 contentPadding: const EdgeInsets.symmetric(vertical: 14),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(14),
@@ -1802,7 +1284,7 @@ class _HelpScreenState extends State<HelpScreen> {
                 ),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(14),
-                  borderSide: BorderSide(color: Colors.grey.shade200),
+                  borderSide: BorderSide(color: isDark ? Colors.white10 : Colors.grey.shade200),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(14),
@@ -1821,7 +1303,6 @@ class _HelpScreenState extends State<HelpScreen> {
               _buildHelpTopic(context, icon: Icons.block_rounded,         title: l10n.cannotRequestRide,     iconColor: Colors.orange),
               _buildHelpTopic(context, icon: Icons.cancel_outlined,        title: l10n.rideDidNotHappen,       iconColor: Colors.red),
               _buildHelpTopic(context, icon: Icons.work_outline,           title: l10n.lostItems,              iconColor: Colors.brown),
-              _buildHelpTopic(context, icon: Icons.cleaning_services_outlined, title: l10n.cleaningOrDamageFee, iconColor: Colors.deepOrange),
             ],
           ),
 
@@ -1853,6 +1334,7 @@ class _HelpScreenState extends State<HelpScreen> {
                     builder: (ctx) => HelpArticleScreen(articleTitle: l10n.helpChatGuideTitle, contentWidgets: content)));
                 },
               ),
+              /*
               _buildHelpTopic(
                 context,
                 icon: Icons.auto_fix_high_rounded,
@@ -1866,6 +1348,7 @@ class _HelpScreenState extends State<HelpScreen> {
                       contentWidgets: content)));
                 },
               ),
+              */
               _buildHelpTopic(
                 context,
                 icon: Icons.radar,
@@ -1922,18 +1405,31 @@ class _HelpScreenState extends State<HelpScreen> {
             ],
           ),
 
-          // ── Categorie: Plăți & Portofel ────────────────────────────────────
+          // ── Categorie: Comunitate ──────────────────────────────────────────
           _buildCategory(
-            title: l10n.helpCategoryPaymentsWallet,
-            headerIcon: Icons.account_balance_wallet_outlined,
-            headerColor: Colors.green,
+            title: "Comunitate & Voluntariat",
+            headerIcon: Icons.volunteer_activism_rounded,
+            headerColor: Colors.deepPurple,
             children: [
-              _buildHelpTopic(context, icon: Icons.credit_card_rounded,    title: l10n.paymentMethods,  iconColor: Colors.green),
-              _buildHelpTopic(context, icon: Icons.redeem_rounded,          title: l10n.vouchers,        iconColor: Colors.orange),
-              _buildHelpTopic(context, icon: Icons.wallet_rounded,          title: l10n.wallet,          iconColor: Colors.teal),
-              _buildHelpTopic(context, icon: Icons.sell_outlined,           title: l10n.ratesAndPayments,iconColor: Colors.blue),
-              _buildHelpTopic(context, icon: Icons.subscriptions_rounded,   title: l10n.subscriptions,   iconColor: Colors.indigo),
-              _buildHelpTopic(context, icon: Icons.group_outlined,          title: l10n.splitPayment,    iconColor: Colors.cyan),
+              _buildHelpTopic(context, icon: Icons.people_outline,        title: "Despre Nabour",             iconColor: Colors.indigo,
+                onTap: () => Navigator.push(context, MaterialPageRoute(builder: (ctx) => const AboutScreen()))),
+              _buildHelpTopic(context, icon: Icons.handshake_outlined,     title: "Cum pot ajuta?",            iconColor: Colors.purple,
+                onTap: () {
+                  final content = _buildHelpArticle('howToActivateDriverMode', l10n);
+                  Navigator.push(context, MaterialPageRoute(
+                    builder: (ctx) => HelpArticleScreen(articleTitle: "Implică-te în comunitate", contentWidgets: content)));
+                }),
+              _buildHelpTopic(context, icon: Icons.gavel_rounded,          title: l10n.legalInformation,       iconColor: Colors.blueGrey,
+                onTap: () => Navigator.push(context, MaterialPageRoute(builder: (ctx) => const LegalScreen()))),
+            ],
+          ),
+
+          // ── Categorie: Comunitate & Tokeni ─────────────────────────────────
+          _buildCategory(
+            title: "Comunitate & Tokeni",
+            headerIcon: Icons.people_outline_rounded,
+            headerColor: Colors.teal,
+            children: [
               _buildHelpTopic(context, icon: Icons.share_rounded,           title: l10n.helpRideSharingTitle,     iconColor: Colors.lightGreen),
               _buildHelpTopic(
                 context,
@@ -1983,8 +1479,7 @@ class _HelpScreenState extends State<HelpScreen> {
                 }),
               _buildHelpTopic(context, icon: Icons.lock_reset_outlined,   title: l10n.forgotPassword,         iconColor: Colors.deepOrange,
                 onTap: _showPasswordResetDialog),
-              if (widget.isPassengerMode)
-                _buildHelpTopic(context, icon: Icons.drive_eta_rounded,   title: l10n.howToActivateDriverMode, iconColor: Colors.indigo),
+              _buildHelpTopic(context, icon: Icons.drive_eta_rounded,   title: "Cum devin Șofer?", iconColor: Colors.indigo),
             ],
           ),
 

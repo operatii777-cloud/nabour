@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:nabour_app/models/ride_model.dart';
 import 'package:nabour_app/screens/ride_details_screen.dart';
 import 'package:nabour_app/services/firestore_service.dart';
@@ -233,11 +233,11 @@ class _HistoryScreenState extends State<HistoryScreen> with SingleTickerProvider
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
-                      '${ride.totalCost.toStringAsFixed(2)} ${l10n.ron}', 
+                      'Voluntar', 
                       style: TextStyle(
                         fontWeight: FontWeight.bold, 
                         color: costColor, 
-                        fontSize: 16
+                        fontSize: 15
                       )
                     ),
                     if (!isDriver && ride.driverId != null && ride.driverId!.isNotEmpty)

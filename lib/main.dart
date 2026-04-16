@@ -42,6 +42,7 @@ import 'package:nabour_app/services/local_notifications_service.dart';
 import 'package:nabour_app/config/environment.dart';
 import 'package:nabour_app/screens/safety_screen.dart';
 import 'package:nabour_app/screens/report_form_screen.dart';
+import 'package:nabour_app/screens/voice_ui_driver_test_screen.dart';
 import 'package:nabour_app/screens/trial_expired_screen.dart';
 import 'package:nabour_app/widgets/app_drawer.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
@@ -57,11 +58,16 @@ import 'package:nabour_app/config/trial_policy_config.dart';
 import 'package:nabour_app/services/trial_config_service.dart';
 import 'package:nabour_app/services/app_audio_session.dart';
 import 'package:nabour_app/services/assistant_voice_ui_prefs.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 Future<void> main() async {
   final widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
   StartupTimer.instance.mark('widgetsBinding.ready');
+
+  // Pre-warm SharedPreferences cache so first consumer (LocaleProvider) hits
+  // the in-memory cache instead of doing platform-channel I/O on the first frame.
+  await SharedPreferences.getInstance();
 
   // Phase 2: Firebase (CRITICAL) - Initialize here so providers can access it
 
@@ -144,8 +150,10 @@ Future<void> main() async {
   if (mapboxToken != null && mapboxToken.startsWith('pk.')) {
     MapboxOptions.setAccessToken(mapboxToken);
     if (!kIsWeb) {
-      // Motorul de hărți verifică mai întâi TileStore (implicit READ_ONLY); setăm explicit + quota
-      // înainte de primul MapWidget, ca să fie același magazin ca la prefetch (OfflineManager).
+      // READ_ONLY: la cerere tile, motorul verifică mai întâi dacă există un „tile pack” offline
+      // (prefetch București/Ilfov). În afara acelei regiuni poți vedea în log „Missing tile pack …
+      // update the tile region” — e informativ; fallback la descărcare tile individual e OK.
+      // Dacă vrei să reduci zgomotul în log: TileStoreUsageMode.DISABLED (alt comportament cache).
       MapboxMapsOptions.setTileStoreUsageMode(TileStoreUsageMode.READ_ONLY);
       unawaited(_primeDefaultTileStoreDiskQuota());
     }
@@ -436,6 +444,7 @@ class _MyAppState extends State<MyApp> {
             '/home': (_) => const MapWithWarmupScreen(),
             '/safety': (_) => const SafetyScreen(),
             '/report': (_) => const ReportFormScreen(reportType: 'general'),
+            '/voice-test': (_) => const VoiceUIDriverTestScreen(),
           },
 
           debugShowCheckedModeBanner: false,

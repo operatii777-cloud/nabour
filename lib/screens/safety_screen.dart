@@ -11,6 +11,7 @@ import '../helpers/safety_preferences.dart';
 import '../l10n/app_localizations.dart';
 import '../core/haptics/haptic_service.dart';
 import '../features/safe_ride/safe_ride_service.dart';
+import '../utils/logger.dart';
 
 class SafetyScreen extends StatefulWidget {
   const SafetyScreen({super.key});
@@ -81,7 +82,9 @@ class _SafetyScreenState extends State<SafetyScreen>
           _activeRideDestination = data['destination'] as String?;
         });
       }
-    } catch (_) {}
+    } catch (e) {
+      Logger.warning('SafetyScreen._loadActiveRide failed: $e', tag: 'SAFETY');
+    }
   }
 
   // ── SOS ─────────────────────────────────────────────────────────────────────
@@ -135,7 +138,9 @@ class _SafetyScreenState extends State<SafetyScreen>
     } catch (_) {
       try {
         position = await Geolocator.getLastKnownPosition();
-      } catch (_) {}
+      } catch (e) {
+        Logger.warning('SOS: GPS unavailable: $e', tag: 'SAFETY');
+      }
     }
 
     final locationText = position != null
@@ -157,7 +162,9 @@ class _SafetyScreenState extends State<SafetyScreen>
           'rideId': _activeRideId,
           'status': 'active',
         });
-      } catch (_) {}
+      } catch (e) {
+        Logger.error('SOS: emergency_alerts Firestore write failed: $e', tag: 'SAFETY');
+      }
     }
 
     // 3. Send SMS to all trusted contacts
@@ -170,7 +177,9 @@ class _SafetyScreenState extends State<SafetyScreen>
         try {
           await launchUrl(smsUri, mode: LaunchMode.externalApplication);
           await Future.delayed(const Duration(milliseconds: 500));
-        } catch (_) {}
+        } catch (e) {
+          Logger.warning('SOS: SMS launch failed for contact: $e', tag: 'SAFETY');
+        }
       }
     }
 

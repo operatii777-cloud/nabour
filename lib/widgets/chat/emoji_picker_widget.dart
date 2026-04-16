@@ -14,14 +14,14 @@ class EmojiPickerWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final surface = Theme.of(context).colorScheme.surface;
+    final outline = Theme.of(context).colorScheme.outlineVariant;
     return Container(
       height: 250,
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: surface,
         border: Border(
-          top: BorderSide(
-            color: Colors.grey.shade300,
-          ),
+          top: BorderSide(color: outline),
         ),
       ),
       child: EmojiPicker(
@@ -29,10 +29,10 @@ class EmojiPickerWidget extends StatelessWidget {
           onEmojiSelected(emoji.emoji);
         },
         onBackspacePressed: onBackspace,
-        config: const Config(
+        config: Config(
           height: 250,
           emojiViewConfig: EmojiViewConfig(
-            backgroundColor: Colors.white,
+            backgroundColor: surface,
           ),
         ),
       ),

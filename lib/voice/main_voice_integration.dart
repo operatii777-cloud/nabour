@@ -9,6 +9,13 @@ import 'tts/natural_voice_synthesizer.dart' as tts;
 import 'ride/ride_flow_manager.dart';
 import 'states/voice_interaction_states.dart';
 import 'core/voice_orchestrator.dart';
+import 'package:nabour_app/main.dart'; // pentru navigatorKey
+import 'package:nabour_app/providers/map_camera_provider.dart';
+import 'package:nabour_app/theme/theme_provider.dart';
+import 'package:nabour_app/providers/locale_provider.dart';
+import 'package:nabour_app/features/neighborhood_requests/nbhd_requests_manager.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:nabour_app/voice/core/voice_ui_automation_registry.dart';
 import 'package:nabour_app/utils/logger.dart';
 
 /// ✅ Helper: Obține limba curentă din SharedPreferences
@@ -122,6 +129,25 @@ class MainVoiceIntegration extends ChangeNotifier {
         },
         onCloseAI: () {
           Logger.info('Closing AI', tag: 'MAIN_VOICE');
+        },
+        onAppAction: (action, screen, params) {
+          Logger.info('App Action callback: $action for screen: $screen with params: $params', tag: 'MAIN_VOICE');
+          _handleGenericAppAction(action, screen, params: params);
+        },
+        onAddStop: (address, lat, lng) {
+          Logger.info('Voice requested adding a stop at $address', tag: 'MAIN_VOICE');
+        },
+        onRateDriver: (stars, comment) {
+          Logger.info('Voice rating: $stars stars - $comment', tag: 'MAIN_VOICE');
+        },
+        onSendMessageToDriver: (message) {
+          Logger.info('Voice message to driver: $message', tag: 'MAIN_VOICE');
+        },
+        onToggleTheme: (isDark) {
+          Logger.info('Voice toggle theme: $isDark', tag: 'MAIN_VOICE');
+        },
+        onLanguageChange: (lang) {
+          Logger.info('Voice requested language change to $lang', tag: 'MAIN_VOICE');
         },
       );
       await _rideFlowManager.initialize();
@@ -356,6 +382,95 @@ class MainVoiceIntegration extends ChangeNotifier {
     _rideFlowManager.dispose();
     _naturalTts.dispose();
     super.dispose();
+  }
+
+  /// 🎯 NOU: Gestionează acțiuni generice din app
+  /// 🎯 NOU: Gestionează orice acțiune a aplicației (Unlimited UI Sync)
+  void _handleGenericAppAction(String action, String? screen, {Map<String, dynamic>? params}) {
+    Logger.info('NABOUR_GEMINI_OS: Executing UI Action: $action with params: $params', tag: 'MAIN_VOICE');
+    
+    final context = navigatorKey.currentContext;
+    if (context == null) {
+      Logger.error('Cannot execute action: BuildContext is null', tag: 'MAIN_VOICE');
+      return;
+    }
+
+    try {
+      switch (action) {
+        // --- NAVIGARE ---
+        case 'open_profile':
+          navigatorKey.currentState?.pushNamed('/profile');
+          break;
+        case 'open_settings':
+          navigatorKey.currentState?.pushNamed('/settings');
+          break;
+        case 'open_help':
+          navigatorKey.currentState?.pushNamed('/help');
+          break;
+        case 'open_wallet':
+          navigatorKey.currentState?.pushNamed('/token-shop');
+          break;
+        case 'open_map':
+          navigatorKey.currentState?.popUntil((route) => route.isFirst);
+          break;
+
+        // --- CONTROL HARTĂ (MapCameraProvider) ---
+        case 'map_zoom':
+          if (params != null && params['level'] != null) {
+            context.read<MapCameraProvider>().setZoom(params['level'].toDouble());
+          }
+          break;
+        case 'map_tilt':
+          if (params != null && params['pitch'] != null) {
+            context.read<MapCameraProvider>().setPitch(params['pitch'].toDouble());
+          }
+          break;
+        case 'center_map':
+          context.read<MapCameraProvider>().centerOnCurrentPosition();
+          break;
+
+        // --- UI & TEMĂ (ThemeProvider) ---
+        case 'toggle_theme':
+          context.read<ThemeProvider>().toggleTheme();
+          break;
+        case 'change_language':
+          if (params != null && params['locale'] != null) {
+            context.read<LocaleProvider>().setLocale(Locale(params['locale']));
+          }
+          break;
+
+        // --- SOCIAL & GAMING ---
+        case 'place_bubble':
+          // Deschide direct sheet-ul de creare cerere cartier
+          // Notă: Necesită coordonatele curente pe care le luăm din MapCameraProvider
+          final pos = context.read<MapCameraProvider>().currentPosition;
+          if (pos != null) {
+            NeighborhoodRequestsManager.showCreateRequestSheet(
+              context, 
+              pos.latitude, 
+              pos.longitude,
+              initialMessage: params?['message'],
+            );
+          }
+          break;
+
+        // --- AUTH ---
+        case 'logout':
+          FirebaseAuth.instance.signOut();
+          break;
+
+        // --- GENERIC DISPATCHER (Playwright/DOM style) ---
+        default:
+          Logger.info('Action $action not in static list, checking VoiceUIAutomationRegistry...', tag: 'MAIN_VOICE');
+          final success = VoiceUIAutomationRegistry().executeAction(action, params: params);
+          if (!success) {
+            Logger.warning('Action $action could not be executed by any system.', tag: 'MAIN_VOICE');
+          }
+          break;
+      }
+    } catch (e) {
+      Logger.error('Failed to execute UI action $action: $e', tag: 'MAIN_VOICE', error: e);
+    }
   }
 }
 

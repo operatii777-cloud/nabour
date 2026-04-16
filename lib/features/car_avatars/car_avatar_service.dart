@@ -44,6 +44,8 @@ class CarAvatarService {
     CarAvatar(id: 'yacht', name: 'Iaht Diamond', assetPath: 'assets/images/avatars/yacht.png', price: 2500, category: CarCategory.transport),
     CarAvatar(id: 'premium_taxi', name: 'Premium Taxi', assetPath: 'assets/images/avatars/premium_taxi.png', price: 1250, category: CarCategory.transport),
     CarAvatar(id: 'salupa', name: 'Salupa Rapida', assetPath: 'assets/images/avatars/salupa.png', price: 1200, category: CarCategory.transport),
+    // Fără 3D pe hartă: păstrăm numai fallback 2D stabil.
+    CarAvatar(id: 'sentinel_suv', name: 'Sentinel SUV', assetPath: 'assets/images/avatars/sentinel_suv.png', price: 2800, category: CarCategory.transport),
     // --- Animals ---
     CarAvatar(id: 'horse', name: 'Cal de Curse', assetPath: 'assets/images/avatars/horse.png', price: 1500, category: CarCategory.animals),
     CarAvatar(id: 'rhino', name: 'Rinocer Blindat', assetPath: 'assets/images/avatars/rhino.png', price: 2000, category: CarCategory.animals),
@@ -51,11 +53,11 @@ class CarAvatarService {
     // --- Characters (inclusiv ROBO — doar mod pasager pe hartă) ---
     /// Gratuit pentru orice utilizator ca pasager (inclus în [getPurchasedAvatarIds]).
     CarAvatar(id: 'robo', name: 'ROBO', assetPath: 'assets/images/avatars/ROBO.png', price: 0, category: CarCategory.characters),
-    CarAvatar(id: 'robo_3d', name: 'ROBO (Unitatea 3D)', assetPath: 'assets/images/avatars/ROBO.png', price: 0, category: CarCategory.characters, is3D: true, modelPath: 'assets/models/robo_3d.glb'),
-    CarAvatar(id: 'inspire_v4', name: 'Cyber Predator', assetPath: 'assets/images/avatars/rhino.png', price: 2500, category: CarCategory.transport, is3D: true, modelPath: 'assets/models/inspiration_4.glb'),
-    CarAvatar(id: 'inspire_v8', name: 'Neon Vanguard', assetPath: 'assets/images/avatars/ufo.png', price: 3000, category: CarCategory.transport, is3D: true, modelPath: 'assets/models/inspiration_8.glb'),
-    CarAvatar(id: 'zen_guardian', name: 'Zen Guardian', assetPath: 'assets/images/avatars/mythic.png', price: 3500, category: CarCategory.characters, is3D: true, modelPath: 'assets/models/f6718961-9b37-4e73-ab59-bed532d37754.glb'),
-    CarAvatar(id: 'cyber_sentinel', name: 'Cyber Sentinel', assetPath: 'assets/images/avatars/ufo.png', price: 2800, category: CarCategory.transport, is3D: true, modelPath: 'assets/models/74e46dd0-7d50-41d7-b856-c21c18ea538b.glb'),
+    CarAvatar(id: 'robo_3d', name: 'ROBO (Unitatea 3D)', assetPath: 'assets/images/avatars/ROBO.png', price: 0, category: CarCategory.characters),
+    CarAvatar(id: 'inspire_v4', name: 'Cyber Predator', assetPath: 'assets/images/avatars/rhino.png', price: 2500, category: CarCategory.animals),
+    CarAvatar(id: 'protector', name: 'Protector', assetPath: 'assets/images/avatars/protector.png', price: 3000, category: CarCategory.characters),
+    CarAvatar(id: 'zen_guardian', name: 'Zen Guardian', assetPath: 'assets/images/avatars/mythic.png', price: 3500, category: CarCategory.characters),
+    CarAvatar(id: 'cyber_sentinel', name: 'Cyber Sentinel', assetPath: 'assets/images/avatars/ufo.png', price: 2800, category: CarCategory.transport),
     CarAvatar(id: 'unicorn', name: 'Unicorn Magic', assetPath: 'assets/images/avatars/unicorn.png', price: 5000, category: CarCategory.characters),
     CarAvatar(id: 'mythic', name: 'Erou Mitic', assetPath: 'assets/images/avatars/mythic.png', price: 3500, category: CarCategory.characters),
   ];
@@ -86,6 +88,10 @@ class CarAvatarService {
   static const String kFieldPassenger = 'selectedCarAvatarIdPassenger';
   static const String kFieldLegacy = 'selectedCarAvatarId';
 
+  static String _defaultIdForSlot(CarAvatarMapSlot slot) {
+    return slot == CarAvatarMapSlot.passenger ? 'robo' : 'default_car';
+  }
+
   /// Rezolvă ID-ul pentru un slot; dacă lipsește câmpul nou, folosește [kFieldLegacy].
   static String resolveSlotId(Map<String, dynamic>? data, CarAvatarMapSlot slot) {
     final d = data ?? {};
@@ -94,27 +100,27 @@ class CarAvatarService {
       case CarAvatarMapSlot.driver:
         final v = (d[kFieldDriver] as String?)?.trim();
         if (v != null && v.isNotEmpty) return v;
-        return (legacy != null && legacy.isNotEmpty) ? legacy : 'default_car';
+        return (legacy != null && legacy.isNotEmpty) ? legacy : _defaultIdForSlot(slot);
       case CarAvatarMapSlot.passenger:
         final v = (d[kFieldPassenger] as String?)?.trim();
         if (v != null && v.isNotEmpty) return v;
-        return (legacy != null && legacy.isNotEmpty) ? legacy : 'default_car';
+        return (legacy != null && legacy.isNotEmpty) ? legacy : _defaultIdForSlot(slot);
     }
   }
 
   Future<String> getSelectedAvatarIdForSlot(CarAvatarMapSlot slot) async {
     final uid = _auth.currentUser?.uid;
-    if (uid == null) return 'default_car';
+    if (uid == null) return _defaultIdForSlot(slot);
     final doc = await _db.collection('users').doc(uid).get();
     var id = resolveSlotId(doc.data(), slot);
     final av = getAvatarById(id);
     if (slot == CarAvatarMapSlot.driver && !av.allowsDriverMapSlot) {
-      id = 'default_car';
+      id = _defaultIdForSlot(slot);
     }
     if (slot == CarAvatarMapSlot.passenger && !av.allowsPassengerMapSlot) {
-      id = 'default_car';
+      id = _defaultIdForSlot(slot);
     }
-    if (id == 'default_car') return id;
+    if (id == _defaultIdForSlot(slot)) return id;
 
     // Profilul poate indica un skin premium fără document în `purchased_avatars`
     // (alt dispozitiv ne-sincronizat, date vechi, sau cont fără tokeni).
@@ -122,10 +128,10 @@ class CarAvatarService {
     final purchased = await getPurchasedAvatarIds();
     if (!purchased.contains(id)) {
       Logger.info(
-        'Slot $slot: în profil este "$id", dar nu apare în garajul achiziționat — berlina implicită pe hartă.',
+        'Slot $slot: în profil este "$id", dar nu apare în garajul achiziționat — fallback implicit pe slot.',
         tag: 'AVATAR',
       );
-      return 'default_car';
+      return _defaultIdForSlot(slot);
     }
     return id;
   }

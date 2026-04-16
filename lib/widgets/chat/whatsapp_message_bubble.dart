@@ -63,10 +63,14 @@ class WhatsAppMessageBubble extends StatelessWidget {
       height: size,
       alignment: Alignment.center,
       decoration: BoxDecoration(
-        color: Colors.grey.shade200,
+        color: const Color(0xFF7C3AED).withValues(alpha: 0.12),
         shape: BoxShape.circle,
+        border: Border.all(
+          color: const Color(0xFF7C3AED).withValues(alpha: 0.30),
+          width: 1.5,
+        ),
       ),
-      child: Text(em, style: const TextStyle(fontSize: 18)),
+      child: Text(em, style: TextStyle(fontSize: size * 0.54)),
     );
   }
 

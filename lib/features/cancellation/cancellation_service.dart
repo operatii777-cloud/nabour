@@ -23,20 +23,16 @@ class CancellationService {
     try {
       final batch = _db.batch();
 
-      // 1. Actualizează documentul cursei
-      batch.update(_db.collection('rides').doc(rideId), {
-        'status': 'cancelled_by_driver',
-        'cancellationReason': reason.name,
-        'cancelledAt': FieldValue.serverTimestamp(),
-      });
+      // Cursa activă e în `ride_requests/{rideId}`; nu scriem în `rides/` (alt model + reguli).
+      // Refuzul pe documentul cursei face FirestoreService.declineRide (declinedBy).
 
-      // 2. Incrementează contorul de anulări al șoferului
+      // 1. Incrementează contorul de anulări al șoferului
       batch.update(_db.collection('users').doc(_uid), {
         'cancellationCount': FieldValue.increment(1),
         'lastCancellationAt': FieldValue.serverTimestamp(),
       });
 
-      // 3. Log în subcollecție pentru audit
+      // 2. Log în subcollecție pentru audit (reguli: users/{uid}/cancellations)
       batch.set(
         _db
             .collection('users')
@@ -48,6 +44,7 @@ class CancellationService {
           'reason': reason.name,
           'timestamp': FieldValue.serverTimestamp(),
         },
+        SetOptions(merge: true),
       );
 
       await batch.commit();

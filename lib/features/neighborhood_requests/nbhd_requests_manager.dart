@@ -396,7 +396,9 @@ class NeighborhoodRequestsManager {
     if (_lastTransientPin != null) {
       try {
         await _transientPinManager!.delete(_lastTransientPin!);
-      } catch (_) {}
+      } catch (e) {
+        Logger.debug('NbhdRequests: transient pin delete failed: $e', tag: 'NeighborhoodRequests');
+      }
       _lastTransientPin = null;
     }
 
@@ -446,7 +448,9 @@ class NeighborhoodRequestsManager {
           if (_lastTransientPin?.id == toExpire.id) {
             _lastTransientPin = null;
           }
-        } catch (_) {}
+        } catch (e) {
+          Logger.debug('NbhdRequests: pin expiry delete failed: $e', tag: 'NeighborhoodRequests');
+        }
       });
     } catch (e) {
       Logger.warning('Transient map pin failed: $e',
@@ -899,7 +903,9 @@ class NeighborhoodRequestsManager {
                                 if (dn != null && dn.isNotEmpty) {
                                   resolvedName = dn;
                                 }
-                              } catch (_) {}
+                              } catch (e) {
+                                Logger.debug('NbhdRequests: displayName resolve failed: $e', tag: 'NeighborhoodRequests');
+                              }
                             }
                             if (resolvedName.isEmpty) {
                               resolvedName = 'Utilizator';

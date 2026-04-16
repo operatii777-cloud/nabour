@@ -19,6 +19,8 @@ class CommunityMysteryBoxMapManager {
   final BuildContext context;
   final ({double lat, double lng})? Function()? getUserLatLng;
 
+  static const double _kBaseIconSize = 0.735;
+
   PointAnnotationManager? _mgr;
   final CommunityMysteryBoxService _svc = CommunityMysteryBoxService.instance;
 
@@ -28,6 +30,20 @@ class CommunityMysteryBoxMapManager {
   bool _ready = false;
   Uint8List? _icon;
   DateTime? _lastFetch;
+
+  /// Aplică scalare bazată pe zoom — aceeași logică ca avatarele vecinilor.
+  Future<void> applyZoomScale(double factor) async {
+    final mgr = _mgr;
+    if (mgr == null) return;
+    final targetSize = _kBaseIconSize * factor;
+    for (final ann in _ann.values) {
+      if ((ann.iconSize ?? _kBaseIconSize) == targetSize) continue;
+      ann.iconSize = targetSize;
+      try {
+        await mgr.update(ann);
+      } catch (_) {}
+    }
+  }
 
   CommunityMysteryBoxMapManager({
     required this.mapboxMap,
@@ -83,7 +99,9 @@ class CommunityMysteryBoxMapManager {
       if (a != null) {
         try {
           await m.delete(a);
-        } catch (_) {}
+        } catch (e) {
+          Logger.debug('CommMysteryMapManager: annotation delete failed: $e', tag: 'MYSTERY_BOX');
+        }
       }
       _pins.remove(id);
     }
@@ -100,7 +118,7 @@ class CommunityMysteryBoxMapManager {
       final opts = PointAnnotationOptions(
         geometry: MapboxUtils.createPoint(pin.latitude, pin.longitude),
         image: _icon,
-        iconSize: 1.05,
+        iconSize: 0.735,
         symbolSortKey: 1e6 - 1,
         textField: label.length > 22 ? '${label.substring(0, 20)}…' : label,
         textSize: 12,
@@ -118,7 +136,9 @@ class CommunityMysteryBoxMapManager {
     try {
       final p = await geolocator.Geolocator.getLastKnownPosition();
       if (p != null) return (lat: p.latitude, lng: p.longitude);
-    } catch (_) {}
+    } catch (e) {
+      Logger.debug('CommMysteryMapManager._userLl getLastKnownPosition failed: $e', tag: 'MYSTERY_BOX');
+    }
     final perm = await geolocator.Geolocator.checkPermission();
     if (perm == geolocator.LocationPermission.denied) {
       await geolocator.Geolocator.requestPermission();

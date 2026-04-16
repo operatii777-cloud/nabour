@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:nabour_app/screens/auth_screen.dart';
 import 'package:nabour_app/screens/map_with_warmup_screen.dart';
 import 'package:nabour_app/theme/app_text_styles.dart';
+import 'package:nabour_app/utils/logger.dart';
 
 class OnboardingWizardScreen extends StatefulWidget {
   const OnboardingWizardScreen({super.key});
@@ -86,7 +87,9 @@ class _OnboardingWizardScreenState extends State<OnboardingWizardScreen>
     try {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setBool('hasSeenOnboarding', true);
-    } catch (_) {}
+    } catch (e) {
+      Logger.debug('_markSeenAndGo prefs write failed: $e', tag: 'ONBOARDING');
+    }
     if (!mounted) return;
     Navigator.of(context).pushReplacement(
       MaterialPageRoute(builder: (_) => destination),

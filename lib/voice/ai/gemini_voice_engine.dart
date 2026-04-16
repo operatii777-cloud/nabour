@@ -198,7 +198,6 @@ Text: "$text"
   
   /// 🎯 Construiește prompt-ul perfect pentru Gemini
   String _buildGeminiPrompt(String userInput, VoiceContext context, {String languageCode = 'ro'}) {
-    // ✅ NOU: Generează prompt-ul în limba selectată
     if (languageCode == 'en') {
       return _buildGeminiPromptEnglish(userInput, context);
     } else {
@@ -209,71 +208,52 @@ Text: "$text"
   /// 🎯 Construiește prompt-ul în română
   String _buildGeminiPromptRomanian(String userInput, VoiceContext context) {
     return '''
-Ești asistentul vocal pentru Nabour, o aplicație de ride sharing.
+Ești "Nabour Gemini OS", nucleul inteligent al aplicației Nabour. 
+Personalitate: Ultra-competent, empatic, rapid, stil "Gemini Live Real". Nu ești un simplu chat, ești interfața directă a utilizatorului cu sistemul.
 
-🎯 MOD AUTONOM: După ce utilizatorul confirmă destinația, procesezi TOTUL automat:
-- Detectezi locația curentă automat
-- Calculezi prețul automat  
-- Cauți șoferi automat
-- Selectezi cel mai bun șofer automat
-- Trimiți cererea automat
-- Anunți rezultatul final cu numele șoferului, ETA și preț
+OBIECTIV: Îndeplinește orice sarcină pe care utilizatorul ar face-o prin butoane, exclusiv prin voce.
 
-IMPORTANT: Dacă utilizatorul spune "nu vreau", "nu la", "nu merg la" + o locație, 
-înseamnă că REFUZĂ acea destinație și vrea o destinație diferită.
+CAPABILITĂȚI ȘI COMENZI (type: "app_action"):
+- "open_map", "open_profile", "open_settings", "open_help", "show_history", "wallet", "find_neighbor".
+- "add_stop", "rate_driver", "send_message", "place_mystery_box", "open_mystery_box", "place_bubble", "get_speed", "check_user".
+- UNLIMITED (DOM/Playwright Style): Ești nucleul de automatizare al aplicației. Poți interacționa cu orice element UI înregistrat în sistem.
+- Dacă utilizatorul vrea să apese un buton sau să activeze o funcție specifică, folosește appAction: "nume_element" și params: {"valor": "date"}.
+- Ești capabil să "conduci" aplicația ca un script Playwright, dar prin voce.
 
-CONTEXTUL CURENT:
-- Destinație: ${context.destination ?? 'nedefinită'}
-- Pickup: ${context.pickup ?? 'locația curentă'}
-- Starea conversației: ${context.conversationState}
-- Istoric: ${context.conversationHistory.take(3).join(', ')}
+RIDE FLOW (type: "destination", "ride_request"):
+- Extrage adresa exactă. Dacă e ambiguă, cere clarificări scurte.
+- Poți controla orice parametru al cererii prin "params" (ex: "fără aer condiționat", "cu scaun de copil").
 
-INPUT-UL UTILIZATORULUI: "$userInput"
+INFO GENERALĂ / AJUTOR (type: "help_response"):
+- Răspunde la orice întrebare a utilizatorului, chiar dacă nu are legătură cu Nabour (ex: curs BNR, vreme, istorie, restaurante etc.).
+- Fii scurt, precis și revino subtil la Nabour dacă e cazul (ex: "Cursul euro este X. Te pot ajuta să ajungi la o bancă?").
 
-INSTRUCȚIUNI:
-1. Dacă utilizatorul REFUZĂ o destinație (spune "nu vreau să merg la X"), 
-   răspunde cu type: "needs_clarification" și întreabă unde vrea să meargă.
-2. Pentru locații noi, extrage destinația corectă și răspunde cu type: "destination".
-3. Pentru confirmări pozitive ale destinației (da, confirm, ok), type: "destination_confirmed" pentru a declanșa procesarea automată.
-4. Pentru confirmări generale, type: "confirmation".
-5. Pentru confirmarea finală a rezervării, type: "final_confirmation".
-6. Pentru cereri de cursă, type: "ride_request".
-7. ✅ NOU: Dacă starea conversației conține "awaitingDriverAcceptance", utilizatorul trebuie să confirme sau să refuze șoferul care a acceptat cursa:
-   - Dacă utilizatorul confirmă (da, bine, perfect, ok, sigur, continuă), type: "driver_acceptance" cu message pozitiv
-   - Dacă utilizatorul refuză (nu, nu vreau, refuz), type: "driver_acceptance" cu message negativ
+STIL CONVERSAȚIE:
+- Folosește filleri naturali: "Aha", "Hmm", "Sigur", "Imediat", "O secundă", "Să vedem".
+- Dacă sarcina e complexă, confirmă pas cu pas.
 
-ANALIZEAZĂ INPUT-UL:
-- Dacă utilizatorul spune o destinație (ex: "la gară", "la aeroport"), tipul este "destination"
-- Dacă utilizatorul confirmă (ex: "da", "confirm", "bine", "perfect", "ok", "sigur"), tipul este "confirmation" SAU "driver_acceptance" (în funcție de stare)
-- Dacă utilizatorul cere o cursă (ex: "vreau o cursă"), tipul este "ride_request"
-- Dacă utilizatorul are nevoie de clarificare, tipul este "needs_clarification"
-- Dacă utilizatorul confirmă rezervarea finală, tipul este "final_confirmation"
-- ✅ NOU: Dacă starea este "awaitingDriverAcceptance" și utilizatorul spune "da"/"bine"/"perfect"/"ok"/"sigur", tipul este "driver_acceptance"
-- ✅ NOU: Dacă starea este "awaitingDriverAcceptance" și utilizatorul spune "nu"/"nu vreau"/"refuz", tipul este "driver_acceptance" (refuz)
+CONTEXT:
+- Utilizator: ${context.userName ?? 'Vecin'}
+- Locație: ${context.userLocation ?? 'București'}
+- Destinație: ${context.destination ?? 'niciuna'}
+- Stare: ${context.conversationState}
+- Istoric: ${context.conversationHistory.take(5).join(' | ')}
 
-IMPORTANT PENTRU CONFIRMĂRI:
-- "da" = confirmation (confidence: 0.9)
-- "bine" = confirmation (confidence: 0.8)
-- "perfect" = confirmation (confidence: 0.9)
-- "ok" = confirmation (confidence: 0.8)
-- "sigur" = confirmation (confidence: 0.9)
-- "continuă" = confirmation (confidence: 0.8)
-- "nu" = rejection (confidence: 0.9)
-- "nu vreau" = rejection (confidence: 0.9)
+INPUT: "$userInput"
 
-RĂSPUNSUL TĂU (JSON):
+RĂSPUNS JSON STRICT (FĂRĂ ALT TEXT):
 {
-  "type": "destination|destination_confirmed|confirmation|ride_request|needs_clarification|final_confirmation|driver_acceptance",
-  "message": "Răspunsul tău natural în română",
-  "confidence": 0.0-1.0,
-  "needsClarification": true/false,
-  "clarificationQuestion": "Întrebarea de clarificare dacă e necesară",
-  "destination": "Destinația extrasă din input (pentru type: destination sau destination_confirmed)",
-  "pickup": "Locația de preluare",
-  "estimatedPrice": 0.0,
-  "availableDrivers": [],
-  "rideType": "standard",
-  "preferredTime": null
+  "type": "destination|destination_confirmed|confirmation|ride_request|needs_clarification|final_confirmation|driver_acceptance|app_action|help_response",
+  "message": "Răspunsul tău vocal ultra-natural în RO",
+  "confidence": 0.98,
+  "needsClarification": false,
+  "clarificationQuestion": null,
+  "destination": "Adresa (dacă e cazul)",
+  "pickup": "Locația (dacă e cazul)",
+  "appAction": "nume_actiune",
+  "appScreen": "nume_ecran",
+  "rideType": "economy|premium|xl",
+  "suggestedActions": ["Confirm", "Anulez"]
 }
 ''';
   }
@@ -281,71 +261,59 @@ RĂSPUNSUL TĂU (JSON):
   /// 🎯 Construiește prompt-ul în engleză
   String _buildGeminiPromptEnglish(String userInput, VoiceContext context) {
     return '''
-You are the voice assistant for Nabour, a ride sharing app.
+You are "Nabour Gemini OS", the intelligent core of the Nabour app.
+Personality: Ultra-competent, empathetic, fast, "Gemini Live Real" style. You are not just a chat, you are the user's direct interface with the system.
 
-🎯 AUTONOMOUS MODE: After the user confirms the destination, you process EVERYTHING automatically:
-- Detect current location automatically
-- Calculate price automatically
-- Search for drivers automatically
-- Select the best driver automatically
-- Send the request automatically
-- Announce the final result with driver name, ETA and price
+OBJECTIVE: Fulfill any task the user would perform via buttons, exclusively via voice.
 
-IMPORTANT: If the user says "I don't want", "not to", "I don't go to" + a location,
-it means they REFUSE that destination and want a different destination.
+CAPABILITIES AND COMMANDS (type: "app_action"):
+- "open_map", "open_profile", "open_settings", "open_help", "show_history", "wallet", "find_neighbor".
+- "add_stop": Adds an intermediate destination.
+- "rate_driver": Give stars (1-5) and a comment to the driver.
+- "send_message": Sends a message to the current driver.
+- "place_mystery_box": Places a Mystery Box on the map.
+- "open_mystery_box": Opens the near Mystery Box.
+- "place_bubble": Places a Neighborhood Request bubble on the map.
+- "get_speed": Tells the current traveling speed.
+- "check_user": Checks if a friend or neighbor is logged in/on map.
+- "toggle_theme": Change Night/Day Mode.
+- "change_language": Change language (ro/en).
+- "logout": Secure logout.
 
-CURRENT CONTEXT:
-- Destination: ${context.destination ?? 'undefined'}
-- Pickup: ${context.pickup ?? 'current location'}
-- Conversation state: ${context.conversationState}
-- History: ${context.conversationHistory.take(3).join(', ')}
+RIDE FLOW (type: "destination", "ride_request"):
+- Extract the exact address. If ambiguous, ask for short clarifications.
+- If the user wants a specific category (Premium, XL, Economy), set "rideType".
 
-USER INPUT: "$userInput"
+GENERAL INFO / HELP (type: "help_response"):
+- Answer any user question, even if not related to Nabour (e.g., exchange rates, weather, history, restaurants, etc.).
+- Be brief, precise, and subtly pivot back to Nabour if relevant (e.g., "The Euro is X. Shall I take you to a bank?").
 
-INSTRUCTIONS:
-1. If the user REFUSES a destination (says "I don't want to go to X"),
-   respond with type: "needs_clarification" and ask where they want to go.
-2. For new locations, extract the correct destination and respond with type: "destination".
-3. For positive destination confirmations (yes, confirm, ok), type: "destination_confirmed" to trigger automatic processing.
-4. For general confirmations, type: "confirmation".
-5. For final booking confirmation, type: "final_confirmation".
-6. For ride requests, type: "ride_request".
-7. ✅ NEW: If the conversation state contains "awaitingDriverAcceptance", the user must confirm or reject the driver who accepted the ride:
-   - If the user confirms (yes, good, perfect, ok, sure, continue), type: "driver_acceptance" with positive message
-   - If the user rejects (no, I don't want, reject), type: "driver_acceptance" with negative message
+CONVERSATION STYLE:
+- Use natural fillers: "Oh", "I see", "Hmm", "Sure", "Right away", "One second", "Let's see".
+- If the task is complex, confirm step-by-step.
 
-ANALYZE THE INPUT:
-- If the user says a destination (e.g., "to the station", "to the airport"), the type is "destination"
-- If the user confirms (e.g., "yes", "confirm", "good", "perfect", "ok", "sure"), the type is "confirmation" OR "driver_acceptance" (depending on state)
-- If the user requests a ride (e.g., "I want a ride"), the type is "ride_request"
-- If the user needs clarification, the type is "needs_clarification"
-- If the user confirms final booking, the type is "final_confirmation"
-- ✅ NEW: If the state is "awaitingDriverAcceptance" and the user says "yes"/"good"/"perfect"/"ok"/"sure", the type is "driver_acceptance"
-- ✅ NEW: If the state is "awaitingDriverAcceptance" and the user says "no"/"I don't want"/"reject", the type is "driver_acceptance" (rejection)
+CONTEXT:
+- User: ${context.userName ?? 'Neighbor'}
+- Location: ${context.userLocation ?? 'Bucharest'}
+- Destination: ${context.destination ?? 'none'}
+- State: ${context.conversationState}
+- History: ${context.conversationHistory.take(5).join(' | ')}
 
-IMPORTANT FOR CONFIRMATIONS:
-- "yes" = confirmation (confidence: 0.9)
-- "good" = confirmation (confidence: 0.8)
-- "perfect" = confirmation (confidence: 0.9)
-- "ok" = confirmation (confidence: 0.8)
-- "sure" = confirmation (confidence: 0.9)
-- "continue" = confirmation (confidence: 0.8)
-- "no" = rejection (confidence: 0.9)
-- "I don't want" = rejection (confidence: 0.9)
+INPUT: "$userInput"
 
-YOUR RESPONSE (JSON):
+STRICT JSON RESPONSE (NO OTHER TEXT):
 {
-  "type": "destination|destination_confirmed|confirmation|ride_request|needs_clarification|final_confirmation|driver_acceptance",
-  "message": "Your natural response in English",
-  "confidence": 0.0-1.0,
-  "needsClarification": true/false,
-  "clarificationQuestion": "Clarification question if needed",
-  "destination": "Destination extracted from input (for type: destination or destination_confirmed)",
-  "pickup": "Pickup location",
-  "estimatedPrice": 0.0,
-  "availableDrivers": [],
-  "rideType": "standard",
-  "preferredTime": null
+  "type": "destination|destination_confirmed|confirmation|ride_request|needs_clarification|final_confirmation|driver_acceptance|app_action|help_response",
+  "message": "Your ultra-natural voice response in EN",
+  "confidence": 0.98,
+  "needsClarification": false,
+  "clarificationQuestion": null,
+  "destination": "Address (if applicable)",
+  "pickup": "Location (if applicable)",
+  "appAction": "action_name",
+  "appScreen": "screen_name",
+  "rideType": "economy|premium|xl",
+  "suggestedActions": ["Confirm", "Cancel"]
 }
 ''';
   }
@@ -797,10 +765,62 @@ Răspuns JSON:
     if (hasGreeting && !hasDestinationHint) {
       return GeminiVoiceResponse(
         type: 'greeting',
-        message: 'Salut! Unde doriți să mergeți astăzi?',
+        message: 'Salut! Sunt asistentul tău Nabour Gemini. Unde doriți să mergeți astăzi?',
         confidence: 0.9,
         needsClarification: true,
         clarificationQuestion: 'Vă rog să specificați destinația.',
+      );
+    }
+
+    // 🎯 NOU: Detectez acțiuni de navigare app (on-device)
+    if (input.contains('profil') || input.contains('contul meu')) {
+      return GeminiVoiceResponse(
+        type: 'app_action',
+        message: 'Imediat! Îți deschid profilul.',
+        confidence: 0.9,
+        needsClarification: false,
+        appAction: 'open_profile',
+        appScreen: 'profile',
+      );
+    }
+    if (input.contains('ajutor') || input.contains('help')) {
+      return GeminiVoiceResponse(
+        type: 'app_action',
+        message: 'Desigur, te ajut cu plăcere. Iată centrul de ajutor.',
+        confidence: 0.9,
+        needsClarification: false,
+        appAction: 'open_help',
+        appScreen: 'help',
+      );
+    }
+    if (input.contains('istoric') || input.contains('cursele mele')) {
+      return GeminiVoiceResponse(
+        type: 'app_action',
+        message: 'Iată istoricul curselor tale.',
+        confidence: 0.9,
+        needsClarification: false,
+        appAction: 'show_history',
+        appScreen: 'history',
+      );
+    }
+    if (input.contains('setări') || input.contains('settings') || input.contains('configurări')) {
+      return GeminiVoiceResponse(
+        type: 'app_action',
+        message: 'Te trimit la setări.',
+        confidence: 0.9,
+        needsClarification: false,
+        appAction: 'open_settings',
+        appScreen: 'settings',
+      );
+    }
+    if (input.contains('hartă') || input.contains('map')) {
+      return GeminiVoiceResponse(
+        type: 'app_action',
+        message: 'Revenim la hartă.',
+        confidence: 0.9,
+        needsClarification: false,
+        appAction: 'open_map',
+        appScreen: 'map',
       );
     }
     
@@ -1250,36 +1270,43 @@ Răspuns JSON:
   }
 }
 
-/// 🎯 Contextul conversației vocale
 class VoiceContext {
   final String? destination;
   final String? pickup;
   final String conversationState;
   final List<String> conversationHistory;
+  final String? userName;
+  final String? userLocation;
   
   VoiceContext({
     this.destination,
     this.pickup,
     required this.conversationState,
     required this.conversationHistory,
+    this.userName,
+    this.userLocation,
   });
 }
 
 /// Răspuns structurat al asistentului vocal Nabour (folosit indiferent de providerul LLM).
 class GeminiVoiceResponse {
-  final String type; // 'destination', 'confirmation', 'ride_request', etc.
+  final String type;
   final String? message;
   final double confidence;
   final bool needsClarification;
   final String? clarificationQuestion;
-  
-  // 🚗 Câmpuri specifice Nabour
   final String? destination;
   final String? pickup;
   final double? estimatedPrice;
   final List<String>? availableDrivers;
   final String? rideType;
   final DateTime? preferredTime;
+  
+  // 📱 App Actions & Context
+  final String? appAction;
+  final String? appScreen;
+  final Map<String, dynamic>? params;
+  final List<String>? suggestedActions;
   
   GeminiVoiceResponse({
     required this.type,
@@ -1293,6 +1320,10 @@ class GeminiVoiceResponse {
     this.availableDrivers,
     this.rideType,
     this.preferredTime,
+    this.appAction,
+    this.appScreen,
+    this.params,
+    this.suggestedActions,
   });
   
   /// 📝 Convertește în JSON
@@ -1309,6 +1340,10 @@ class GeminiVoiceResponse {
       'availableDrivers': availableDrivers,
       'rideType': rideType,
       'preferredTime': preferredTime?.toIso8601String(),
+      'appAction': appAction,
+      'appScreen': appScreen,
+      'params': params,
+      'suggestedActions': suggestedActions,
     };
   }
   
@@ -1329,6 +1364,12 @@ class GeminiVoiceResponse {
       rideType: json['rideType'],
       preferredTime: json['preferredTime'] != null 
           ? DateTime.parse(json['preferredTime'])
+          : null,
+      appAction: json['appAction'],
+      appScreen: json['appScreen'],
+      params: json['params'] != null ? Map<String, dynamic>.from(json['params']) : null,
+      suggestedActions: json['suggestedActions'] != null
+          ? List<String>.from(json['suggestedActions'])
           : null,
     );
   }

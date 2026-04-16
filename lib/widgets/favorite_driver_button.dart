@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:nabour_app/services/firestore_service.dart';
 import 'package:nabour_app/utils/logger.dart';
 

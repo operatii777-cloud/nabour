@@ -63,6 +63,8 @@ class ContextEngineService {
   /// Apelat din callback-ul GPS deja existent al MapScreen.
   void feedSpeed(double speedMps) {
     if (!_running) return;
+    // Android returnează -1.0 când GPS-ul nu are fix de viteză — ignorăm.
+    if (speedMps < 0) return;
     _updateStateFromSpeed(speedMps);
   }
 

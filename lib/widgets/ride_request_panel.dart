@@ -667,7 +667,9 @@ class RideRequestPanelState extends State<RideRequestPanel> {
 
     setState(() { _isLoading = false; });
 
-    Navigator.of(context).pushReplacement(
+    // push (nu pushReplacement): altfel MapScreen dispare din stack și la pop după
+    // „accepted” rămâne ecran negru — SearchingForDriverScreen are fundal negru.
+    await Navigator.of(context).push<void>(
       MaterialPageRoute(builder: (context) => SearchingForDriverScreen(rideId: rideId)),
     );
   }

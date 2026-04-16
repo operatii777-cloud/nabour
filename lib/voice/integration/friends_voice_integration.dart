@@ -50,6 +50,10 @@ class FriendsRideVoiceIntegration extends ChangeNotifier {
   final bool _isListening = false;
   final bool _isSpeaking = false;
 
+  // Last error message surfaced via _handleError — read by MapVoiceOverlay to show snackbar.
+  String? _lastErrorMessage;
+  String? get lastErrorMessage => _lastErrorMessage;
+
   // 🎧 Continuous listening state
   bool _isContinuousListeningActive = false;
   Timer? _continuousListeningTimer;
@@ -175,7 +179,9 @@ class FriendsRideVoiceIntegration extends ChangeNotifier {
           _shouldNavigateToSearching = true;
           notifyListeners();
         }
-      } catch (_) {}
+      } catch (e) {
+        Logger.warning('FriendsVoiceIntegration: driver state listener error: $e', tag: 'VOICE');
+      }
     });
   }
 
@@ -217,14 +223,37 @@ class FriendsRideVoiceIntegration extends ChangeNotifier {
   /// 🎯 Gestionează erorile
   void _handleError(String error) {
     Logger.error('Error: $error', tag: 'FRIENDSRIDE_VOICE', error: error);
-    
+
+    _lastErrorMessage = _friendlyErrorMessage(error);
+
     _currentContext = _currentContext.copyWith(
       rideState: RideFlowState.error,
       processingState: VoiceProcessingState.error,
       lastInteractionTime: DateTime.now(),
     );
-    
+
     notifyListeners();
+  }
+
+  /// Maps technical error strings to short, user-friendly Romanian messages.
+  static String _friendlyErrorMessage(String raw) {
+    final lower = raw.toLowerCase();
+    if (lower.contains('quota') || lower.contains('rate') || lower.contains('429')) {
+      return 'Asistentul vocal este temporar indisponibil (limită depășită). Încearcă din nou în câteva minute.';
+    }
+    if (lower.contains('network') || lower.contains('socket') || lower.contains('connection')) {
+      return 'Conexiune întreruptă. Verifică internetul și încearcă din nou.';
+    }
+    if (lower.contains('timeout')) {
+      return 'Răspunsul a durat prea mult. Încearcă din nou.';
+    }
+    if (lower.contains('microphone') || lower.contains('permission') || lower.contains('mic')) {
+      return 'Nu am acces la microfon. Verifică permisiunile aplicației.';
+    }
+    if (lower.contains('not initialized') || lower.contains('not available')) {
+      return 'Asistentul vocal nu este inițializat. Repornește funcția vocală.';
+    }
+    return 'Asistentul vocal a întâmpinat o eroare. Încearcă din nou.';
   }
   
   /// 🎤 Începe interacțiunea vocală

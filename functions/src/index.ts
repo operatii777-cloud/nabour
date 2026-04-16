@@ -361,18 +361,15 @@ export const nabourPurchasePlanWithTokens = onCall(async (request) => {
   return { ok: true, plan };
 });
 
+const ADMIN_EMAILS_WALLET_CREDIT = new Set(["operatii.777@gmail.com"]);
+
 export const nabourWalletCredit = onCall(async (request) => {
   if (!request.auth?.uid) {
     throw new HttpsError("unauthenticated", "Autentificare necesară.");
   }
-  if (!isWalletCreditFromAppAllowed()) {
-    throw new HttpsError(
-      "failed-precondition",
-      "Creditarea din app este blocată până la integrarea plăților."
-    );
-  }
 
   const uid = request.auth.uid;
+  const callerEmail = (request.auth.token?.email ?? "").toLowerCase();
   const action = request.data?.action as string;
   const isTransferable = Boolean(request.data?.isTransferable);
   const db = admin.firestore();
@@ -382,6 +379,23 @@ export const nabourWalletCredit = onCall(async (request) => {
     if (!Number.isFinite(amount) || amount <= 0 || amount > 1000000) {
       throw new HttpsError("invalid-argument", "Sumă invalidă.");
     }
+
+    // Topup transferabil: exclusiv conturi admin
+    if (isTransferable && !ADMIN_EMAILS_WALLET_CREDIT.has(callerEmail)) {
+      throw new HttpsError(
+        "permission-denied",
+        "Doar administratorii pot alimenta portofelul transferabil."
+      );
+    }
+
+    // Topup personal (non-transferabil): necesită flag activ (plăți integrate)
+    if (!isTransferable && !isWalletCreditFromAppAllowed()) {
+      throw new HttpsError(
+        "failed-precondition",
+        "Creditarea din app este blocată până la integrarea plăților."
+      );
+    }
+
     const description = String(request.data?.description ?? "Cumpărare tokeni");
 
     if (isTransferable) {
@@ -874,6 +888,7 @@ export const nabourCommunityMysteryBoxPlace = onCall(async (request) => {
     messageRaw.length > 120 ? messageRaw.slice(0, 120) : messageRaw;
 
   const db = admin.firestore();
+  const geoCell = neighborhoodCellFromLatLng(lat, lng);
 
   const activeSnap = await db
     .collection("community_mystery_boxes")
@@ -927,12 +942,34 @@ export const nabourCommunityMysteryBoxPlace = onCall(async (request) => {
       message,
       latitude: lat,
       longitude: lng,
-      geoCell: neighborhoodCellFromLatLng(lat, lng),
+      geoCell,
       rewardTokens: COMMUNITY_MYSTERY_STAKE,
       status: "active",
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
     });
   });
+
+  // Event push low-cost: doar userii abonați la topic-ul celulei de cartier.
+  // Clientul folosește acest event pentru refresh local de hartă.
+  try {
+    await admin.messaging().send({
+      topic: `neighborhood_${geoCell}`,
+      data: {
+        type: "community_mystery_placed",
+        boxId: boxRef.id,
+        lat: String(lat),
+        lng: String(lng),
+        geoCell,
+      },
+      android: { priority: "high" },
+      apns: {
+        headers: { "apns-priority": "5" },
+        payload: { aps: { "content-available": 1 } },
+      },
+    });
+  } catch (e) {
+    console.error("[FCM] community_mystery_placed", e);
+  }
 
   return { ok: true, boxId: boxRef.id };
 });

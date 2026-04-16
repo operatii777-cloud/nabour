@@ -173,8 +173,10 @@ class _ActivityNotificationsScreenState
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final cs = theme.colorScheme;
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: cs.surface,
       body: SafeArea(
         child: Column(
           children: [
@@ -189,21 +191,24 @@ class _ActivityNotificationsScreenState
                       width: 40,
                       height: 40,
                       decoration: BoxDecoration(
-                        color: Colors.grey.shade100,
+                        color: cs.surfaceContainerHigh,
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(Icons.arrow_back_rounded, size: 22),
+                      child: Icon(
+                        Icons.arrow_back_rounded,
+                        size: 22,
+                        color: cs.onSurface,
+                      ),
                     ),
                   ),
                   Expanded(
                     child: Text(
                       'Activitate',
                       textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 20,
+                      style: theme.textTheme.titleLarge?.copyWith(
                         fontWeight: FontWeight.w900,
                         letterSpacing: -0.5,
-                        color: Colors.grey.shade900,
+                        color: cs.onSurface,
                       ),
                     ),
                   ),
@@ -214,8 +219,8 @@ class _ActivityNotificationsScreenState
                     icon: Icon(
                       Icons.delete_sweep_rounded,
                       color: _visibleEvents.isEmpty
-                          ? Colors.grey.shade400
-                          : Colors.grey.shade800,
+                          ? cs.onSurface.withValues(alpha: 0.38)
+                          : cs.onSurface,
                     ),
                   ),
                   GestureDetector(
@@ -224,11 +229,14 @@ class _ActivityNotificationsScreenState
                       width: 40,
                       height: 40,
                       decoration: BoxDecoration(
-                        color: Colors.grey.shade100,
+                        color: cs.surfaceContainerHigh,
                         shape: BoxShape.circle,
                       ),
-                      child: Icon(Icons.close_rounded,
-                          size: 22, color: Colors.grey.shade800),
+                      child: Icon(
+                        Icons.close_rounded,
+                        size: 22,
+                        color: cs.onSurface,
+                      ),
                     ),
                   ),
                 ],
@@ -254,9 +262,8 @@ class _ActivityNotificationsScreenState
                 padding: const EdgeInsets.all(32),
                 child: Text(
                   'Nicio activitate recentă',
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Colors.grey.shade400,
+                  style: theme.textTheme.bodyLarge?.copyWith(
+                    color: cs.onSurfaceVariant,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -276,6 +283,8 @@ class _ActivityNotificationsScreenState
   }
 
   Widget _buildEventCard(ActivityEvent event) {
+    final theme = Theme.of(context);
+    final cs = theme.colorScheme;
     final isUnread = !_readIds.contains(event.id);
     final avatar = _avatarFor(event.actorUid);
 
@@ -297,13 +306,13 @@ class _ActivityNotificationsScreenState
           padding: const EdgeInsets.all(14),
           decoration: BoxDecoration(
             color: isUnread
-                ? const Color(0xFFF0EBFF)
-                : Colors.grey.shade50,
+                ? cs.primaryContainer.withValues(alpha: 0.45)
+                : cs.surfaceContainerHigh,
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
               color: isUnread
-                  ? const Color(0xFF7C3AED).withValues(alpha: 0.2)
-                  : Colors.grey.shade200,
+                  ? cs.primary.withValues(alpha: 0.35)
+                  : cs.outlineVariant,
             ),
           ),
           child: Row(
@@ -314,8 +323,11 @@ class _ActivityNotificationsScreenState
                 height: 44,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: Colors.white,
-                  border: Border.all(color: Colors.grey.shade200, width: 1.5),
+                  color: cs.surface,
+                  border: Border.all(
+                    color: cs.outlineVariant,
+                    width: 1.5,
+                  ),
                 ),
                 child: Center(
                   child: Text(avatar, style: const TextStyle(fontSize: 24)),
@@ -330,17 +342,16 @@ class _ActivityNotificationsScreenState
                       children: [
                         Text(
                           event.actorName,
-                          style: const TextStyle(
+                          style: theme.textTheme.titleSmall?.copyWith(
                             fontWeight: FontWeight.w800,
-                            fontSize: 15,
+                            color: cs.onSurface,
                           ),
                         ),
                         const SizedBox(width: 6),
                         Text(
                           '• ${_timeAgo(event.ts)}',
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Colors.grey.shade500,
+                          style: theme.textTheme.labelSmall?.copyWith(
+                            color: cs.onSurfaceVariant,
                           ),
                         ),
                       ],
@@ -349,9 +360,8 @@ class _ActivityNotificationsScreenState
                       const SizedBox(height: 2),
                       Text(
                         'Creată: ${_absoluteDateTime(context, event.ts)}',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Colors.grey.shade600,
+                        style: theme.textTheme.labelSmall?.copyWith(
+                          color: cs.onSurfaceVariant,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
@@ -361,18 +371,16 @@ class _ActivityNotificationsScreenState
                       _isProximityHit(event.type)
                           ? 'Hit, ${event.actorName} ${event.text}'
                           : '${event.actorName} ${event.text}',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.grey.shade700,
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: cs.onSurface.withValues(alpha: 0.92),
                         height: 1.3,
                       ),
                     ),
                     const SizedBox(height: 6),
                     Text(
                       _ctaForType(event.type),
-                      style: const TextStyle(
-                        fontSize: 13,
-                        color: Color(0xFF7C3AED),
+                      style: theme.textTheme.labelLarge?.copyWith(
+                        color: cs.primary,
                         fontWeight: FontWeight.w700,
                       ),
                     ),
@@ -398,7 +406,7 @@ class _ActivityNotificationsScreenState
                 onPressed: () => _dismissEvent(event),
                 icon: Icon(
                   Icons.delete_outline_rounded,
-                  color: Colors.grey.shade600,
+                  color: cs.onSurfaceVariant,
                   size: 22,
                 ),
               ),

@@ -111,7 +111,9 @@ class _RideSummaryScreenState extends State<RideSummaryScreen> {
         try {
           final prefs = await SharedPreferences.getInstance();
           await prefs.setString('last_ride_date', DateTime.now().toIso8601String());
-        } catch (_) {}
+        } catch (e) {
+          Logger.debug('last_ride_date prefs write failed: $e', tag: 'RIDE_SUMMARY');
+        }
       }
 
       // ✅ FIX: Pornește timerul de închidere automată pentru pasageri

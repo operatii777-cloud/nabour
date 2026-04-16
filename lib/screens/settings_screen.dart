@@ -10,6 +10,7 @@ import 'package:nabour_app/widgets/app_drawer.dart'; // Pentru lowDataMode stati
 import 'package:nabour_app/services/community_mode_service.dart';
 import 'package:nabour_app/services/mhist_prefs_service.dart';
 import 'package:nabour_app/services/movement_history_service.dart';
+import 'package:nabour_app/utils/logger.dart';
 import 'package:nabour_app/services/nearby_social_notif_prefs.dart';
 import 'package:nabour_app/services/assistant_voice_ui_prefs.dart';
 import 'package:nabour_app/services/now_playing_service.dart';
@@ -19,10 +20,12 @@ import 'package:nabour_app/core/ui/app_feedback.dart';
 
 class SettingsScreen extends StatefulWidget {
   final VoidCallback? onManageExclusions;
+  final VoidCallback? onRefreshContacts;
 
   const SettingsScreen({
     super.key,
     this.onManageExclusions,
+    this.onRefreshContacts,
   });
 
   @override
@@ -83,7 +86,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
           _npTitle = np?['title'] as String? ?? '';
           _npArtist = np?['artist'] as String? ?? '';
         });
-      } catch (_) {}
+      } catch (e) {
+        Logger.warning('SettingsScreen._loadSocialProfileFields failed: $e', tag: 'SETTINGS');
+      }
     }
     if (mounted) setState(() {});
   }
@@ -209,6 +214,29 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ),
               trailing: const Icon(Icons.chevron_right_rounded),
               onTap: widget.onManageExclusions,
+            ),
+          // Sync contacte — ascuns în setări pentru a descuraja utilizarea frecventă
+          if (widget.onRefreshContacts != null)
+            ListTile(
+              leading: _buildIconContainer(Icons.sync_rounded, Colors.blueGrey),
+              title: Text(l10n.drawerMenuSyncContacts),
+              subtitle: Text(
+                l10n.drawerSyncContactsDialogBody,
+                overflow: TextOverflow.ellipsis,
+                maxLines: 2,
+              ),
+              trailing: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.info_outline_rounded, size: 18),
+                    onPressed: () => _showSyncInfo(context),
+                    visualDensity: VisualDensity.compact,
+                  ),
+                  const Icon(Icons.chevron_right_rounded),
+                ],
+              ),
+              onTap: () => widget.onRefreshContacts?.call(),
             ),
           ListTile(
             leading: _buildIconContainer(Icons.visibility_off_rounded, Colors.deepPurple),
@@ -390,6 +418,23 @@ class _SettingsScreenState extends State<SettingsScreen> {
       await NearbySocialNotificationsPrefs.instance.setRadiusM(picked);
       setState(() => _nearbyRadiusM = picked);
     }
+  }
+
+  void _showSyncInfo(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(l10n.drawerSyncContactsDialogTitle),
+        content: Text(l10n.drawerSyncContactsDialogBody),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(l10n.drawerSyncContactsDialogOk),
+          ),
+        ],
+      ),
+    );
   }
 
   Widget _buildSectionHeader(BuildContext context, String title) {

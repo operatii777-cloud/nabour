@@ -3,6 +3,7 @@ import 'dart:math' as math;
 
 import 'package:geolocator/geolocator.dart';
 import 'package:nabour_app/utils/deprecated_apis_fix.dart';
+import 'package:nabour_app/utils/logger.dart';
 
 /// Un pas de navigare derivat din Mapbox Directions (segment start → end pe hartă).
 class NavigationStep {
@@ -173,7 +174,9 @@ class NavigationStep {
           lng: (loc[0] as num).toDouble(),
         );
       }
-    } catch (_) {}
+    } catch (e) {
+      Logger.debug('_segmentStart parse error: $e', tag: 'NAV');
+    }
     return null;
   }
 
@@ -198,7 +201,9 @@ class NavigationStep {
           lng: (loc[0] as num).toDouble(),
         );
       }
-    } catch (_) {}
+    } catch (e) {
+      Logger.debug('_segmentEnd parse error: $e', tag: 'NAV');
+    }
     return null;
   }
 

@@ -5,6 +5,8 @@ import 'package:flutter/services.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:path_provider/path_provider.dart';
 import 'dart:io';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:gal/gal.dart';
 import 'package:nabour_app/utils/logger.dart';
 import 'package:nabour_app/utils/deprecated_apis_fix.dart';
 import 'package:nabour_app/services/movement_history_service.dart';
@@ -39,14 +41,29 @@ class _WeekReviewScreenState extends State<WeekReviewScreen> with SingleTickerPr
   int _currentStep = 0;
   bool _isMapReady = false;
   bool _isPaused = false; // ✅ NOU: Control pauză
-  double _playbackSpeed = 1.0; 
+  double _playbackSpeed = 1.0;
   bool _isLoading = true;
   List<Position> _storyPoints = [];
+
+  // Profilul utilizatorului
+  String _userInitial = 'N';
+
+  // Perioada selectată (default: ultimele 7 zile)
+  late DateTime _rangeFrom;
+  late DateTime _rangeTo;
 
   @override
   void initState() {
     super.initState();
-    
+
+    // Perioada default: ultima săptămână
+    _rangeTo = DateTime.now();
+    _rangeFrom = _rangeTo.subtract(const Duration(days: 7));
+
+    // Inițiala utilizatorului din profilul Firebase Auth
+    final displayName = FirebaseAuth.instance.currentUser?.displayName ?? '';
+    _userInitial = displayName.isNotEmpty ? displayName[0].toUpperCase() : 'N';
+
     // Inițializare controller progres
     _progressController = AnimationController(
       vsync: this,
@@ -66,14 +83,11 @@ class _WeekReviewScreenState extends State<WeekReviewScreen> with SingleTickerPr
 
   Future<void> _loadRealData() async {
     setState(() => _isLoading = true);
-    
-    final now = DateTime.now();
-    final oneWeekAgo = now.subtract(const Duration(days: 7));
-    
+
     try {
       final summaries = await MovementHistoryService.instance.loadRange(
-        from: oneWeekAgo,
-        to: now,
+        from: _rangeFrom,
+        to: _rangeTo,
       );
 
       final samples = summaries.expand((e) => e.path).toList()
@@ -201,12 +215,6 @@ class _WeekReviewScreenState extends State<WeekReviewScreen> with SingleTickerPr
     await mapboxMap.attribution.updateSettings(AttributionSettings(enabled: false));
     await mapboxMap.logo.updateSettings(LogoSettings(enabled: false));
 
-    // Inițializare Atmosphere
-    try {
-      // Mapbox v11 atmosphere (folosită pentru a randa stele și o vizualizare mai bună la orizont pe glob)
-      // Omitere deocamdată dacă provoacă erori de compliare
-    } catch (_) {}
-
     _circleAnnotationManager = await mapboxMap.annotations.createCircleAnnotationManager();
     _polylineAnnotationManager = await mapboxMap.annotations.createPolylineAnnotationManager();
 
@@ -268,7 +276,8 @@ class _WeekReviewScreenState extends State<WeekReviewScreen> with SingleTickerPr
     setState(() => _currentStep = 2);
 
     final List<Position> drawnPositions = [];
-    
+    PolylineAnnotation? routeLine; // Singura linie neon — actualizată progresiv
+
     // Extragem calculul mediei locațiilor pentru zoom-out-ul zonal ulterior
     double sumLat = 0, sumLng = 0;
     for (var p in _storyPoints) { sumLng += p.lng; sumLat += p.lat; }
@@ -284,36 +293,41 @@ class _WeekReviewScreenState extends State<WeekReviewScreen> with SingleTickerPr
 
         if (!mounted) return;
         HapticFeedback.lightImpact();
-        
+
         // Punct presiune (circle)
         await _popPlayer.stop();
         await _popPlayer.play(AssetSource('sounds/recap_balloon_pop.mp3'));
-        
+
         final currPoint = _storyPoints[i];
-        
+
         await _circleAnnotationManager!.create(
           CircleAnnotationOptions(
             geometry: Point(coordinates: currPoint),
-            circleColor: 0xFFFF6D00, // Portocaliu aprins pt "warm theme" pressure
+            circleColor: 0xFFFF6D00,
             circleRadius: 18.0,
             circleBlur: 0.8,
             circleOpacity: 0.8,
           )
         );
-        
+
         drawnPositions.add(currPoint);
-        
-        // Linia fade neon (daca avem minim 2 puncte)
+
+        // Linia neon — un singur obiect actualizat progresiv (scalabil pentru sute de puncte)
         if (drawnPositions.length > 1) {
-            await _polylineAnnotationManager!.create(
-               PolylineAnnotationOptions(
-                  geometry: LineString(coordinates: [drawnPositions[drawnPositions.length-2], currPoint]),
-                  lineColor: 0xFF00E676, // Neon green fade
-                  lineWidth: 4.0,
-                  lineOpacity: 0.6,
-                  lineJoin: LineJoin.ROUND,
-               )
+          if (routeLine == null) {
+            routeLine = await _polylineAnnotationManager!.create(
+              PolylineAnnotationOptions(
+                geometry: LineString(coordinates: List.of(drawnPositions)),
+                lineColor: 0xFF00E676,
+                lineWidth: 4.0,
+                lineOpacity: 0.6,
+                lineJoin: LineJoin.ROUND,
+              ),
             );
+          } else {
+            routeLine.geometry = LineString(coordinates: List.of(drawnPositions));
+            await _polylineAnnotationManager!.update(routeLine);
+          }
         }
 
         // Ușoară mutare a camerei spre Punctul curent pentru a vizualiza ruta construindu-se (smooth pan)
@@ -455,6 +469,8 @@ class _WeekReviewScreenState extends State<WeekReviewScreen> with SingleTickerPr
                         ),
                         const SizedBox(width: 16),
                         _ReplayButton(onTap: _replay),
+                        const SizedBox(width: 8),
+                        _CalendarButton(onTap: _openDateRangePicker),
                         const SizedBox(width: 16),
                         _DownloadButton(onTap: _saveReview),
                         const SizedBox(width: 8),
@@ -478,10 +494,10 @@ class _WeekReviewScreenState extends State<WeekReviewScreen> with SingleTickerPr
                               shape: BoxShape.circle,
                               color: Color(0xFF7C3AED), // Nabour Purple
                             ),
-                            child: const Center(
+                            child: Center(
                               child: Text(
-                                'T', // Inițiala
-                                style: TextStyle(
+                                _userInitial,
+                                style: const TextStyle(
                                   color: Colors.white,
                                   fontWeight: FontWeight.bold,
                                 ),
@@ -489,11 +505,11 @@ class _WeekReviewScreenState extends State<WeekReviewScreen> with SingleTickerPr
                             ),
                           ),
                           const SizedBox(width: 12),
-                          const Column(
+                          Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(
-                                'Săptămâna ta',
+                              const Text(
+                                'Nabour Review',
                                 style: TextStyle(
                                   color: Colors.white,
                                   fontWeight: FontWeight.w800,
@@ -502,8 +518,8 @@ class _WeekReviewScreenState extends State<WeekReviewScreen> with SingleTickerPr
                                 ),
                               ),
                               Text(
-                                'Nabour Review',
-                                style: TextStyle(
+                                _formatDateRange(),
+                                style: const TextStyle(
                                   color: Colors.white70,
                                   fontSize: 12,
                                   shadows: [Shadow(color: Colors.black45, blurRadius: 4)],
@@ -619,20 +635,87 @@ class _WeekReviewScreenState extends State<WeekReviewScreen> with SingleTickerPr
   }
 
   Future<void> _saveReview() async {
+    if (_mapboxMap == null) return;
     HapticFeedback.mediumImpact();
-    _showPremiumToast('Salvăm imaginea cursei în galerie...');
-    
+    _showPremiumToast('Salvăm imaginea în galerie...');
+
     try {
       final Uint8List? snapshotBytes = await _mapboxMap?.snapshot();
-      if (snapshotBytes == null) return;
-      
-      // Notă: Salvarea directă în galerie necesită permisiuni de scriere și pachetul 'gal' sau 'image_gallery_saver'.
-      // Simulăm salvarea pentru varianta actuală.
-      await Future.delayed(const Duration(seconds: 1));
-      _showPremiumToast('✅ Imagine salvată cu succes!');
+      if (snapshotBytes == null) {
+        _showPremiumToast('Eroare: nu s-a putut genera imaginea.');
+        return;
+      }
+
+      // Scriem fișierul temporar și îl salvăm în galerie via gal
+      final directory = await getTemporaryDirectory();
+      final path = '${directory.path}/nabour_recap_${DateTime.now().millisecondsSinceEpoch}.png';
+      final file = File(path);
+      await file.writeAsBytes(snapshotBytes);
+
+      final hasAccess = await Gal.hasAccess(toAlbum: true);
+      if (!hasAccess) {
+        await Gal.requestAccess(toAlbum: true);
+      }
+
+      await Gal.putImage(path, album: 'Nabour');
+      await file.delete();
+
+      _showPremiumToast('Imagine salvată în galerie (albumul Nabour)!');
     } catch (e) {
+      Logger.error('Error saving review to gallery: $e');
       _showPremiumToast('Eroare la salvare: $e');
     }
+  }
+
+  Future<void> _openDateRangePicker() async {
+    final picked = await showDateRangePicker(
+      context: context,
+      firstDate: DateTime.now().subtract(const Duration(days: 90)),
+      lastDate: DateTime.now(),
+      initialDateRange: DateTimeRange(start: _rangeFrom, end: _rangeTo),
+      helpText: 'Selectează perioada pentru review',
+      cancelText: 'Anulează',
+      confirmText: 'Generează',
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: const ColorScheme.dark(
+              primary: Color(0xFF7C3AED),
+              onPrimary: Colors.white,
+              surface: Color(0xFF1A1A2E),
+              onSurface: Colors.white,
+            ),
+          ),
+          child: child!,
+        );
+      },
+    );
+
+    if (picked == null || !mounted) return;
+
+    // Oprim animația curentă și resetăm
+    _animTimer?.cancel();
+    _progressController.stop();
+    _progressController.reset();
+    if (_circleAnnotationManager != null) await _circleAnnotationManager!.deleteAll();
+    if (_polylineAnnotationManager != null) await _polylineAnnotationManager!.deleteAll();
+
+    setState(() {
+      _rangeFrom = picked.start;
+      _rangeTo = picked.end;
+      _currentStep = 0;
+      _isPaused = false;
+    });
+
+    await _loadRealData();
+  }
+
+  String _formatDateRange() {
+    String fmt(DateTime d) {
+      final months = ['ian', 'feb', 'mar', 'apr', 'mai', 'iun', 'iul', 'aug', 'sep', 'oct', 'nov', 'dec'];
+      return '${d.day} ${months[d.month - 1]}';
+    }
+    return '${fmt(_rangeFrom)} – ${fmt(_rangeTo)}';
   }
 
   void _showPremiumToast(String message) {
@@ -704,6 +787,41 @@ class _ReplayButton extends StatelessWidget {
             SizedBox(width: 4),
             Text(
               'REPLAY',
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.w900,
+                fontSize: 11,
+                letterSpacing: 0.5,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _CalendarButton extends StatelessWidget {
+  final VoidCallback onTap;
+  const _CalendarButton({required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.15),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: Colors.white30),
+        ),
+        child: const Row(
+          children: [
+            Icon(Icons.calendar_month_rounded, color: Colors.white, size: 16),
+            SizedBox(width: 4),
+            Text(
+              'PERIOADĂ',
               style: TextStyle(
                 color: Colors.white,
                 fontWeight: FontWeight.w900,

@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:cron/cron.dart';
 import 'voice_analytics.dart';
 import 'eco_integration_service.dart';
+import 'package:nabour_app/utils/logger.dart';
 
 /// Proactive AI Service for Nabour
 /// Anticipates user needs and provides proactive transportation suggestions
@@ -1356,7 +1357,9 @@ class UserBehaviorAnalyzerImpl implements UserBehaviorAnalyzer {
         'peak_hours_v1',
         sortedHours.take(3).map((e) => e.key.toString()).toList(),
       );
-    } catch (_) {}
+    } catch (e) {
+      Logger.debug('UsageTrackerImpl.trackUsage failed: $e', tag: 'PROACTIVE_AI');
+    }
   }
 
   @override
@@ -1408,7 +1411,9 @@ class RoutineLearnerImpl implements RoutineLearner {
       }
 
       await prefs.setStringList(_routinesKey, routines);
-    } catch (_) {}
+    } catch (e) {
+      Logger.debug('RoutineLearnerImpl.learnNewRoutines failed: $e', tag: 'PROACTIVE_AI');
+    }
   }
 
   @override
@@ -1450,7 +1455,9 @@ class PredictionEngineImpl implements PredictionEngine {
       }
 
       await prefs.setStringList(_predictionsKey, predictions.take(3).toList());
-    } catch (_) {}
+    } catch (e) {
+      Logger.debug('PredictionEngineImpl.updatePredictions failed: $e', tag: 'PROACTIVE_AI');
+    }
   }
 
   @override

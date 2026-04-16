@@ -1608,7 +1608,9 @@ class _AddressInputViewState extends State<AddressInputView> {
           SnackBar(content: Text(l10n.intermediateStopAdded)),
         );
       }
-    } catch (_) {}
+    } catch (e) {
+      Logger.warning('_onAddStopPressed failed: $e', tag: 'ADDRESS_INPUT');
+    }
   }
 
   Widget _buildSuggestionsList() {

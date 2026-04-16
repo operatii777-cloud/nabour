@@ -3,6 +3,7 @@ import 'package:nabour_app/l10n/app_localizations.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:nabour_app/screens/map_screen.dart';
 import 'package:nabour_app/screens/app_warmup_screen.dart';
+import 'package:nabour_app/utils/logger.dart';
 
 /// [MapScreen] sub hartă; [AppWarmupScreen] full-screen deasupra până la trage în jos
 /// sau „Deschide harta”. La închidere, harta face fly din zoom glob spre locația userului.
@@ -47,7 +48,9 @@ class _MapWithWarmupScreenState extends State<MapWithWarmupScreen> {
       if (seen || !mounted) return;
       await _showDisclaimerSheet();
       await prefs.setBool(_disclaimerKey, true);
-    } catch (_) {}
+    } catch (e) {
+      Logger.debug('map_with_warmup disclaimer prefs failed: $e', tag: 'MAP_WARMUP');
+    }
   }
 
   Future<void> _showDisclaimerSheet() async {

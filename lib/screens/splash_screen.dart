@@ -174,7 +174,9 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
         try {
           FlutterNativeSplash.remove();
           StartupTimer.instance.mark('nativeSplash.removed');
-        } catch (_) {}
+        } catch (e) {
+          Logger.debug('FlutterNativeSplash.remove failed: $e', tag: 'SPLASH');
+        }
       }
     });
   }

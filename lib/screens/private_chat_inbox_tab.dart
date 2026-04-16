@@ -9,6 +9,7 @@ import 'package:nabour_app/l10n/app_localizations.dart';
 import 'package:nabour_app/models/chat_message_model.dart';
 import 'package:nabour_app/screens/chat_screen.dart';
 import 'package:nabour_app/services/contacts_service.dart';
+import 'package:nabour_app/utils/logger.dart';
 
 /// Rând în lista de conversații 1:1 (private_chats).
 class PrivateChatInboxRow {
@@ -211,7 +212,9 @@ class PrivateChatInboxTabState extends State<PrivateChatInboxTab>
         final ts = data['timestamp'];
         if (ts is Timestamp) lastAt = ts.toDate();
       }
-    } catch (_) {}
+    } catch (e) {
+      Logger.warning('PrivateChatInboxTab._buildRow failed: $e', tag: 'INBOX');
+    }
 
     return PrivateChatInboxRow(
       peerUid: peerUid,

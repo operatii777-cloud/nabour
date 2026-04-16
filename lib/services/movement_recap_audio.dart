@@ -117,7 +117,9 @@ class MovementRecapAudioController {
     try {
       await _wind.stop();
       await _pop.stop();
-    } catch (_) {}
+    } catch (e) {
+      Logger.debug('MovementRecapAudio.stop failed: $e', tag: 'RECAP_AUDIO');
+    }
     _windStarted = false;
     _lastPopSegment = -1;
   }
@@ -127,13 +129,17 @@ class MovementRecapAudioController {
     try {
       await _wind.stop();
       await _pop.stop();
-    } catch (_) {}
+    } catch (e) {
+      Logger.debug('MovementRecapAudio.dispose stop failed: $e', tag: 'RECAP_AUDIO');
+    }
     _disposed = true;
     _windStarted = false;
     _lastPopSegment = -1;
     try {
       await _wind.dispose();
       await _pop.dispose();
-    } catch (_) {}
+    } catch (e) {
+      Logger.debug('MovementRecapAudio.dispose players failed: $e', tag: 'RECAP_AUDIO');
+    }
   }
 }

@@ -328,8 +328,28 @@ service cloud.firestore {
           (resource.data.driverId == null && request.resource.data.driverId == request.auth.uid)
         );
     }
+
+    // Refuz la cereri încă „pending”: șoferul NU are încă driverId setat, dar trebuie să poată
+    // scrie doar declinedBy (arrayUnion) dacă e în allowedDriverUids — altfel refuzul nu se salvează
+    // și aceeași cursă reapare la fiecare redeschidere.
+    function rideRequestPendingDeclineByAllowedDriver() {
+      let diff = request.resource.data.diff(resource.data).affectedKeys();
+      return isAuthenticated()
+        && resource.data.status == 'pending'
+        && request.resource.data.status == 'pending'
+        && request.resource.data.passengerId == resource.data.passengerId
+        && request.resource.data.driverId == resource.data.driverId
+        && 'allowedDriverUids' in resource.data
+        && resource.data.allowedDriverUids is list
+        && request.auth.uid in resource.data.allowedDriverUids
+        && diff.hasOnly(['declinedBy'])
+        && rideRequestUpdateKeysAllowed()
+        && rideStatusTransitionValid();
+    }
+
     function rideRequestUpdateAllowed() {
       return rideRequestParticipantUpdateBase()
+        || rideRequestPendingDeclineByAllowedDriver()
         || (request.auth.token.test_harness == true
           && (resource.data.passengerId == request.auth.uid
             || resource.data.driverId == request.auth.uid
@@ -460,6 +480,11 @@ service cloud.firestore {
         allow read, write, delete: if isAuthenticated() && isOwner(userId);
       }
 
+      // Jurnal local refuzuri curse (șofer) — folosit de CancellationService; doar proprietarul.
+      match /cancellations/{rideId} {
+        allow read, write, delete: if isAuthenticated() && isOwner(userId);
+      }
+
       // Prieteni acceptați (cerere acceptată): fiecare user își menține lista sub propriul UID.
       // La accept, destinatarul creează doc-ul său; expeditorul își sincronizează la următoarea deschidere app.
       //
@@ -528,6 +553,7 @@ service cloud.firestore {
           trialPeriodAllowsRides()
           || resource.data.passengerId == request.auth.uid
           || resource.data.driverId == request.auth.uid
+          || rideRequestPendingDeclineByAllowedDriver()
         );
       // Doar pasagerul poate anula/șterge
       allow delete: if isAuthenticated() &&
@@ -1072,6 +1098,26 @@ service cloud.firestore {
     match /token_ledger/{entryId} {
       allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;
       allow write: if false;
+    }
+
+    // ── Badge mesaje private necitite ─────────────────────────────────────
+    // Proprietarul citește și resetează (set count:0); orice user autentificat
+    // poate incrementa contorul destinatarului (trimitere mesaj).
+    match /private_chat_unreads/{uid} {
+      allow read: if isAuthenticated() && isOwner(uid);
+      allow create: if isAuthenticated()
+        && request.resource.data.keys().hasOnly(['count'])
+        && request.resource.data.count is int
+        && request.resource.data.count >= 0;
+      allow update: if isAuthenticated()
+        && request.resource.data.keys().hasOnly(['count'])
+        && request.resource.data.count is int
+        && request.resource.data.count >= 0
+        && (
+          isOwner(uid)
+          || request.resource.data.count > resource.data.count
+        );
+      allow delete: if false;
     }
   }
 }

@@ -15,6 +15,7 @@ import 'package:nabour_app/services/context_engine_service.dart';
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
 
 import '../utils/mapbox_utils.dart';
+import '../utils/driver_icon_helper.dart';
 import '../utils/deprecated_apis_fix.dart';
 import 'package:nabour_app/models/ride_model.dart';
 import 'package:nabour_app/screens/driver_ride_pickup_screen.dart';
@@ -33,6 +34,7 @@ import 'package:nabour_app/voice/driver/driver_voice_controller.dart';
 import 'package:nabour_app/voice/states/voice_interaction_states.dart';
 import 'package:geolocator/geolocator.dart' as geolocator;
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:provider/provider.dart';
 // POI interactive model
 import 'package:nabour_app/models/poi_model.dart';
@@ -41,10 +43,20 @@ import 'package:nabour_app/screens/searching_for_driver_screen.dart';
 import 'package:nabour_app/core/animations/app_transitions.dart';
 import 'package:nabour_app/core/haptics/haptic_service.dart';
 import 'package:nabour_app/features/cancellation/cancellation_dialog.dart';
+import 'package:nabour_app/features/cancellation/cancellation_model.dart';
 import 'package:nabour_app/features/cancellation/cancellation_service.dart';
 import 'package:nabour_app/features/smart_suggestions/smart_suggestions_widget.dart';
 import 'package:nabour_app/features/smart_suggestions/smart_suggestions_service.dart';
 import 'package:nabour_app/features/smart_suggestions/smart_suggestion_model.dart';
+import 'package:nabour_app/features/ghost_mode/ghost_mode_sheet.dart';
+import 'package:nabour_app/services/map_search_metrics_service.dart';
+import 'package:nabour_app/features/map_neighbor_markers/neighbor_profile_sheet.dart';
+import 'package:nabour_app/features/map_screen/widgets/map_tap_geocode_sheet.dart';
+import 'package:nabour_app/features/map_screen/controllers/map_badges_controller.dart';
+import 'package:nabour_app/features/map_screen/controllers/map_route_controller.dart';
+import 'package:nabour_app/features/map_screen/widgets/parking_reservation_sheet.dart';
+import 'package:nabour_app/features/map_screen/widgets/map_hud_widgets.dart';
+import 'package:nabour_app/features/map_screen/widgets/map_top_bar.dart';
 import 'package:nabour_app/features/push_campaigns/push_campaign_service.dart';
 import 'package:nabour_app/services/buc_locations_db.dart';
 import 'package:nabour_app/services/geocoding_service.dart';
@@ -137,83 +149,12 @@ import 'package:sensors_plus/sensors_plus.dart';
 import 'package:torch_light/torch_light.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:nabour_app/widgets/map/spider_net_radar_selector.dart';
-import 'package:nabour_app/widgets/map/bump_bottom_bar.dart';
 import 'package:nabour_app/widgets/map/map_activity_toast.dart';
 import 'package:nabour_app/screens/friend_suggestions_screen.dart';
 import 'package:nabour_app/screens/activity_notifs_screen.dart';
 import 'package:nabour_app/widgets/map/weather_overlay.dart';
 
-/// Rezultat metrici sociale pentru căutarea pe hartă (`users` + `friend_peers`).
-class MapUniversalSearchPeopleMetrics {
-  const MapUniversalSearchPeopleMetrics({
-    required this.friendCountByUid,
-    required this.mutualFriendPeersByUid,
-  });
 
-  final Map<String, int> friendCountByUid;
-  final Map<String, int> mutualFriendPeersByUid;
-}
-
-class MapUniversalSearchMetricsService {
-  MapUniversalSearchMetricsService._();
-  static final MapUniversalSearchMetricsService instance =
-      MapUniversalSearchMetricsService._();
-
-  final FirebaseFirestore _db = FirebaseFirestore.instance;
-
-  int _readFriendCount(String uid, Map<String, dynamic>? data) {
-    final fc = data?['friendCount'];
-    if (fc is int) return fc;
-    if (fc is num) return fc.toInt();
-    return 10 + uid.hashCode.abs() % 60;
-  }
-
-  /// [myFriendPeerUids] — setul tău de prieteni confirmați (din hartă).
-  Future<MapUniversalSearchPeopleMetrics> loadPeopleMetrics({
-    required Set<String> candidateUids,
-    required Set<String> myFriendPeerUids,
-  }) async {
-    final myUid = FirebaseAuth.instance.currentUser?.uid;
-    final outFriends = <String, int>{};
-    final outMutual = <String, int>{};
-
-    if (myUid == null || candidateUids.isEmpty) {
-      return MapUniversalSearchPeopleMetrics(
-        friendCountByUid: outFriends,
-        mutualFriendPeersByUid: outMutual,
-      );
-    }
-
-    await Future.wait(candidateUids.map((uid) async {
-      if (uid.isEmpty || uid == myUid) return;
-      try {
-        final userDoc = await _db.collection('users').doc(uid).get();
-        outFriends[uid] = _readFriendCount(uid, userDoc.data());
-
-        if (myFriendPeerUids.isEmpty) {
-          outMutual[uid] = 0;
-          return;
-        }
-        final peersSnap = await _db
-            .collection('users')
-            .doc(uid)
-            .collection('friend_peers')
-            .get();
-        final theirPeers = peersSnap.docs.map((d) => d.id).toSet();
-        outMutual[uid] = myFriendPeerUids.intersection(theirPeers).length;
-      } catch (e) {
-        Logger.warning('map search metrics $uid: $e', tag: 'MAP_SEARCH');
-        outFriends[uid] = outFriends[uid] ?? 0;
-        outMutual[uid] = outMutual[uid] ?? 0;
-      }
-    }));
-
-    return MapUniversalSearchPeopleMetrics(
-      friendCountByUid: outFriends,
-      mutualFriendPeersByUid: outMutual,
-    );
-  }
-}
 
 // Sentinel: utilizatorul a ales să fie invizibil permanent
 const Duration _kInvisibleChoice = Duration(microseconds: -1);
@@ -234,113 +175,6 @@ const List<String> _kMapReactionEmojis = [
 
 /// Dimensiune icon Mapbox pentru bulă emoji (PNG raster, nu text).
 const double _kMapReactionEmojiIconSize = 0.56;
-
-// ─────────────────────────────────────────────────────────────────────────────
-class _GhostModeSheet extends StatelessWidget {
-  const _GhostModeSheet();
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            width: 40, height: 4,
-            decoration: BoxDecoration(
-              color: Colors.grey.shade300,
-              borderRadius: BorderRadius.circular(2),
-            ),
-          ),
-          const SizedBox(height: 16),
-          const Text('👥', style: TextStyle(fontSize: 36)),
-          const SizedBox(height: 8),
-          Text(
-            l10n.mapGhostDurationTitle,
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            l10n.mapGhostDurationSubtitle,
-            style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
-          ),
-          const SizedBox(height: 20),
-          _DurationTile(
-            icon: '⏰',
-            label: l10n.mapGhostOneHourLabel,
-            sub: l10n.mapGhostOneHourSub,
-            duration: const Duration(hours: 1),
-          ),
-          _DurationTile(
-            icon: '🕓',
-            label: l10n.mapGhostFourHoursLabel,
-            sub: l10n.mapGhostFourHoursSub,
-            duration: const Duration(hours: 4),
-          ),
-          _DurationTile(
-            icon: '🌙',
-            label: l10n.mapGhostUntilTomorrowLabel,
-            sub: l10n.mapGhostUntilTomorrowSub,
-            duration: Duration(
-              hours: 23 - DateTime.now().hour,
-              minutes: 59 - DateTime.now().minute,
-            ),
-          ),
-          _DurationTile(
-            icon: '♾️',
-            label: l10n.mapGhostPermanentLabel,
-            sub: l10n.mapGhostPermanentSub,
-            duration: Duration.zero, // sentinel = permanent
-          ),
-          const Padding(
-            padding: EdgeInsets.symmetric(vertical: 8),
-            child: Divider(),
-          ),
-          _DurationTile(
-            icon: '🫥',
-            label: l10n.mapGhostInvisibleLabel,
-            sub: l10n.mapGhostInvisibleSub,
-            duration: _kInvisibleChoice,
-            isDestructive: true,
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _DurationTile extends StatelessWidget {
-  final String icon;
-  final String label;
-  final String sub;
-  final Duration duration;
-  final bool isDestructive;
-
-  const _DurationTile({
-    required this.icon,
-    required this.label,
-    required this.sub,
-    required this.duration,
-    this.isDestructive = false,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final color = isDestructive ? Colors.red.shade600 : const Color(0xFF7C3AED);
-    return ListTile(
-      dense: true,
-      leading: Text(icon, style: const TextStyle(fontSize: 22)),
-      title: Text(label,
-          style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14, color: isDestructive ? Colors.red.shade700 : null)),
-      subtitle: Text(sub,
-          style: TextStyle(fontSize: 11, color: Colors.grey.shade500)),
-      trailing: Icon(Icons.chevron_right_rounded, color: color),
-      onTap: () => Navigator.of(context).pop(duration),
-    );
-  }
-}
 
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -376,6 +210,10 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
   static const int _spaceIntroFlyDurationMs = 1800;
   static const int _spaceIntroPauseBeforeFlyMs = 500;
 
+  /// Comutare 3D user (LocationPuck GLB) vs marker 2D, cu histerezis ca să evităm flicker la prag.
+  static const double _kMapUser3dZoomEnterThreshold = 13.5;
+  static const double _kMapUser3dZoomExitThreshold = 13.0;
+
   double _overviewZoomForLatitude(double latitudeDeg) {
     final w = mounted ? MediaQuery.sizeOf(context).width : 400.0;
     return _mapZoomForVisibleGroundWidthMeters(
@@ -384,6 +222,10 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
       visibleWidthM: _defaultOverviewVisibleWidthM,
     );
   }
+
+  // Controllers
+  final MapBadgesController _badgesCtrl = MapBadgesController();
+  final MapRouteController _routeCtrl = MapRouteController();
 
   // Services
   final FirestoreService _firestoreService = FirestoreService();
@@ -404,7 +246,8 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
   bool _isCreatingDriversManager = false;
   bool _isCreatingUserMarkerManager = false;
   Future<Uint8List>? _userDriverMarkerIconInFlight;
-  Future<Uint8List>? _nearbyDriversMarkerIconInFlight;
+  final Map<String, Uint8List> _nearbyDriverMarkerIconBytesCache = {};
+  final Map<String, Future<Uint8List>> _nearbyDriverMarkerIconLoads = {};
   /// Ultimul bitmap randat: cheie din [_ownUserMarkerVisualKey] (garaj / șofer standard / emoji).
   String? _userMarkerVisualCacheKey;
   Offset _poiCardPosition = const Offset(16, 180);
@@ -491,31 +334,13 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
   double? _lastSearchCenterLng;
   bool _universalSearchOpen = false;
 
-  // Routing State
-  final TextEditingController _pickupController = TextEditingController();
-  final TextEditingController _destinationController = TextEditingController();
-  final List<TextEditingController> _intermediateStopsControllers = [];
-  final List<String> _intermediateStops = [];
-  final int _maxIntermediateStops = 5;
-  double? _pickupLatitude, _pickupLongitude, _destinationLatitude, _destinationLongitude;
   
-  bool _isFetchingAlternatives = false;
-  List<Map<String, dynamic>> _alternativeRoutes = [];
-  int _selectedAltRouteIndex = 0;
-  double? _currentRouteDistanceMeters;
-  double? _currentRouteDurationSeconds;
-  String? _pickupQualityLabel;
-  Color? _pickupQualityColor;
-  bool _tipAltRoutesSeen = true;
 
-  bool _showPickupSuggestions = false;
-  List<Point> _pickupSuggestionPoints = [];
 
   // Social & Neighbors Tracking
   bool _isVisibleToNeighbors = false;
   /// Ascunde sertarul „Activitate” până la următoarea activare vizibilitate.
   bool _neighborActivityFeedDismissed = false;
-  bool _showCerereButton = true;
   Timer? _locationUpdateTimer;
   Timer? _visibilityPublishTimer;
   /// Publicare socială când aplicația e în fundal (stream-ul GPS e oprit la pause).
@@ -552,12 +377,13 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
   /// Galaxy Garage: căi asset per slot — ambele active pe tot parcursul sesiunii (ex. ROBO pasager + OZN șofer).
   String? _garageAssetPathForPassengerSlot;
   String? _garageAssetPathForDriverSlot;
+  /// Aceleași id-uri ca la [_loadCustomCarAvatar] — pentru 3D (nu doar cache vecini sociali).
+  String _garageAvatarIdForDriverSlot = 'default_car';
+  String _garageAvatarIdForPassengerSlot = 'default_car';
   
   // 3D Model Support
 
   bool _isUsing3DUserModel = false;
-  /// Ultimul URI încărcat în stil ca `user-3d-model`; la schimbare avatar în sesie se reaplică.
-  String? _loadedUser3dModelUri;
 
   /// Semnătură id-uri slot garaj din ultimul snapshot `users` — pentru a reapela [_loadCustomCarAvatar] doar la schimbare reală.
   String? _profileGarageSlotIdsSig;
@@ -588,6 +414,16 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
   List<NabourAuraMapSlot> _magicEventAuraSlots = <NabourAuraMapSlot>[];
   final Map<String, int> _magicEventRippleTick = <String, int>{};
   Timer? _auraProjectDebounce;
+  /// După [flyTo], motorul poate reface straturile înainte ca sursa modelului 3D să fie gata — reprogramăm puck-ul la map idle.
+  Timer? _mapIdle3dResyncDebounce;
+  String? _last3dPuckModelUri;
+  DateTime? _last3dPuckApplyAt;
+  bool _is3DZoomGateOpen = false;
+  int _consecutive3DSourceMisses = 0;
+  DateTime? _suspend3DUntil;
+  static const int _k3DSourceMissesBeforeCooldown = 3;
+  static const Duration _k3DSourceMissingCooldown = Duration(seconds: 12);
+  static const Duration _k3DPostEnableStabilityProbeDelay = Duration(milliseconds: 900);
   PointAnnotationManager? _magicEventAnnotationManager;
   final Map<String, PointAnnotation> _magicEventAnnotations =
       <String, PointAnnotation>{};
@@ -604,12 +440,14 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
   // Server-side activity feed subscription
   StreamSubscription? _activityFeedSubscription;
 
-  // Zoom slider state
-  double _mapZoomLevel = 14.0;
+  // Zoom slider state — sub pragul 3D până la primul eveniment cameră / sync din hartă (evită flash 3D fals).
+  double _mapZoomLevel = 1.0;
 
   // Driver & Telemetry
   UserRole _currentRole = UserRole.passenger;
   bool _isDriverAvailable = false;
+  /// Urmărește dacă la ultimul fundal am șters `driver_locations` ca să republicăm la resume.
+  bool _hidDriverLiveMapPresenceForBackground = false;
   bool _isDriverAccountVerified = false;
   Map<String, dynamic>? _driverProfile;
   final Set<String> _nearbyDriverUidsBeingCreated = {};
@@ -718,6 +556,27 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
     final lastAt = _lastGpsUserMarkerRedrawTime;
     final now = DateTime.now();
     var allow = false;
+    // Fluiditate locală: în mers la volan redesenăm mai des, fără a crește publish-ul în cloud.
+    final speedKph = p.speed.isNaN ? 0.0 : (p.speed * 3.6);
+    final bool driverActive = _currentRole == UserRole.driver && _isDriverAvailable;
+    final bool passengerActive = _currentRole != UserRole.driver || !_isDriverAvailable;
+    final double minDistanceM = driverActive
+        ? (speedKph >= 25.0 ? 2.0 : (speedKph >= 10.0 ? 3.0 : _userMarkerGpsRedrawMinMeters))
+        : (passengerActive
+            ? (speedKph >= 25.0 ? 2.5 : (speedKph >= 10.0 ? 3.5 : _userMarkerGpsRedrawMinMeters))
+            : _userMarkerGpsRedrawMinMeters);
+    final Duration maxInterval = driverActive
+        ? (speedKph >= 25.0
+            ? const Duration(seconds: 1)
+            : (speedKph >= 10.0 ? const Duration(seconds: 2) : _userMarkerGpsRedrawMaxInterval))
+        : (passengerActive
+            ? (speedKph >= 25.0
+                ? const Duration(seconds: 2)
+                : (speedKph >= 10.0
+                    ? const Duration(seconds: 3)
+                    : _userMarkerGpsRedrawMaxInterval))
+            : _userMarkerGpsRedrawMaxInterval);
+
     if (anchor == null) {
       _lastGpsUserMarkerAnchor = p;
       _lastGpsUserMarkerRedrawTime = now;
@@ -729,12 +588,12 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
         p.latitude,
         p.longitude,
       );
-      if (movedM >= _userMarkerGpsRedrawMinMeters) {
+      if (movedM >= minDistanceM) {
         _lastGpsUserMarkerAnchor = p;
         _lastGpsUserMarkerRedrawTime = now;
         allow = true;
       } else if (lastAt != null &&
-          now.difference(lastAt) >= _userMarkerGpsRedrawMaxInterval) {
+          now.difference(lastAt) >= maxInterval) {
         _lastGpsUserMarkerAnchor = p;
         _lastGpsUserMarkerRedrawTime = now;
         allow = true;
@@ -761,6 +620,9 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
   DateTime? _lastAutoCenterAt;
   double? _lastAutoCenterLat;
   double? _lastAutoCenterLng;
+  DateTime? _lastDriverAutoFollowAt;
+  double? _lastDriverAutoFollowLat;
+  double? _lastDriverAutoFollowLng;
 
   double? _driverMarkerSmoothLat;
   double? _driverMarkerSmoothLng;
@@ -795,6 +657,15 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
   final int _slowSpeedInterval = 7;
   final int _highSpeedInterval = 7;
   static const bool _verboseBuildLogs = false;
+
+  // ── Adaptive GPS mode (driver) ─────────────────────────────────────────────
+  // Când șoferul este static (< _kDriverMoveThresholdKph) comutăm pe un stream
+  // GPS ușor (medium accuracy, distanceFilter mare) — economie baterie + scrieri.
+  // La depășirea pragului restartăm stream-ul în modul high-accuracy.
+  static const double _kDriverMoveThresholdKph = 10.0; // ~2.78 m/s
+  static const double _kDriverMoveHysteresisKph = 2.0;  // evită oscilații la graniță
+  bool _driverGpsInLowPowerMode = false;
+  Timer? _driverAdaptiveGpsDebounce;
 
   // Rides & Broadcasts
   Ride? _currentActiveRide;
@@ -841,6 +712,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
   bool _savedAddressesFirestoreHydrated = false;
   StreamSubscription? _nearbyDriversSubscription;
   StreamSubscription<QuerySnapshot>? _chatMessagesSubscription;
+  String? _nbRoomPushTopic;
   PointAnnotationManager? _emergencyAnnotationManager;
   final Map<String, PointAnnotation> _emergencyAnnotations = {};
   /// Aurele roșii (SOS) randate peste hartă în jurul urgențelor.
@@ -848,20 +720,6 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
   
   StreamSubscription? _emergencyAlertsSubscription;
   StreamSubscription<List<FriendRequestEntry>>? _incomingFriendRequestsSub;
-  /// Cereri de prietenie primite, încă pending (badge pe butonul Sugestii).
-  int _pendingIncomingFriendRequestCount = 0;
-
-  /// Badge pe butoanele rapide „Cereri” / „Chat” (harta).
-  StreamSubscription<QuerySnapshot<Map<String, dynamic>>>? _cereriBadgeBroadcastsSub;
-  StreamSubscription<List<NeighborhoodRequest>>? _cereriBadgeNbRequestsSub;
-  List<RideBroadcastRequest> _cereriBadgeBroadcastSnapshot = const [];
-  List<NeighborhoodRequest> _cereriBadgeNbRequestsSnapshot = const [];
-  int _cereriQuickActionBadgeCount = 0;
-
-  StreamSubscription<QuerySnapshot<Map<String, dynamic>>>? _nbChatBadgeSub;
-  String? _nbChatBadgeRoomId;
-  int _chatQuickActionBadgeCount = 0;
-
   // Proximity & PNG markers
   final Set<String> _proximitNotifiedUids = {};
   DateTime _proximityNotifResetTime = DateTime.now();
@@ -871,20 +729,6 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
   static final Uint8List _kMinimalPngBytes = Uint8List.fromList(base64Decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg=='));
   bool _marker15StyleImageAdded = false;
 
-  // In-App Navigation State
-  bool _inAppNavActive = false;
-  double? _navDestLat, _navDestLng;
-  String _navDestLabel = '';
-  String _navCurrentInstruction = '';
-  double _navRemainDistanceM = 0;
-  Duration _navRemainEta = Duration.zero;
-  bool _navHasArrived = false;
-  List<Map<String, dynamic>> _navSteps = [];
-  int _navStepIndex = 0;
-  int _navLastSpokenStep = -1;
-  StreamSubscription<geolocator.Position>? _navGpsSubscription;
-  FlutterTts? _navTts;
-  Timer? _navEtaTimer;
 
   // Animations & Pulse Controllers
   AnimationController? _pickupPulseController;
@@ -937,6 +781,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
   StreamSubscription? _honkSubscription;
   StreamSubscription? _emojiSubscription;
   PointAnnotationManager? _emojiAnnotationManager;
+  double _emojiIconSizeBase = 0.56;
   final Map<String, PointAnnotation> _emojiAnnotations = {};
   /// Evită deleteAll+recreate la fiecare snapshot Firestore identic (`null` = încă neinițializat după reset).
   String? _lastMapEmojiLayerSig;
@@ -983,9 +828,9 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
       for (final src in candidateSources) {
         try {
           await _mapboxMap!.style.setStyleSourceProperty(src, 'prefetch-zoom-delta', 2);
-        } catch (_) {}
+        } catch (_) { /* Mapbox op — expected on style reload or missing layer/annotation */ }
       }
-    } catch (_) {}
+    } catch (_) { /* Mapbox op — expected on style reload or missing layer/annotation */ }
   }
 
   static Uint8List _pngBytesOrMinimalFallback(ByteData? data, String context) {
@@ -1052,176 +897,25 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
   void _startQuickActionBadgeListeners() {
     final uid = FirebaseAuth.instance.currentUser?.uid;
     if (uid == null) return;
-
-    _cereriBadgeBroadcastsSub?.cancel();
-    _cereriBadgeBroadcastsSub = FirebaseFirestore.instance
-        .collection('ride_broadcasts')
-        .where('status', isEqualTo: 'open')
-        .where('expiresAt',
-            isGreaterThan: Timestamp.fromDate(DateTime.now()))
-        .where('allowedUids', arrayContains: uid)
-        .snapshots()
-        .listen((snap) {
-      _cereriBadgeBroadcastSnapshot = snap.docs
-          .map((d) => RideBroadcastRequest.fromMap(d.id, d.data()))
-          .toList(growable: false);
-      unawaited(_recomputeCereriQuickActionBadge());
-    });
-
-    _cereriBadgeNbRequestsSub?.cancel();
-    _cereriBadgeNbRequestsSub =
-        FirestoreService().getActiveNeighborhoodRequests().listen((list) {
-      _cereriBadgeNbRequestsSnapshot = List<NeighborhoodRequest>.from(list);
-      unawaited(_recomputeCereriQuickActionBadge());
-    });
-
-    unawaited(_rebindNbChatQuickActionBadgeListener());
+    _badgesCtrl.startListening(uid,
+        positionProvider: () => _currentPositionObject);
   }
 
   void _disposeQuickActionBadgeListeners() {
-    _cereriBadgeBroadcastsSub?.cancel();
-    _cereriBadgeBroadcastsSub = null;
-    _cereriBadgeNbRequestsSub?.cancel();
-    _cereriBadgeNbRequestsSub = null;
-    _nbChatBadgeSub?.cancel();
-    _nbChatBadgeSub = null;
-    _nbChatBadgeRoomId = null;
+    // Handled by _badgesCtrl.dispose() in dispose()
   }
 
-  Future<void> _recomputeCereriQuickActionBadge() async {
-    final pos = _currentPositionObject ??
-        LocationCacheService.instance
-            .peekRecent(maxAge: const Duration(minutes: 20));
-    if (!mounted) return;
-    if (pos == null) {
-      setState(() => _cereriQuickActionBadgeCount = 0);
-      return;
-    }
-    final prefs = await SharedPreferences.getInstance();
-    final lastMs = prefs.getInt(MapQuickActionBadgePrefs.cereriFeedOpenedKey) ?? 0;
-    final threshold = DateTime.fromMillisecondsSinceEpoch(lastMs);
-    final now = DateTime.now();
-    final radiusKm = NeighborhoodRequestsManager.visibleRadiusKm;
+  Future<void> _recomputeCereriQuickActionBadge() =>
+      _badgesCtrl.recomputeCereri();
 
-    var n = 0;
-    for (final b in _cereriBadgeBroadcastSnapshot) {
-      if (!b.expiresAt.isAfter(now)) continue;
-      if (b.passengerLat == 0 && b.passengerLng == 0) continue;
-      final km = geolocator.Geolocator.distanceBetween(pos.latitude,
-              pos.longitude, b.passengerLat, b.passengerLng) /
-          1000.0;
-      if (km > radiusKm) continue;
-      if (b.createdAt.isAfter(threshold)) n++;
-    }
-    for (final r in _cereriBadgeNbRequestsSnapshot) {
-      if (r.resolved || !r.expiresAt.isAfter(now)) continue;
-      final km = geolocator.Geolocator.distanceBetween(
-              pos.latitude, pos.longitude, r.lat, r.lng) /
-          1000.0;
-      if (km > radiusKm) continue;
-      if (r.createdAt.isAfter(threshold)) n++;
-    }
-    if (mounted) setState(() => _cereriQuickActionBadgeCount = n);
-  }
 
-  Future<void> _rebindNbChatQuickActionBadgeListener() async {
-    final pos = _currentPositionObject ??
-        LocationCacheService.instance
-            .peekRecent(maxAge: const Duration(minutes: 20));
-    if (!mounted) return;
-    final myUid = FirebaseAuth.instance.currentUser?.uid;
-    if (myUid == null) return;
+  Future<void> _rebindNbChatQuickActionBadgeListener() =>
+      _badgesCtrl.rebindNbChatListener();
 
-    if (pos == null) {
-      _nbChatBadgeSub?.cancel();
-      _nbChatBadgeSub = null;
-      _nbChatBadgeRoomId = null;
-      setState(() => _chatQuickActionBadgeCount = 0);
-      return;
-    }
 
-    final room = await NeighborTelemetryRtdbService.instance
-        .ensureNbRoomClaim(pos.latitude, pos.longitude);
-    if (!mounted) return;
+  Future<void> _recountNbChatQuickActionBadge() =>
+      _badgesCtrl.rebindNbChatListener();
 
-    if (room == null || room.isEmpty) {
-      _nbChatBadgeSub?.cancel();
-      _nbChatBadgeSub = null;
-      _nbChatBadgeRoomId = null;
-      setState(() => _chatQuickActionBadgeCount = 0);
-      return;
-    }
-
-    Future<void> applySnap(QuerySnapshot<Map<String, dynamic>> snap) async {
-      if (!mounted) return;
-      final prefs = await SharedPreferences.getInstance();
-      final lastMs = prefs.getInt(
-              '${MapQuickActionBadgePrefs.nbChatReadKeyPrefix}$room') ??
-          0;
-      final threshold = DateTime.fromMillisecondsSinceEpoch(lastMs);
-      final cutoff = DateTime.now().subtract(const Duration(minutes: 30));
-
-      var n = 0;
-      for (final doc in snap.docs) {
-        final data = doc.data();
-        final sender = data['uid'] as String?;
-        final ts = (data['createdAt'] as Timestamp?)?.toDate();
-        if (sender == null || sender == myUid || ts == null) continue;
-        if (ts.isBefore(cutoff)) continue;
-        if (ts.isAfter(threshold)) n++;
-      }
-      if (mounted) setState(() => _chatQuickActionBadgeCount = n);
-    }
-
-    final needNewSub =
-        _nbChatBadgeRoomId != room || _nbChatBadgeSub == null;
-    if (needNewSub) {
-      _nbChatBadgeSub?.cancel();
-      _nbChatBadgeRoomId = room;
-      _nbChatBadgeSub = FirebaseFirestore.instance
-          .collection('neighborhood_chats')
-          .doc(room)
-          .collection('messages')
-          .orderBy('createdAt', descending: true)
-          .limit(80)
-          .snapshots()
-          .listen((snap) => unawaited(applySnap(snap)));
-    }
-  }
-
-  Future<void> _recountNbChatQuickActionBadge() async {
-    final room = _nbChatBadgeRoomId;
-    final myUid = FirebaseAuth.instance.currentUser?.uid;
-    if (!mounted || room == null || myUid == null) return;
-    try {
-      final snap = await FirebaseFirestore.instance
-          .collection('neighborhood_chats')
-          .doc(room)
-          .collection('messages')
-          .orderBy('createdAt', descending: true)
-          .limit(80)
-          .get();
-      if (!mounted) return;
-      final prefs = await SharedPreferences.getInstance();
-      final lastMs = prefs.getInt(
-              '${MapQuickActionBadgePrefs.nbChatReadKeyPrefix}$room') ??
-          0;
-      final threshold = DateTime.fromMillisecondsSinceEpoch(lastMs);
-      final cutoff = DateTime.now().subtract(const Duration(minutes: 30));
-      var n = 0;
-      for (final doc in snap.docs) {
-        final data = doc.data();
-        final sender = data['uid'] as String?;
-        final ts = (data['createdAt'] as Timestamp?)?.toDate();
-        if (sender == null || sender == myUid || ts == null) continue;
-        if (ts.isBefore(cutoff)) continue;
-        if (ts.isAfter(threshold)) n++;
-      }
-      if (mounted) setState(() => _chatQuickActionBadgeCount = n);
-    } catch (_) {
-      if (mounted) setState(() => _chatQuickActionBadgeCount = 0);
-    }
-  }
 
   // ── Destination preview ──────────────────────────────────────────────────────
   bool _isDestinationPreviewMode = false;
@@ -1232,15 +926,15 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
 
   // Afișare automată traseu când avem pickup + destinație (+ opriri)
   Future<void> _checkAndShowRouteAutomatically() async {
-    if (_pickupLatitude != null && _pickupLongitude != null && _destinationLatitude != null && _destinationLongitude != null) {
+    if (_routeCtrl.pickupLatitude != null && _routeCtrl.pickupLongitude != null && _routeCtrl.destinationLatitude != null && _routeCtrl.destinationLongitude != null) {
       try {
         final List<Point> waypoints = [];
-        waypoints.add(Point(coordinates: Position(_pickupLongitude!, _pickupLatitude!)));
-        for (final stop in _intermediateStops) {
+        waypoints.add(Point(coordinates: Position(_routeCtrl.pickupLongitude!, _routeCtrl.pickupLatitude!)));
+        for (final stop in _routeCtrl.intermediateStops) {
           final coords = await _getCoordinatesForDestination(stop);
           if (coords != null) waypoints.add(coords);
         }
-        waypoints.add(Point(coordinates: Position(_destinationLongitude!, _destinationLatitude!)));
+        waypoints.add(Point(coordinates: Position(_routeCtrl.destinationLongitude!, _routeCtrl.destinationLatitude!)));
         final routeData = await _routingService.getRoute(waypoints);
         if (routeData != null && mounted) await _onRouteCalculated(routeData);
       } catch (e) {
@@ -1268,9 +962,12 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
     ));
   }
 
+
   @override
   void initState() {
     super.initState();
+    _badgesCtrl.addListener(() { if (mounted) setState(() {}); });
+    _routeCtrl.addListener(() { if (mounted) setState(() {}); });
     widget.warmupOverlayVisible?.addListener(_onWarmupOverlayChanged);
     _smartSuggestionsFuture = SmartSuggestionsService().getSuggestions();
     PassengerRideServiceBus.pending.addListener(_onPassengerRideBus);
@@ -1328,7 +1025,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
             });
           },
         );
-      } catch (_) {}
+      } catch (_) { /* Mapbox op — expected on style reload or missing layer/annotation */ }
     });
 
     // Pulse marker controller
@@ -1482,12 +1179,21 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
     return b.toString();
   }
 
-  static const double _kNeighborAvatarHalfSizeZoomThreshold = 14.0;
   static const double _kEmojiClearOfAvatarM = 22.0;
   static const double _kEmojiPushAwayM = 28.0;
 
-  double _neighborAvatarZoomFactor() =>
-      _liveCameraZoom < _kNeighborAvatarHalfSizeZoomThreshold ? 0.5 : 1.0;
+  double _neighborAvatarZoomFactor() {
+    // În timpul fly-ului din spațiu camera trece prin zoom 1→15.
+    // Nu scalăm în această perioadă — evităm flash-ul vizibil.
+    if (_spaceIntroInFlight) return 1.0;
+    // Scalare lină: 100% la zoom ≥ 15.5, 40% la zoom ≤ 11.
+    const double zoomFull = 15.5;
+    const double zoomMin  = 11.0;
+    const double sizeMin  = 0.40;
+    if (_liveCameraZoom >= zoomFull) return 1.0;
+    if (_liveCameraZoom <= zoomMin)  return sizeMin;
+    return sizeMin + (1.0 - sizeMin) * (_liveCameraZoom - zoomMin) / (zoomFull - zoomMin);
+  }
 
   /// Mută ușor coordonatele emoji-ului plasat ca să nu stea peste avatarul unui user.
   ({double lat, double lng}) _offsetMapEmojiFromAvatarPins(
@@ -1534,6 +1240,61 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
     return (lat: la, lng: ln);
   }
 
+  /// Stack vizual "pachet de carti / trepte" pentru puncte apropiate.
+  /// Returneaza coordonate mutate stabil (determinist dupa id).
+  Map<String, ({double lat, double lng})> _buildStaircaseLayout(
+    List<({String id, double lat, double lng})> points, {
+    double bucketDeg = 0.00022,
+    double stepMeters = 14.0,
+  }) {
+    final out = <String, ({double lat, double lng})>{};
+    if (points.isEmpty) return out;
+
+    final groups = <String, List<({String id, double lat, double lng})>>{};
+    for (final p in points) {
+      final gx = (p.lat / bucketDeg).round();
+      final gy = (p.lng / bucketDeg).round();
+      final key = '$gx:$gy';
+      groups.putIfAbsent(key, () => <({String id, double lat, double lng})>[])
+          .add(p);
+    }
+
+    for (final g in groups.values) {
+      if (g.length == 1) {
+        final p = g.first;
+        out[p.id] = (lat: p.lat, lng: p.lng);
+        continue;
+      }
+
+      // Adaptiv: puține elemente => mai răsfirat; multe => mai compact.
+      final double scale = switch (g.length) {
+        <= 2 => 1.35,
+        <= 4 => 1.18,
+        <= 7 => 1.0,
+        <= 10 => 0.84,
+        _ => 0.68,
+      };
+      final double groupStepM = (stepMeters * scale).clamp(8.0, 24.0);
+
+      g.sort((a, b) => a.id.compareTo(b.id));
+      final baseLat = g.fold<double>(0.0, (s, p) => s + p.lat) / g.length;
+      final baseLng = g.fold<double>(0.0, (s, p) => s + p.lng) / g.length;
+      final cosLat = math.cos(baseLat * math.pi / 180.0).abs().clamp(0.25, 1.0);
+
+      for (var i = 0; i < g.length; i++) {
+        final p = g[i];
+        // Trepte: jos + dreapta.
+        final downM = i * groupStepM;
+        final rightM = i * groupStepM * 0.6;
+        final lat = baseLat + (-downM / 111320.0);
+        final lng = baseLng + (rightM / (111320.0 * cosLat));
+        out[p.id] = (lat: lat, lng: lng);
+      }
+    }
+
+    return out;
+  }
+
   void _recomputeAvatarPinsForEmojiAvoidance() {
     final filteredNeighbors = _lastFilteredNeighborsForMap;
     final displayByUid = _lastNeighborDisplayByUid;
@@ -1556,7 +1317,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
         final g = ann.geometry;
         final c = g.coordinates;
         pins.add((lat: c.lat.toDouble(), lng: c.lng.toDouble()));
-      } catch (_) {}
+      } catch (_) { /* Mapbox op — expected on style reload or missing layer/annotation */ }
     }
     _avatarPinsForEmojiAvoidance = pins;
     _scheduleEmojiAvoidanceRebuildDebounced();
@@ -1571,9 +1332,19 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
     });
   }
 
+  // Dimensiunile de bază (la zoom full) pentru fiecare strat de markere.
+  static const double _kMomentBaseSize        = 1.68;
+  static const double _kParkingSwapBaseSize   = 0.8;
+  static const double _kParkingYieldBaseSize  = 0.92;
+  static const double _kRideBroadcastBaseSize = 2.2;
+  static const double _kMagicEventBaseSize    = 1.35;
+  static const double _kEmergencyBaseSize     = 0.8;
+
   Future<void> _applyUserAvatarLayersZoomScale() async {
     if (!mounted) return;
     final zf = _neighborAvatarZoomFactor();
+
+    // ── Avatare vecini ────────────────────────────────────────────────────
     if (_neighborsAnnotationManager != null) {
       for (final e in _neighborAnnotations.entries) {
         final base = _neighborIconSizeBaseByUid[e.key];
@@ -1582,18 +1353,99 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
         ann.iconSize = base * zf;
         try {
           await _neighborsAnnotationManager?.update(ann);
-        } catch (_) {}
+        } catch (_) { /* Mapbox op — expected on style reload or missing layer/annotation */ }
       }
     }
+
+    // ── Șoferi disponibili ────────────────────────────────────────────────
     if (_driversAnnotationManager != null) {
       const baseDriver = 0.72;
       for (final ann in _nearbyDriverAnnotations.values) {
         ann.iconSize = baseDriver * zf;
         try {
           await _driversAnnotationManager?.update(ann);
+        } catch (_) { /* Mapbox op — expected on style reload or missing layer/annotation */ }
+      }
+    }
+
+    // ── Emoji reacții ─────────────────────────────────────────────────────
+    if (_emojiAnnotationManager != null) {
+      final targetEmoji = _emojiIconSizeBase * zf;
+      for (final ann in _emojiAnnotations.values) {
+        ann.iconSize = targetEmoji;
+        try {
+          await _emojiAnnotationManager?.update(ann);
         } catch (_) {}
       }
     }
+
+    // ── Momente (bule postări) ────────────────────────────────────────────
+    if (_momentAnnotationManager != null) {
+      final targetMoment = _kMomentBaseSize * zf;
+      for (final ann in _momentAnnotations.values) {
+        ann.iconSize = targetMoment;
+        try {
+          await _momentAnnotationManager?.update(ann);
+        } catch (_) {}
+      }
+    }
+
+    // ── Parking swap ──────────────────────────────────────────────────────
+    if (_parkingSwapAnnotationManager != null) {
+      final targetParking = _kParkingSwapBaseSize * zf;
+      for (final ann in _parkingSpotAnnotations.values) {
+        ann.iconSize = targetParking;
+        try {
+          await _parkingSwapAnnotationManager?.update(ann);
+        } catch (_) {}
+      }
+    }
+
+    // ── Parking yield ─────────────────────────────────────────────────────
+    final yieldAnn = _parkingYieldMySpotAnnotation;
+    if (_parkingYieldMySpotManager != null && yieldAnn != null) {
+      yieldAnn.iconSize = _kParkingYieldBaseSize * zf;
+      try {
+        await _parkingYieldMySpotManager?.update(yieldAnn);
+      } catch (_) {}
+    }
+
+    // ── Ride broadcasts ───────────────────────────────────────────────────
+    if (_rideBroadcastsAnnotationManager != null) {
+      final targetRide = _kRideBroadcastBaseSize * zf;
+      for (final ann in _rideBroadcastAnnotations.values) {
+        ann.iconSize = targetRide;
+        try {
+          await _rideBroadcastsAnnotationManager?.update(ann);
+        } catch (_) {}
+      }
+    }
+
+    // ── Magic events ──────────────────────────────────────────────────────
+    if (_magicEventAnnotationManager != null) {
+      final targetMagic = _kMagicEventBaseSize * zf;
+      for (final ann in _magicEventAnnotations.values) {
+        ann.iconSize = targetMagic;
+        try {
+          await _magicEventAnnotationManager?.update(ann);
+        } catch (_) {}
+      }
+    }
+
+    // ── Emergency ─────────────────────────────────────────────────────────
+    if (_emergencyAnnotationManager != null) {
+      final targetEmergency = _kEmergencyBaseSize * zf;
+      for (final ann in _emergencyAnnotations.values) {
+        ann.iconSize = targetEmergency;
+        try {
+          await _emergencyAnnotationManager?.update(ann);
+        } catch (_) {}
+      }
+    }
+
+    // ── Mystery boxes ─────────────────────────────────────────────────────
+    await _mysteryBoxManager?.applyZoomScale(zf);
+    await _communityMysteryManager?.applyZoomScale(zf);
   }
 
   Future<void> _updateEmojiMarkers(List<MapEmoji> emojis) async {
@@ -1612,7 +1464,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
       // `PointAnnotation.update` păstrează uneori textField vechi / nu aplică corect `image` — reconstruim stratul.
       try {
         await _emojiAnnotationManager?.deleteAll();
-      } catch (_) {}
+      } catch (_) { /* Mapbox op — expected on style reload or missing layer/annotation */ }
       _emojiAnnotations.clear();
 
       double iconSize = _kMapReactionEmojiIconSize;
@@ -1621,11 +1473,25 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
         // Min puțin mai mare ca emoji-urile să rămână lizibile lângă alte straturi.
         iconSize = (0.24 * dpr).clamp(0.62, 1.12);
       }
+      _emojiIconSizeBase = iconSize;
+      iconSize = iconSize * _neighborAvatarZoomFactor();
+
+      final baseEmojiPoints = <({String id, double lat, double lng})>[];
+      for (final e in emojis) {
+        final adj = _offsetMapEmojiFromAvatarPins(e.lat, e.lng, e.id);
+        baseEmojiPoints.add((id: e.id, lat: adj.lat, lng: adj.lng));
+      }
+      final staircaseById = _buildStaircaseLayout(
+        baseEmojiPoints,
+        // Emoji: mai compacte ca să nu acopere harta.
+        stepMeters: 11.0,
+      );
 
       for (final e in emojis) {
         final label = normalizeMapEmojiForEngine(e.emoji);
-        final adj = _offsetMapEmojiFromAvatarPins(e.lat, e.lng, e.id);
-        final point = MapboxUtils.createPoint(adj.lat, adj.lng);
+        final p = staircaseById[e.id] ??
+            (lat: e.lat, lng: e.lng);
+        final point = MapboxUtils.createPoint(p.lat, p.lng);
         final png = await _generateMapReactionMarkerPng(label);
         final options = PointAnnotationOptions(
           geometry: point,
@@ -1845,21 +1711,35 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
             final ann = _momentAnnotations[id]!;
             _momentAnnotationIdToMomentId.remove(ann.id);
             await _momentAnnotationManager?.delete(ann);
-          } catch (_) {}
+          } catch (_) { /* Mapbox op — expected on style reload or missing layer/annotation */ }
           _momentAnnotations.remove(id);
         }
       }
 
-      const double momentIconSize = 2.4; // aliniat la markerele emoji ale vecinilor (~80px PNG)
+      const double momentIconSize = 1.68; // aliniat la markerele emoji ale vecinilor (~80px PNG)
       const List<double> momentTextOffset = [0, 2.5];
       const int momentTextColor = 0xFF7C3AED;
+      final momentPoints = <({String id, double lat, double lng})>[];
+      for (final m in moments) {
+        if (m.isExpired) continue;
+        // Evitam suprapunerea pe pinii de user, apoi aplicam stack "trepte".
+        final adj = _offsetMapEmojiFromAvatarPins(m.lat, m.lng, 'moment_${m.id}');
+        momentPoints.add((id: m.id, lat: adj.lat, lng: adj.lng));
+      }
+      final momentStairById = _buildStaircaseLayout(
+        momentPoints,
+        // Momente: puțin mai răsfirate pentru lizibilitatea bulei/caption.
+        stepMeters: 17.0,
+      );
 
       for (final m in moments) {
         if (m.isExpired) continue;
         final symbol = _symbolForMapMoment(m);
         final caption = _mapMomentCaptionBubble(m);
         final png = await _generateMapMomentBubblePng(symbol);
-        final geom = MapboxUtils.createPoint(m.lat, m.lng);
+        final p = momentStairById[m.id] ??
+            (lat: m.lat, lng: m.lng);
+        final geom = MapboxUtils.createPoint(p.lat, p.lng);
 
         if (_momentAnnotations.containsKey(m.id)) {
           try {
@@ -1877,7 +1757,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
                 ..textHaloColor = 0xFFFFFFFF
                 ..textHaloWidth = 2.0,
             );
-          } catch (_) {}
+          } catch (_) { /* Mapbox op — expected on style reload or missing layer/annotation */ }
           continue;
         }
         final options = PointAnnotationOptions(
@@ -1957,7 +1837,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
              await _neighborsAnnotationManager?.update(ann..textField = originalText..textSize = 11.0);
           }
         });
-      } catch (_) {}
+      } catch (_) { /* Mapbox op — expected on style reload or missing layer/annotation */ }
     }
   }
 
@@ -1986,63 +1866,183 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
     final uid = FirebaseAuth.instance.currentUser?.uid;
     if (uid == null) return null;
     final avatarId = _currentRole == UserRole.driver
-        ? (_neighborCarAvatarDriverCache[uid] ?? 'default_car')
-        : (_neighborCarAvatarPassengerCache[uid] ?? 'default_car');
+        ? _garageAvatarIdForDriverSlot
+        : _garageAvatarIdForPassengerSlot;
     return CarAvatarService().getAvatarById(avatarId);
   }
 
-  Future<void> _enable3DUserModel(String modelPath) async {
-    if (_mapboxMap == null || !mounted) return;
+  Future<bool> _enable3DUserModel(String modelPath) async {
+    if (_mapboxMap == null || !mounted) return false;
     try {
+      // Trebuie `asset://…` / `https://…` aici: [LocationComponentSettings.updateSettings] din SDK
+      // rescrie doar modelUri-ul puck-ului prin getFlutterAssetPath (asset → flutter_assets).
+      // [addStyleModel] NU face aceeași rescriere → pe Android „Could not read asset” pentru același path.
       final String uri = modelPath.startsWith('http') ? modelPath : 'asset://$modelPath';
+      final now = DateTime.now();
+      if (_suspend3DUntil != null && now.isBefore(_suspend3DUntil!)) {
+        return false;
+      }
+      if (_isUsing3DUserModel &&
+          _last3dPuckModelUri == uri &&
+          _last3dPuckApplyAt != null &&
+          now.difference(_last3dPuckApplyAt!) < const Duration(seconds: 4)) {
+        return true;
+      }
+      // Înainte de orice await — dacă nu mai e primul „enable”, tot reaplicăm setările native.
+      final bool firstTimeEntering3dMode = !_isUsing3DUserModel;
 
-      // Reîncarcă resursa când se schimbă avatarul 3D (același id de model în stil, URI nou).
-      if (_loadedUser3dModelUri != uri) {
-        await _mapboxMap!.style.addStyleModel('user-3d-model', uri);
-        _loadedUser3dModelUri = uri;
+      double modelScale = 28.0;
+      if (modelPath.contains('robo_3d')) {
+        modelScale = 14.0;
+      } else if (modelPath.contains('inspiration-8') || modelPath.contains('inspiration-4')) {
+        modelScale = 8.0;
       }
 
-      if (!_isUsing3DUserModel) {
-        // Trecem la LocationComponent cu model 3D
-        await _mapboxMap!.location.updateSettings(
-          LocationComponentSettings(
-            enabled: true,
-            pulsingEnabled: false,
-            locationPuck: LocationPuck(
-              locationPuck3D: LocationPuck3D(
-                modelUri: 'user-3d-model',
-                modelScale: [28.0, 28.0, 28.0], // Ușoară mărire pentru vizibilitate
-                modelRotation: [0.0, 0.0, 0.0],
-              ),
+      // Reaplică MEREU LocationComponent pentru puck 3D. După [flyTo] / animații cameră, stratul nativ
+      // poate fi resetat chiar dacă [_isUsing3DUserModel] rămâne true — vechiul `if (!3d)` bloca retransmiterea.
+      // LocationComponentSettings: [puckBearingEnabled] + [puckBearing] (mapbox_maps_flutter).
+      await _mapboxMap!.location.updateSettings(
+        LocationComponentSettings(
+          enabled: true,
+          pulsingEnabled: false,
+          puckBearingEnabled: true,
+          puckBearing: PuckBearing.COURSE,
+          locationPuck: LocationPuck(
+            locationPuck3D: LocationPuck3D(
+              modelUri: uri,
+              modelScale: [modelScale, modelScale, modelScale],
+              modelRotation: [0.0, 0.0, 0.0],
             ),
           ),
-        );
-        
-        // Înclinăm camera pentru a vedea modelul 3D mai bine
-        await _mapboxMap?.setCamera(CameraOptions(pitch: 45.0));
-        
-        setState(() => _isUsing3DUserModel = true);
-        Logger.info('3D model enabled: $uri', tag: 'MAP_3D');
+        ),
+      );
+      final hasModelSource =
+          await _mapboxMap!.style.styleSourceExists('mapbox-location-model-source');
+      if (!hasModelSource) {
+        // Retry scurt: pe unele dispozitive sursa apare cu întârziere după updateSettings.
+        await Future<void>.delayed(const Duration(milliseconds: 600));
+        if (!mounted || _mapboxMap == null) return false;
+        final retryCheck =
+            await _mapboxMap!.style.styleSourceExists('mapbox-location-model-source');
+        if (!retryCheck) {
+          _consecutive3DSourceMisses++;
+          if (_consecutive3DSourceMisses >= _k3DSourceMissesBeforeCooldown) {
+            _suspend3DUntil = DateTime.now().add(_k3DSourceMissingCooldown);
+            Logger.warning(
+              '3D source missing repeatedly; cooldown activat',
+              tag: 'MAP_3D',
+            );
+          }
+          if (mounted && _isUsing3DUserModel) {
+            setState(() => _isUsing3DUserModel = false);
+          }
+          Logger.warning(
+            '3D fallback to 2D: mapbox-location-model-source missing after updateSettings',
+            tag: 'MAP_3D',
+          );
+          return false;
+        }
       }
+
+      // Pitch doar la prima intrare în mod 3D (nu la fiecare reaplicare după fly).
+      if (firstTimeEntering3dMode && mounted) {
+        try {
+          final cam = await _mapboxMap!.getCameraState();
+          await _mapboxMap!.setCamera(
+            CameraOptions(
+              center: cam.center,
+              zoom: cam.zoom,
+              bearing: cam.bearing,
+              pitch: 45.0,
+            ),
+          );
+        } catch (_) {
+          await _mapboxMap?.setCamera(CameraOptions(pitch: 45.0));
+        }
+      }
+
+      if (mounted) {
+        setState(() => _isUsing3DUserModel = true);
+      }
+      _consecutive3DSourceMisses = 0;
+      _suspend3DUntil = null;
+      _last3dPuckModelUri = uri;
+      _last3dPuckApplyAt = DateTime.now();
+      Logger.info(
+        '${firstTimeEntering3dMode ? '3D model enabled' : '3D location puck reapplied'}: $uri',
+        tag: 'MAP_3D',
+      );
+      _schedule3DSourceStabilityProbe();
+      return true;
     } catch (e) {
       Logger.error('Error enabling 3D model: $e', tag: 'MAP_3D');
+      return false;
     }
   }
 
   Future<void> _disable3DUserModel() async {
     if (!_isUsing3DUserModel || _mapboxMap == null) return;
     try {
+      _last3dPuckModelUri = null;
+      _last3dPuckApplyAt = null;
       // Resetăm flag-ul înainte de a apela _updateLocationPuck, altfel acesta ar putea returna anticipat.
       if (mounted) {
         setState(() {
           _isUsing3DUserModel = false;
         });
       }
+      _userMarkerVisualCacheKey = null;
       await _updateLocationPuck();
       Logger.info('3D model disabled', tag: 'MAP_3D');
     } catch (e) {
       Logger.debug('Error disabling 3D model: $e');
     }
+  }
+
+  void _schedule3DSourceStabilityProbe() {
+    // Unele device-uri raportează sursa validă imediat după enable, apoi aceasta cade după 3-7 sec.
+    // Verificăm stabilitatea în mai multe puncte, nu doar la ~1 secundă.
+    final probeMoments = <Duration>[
+      _k3DPostEnableStabilityProbeDelay,
+      const Duration(seconds: 3),
+      const Duration(seconds: 6),
+    ];
+    for (final delay in probeMoments) {
+      Future<void>.delayed(delay, () async {
+        if (!mounted || _mapboxMap == null || !_isUsing3DUserModel) return;
+        try {
+          final stillPresent =
+              await _mapboxMap!.style.styleSourceExists('mapbox-location-model-source');
+          if (stillPresent) return;
+
+          _consecutive3DSourceMisses++;
+          if (_consecutive3DSourceMisses >= _k3DSourceMissesBeforeCooldown) {
+            _suspend3DUntil = DateTime.now().add(_k3DSourceMissingCooldown);
+          }
+
+          Logger.warning(
+            '3D source unstable after enable (probe ${delay.inMilliseconds}ms); forced fallback to 2D',
+            tag: 'MAP_3D',
+          );
+          await _disable3DUserModel();
+          _clearGpsUserMarkerThrottle();
+          await _updateUserMarker(centerCamera: false);
+        } catch (e) {
+          Logger.debug('3D stability probe error: $e', tag: 'MAP_3D');
+        }
+      });
+    }
+  }
+
+  bool _compute3DZoomGate(double zoom) {
+    if (_is3DZoomGateOpen) {
+      if (zoom < _kMapUser3dZoomExitThreshold) {
+        _is3DZoomGateOpen = false;
+      }
+    } else if (zoom >= _kMapUser3dZoomEnterThreshold) {
+      _is3DZoomGateOpen = true;
+    }
+    return _is3DZoomGateOpen;
   }
 
   /// Pasager (sau cont fără profil șofer valid) fără skin de pasager deblocat → fără bitmap transport; Location Puck.
@@ -2116,6 +2116,8 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
       final dAv = svc.getAvatarById(driverAvatarId);
       if (mounted) {
         setState(() {
+          _garageAvatarIdForPassengerSlot = passengerAvatarId;
+          _garageAvatarIdForDriverSlot = driverAvatarId;
           _garageAssetPathForPassengerSlot =
               pAv.isDefault ? null : pAv.assetPath;
           _garageAssetPathForDriverSlot = dAv.isDefault ? null : dAv.assetPath;
@@ -2135,6 +2137,11 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
             forceNeighborTelemetry: true,
           );
         }
+        if (_currentRole == UserRole.driver &&
+            _isDriverAvailable &&
+            _isVisibleToNeighbors) {
+          unawaited(_firestoreService.refreshDriverLocationAvatarNow());
+        }
       }
     } catch (e, st) {
       Logger.error(
@@ -2146,12 +2153,43 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
     }
   }
 
+  /// Curăță overlay-uri „stale” (vecini, dedupe proximitate) și resincronizează markerele vecinilor.
+  void _sweepStaleMapOverlayState() {
+    if (!mounted) return;
+    _proximityNotifResetTime = DateTime.now();
+    _proximitNotifiedUids.clear();
+    _recentlyBumpedUids.clear();
+    _friendsTogetherHintPairs.clear();
+    _pruneStaleNeighborSnapshots();
+    _mergeNeighborStreamsAndUpdateAnnotations();
+  }
+
   /// Reîncarcă markerul propriu și stilul de mașină din profil (fără restart) — util dacă Mapbox rămâne desincronizat.
   Future<void> _softRefreshMapDisplay() async {
     if (!mounted || _mapboxMap == null) return;
     try {
       await _loadCustomCarAvatar();
       await _syncMapOrientationPinAnnotation();
+      _sweepStaleMapOverlayState();
+      _restartNearbyDriversStream();
+      // Forțează reîncărcarea cererilor din zonă (evită debounce-ul „mică mișcare / 3s” la refresh explicit).
+      _lastRequestsRefreshAt = null;
+      _lastRequestsRefreshLat = null;
+      _lastRequestsRefreshLng = null;
+      _refreshNeighborhoodRequestBubbles();
+      // Recentrează camera pe locația curentă a utilizatorului.
+      final pos = _currentPositionObject;
+      if (pos != null) {
+        await _mapboxMap!.flyTo(
+          CameraOptions(
+            center: MapboxUtils.createPoint(pos.latitude, pos.longitude),
+            zoom: 15.5,
+            bearing: 0,
+            pitch: 0,
+          ),
+          MapAnimationOptions(duration: 800),
+        );
+      }
     } catch (e, st) {
       Logger.error(
         'Reîmprospătare hartă: $e',
@@ -2294,7 +2332,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
       try {
         final bd = await rootBundle.load(path);
         return bd.buffer.asUint8List();
-      } catch (_) {}
+      } catch (_) { /* Mapbox op — expected on style reload or missing layer/annotation */ }
     }
     Logger.warning(
       'Lipsește PNG Acasă favorite — folosesc pictogramă generată (casă în glob).',
@@ -2321,7 +2359,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
     unawaited(() async {
       try {
         await previous;
-      } catch (_) {}
+      } catch (_) { /* Mapbox op — expected on style reload or missing layer/annotation */ }
 
       try {
         GeoPoint? homeGp = _savedHomePinCoordsIfVisible();
@@ -2341,10 +2379,10 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
         if (homeGp == null && reperGp == null) {
           try {
             await _savedHomeFavoritePinManager?.deleteAll();
-          } catch (_) {}
+          } catch (_) { /* Mapbox op — expected on style reload or missing layer/annotation */ }
           try {
             await _orientationReperPinManager?.deleteAll();
-          } catch (_) {}
+          } catch (_) { /* Mapbox op — expected on style reload or missing layer/annotation */ }
           if (_useAndroidFlutterUserMarkerOverlay && mounted) {
             setState(_clearAndroidPrivatePinOverlayFields);
           } else {
@@ -2401,10 +2439,10 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
         if (_useAndroidFlutterUserMarkerOverlay) {
           try {
             await _savedHomeFavoritePinManager?.deleteAll();
-          } catch (_) {}
+          } catch (_) { /* Mapbox op — expected on style reload or missing layer/annotation */ }
           try {
             await _orientationReperPinManager?.deleteAll();
-          } catch (_) {}
+          } catch (_) { /* Mapbox op — expected on style reload or missing layer/annotation */ }
           _savedHomeFavoritePinManager = null;
           _orientationReperPinManager = null;
           _savedHomeFavoritePinTapRegistered = false;
@@ -2452,10 +2490,10 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
 
         try {
           await _savedHomeFavoritePinManager?.deleteAll();
-        } catch (_) {}
+        } catch (_) { /* Mapbox op — expected on style reload or missing layer/annotation */ }
         try {
           await _orientationReperPinManager?.deleteAll();
-        } catch (_) {}
+        } catch (_) { /* Mapbox op — expected on style reload or missing layer/annotation */ }
 
         if (homeGeom != null && _savedHomeFavoritePinManager != null) {
           await _savedHomeFavoritePinManager!.create(
@@ -3213,32 +3251,32 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
     if (!mounted || _mapboxMap == null) return;
 
     // Inițializare TTS la prima utilizare
-    if (_navTts == null) {
+    if (_routeCtrl.navTts == null) {
       final t = FlutterTts();
       try {
         await t.setLanguage('ro-RO');
         await t.setSpeechRate(0.42);
         await t.awaitSpeakCompletion(true);
-      } catch (_) {}
-      _navTts = t;
+      } catch (_) { /* Mapbox op — expected on style reload or missing layer/annotation */ }
+      _routeCtrl.navTts = t;
     }
 
     // Oprește sesiunea anterioară dacă există
     await _stopInAppNavigation(announce: false);
 
     setState(() {
-      _inAppNavActive = true;
+      _routeCtrl.inAppNavActive = true;
       _rideAddressSheetVisible = true;
-      _navDestLat = destLat;
-      _navDestLng = destLng;
-      _navDestLabel = label;
-      _navHasArrived = false;
-      _navCurrentInstruction = AppLocalizations.of(context)!.mapCalculatingRoute;
-      _navRemainDistanceM = 0;
-      _navRemainEta = Duration.zero;
-      _navSteps = [];
-      _navStepIndex = 0;
-      _navLastSpokenStep = -1;
+      _routeCtrl.navDestLat = destLat;
+      _routeCtrl.navDestLng = destLng;
+      _routeCtrl.navDestLabel = label;
+      _routeCtrl.navHasArrived = false;
+      _routeCtrl.navCurrentInstruction = AppLocalizations.of(context)!.mapCalculatingRoute;
+      _routeCtrl.navRemainDistanceM = 0;
+      _routeCtrl.navRemainEta = Duration.zero;
+      _routeCtrl.navSteps = [];
+      _routeCtrl.navStepIndex = 0;
+      _routeCtrl.navLastSpokenStep = -1;
     });
 
     // Obținem poziția curentă
@@ -3248,7 +3286,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
     if (originLat == null || originLng == null) {
       if (mounted) {
         setState(() {
-          _navCurrentInstruction = AppLocalizations.of(context)!.mapCannotGetLocationEnableGps;
+          _routeCtrl.navCurrentInstruction = AppLocalizations.of(context)!.mapCannotGetLocationEnableGps;
         });
       }
       return;
@@ -3265,7 +3303,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
 
     if (route == null) {
       setState(() {
-        _navCurrentInstruction = AppLocalizations.of(context)!.mapRouteUnavailableCheckConnection;
+        _routeCtrl.navCurrentInstruction = AppLocalizations.of(context)!.mapRouteUnavailableCheckConnection;
       });
       return;
     }
@@ -3282,25 +3320,25 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
         if (legs != null && legs.isNotEmpty) {
           final steps = (legs.first as Map)['steps'] as List?;
           if (steps != null) {
-            _navSteps = steps.map((s) => Map<String, dynamic>.from(s as Map)).toList();
+            _routeCtrl.navSteps = steps.map((s) => Map<String, dynamic>.from(s as Map)).toList();
           }
         }
         final r = routes.first as Map;
         final dist = (r['distance'] as num?)?.toDouble() ?? 0;
         final dur = (r['duration'] as num?)?.toDouble() ?? 0;
         setState(() {
-          _navRemainDistanceM = dist;
-          _navRemainEta = Duration(seconds: dur.round());
+          _routeCtrl.navRemainDistanceM = dist;
+          _routeCtrl.navRemainEta = Duration(seconds: dur.round());
         });
       }
-    } catch (_) {}
+    } catch (_) { /* Mapbox op — expected on style reload or missing layer/annotation */ }
 
     // Prima instrucțiune
     _navUpdateInstruction();
     unawaited(_navSpeakStep(force: true));
 
     // Abonare GPS
-    _navGpsSubscription = geolocator.Geolocator.getPositionStream(
+    _routeCtrl.navGpsSubscription = geolocator.Geolocator.getPositionStream(
       locationSettings: DeprecatedAPIsFix.createLocationSettings(
         accuracy: geolocator.LocationAccuracy.high,
         distanceFilter: 8,
@@ -3312,12 +3350,12 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
 
   /// Actualizează instrucțiunea curentă din lista de pași.
   void _navUpdateInstruction() {
-    if (_navSteps.isEmpty) {
-      setState(() => _navCurrentInstruction = AppLocalizations.of(context)!.mapContinueOnRoute);
+    if (_routeCtrl.navSteps.isEmpty) {
+      setState(() => _routeCtrl.navCurrentInstruction = AppLocalizations.of(context)!.mapContinueOnRoute);
       return;
     }
-    final i = _navStepIndex.clamp(0, _navSteps.length - 1);
-    final step = _navSteps[i];
+    final i = _routeCtrl.navStepIndex.clamp(0, _routeCtrl.navSteps.length - 1);
+    final step = _routeCtrl.navSteps[i];
     String text = '';
     final m = step['maneuver'];
     if (m is Map) text = m['instruction']?.toString().trim() ?? '';
@@ -3329,16 +3367,16 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
       }
     }
     if (text.isEmpty) text = 'Continuă pe traseu.';
-    if (mounted) setState(() => _navCurrentInstruction = text);
+    if (mounted) setState(() => _routeCtrl.navCurrentInstruction = text);
   }
 
   /// Callback GPS în timp real — actualizează camera, ETA și detectează sosirea.
   Future<void> _navGpsTick(geolocator.Position pos) async {
     ContextEngineService.instance.feedSpeed(pos.speed);
-    if (!mounted || !_inAppNavActive || _navHasArrived) return;
+    if (!mounted || !_routeCtrl.inAppNavActive || _routeCtrl.navHasArrived) return;
 
-    final destLat = _navDestLat;
-    final destLng = _navDestLng;
+    final destLat = _routeCtrl.navDestLat;
+    final destLng = _routeCtrl.navDestLng;
     if (destLat == null || destLng == null) return;
 
     final distToDestM = geolocator.Geolocator.distanceBetween(
@@ -3350,15 +3388,15 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
     final etaSec = (distToDestM / speedMs).round();
     if (mounted) {
       setState(() {
-        _navRemainDistanceM = distToDestM;
-        _navRemainEta = Duration(seconds: etaSec);
+        _routeCtrl.navRemainDistanceM = distToDestM;
+        _routeCtrl.navRemainEta = Duration(seconds: etaSec);
       });
     }
 
     // Avansăm pasul: găsim cel mai aproape pas din traseu
-    if (_navSteps.isNotEmpty) {
-      for (int i = _navStepIndex; i < _navSteps.length - 1; i++) {
-        final step = _navSteps[i];
+    if (_routeCtrl.navSteps.isNotEmpty) {
+      for (int i = _routeCtrl.navStepIndex; i < _routeCtrl.navSteps.length - 1; i++) {
+        final step = _routeCtrl.navSteps[i];
         final geom = step['geometry'];
         if (geom is Map) {
           final coords = geom['coordinates'];
@@ -3371,8 +3409,8 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
                 pos.latitude, pos.longitude, stepEndLat, stepEndLng,
               );
               if (dToStepEnd < 35) {
-                if (_navStepIndex != i + 1) {
-                  setState(() => _navStepIndex = i + 1);
+                if (_routeCtrl.navStepIndex != i + 1) {
+                  setState(() => _routeCtrl.navStepIndex = i + 1);
                   _navUpdateInstruction();
                   unawaited(_navSpeakStep(force: false));
                 }
@@ -3405,30 +3443,30 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
         ),
         MapAnimationOptions(duration: 600),
       );
-    } catch (_) {}
+    } catch (_) { /* Mapbox op — expected on style reload or missing layer/annotation */ }
   }
 
   Future<void> _navSpeakStep({required bool force}) async {
-    final tts = _navTts;
+    final tts = _routeCtrl.navTts;
     if (tts == null || !mounted) return;
-    final text = _navCurrentInstruction;
-    if (text.isEmpty || (!force && _navLastSpokenStep == _navStepIndex)) return;
-    _navLastSpokenStep = _navStepIndex;
+    final text = _routeCtrl.navCurrentInstruction;
+    if (text.isEmpty || (!force && _routeCtrl.navLastSpokenStep == _routeCtrl.navStepIndex)) return;
+    _routeCtrl.navLastSpokenStep = _routeCtrl.navStepIndex;
     try {
       await tts.stop();
       await tts.speak(text);
-    } catch (_) {}
+    } catch (_) { /* Mapbox op — expected on style reload or missing layer/annotation */ }
   }
 
   Future<void> _navArrival() async {
     final l10n = AppLocalizations.of(context)!;
-    if (_navHasArrived || !mounted) return;
+    if (_routeCtrl.navHasArrived || !mounted) return;
     setState(() {
-      _navHasArrived = true;
-      _navCurrentInstruction = l10n.mapArrivalInstruction;
+      _routeCtrl.navHasArrived = true;
+      _routeCtrl.navCurrentInstruction = l10n.mapArrivalInstruction;
     });
     HapticFeedback.heavyImpact();
-    try { await _navTts?.stop(); await _navTts?.speak(l10n.mapArrivalInstruction); } catch (_) {}
+    try { await _routeCtrl.navTts?.stop(); await _routeCtrl.navTts?.speak(l10n.mapArrivalInstruction); } catch (e) { Logger.debug('MapScreen TTS arrival failed: $e', tag: 'MAP'); }
     await _stopInAppNavigation(announce: false);
     if (!mounted) return;
     await showDialog<void>(
@@ -3438,7 +3476,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
         icon: Icon(Icons.place_rounded, size: 48, color: Theme.of(ctx).colorScheme.primary),
         title: Text(l10n.mapArrivedTitle),
         content: Text(
-          AppLocalizations.of(context)!.mapArrivedAtDestination(_navDestLabel),
+          AppLocalizations.of(context)!.mapArrivedAtDestination(_routeCtrl.navDestLabel),
         ),
         actions: [
           TextButton(
@@ -3452,26 +3490,26 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
 
   /// Oprește navigarea internă și resetează starea.
   Future<void> _stopInAppNavigation({bool announce = true}) async {
-    await _navGpsSubscription?.cancel();
-    _navGpsSubscription = null;
-    _navEtaTimer?.cancel();
-    _navEtaTimer = null;
+    await _routeCtrl.navGpsSubscription?.cancel();
+    _routeCtrl.navGpsSubscription = null;
+    _routeCtrl.navEtaTimer?.cancel();
+    _routeCtrl.navEtaTimer = null;
     if (announce) {
-      try { await _navTts?.stop(); } catch (_) {}
+      try { await _routeCtrl.navTts?.stop(); } catch (e) { Logger.debug('MapScreen TTS stop failed: $e', tag: 'MAP'); }
     }
     if (mounted) {
       setState(() {
-        _inAppNavActive = false;
-        _navDestLat = null;
-        _navDestLng = null;
-        _navDestLabel = '';
-        _navCurrentInstruction = '';
-        _navRemainDistanceM = 0;
-        _navRemainEta = Duration.zero;
-        _navSteps = [];
-        _navStepIndex = 0;
-        _navLastSpokenStep = -1;
-        _navHasArrived = false;
+        _routeCtrl.inAppNavActive = false;
+        _routeCtrl.navDestLat = null;
+        _routeCtrl.navDestLng = null;
+        _routeCtrl.navDestLabel = '';
+        _routeCtrl.navCurrentInstruction = '';
+        _routeCtrl.navRemainDistanceM = 0;
+        _routeCtrl.navRemainEta = Duration.zero;
+        _routeCtrl.navSteps = [];
+        _routeCtrl.navStepIndex = 0;
+        _routeCtrl.navLastSpokenStep = -1;
+        _routeCtrl.navHasArrived = false;
       });
     }
     // Reset cameră la modul normal
@@ -3488,7 +3526,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
           MapAnimationOptions(duration: 800),
         );
       }
-    } catch (_) {}
+    } catch (_) { /* Mapbox op — expected on style reload or missing layer/annotation */ }
     // Curăță ruta de pe hartă
     unawaited(_onRouteCalculated(null));
     Logger.info('Navigare internă oprită.', tag: 'NAV_INTERNAL');
@@ -3512,6 +3550,13 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
 
     CommunityMysteryMapRefresh.instance
         .removeListener(_onCommunityMysteryMapRefreshRequested);
+    final roomTopic = _nbRoomPushTopic;
+    if (roomTopic != null && roomTopic.isNotEmpty) {
+      unawaited(
+        FirebaseMessaging.instance
+            .unsubscribeFromTopic('neighborhood_$roomTopic'),
+      );
+    }
     widget.warmupOverlayVisible?.removeListener(_onWarmupOverlayChanged);
     PassengerRideServiceBus.pending.removeListener(_onPassengerRideBus);
     _passengerRideSessionSub?.cancel();
@@ -3520,10 +3565,10 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
     _audioService.dispose();
     
     // 🛑 NOU: Dispose intermediate stops controllers
-    for (final controller in _intermediateStopsControllers) {
+    for (final controller in _routeCtrl.intermediateStopsControllers) {
       controller.dispose();
     }
-    _intermediateStopsControllers.clear();
+    _routeCtrl.intermediateStopsControllers.clear();
     
     // MODIFICAT: Asigurăm oprirea noului stream de locație.
     _stopLocationUpdates();
@@ -3533,11 +3578,6 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
     _poiUpdateTimer?.cancel();
     _poiOperationTimer?.cancel(); // ✅ NOU: Cancel POI operation timer
     
-    // Nav internă
-    _navGpsSubscription?.cancel();
-    _navEtaTimer?.cancel();
-    _navTts?.stop();
-
     // Cancel all timers
     _rideOfferTimer?.cancel();
     _locationUpdateTimer?.cancel();
@@ -3585,17 +3625,20 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
     _communityMysteryManager?.dispose();
     _magicEventPollTimer?.cancel();
     _auraProjectDebounce?.cancel();
+    _mapIdle3dResyncDebounce?.cancel();
     _neighborZoomDebounce?.cancel();
     _neighborStaleSweepTimer?.cancel();
     _emojiAvoidanceDebounce?.cancel();
     _requestsRefreshDebounce?.cancel();
 
     _disposeQuickActionBadgeListeners();
+    _badgesCtrl.dispose();
+    _routeCtrl.dispose();
 
     try {
       final voice = Provider.of<FriendsRideVoiceIntegration>(context, listen: false);
       voice.removeListener(_onVoiceAddressChanged);
-    } catch (_) {}
+    } catch (_) { /* Mapbox op — expected on style reload or missing layer/annotation */ }
     _contextSub?.cancel();
     _speedSub?.cancel();
     _hudSpeedCoalesce?.cancel();
@@ -3619,6 +3662,25 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
       _pausedSocialPublishTimer?.cancel();
       _pausedSocialPublishTimer = null;
       unawaited(AssistantVoiceUiPrefs.instance.load());
+
+      final shouldRestoreDriverLiveMap = _hidDriverLiveMapPresenceForBackground &&
+          _currentRole == UserRole.driver &&
+          _isDriverAvailable &&
+          _isVisibleToNeighbors;
+      _hidDriverLiveMapPresenceForBackground = false;
+      if (shouldRestoreDriverLiveMap) {
+        final ids = _resolvedPlateAndPublicName();
+        if (ids.plate != null && ids.name != null && _driverCategory != null) {
+          unawaited(
+            _firestoreService.restoreDriverLiveMapPresenceAfterForeground(
+              displayName: ids.name!,
+              licensePlate: ids.plate!,
+              category: _driverCategory!,
+            ),
+          );
+        }
+      }
+
       if (_isDriverAvailable && _currentRole == UserRole.driver) {
         _startDriverLocationUpdates();
       } else {
@@ -3653,6 +3715,10 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
       }
       Logger.debug('💤 App paused - stopping location updates');
       _stopLocationUpdates();
+      if (_currentRole == UserRole.driver && _isDriverAvailable) {
+        _hidDriverLiveMapPresenceForBackground = true;
+        unawaited(_firestoreService.hideDriverLiveMapPresenceForAppBackground());
+      }
       if (_wantsNeighborSocialPublish) {
         _pausedSocialPublishTimer?.cancel();
         _pausedSocialPublishTimer =
@@ -3734,11 +3800,11 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
       voice.markVoiceEventsProcessed();
 
       if (dest != null && dest.isNotEmpty) {
-        setState(() => _destinationController.text = dest);
+        setState(() => _routeCtrl.destinationController.text = dest);
         if (destLat != null && destLng != null) {
           setState(() {
-            _destinationLatitude = destLat;
-            _destinationLongitude = destLng;
+            _routeCtrl.destinationLatitude = destLat;
+            _routeCtrl.destinationLongitude = destLng;
           });
           unawaited(_checkAndShowRouteAutomatically());
         } else {
@@ -3746,12 +3812,12 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
         }
       }
       if (pickup != null && pickup.isNotEmpty) {
-        setState(() => _pickupController.text = pickup);
+        setState(() => _routeCtrl.pickupController.text = pickup);
         if (!_isPlaceholderCurrentLocationLabel(pickup)) {
           if (pickupLat != null && pickupLng != null) {
             setState(() {
-              _pickupLatitude = pickupLat;
-              _pickupLongitude = pickupLng;
+              _routeCtrl.pickupLatitude = pickupLat;
+              _routeCtrl.pickupLongitude = pickupLng;
             });
             unawaited(_checkAndShowRouteAutomatically());
           } else {
@@ -3770,7 +3836,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
           AppTransitions.slideUp(SearchingForDriverScreen(rideId: rideId)),
         ).then(_onSearchingForDriverPopped);
       }
-    } catch (_) {}
+    } catch (_) { /* Mapbox op — expected on style reload or missing layer/annotation */ }
   }
 
   /// Etichete UI pentru „punctul de plecare curent” — nu sunt adresă pentru Nominatim.
@@ -3791,11 +3857,11 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
     if (point == null || !mounted) return;
     setState(() {
       if (isPickup) {
-        _pickupLatitude = point.coordinates.lat.toDouble();
-        _pickupLongitude = point.coordinates.lng.toDouble();
+        _routeCtrl.pickupLatitude = point.coordinates.lat.toDouble();
+        _routeCtrl.pickupLongitude = point.coordinates.lng.toDouble();
       } else {
-        _destinationLatitude = point.coordinates.lat.toDouble();
-        _destinationLongitude = point.coordinates.lng.toDouble();
+        _routeCtrl.destinationLatitude = point.coordinates.lat.toDouble();
+        _routeCtrl.destinationLongitude = point.coordinates.lng.toDouble();
       }
     });
     unawaited(_checkAndShowRouteAutomatically());
@@ -4057,7 +4123,6 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
 
   Future<void> _onMapCreated(MapboxMap mapboxMap) async {
     _mapboxMap = mapboxMap;
-    _loadedUser3dModelUri = null;
     _isUsing3DUserModel = false;
     // Resetează managerii lazy înainte de orice await. Altfel [onStyleLoaded] poate rula
     // în timpul await-urilor de mai jos, creează markerul, iar codul vechi punea managerul
@@ -4162,7 +4227,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
         await scaleBar?.updateSettings(ScaleBarSettings(
           enabled: false,
         ));
-      } catch (_) {}
+      } catch (_) { /* Mapbox op — expected on style reload or missing layer/annotation */ }
 
       // Annotation managers: resetat la începutul lui _onMapCreated (înainte de await).
 
@@ -4226,7 +4291,6 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
   /// Aplică estetica "Premium Neon" / "Clean Tech" prin Mapbox Runtime Styling la fiecare încărcare de stil.
   Future<void> _onStyleLoaded(StyleLoadedEventData event) async {
     if (_mapboxMap == null) return;
-    _loadedUser3dModelUri = null;
     _isUsing3DUserModel = false;
     Logger.info("Map style loaded. Applying Aesthetic Overlays dynamically...");
 
@@ -4249,14 +4313,14 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
               await style.setStyleLayerProperty(layerId, 'line-color', '#D946FF');
               await style.setStyleLayerProperty(layerId, 'line-width', 2.2);
               await style.setStyleLayerProperty(layerId, 'line-blur', 0.6);
-            } catch (_) {}
+            } catch (_) { /* Mapbox op — expected on style reload or missing layer/annotation */ }
           }
           // Apă: albastru estompat
           if (layerId.toLowerCase().contains('water')) {
             try {
               await style.setStyleLayerProperty(layerId, 'fill-color', '#3d5a78');
               await style.setStyleLayerProperty(layerId, 'fill-opacity', 0.72);
-            } catch (_) {}
+            } catch (_) { /* Mapbox op — expected on style reload or missing layer/annotation */ }
           }
           // Păduri / vegetație / landcover: verde estompat
           if (layerId.toLowerCase().contains('landcover') ||
@@ -4267,21 +4331,21 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
             try {
               await style.setStyleLayerProperty(layerId, 'fill-color', '#355542');
               await style.setStyleLayerProperty(layerId, 'fill-opacity', 0.74);
-            } catch (_) {}
+            } catch (_) { /* Mapbox op — expected on style reload or missing layer/annotation */ }
           }
           // Clădiri: gri estompat (2D fill sau extrudare 3D după tip strat)
           if (layerId.toLowerCase().contains('building')) {
             try {
               await style.setStyleLayerProperty(layerId, 'fill-extrusion-color', '#6b7280');
               await style.setStyleLayerProperty(layerId, 'fill-extrusion-opacity', 0.52);
-            } catch (_) {}
+            } catch (_) { /* Mapbox op — expected on style reload or missing layer/annotation */ }
             try {
               await style.setStyleLayerProperty(layerId, 'fill-color', '#5c6370');
               await style.setStyleLayerProperty(layerId, 'fill-opacity', 0.48);
-            } catch (_) {}
+            } catch (_) { /* Mapbox op — expected on style reload or missing layer/annotation */ }
           }
           if (layerId == 'background') {
-            try { await style.setStyleLayerProperty(layerId, 'background-color', '#020617'); } catch (_) {}
+            try { await style.setStyleLayerProperty(layerId, 'background-color', '#020617'); } catch (_) { /* Mapbox op — expected on style reload or missing layer/annotation */ }
           }
           if (layerId.toLowerCase().contains('poi') || layerId.toLowerCase().contains('label')) {
             try {
@@ -4289,7 +4353,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
               await style.setStyleLayerProperty(layerId, 'icon-color', '#22D3EE');
               await style.setStyleLayerProperty(layerId, 'text-halo-color', '#0891B2');
               await style.setStyleLayerProperty(layerId, 'text-halo-width', 1.2);
-            } catch (_) {}
+            } catch (_) { /* Mapbox op — expected on style reload or missing layer/annotation */ }
           }
         } 
         else {
@@ -4305,14 +4369,14 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
                 await style.setStyleLayerProperty(layerId, 'line-color', '#0EA5E9');
               }
               await style.setStyleLayerProperty(layerId, 'line-width', 1.8);
-            } catch (_) {}
+            } catch (_) { /* Mapbox op — expected on style reload or missing layer/annotation */ }
           }
 
           // 2. Apa (Crystalline Clear Blue)
           if (layerId.toLowerCase().contains('water')) {
             try {
               await style.setStyleLayerProperty(layerId, 'fill-color', '#BAE6FD'); // Bright cyan water
-            } catch (_) {}
+            } catch (_) { /* Mapbox op — expected on style reload or missing layer/annotation */ }
           }
 
           // 3. Zone Verzi (Digital Mint / Pastel Green)
@@ -4320,7 +4384,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
             try {
               await style.setStyleLayerProperty(layerId, 'fill-color', '#ECFDF5'); // Very soft mint
               await style.setStyleLayerProperty(layerId, 'fill-outline-color', '#10B981');
-            } catch (_) {}
+            } catch (_) { /* Mapbox op — expected on style reload or missing layer/annotation */ }
           }
 
           // 4. Fundal și Teren (Ultra Clean Slate)
@@ -4328,7 +4392,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
             try {
               await style.setStyleLayerProperty(layerId, 'background-color', '#F8FAFC');
               await style.setStyleLayerProperty(layerId, 'fill-color', '#F8FAFC');
-            } catch (_) {}
+            } catch (_) { /* Mapbox op — expected on style reload or missing layer/annotation */ }
           }
 
           // 5. Clădiri (Pure White with subtle lines)
@@ -4336,7 +4400,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
             try {
               await style.setStyleLayerProperty(layerId, 'fill-color', '#FFFFFF');
               await style.setStyleLayerProperty(layerId, 'fill-opacity', 0.9);
-            } catch (_) {}
+            } catch (_) { /* Mapbox op — expected on style reload or missing layer/annotation */ }
           }
 
           // 6. POI (High-Contrast Indigo / Violet)
@@ -4346,7 +4410,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
               await style.setStyleLayerProperty(layerId, 'icon-color', '#4338CA');
               await style.setStyleLayerProperty(layerId, 'text-halo-color', '#FFFFFF');
               await style.setStyleLayerProperty(layerId, 'text-halo-width', 2.0);
-            } catch (_) {}
+            } catch (_) { /* Mapbox op — expected on style reload or missing layer/annotation */ }
           }
         }
       }
@@ -5094,7 +5158,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
       if (previous != null) {
         try {
           await previous;
-        } catch (_) {}
+        } catch (_) { /* Mapbox op — expected on style reload or missing layer/annotation */ }
       }
       await _runUserMarkerUpdate(centerCamera: centerCamera);
     } finally {
@@ -5125,27 +5189,43 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
       return;
     }
 
+    // Zoom real din motor (nu doar [_mapZoomLevel] din listener — poate întârzia după flyTo / intro).
+    if (_mapboxMap != null) {
+      final sync3d = _getCurrentAvatarObject();
+      if (sync3d != null && sync3d.is3D) {
+        try {
+          final cam = await _mapboxMap!.getCameraState();
+          if (!mounted) return;
+          _mapZoomLevel = cam.zoom.toDouble();
+        } catch (_) { /* Mapbox op — expected on style reload or missing layer/annotation */ }
+      }
+    }
+
     // ── 3D Model Support ──
     final currentAvatar = _getCurrentAvatarObject();
-    final bool canShow3D = currentAvatar != null && currentAvatar.is3D && _mapZoomLevel >= 17.5;
+    final bool canShow3D = currentAvatar != null &&
+        currentAvatar.is3D &&
+        _compute3DZoomGate(_mapZoomLevel);
 
     if (canShow3D && currentAvatar.modelPath != null) {
-      // 1. Ștergem markerii 2D existenți (pentru a evita suprapunerea)
-      if (_userPointAnnotation != null || _androidUserMarkerOverlayImageBytes != null) {
-        if (_useAndroidFlutterUserMarkerOverlay) {
-          if (mounted) setState(_clearAndroidUserMarkerOverlayFields);
-        } else {
-          try { await _userPointAnnotationManager?.deleteAll(); } catch (_) {}
-          _userPointAnnotation = null;
+      // 1. Activăm modelul 3D via LocationComponent (care se ocupă de interpolare)
+      final enabled3D = await _enable3DUserModel(currentAvatar.modelPath!);
+      if (enabled3D) {
+        // 2. Doar după confirmarea sursei 3D ascundem markerul 2D.
+        if (_userPointAnnotation != null || _androidUserMarkerOverlayImageBytes != null) {
+          if (_useAndroidFlutterUserMarkerOverlay) {
+            if (mounted) setState(_clearAndroidUserMarkerOverlayFields);
+          } else {
+            try {
+              await _userPointAnnotationManager?.deleteAll();
+            } catch (_) { /* Mapbox op — expected on style reload or missing layer/annotation */ }
+            _userPointAnnotation = null;
+          }
+          _userMarkerVisualCacheKey = null;
         }
-        _userMarkerVisualCacheKey = null;
+        // Nu continuăm cu randarea PointAnnotation (2D) când sursa 3D este validă.
+        return;
       }
-      
-      // 2. Activăm modelul 3D via LocationComponent (care se ocupă de interpolare)
-      await _enable3DUserModel(currentAvatar.modelPath!);
-      
-      // Nu continuăm cu randarea PointAnnotation (2D)
-      return;
     } else {
       // Revenim la comportamentul standard 2D
       await _disable3DUserModel();
@@ -5162,7 +5242,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
           if (_userPointAnnotationManager != null || _userPointAnnotation != null) {
             try {
               await _userPointAnnotationManager?.deleteAll();
-            } catch (_) {}
+            } catch (_) { /* Mapbox op — expected on style reload or missing layer/annotation */ }
             _userPointAnnotationManager = null;
             _userPointAnnotation = null;
           }
@@ -5170,7 +5250,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
         } else {
           try {
             await _userPointAnnotationManager?.deleteAll();
-          } catch (_) {}
+          } catch (_) { /* Mapbox op — expected on style reload or missing layer/annotation */ }
           _userPointAnnotation = null;
         }
         _userMarkerVisualCacheKey = _ownUserMarkerVisualKey();
@@ -5315,7 +5395,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
         if (_userPointAnnotationManager != null || _userPointAnnotation != null) {
           try {
             await _userPointAnnotationManager?.deleteAll();
-          } catch (_) {}
+          } catch (_) { /* Mapbox op — expected on style reload or missing layer/annotation */ }
           _userPointAnnotationManager = null;
           _userPointAnnotation = null;
         }
@@ -5388,7 +5468,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
           _forceUserCarMarkerFullRebuild = false;
           try {
             await _userPointAnnotationManager!.deleteAll();
-          } catch (_) {}
+          } catch (_) { /* Mapbox op — expected on style reload or missing layer/annotation */ }
           _userPointAnnotation = null;
           _userMarkerVisualCacheKey = null;
         }
@@ -5398,7 +5478,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
             _userMarkerVisualCacheKey != userMarkerCacheKey) {
           try {
             await _userPointAnnotationManager!.deleteAll();
-          } catch (_) {}
+          } catch (_) { /* Mapbox op — expected on style reload or missing layer/annotation */ }
           _userPointAnnotation = null;
         }
 
@@ -5431,7 +5511,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
             Logger.debug('User marker update → full recreate: $e');
             try {
               await _userPointAnnotationManager!.deleteAll();
-            } catch (_) {}
+            } catch (_) { /* Mapbox op — expected on style reload or missing layer/annotation */ }
             _userPointAnnotation = null;
             _userMarkerVisualCacheKey = null;
           }
@@ -5570,9 +5650,12 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
       // Pe Android apar des curse Surface/GL; stratul de simbol pentru marker poate eșua
       // la randare deși create/update raportează succes — puck-ul rămâne c și indicație de rezervă.
       final hasCustomOverlayReady = _androidUserMarkerOverlayImageBytes != null;
+      // Evităm "umbra albă" (puck nativ) când randăm markerul Flutter overlay pe Android.
+      // În acest mod vrem o singură reprezentare vizuală: overlay-ul custom.
       final usePuckBackup = defaultTargetPlatform == TargetPlatform.android &&
           canDrawCustom &&
-          !hasCustomOverlayReady;
+          !hasCustomOverlayReady &&
+          !_useAndroidFlutterUserMarkerOverlay;
       final puckOnlyPassenger = _usePassengerMapPuckOnly;
       if (!canDrawCustom || usePuckBackup || puckOnlyPassenger) {
         await _mapboxMap!.location.updateSettings(
@@ -5612,6 +5695,58 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
     }
   }
 
+  /// Bitmap marker pentru șoferii din `driver_locations`.
+  /// Preferă `carAvatarId` din documentul de locație; fallback la profilul `users/{uid}`.
+  Future<Uint8List> _nearbyDriverMarkerPngForUid(
+    String uid, {
+    String? locationCarAvatarId,
+  }) async {
+    final normalizedLocationAvatarId = (locationCarAvatarId ?? '').trim();
+    final cacheKey = normalizedLocationAvatarId.isNotEmpty
+        ? '$uid:$normalizedLocationAvatarId'
+        : uid;
+    final cached = _nearbyDriverMarkerIconBytesCache[cacheKey];
+    if (cached != null) return cached;
+    var inflight = _nearbyDriverMarkerIconLoads[cacheKey];
+    if (inflight != null) return inflight;
+
+    inflight = () async {
+      try {
+        if (normalizedLocationAvatarId.isNotEmpty) {
+          final coerceId =
+              CarAvatarService.coerceDriverAvatarIdForMap(normalizedLocationAvatarId);
+          final bytes = await DriverIconHelper.getDriverMarkerBytesForUserProfile(
+            <String, dynamic>{CarAvatarService.kFieldDriver: coerceId},
+          );
+          if (mounted) {
+            _nearbyDriverMarkerIconBytesCache[cacheKey] = bytes;
+          }
+          return bytes;
+        }
+
+        final doc =
+            await FirebaseFirestore.instance.collection('users').doc(uid).get();
+        final bytes = await DriverIconHelper.getDriverMarkerBytesForUserProfile(
+          doc.data(),
+        );
+        if (mounted) {
+          _nearbyDriverMarkerIconBytesCache[cacheKey] = bytes;
+        }
+        return bytes;
+      } catch (e) {
+        Logger.warning(
+          'Nearby driver marker: profil indisponibil pentru $uid: $e',
+          tag: 'MAP',
+        );
+        return _generateMarkerIcon(isPassenger: false);
+      } finally {
+        _nearbyDriverMarkerIconLoads.remove(cacheKey);
+      }
+    }();
+    _nearbyDriverMarkerIconLoads[cacheKey] = inflight;
+    return inflight;
+  }
+
   Future<void> _updateNearbyDrivers(List<QueryDocumentSnapshot<Map<String, dynamic>>> driverDocs) async {
     if (!mounted) return;
     // ✅ LOCK: Prevenim crearea a doi manageri simultan (cauza dublurilor)
@@ -5632,19 +5767,22 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
     if (_driversAnnotationManager == null) return;
 
     try {
-      // Prevent concurrent expensive icon generation (can cause ANR).
-      _nearbyDriversMarkerIconInFlight ??= _generateMarkerIcon(isPassenger: false);
-      late final Uint8List imageList;
-      try {
-        imageList = await _nearbyDriversMarkerIconInFlight!;
-      } finally {
-        _nearbyDriversMarkerIconInFlight = null;
+      _lastNearbyDriverDocs
+        ..clear()
+        ..addAll(driverDocs);
+
+      final String? currentUid = FirebaseAuth.instance.currentUser?.uid;
+      final idsWithDriverMarker = <String>{};
+      for (final doc in driverDocs) {
+        if (currentUid != null && doc.id == currentUid) continue;
+        if (_contactUids == null || !_contactUids!.contains(doc.id)) continue;
+        final d = doc.data();
+        if (d[kDriverLocationShowOnPassengerLiveMap] == false) continue;
+        if (d['position'] != null) idsWithDriverMarker.add(doc.id);
       }
 
-      final currentDriverIds = driverDocs.map((doc) => doc.id).toSet();
       final displayedDriverIds = _nearbyDriverAnnotations.keys.toSet();
-
-      final driversToRemove = displayedDriverIds.difference(currentDriverIds);
+      final driversToRemove = displayedDriverIds.difference(idsWithDriverMarker);
       if (driversToRemove.isNotEmpty) {
         for (final id in driversToRemove) {
           final annotation = _nearbyDriverAnnotations.remove(id);
@@ -5652,12 +5790,11 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
             _driverAnnotationIdToUid.remove(annotation.id);
             try {
               await _driversAnnotationManager?.delete(annotation);
-            } catch (_) {}
+            } catch (_) { /* Mapbox op — expected on style reload or missing layer/annotation */ }
           }
         }
       }
 
-      final String? currentUid = FirebaseAuth.instance.currentUser?.uid;
       for (var driverDoc in driverDocs) {
         if (!mounted) break;
         if (currentUid != null && driverDoc.id == currentUid) continue;
@@ -5666,6 +5803,9 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
         if (_contactUids == null || !_contactUids!.contains(driverDoc.id)) continue;
         
         final data = driverDoc.data();
+        // Șofer invizibil social: rămâne în `driver_locations` pentru curse, dar fără marker pe hartă.
+        if (data[kDriverLocationShowOnPassengerLiveMap] == false) continue;
+
         if (data['position'] != null) {
           final GeoPoint pos = data['position'] as GeoPoint;
           final double? bearing = data['bearing'] as double?;
@@ -5693,6 +5833,12 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
             if (_nearbyDriverUidsBeingCreated.contains(driverDoc.id)) continue;
             _nearbyDriverUidsBeingCreated.add(driverDoc.id);
 
+            final String? carAvatarId =
+                (data['carAvatarId'] as String?)?.trim();
+            final Uint8List imageList = await _nearbyDriverMarkerPngForUid(
+              driverDoc.id,
+              locationCarAvatarId: carAvatarId,
+            );
             final options = PointAnnotationOptions(
               geometry: MapboxUtils.createPoint(pos.latitude, pos.longitude), 
               image: imageList,
@@ -5785,7 +5931,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
         try {
           await _rideBroadcastsAnnotationManager?.delete(annotation);
           _rideBroadcastData.remove(annotation.id);
-        } catch (_) {}
+        } catch (_) { /* Mapbox op — expected on style reload or missing layer/annotation */ }
       }
     }
 
@@ -5797,7 +5943,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
         existing.geometry = geom;
         try {
           await _rideBroadcastsAnnotationManager?.update(existing);
-        } catch (_) {}
+        } catch (_) { /* Mapbox op — expected on style reload or missing layer/annotation */ }
       } else {
         final icon = await _generateDemandMarker(b.passengerAvatar);
         final options = PointAnnotationOptions(
@@ -5812,7 +5958,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
             _rideBroadcastAnnotations[b.id] = annotation;
             _rideBroadcastData[annotation.id] = b;
           }
-        } catch (_) {}
+        } catch (_) { /* Mapbox op — expected on style reload or missing layer/annotation */ }
       }
     }
   }
@@ -5879,6 +6025,15 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
     _isInitializingDrivers = false;
   }
 
+  /// Re-abonează la fluxul șoferilor disponibili (snapshot nou); folosit la refresh manual pe hartă.
+  void _restartNearbyDriversStream() {
+    if (!mounted) return;
+    _nearbyDriversSubscription?.cancel();
+    _nearbyDriversSubscription = null;
+    _isInitializingDrivers = false;
+    _listenForNearbyDrivers();
+  }
+
   /// ✅ NOU: Radar SOS — Ascultă alertele active și randează aurele de siguranță pe hartă.
   void _listenForEmergencyAlerts() {
     _emergencyAlertsSubscription?.cancel();
@@ -5940,7 +6095,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
     );
 
     // C. Fly-To cinematic (opțional, doar dacă e nou-nouță și nu suntem în navigație activă)
-    if (!_inAppNavActive) {
+    if (!_routeCtrl.inAppNavActive) {
       await _mapboxMap?.flyTo(
         CameraOptions(center: Point(coordinates: Position(lng, lat)), zoom: 15.5, pitch: 45.0),
         MapAnimationOptions(duration: 3000),
@@ -5948,8 +6103,8 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
     }
 
     // D. Mesaj vocal
-    if (_navTts != null) {
-      unawaited(_navTts!.speak(l10n.mapSosTtsAlert(userName)));
+    if (_routeCtrl.navTts != null) {
+      unawaited(_routeCtrl.navTts!.speak(l10n.mapSosTtsAlert(userName)));
     }
   }
 
@@ -6023,7 +6178,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
     if (ann != null) {
       try {
         await _emergencyAnnotationManager?.delete(ann);
-      } catch (_) {}
+      } catch (_) { /* Mapbox op — expected on style reload or missing layer/annotation */ }
     }
     if (mounted) {
       setState(() {
@@ -6072,7 +6227,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
     for (final ann in _neighborAnnotations.values) {
       try {
         await _neighborsAnnotationManager?.delete(ann);
-      } catch (_) {}
+      } catch (_) { /* Mapbox op — expected on style reload or missing layer/annotation */ }
     }
     _neighborAnnotations.clear();
     _neighborAnnotationIdToUid.clear();
@@ -6083,11 +6238,13 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
     for (final ann in _nearbyDriverAnnotations.values) {
       try {
         await _driversAnnotationManager?.delete(ann);
-      } catch (_) {}
+      } catch (_) { /* Mapbox op — expected on style reload or missing layer/annotation */ }
     }
     _nearbyDriverAnnotations.clear();
     _driverAnnotationIdToUid.clear();
     _nearbyDriverUidsBeingCreated.clear();
+    _nearbyDriverMarkerIconBytesCache.clear();
+    _nearbyDriverMarkerIconLoads.clear();
 
     Logger.info('Social Map cleared (Role Switch / Reset)');
   }
@@ -6400,7 +6557,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
             _neighborData.remove(uid);
             _neighborIconSizeBaseByUid.remove(uid);
             await _neighborsAnnotationManager?.delete(ann);
-          } catch (_) {}
+          } catch (_) { /* Mapbox op — expected on style reload or missing layer/annotation */ }
           _neighborAnnotations.remove(uid);
         }
       }
@@ -6424,7 +6581,8 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
         }
       }
 
-      if (NearbySocialNotificationsPrefs.instance.enabled) {
+      if (NearbySocialNotificationsPrefs.instance.enabled &&
+          _isVisibleToNeighbors) {
         final radiusM = NearbySocialNotificationsPrefs.instance.radiusM.toDouble();
         const maxNeighborsForNotify = 24;
         var count = 0;
@@ -6597,7 +6755,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
           existing.image = icon;
           try {
             await _neighborsAnnotationManager?.update(existing);
-          } catch (_) {}
+          } catch (_) { /* Mapbox op — expected on style reload or missing layer/annotation */ }
         } else {
           // Prevenim crearea a 2 markere pt același UID dacă stream-ul e rapid
           if (_neighborUidsBeingCreated.contains(neighbor.uid)) continue;
@@ -6753,14 +6911,14 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
       try {
         final contactUser = _contactUsers.firstWhere((u) => u.uid == uid);
         phoneNumber = contactUser.phoneNumber;
-      } catch (_) {}
+      } catch (_) { /* Mapbox op — expected on style reload or missing layer/annotation */ }
     }
 
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (ctx) => _NeighborProfileSheet(
+      builder: (ctx) => NeighborProfileSheet(
         neighbor: neighbor,
         distanceKm: distanceKm,
         timeLabel: timeLabel,
@@ -7030,7 +7188,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
 
   void _ensureRidePanelVisibleForExternalAction(VoidCallback applyToPanel) {
     if (!mounted) return;
-    final needOpen = !_rideAddressSheetVisible && !_inAppNavActive;
+    final needOpen = !_rideAddressSheetVisible && !_routeCtrl.inAppNavActive;
     if (needOpen) {
       setState(() => _rideAddressSheetVisible = true);
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -7050,7 +7208,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
   }
 
   void _closeRideAddressSheet() {
-    if (_inAppNavActive) {
+    if (_routeCtrl.inAppNavActive) {
       _showSafeSnackBar(AppLocalizations.of(context)!.mapStopNavigationFirst, Colors.orange);
       return;
     }
@@ -7073,7 +7231,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
 
   /// Butonul din bara de jos: deschide cardul sau, dacă e deja deschis, micșorează/mărește.
   void _onItineraryButtonPressed() {
-    if (!_rideAddressSheetVisible && !_inAppNavActive) {
+    if (!_rideAddressSheetVisible && !_routeCtrl.inAppNavActive) {
       setState(() => _rideAddressSheetVisible = true);
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!mounted || !_rideSheetController.isAttached) return;
@@ -7101,7 +7259,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
     showModalBottomSheet<bool?>(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.white,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -7218,12 +7376,13 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
     required VoidCallback onTap,
     Color color = Colors.black,
     Color bgColor = Colors.white,
+    double size = 44,
   }) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        width: 44,
-        height: 44,
+        width: size,
+        height: size,
         decoration: BoxDecoration(
           color: bgColor,
           shape: BoxShape.circle,
@@ -7234,7 +7393,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
                 offset: const Offset(0, 4)),
           ],
         ),
-        child: Icon(icon, color: color, size: 24),
+        child: Icon(icon, color: color, size: size * 0.54),
       ),
     );
   }
@@ -7774,7 +7933,6 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
     setState(() {
       _isVisibleToNeighbors = true;
       _neighborActivityFeedDismissed = false;
-      _showCerereButton = true;
     });
 
     final pos = _currentPositionObject;
@@ -7811,6 +7969,11 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
           allowedUids: _contactUids?.toList() ?? [],
           carAvatarId: carAvatarId,
         );
+        if (isDrv) {
+          unawaited(
+            _firestoreService.mergeDriverPassengerLiveMapVisibilityForCurrentUser(true),
+          );
+        }
       }
     }
     _listenForNeighbors();
@@ -7861,10 +8024,8 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
     await prefs.setBool('social_map_visible', true);
   }
 
-  /// Vizibilitate socială: foaia „vecini” sau șofer disponibil (nu în Ghost Mode).
-  bool get _wantsNeighborSocialPublish =>
-      _isVisibleToNeighbors ||
-      (_currentRole == UserRole.driver && _isDriverAvailable);
+  /// Doar când utilizatorul a ales explicit „vizibil vecinilor” (nu și la simplul „șofer disponibil”).
+  bool get _wantsNeighborSocialPublish => _isVisibleToNeighbors;
 
   void _setNeighborGarageCachesFromUserData(String uid, Map<String, dynamic> data) {
     final rawDriver = CarAvatarService.resolveSlotId(data, CarAvatarMapSlot.driver);
@@ -7959,7 +8120,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
     NeighborSavedPlacesCache.instance.dispose();
     NeighborMapFeedController.instance.setNeighbors([]);
     for (final ann in _neighborAnnotations.values) {
-      try { await _neighborsAnnotationManager?.delete(ann); } catch (_) {}
+      try { await _neighborsAnnotationManager?.delete(ann); } catch (_) { /* Mapbox op — expected on style reload or missing layer/annotation */ }
     }
     _neighborAnnotations.clear();
     _neighborAnnotationIdToUid.clear();
@@ -7981,7 +8142,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
         constraints: BoxConstraints(
           maxHeight: MediaQuery.of(ctx).size.height * 0.85,
         ),
-        child: SingleChildScrollView(child: const _GhostModeSheet()),
+        child: SingleChildScrollView(child: const GhostModeSheet()),
       ),
     );
     if (result == null) return; // user a Ã®nchis fără să aleagă
@@ -8004,7 +8165,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
       if (raw == null) return;
       final lastRide = DateTime.tryParse(raw);
       await PushCampaignService().checkInactiveUser(lastRide);
-    } catch (_) {}
+    } catch (_) { /* Mapbox op — expected on style reload or missing layer/annotation */ }
   }
 
   Future<void> _loadMagicEventCheckinIds() async {
@@ -8016,7 +8177,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
           ..clear()
           ..addAll(s);
       });
-    } catch (_) {}
+    } catch (_) { /* Mapbox op — expected on style reload or missing layer/annotation */ }
   }
 
   void _startMagicEventPolling() {
@@ -8134,7 +8295,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
         try {
           final ann = _magicEventAnnotations.remove(id);
           if (ann != null) await mgr.delete(ann);
-        } catch (_) {}
+        } catch (_) { /* Mapbox op — expected on style reload or missing layer/annotation */ }
       }
     }
 
@@ -8162,7 +8323,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
               ..textHaloColor = 0xFFFFFFFF
               ..textHaloWidth = 1.5,
           );
-        } catch (_) {}
+        } catch (_) { /* Mapbox op — expected on style reload or missing layer/annotation */ }
         continue;
       }
       final options = PointAnnotationOptions(
@@ -8320,6 +8481,8 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
   /// care readucea vechiul rol și lăsa avatarul „înghețat” pe cel anterior.
   Future<void> _initializeScreen({bool useCommittedLocalRole = false}) async {
     try {
+      await GhostModeService.instance.ensureLoaded();
+
       late final UserRole role;
       if (useCommittedLocalRole) {
         role = _currentRole;
@@ -8349,7 +8512,8 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
           _showSavedHomePinOnMap = _parseShowSavedHomePinOnMap(profileData);
           _isDriverAccountVerified = isVerifiedDriverProfile;
           // Nu mai coborâm rolul la pasager: contul rămâne șofer în UI (switch în AppBar).
-          // „Disponibil” rămâne blocat de _toggleDriverAvailability până e profilul complet.
+          // Disponibilitatea pentru curse se pornește din `_checkAndStartDriverSystemIfReady`
+          // când rolul e șofer și profilul mașinii e complet.
         });
         _profileGarageSlotIdsSig = _garageSlotIdsSigFromProfile(profileData);
         unawaited(_syncMapOrientationPinAnnotation());
@@ -8358,11 +8522,21 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
         }
       }
 
-      if (profileData != null && profileData.containsKey('ghostMode')) {
-        await GhostModeService.instance
-            .syncFromServer(profileData['ghostMode'] == true);
+      if (profileData != null) {
+        if (!profileData.containsKey('ghostMode')) {
+          await GhostModeService.instance.setBlocking(true);
+        } else {
+          await GhostModeService.instance
+              .syncFromServer(profileData['ghostMode'] == true);
+        }
       }
-      
+      // La fiecare startup curățăm prezența veche din `user_visible_locations` și RTDB,
+      // indiferent de preferința ghost mode. Dacă app-ul a fost ucis brusc în sesiunea
+      // anterioară (fără a apuca să cheme setInvisible), documentul putea rămâne
+      // isVisible=true — ceea ce ar expune login-ul utilizatorului contactelor din apropiere.
+      // Vizibilitatea socială se activează EXCLUSIV prin acțiune explicită a utilizatorului.
+      await NeighborLocationService().setInvisible();
+
       // Locația se obține în fundal fără recenter forțat (camera e gestionată separat la map-ready).
       unawaited(_getCurrentLocation(centerCamera: false));
       
@@ -8528,7 +8702,32 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
   void _checkAndStartDriverSystemIfReady() async {
     final gen = ++_driverAvailabilityCheckGen;
     try {
-      final currentStatus = await _firestoreService.getDriverAvailability();
+      var currentStatus = await _firestoreService.getDriverAvailability();
+
+      if (!mounted || gen != _driverAvailabilityCheckGen) return;
+
+      // Rol „șofer” din meniu = vrei flux de șofer: nu există un al doilea comutator
+      // în UI; dacă Firestore încă are `isAvailable: false`, îl aliniem aici după
+      // profil complet (altfel pasagerul nu te vede niciodată în matching).
+      if (!currentStatus &&
+          _currentRole == UserRole.driver &&
+          _isDriverAccountVerified &&
+          _driverCategory != null) {
+        final ids = _resolvedPlateAndPublicName();
+        if (ids.plate != null && ids.name != null) {
+          try {
+            await _firestoreService.updateDriverAvailability(
+              true,
+              displayName: ids.name,
+              licensePlate: ids.plate,
+              category: _driverCategory!,
+            );
+            currentStatus = true;
+          } catch (e) {
+            Logger.error('Auto-enable driver availability failed: $e', tag: 'MAP', error: e);
+          }
+        }
+      }
 
       if (!mounted || gen != _driverAvailabilityCheckGen) return;
 
@@ -8560,7 +8759,9 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
 
       if (_currentPositionObject != null) {
         unawaited(_updateUserMarker(centerCamera: false));
-        if (_isDriverAvailable && _currentRole == UserRole.driver) {
+        if (_isVisibleToNeighbors &&
+            _isDriverAvailable &&
+            _currentRole == UserRole.driver) {
           _publishNeighborSocialMapFreshUnawaited(
             _currentPositionObject!,
             forceNeighborTelemetry: true,
@@ -8574,11 +8775,22 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
 
   RideCategory? _getCategoryFromString(String? categoryStr) {
     switch (categoryStr) {
-      case 'standard': return RideCategory.standard;
-      case 'energy': return RideCategory.energy;
-      case 'best': return RideCategory.best;
-      case null: return null;
-      default: return null;
+      case 'any':
+        return RideCategory.any;
+      case 'standard':
+        return RideCategory.standard;
+      case 'family':
+        return RideCategory.family;
+      case 'energy':
+        return RideCategory.energy;
+      case 'best':
+        return RideCategory.best;
+      case 'utility':
+        return RideCategory.utility;
+      case null:
+        return null;
+      default:
+        return RideCategory.standard;
     }
   }
 
@@ -8741,7 +8953,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
       });
       try {
         unawaited(Provider.of<DriverVoiceController>(context, listen: false).reset());
-      } catch (_) {}
+      } catch (_) { /* Mapbox op — expected on style reload or missing layer/annotation */ }
     }
   }
 
@@ -8840,10 +9052,10 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
     _acceptedRideStatusSubscription?.cancel();
 
     // Cere motivul anulării de la șofer
+    CancellationReason? declineReason;
     if (mounted) {
-      final reason = await CancellationDialog.show(context);
-      if (reason == null) return; // șoferul a apăsat "ÃŽnapoi"
-      unawaited(CancellationService().recordDriverCancellation(ride.id, reason));
+      declineReason = await CancellationDialog.show(context);
+      if (declineReason == null) return; // șoferul a apăsat înapoi
     }
 
     setState(() {
@@ -8857,6 +9069,11 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
     try {
       Logger.debug('Declining ride: ${ride.id}', tag: 'MAP');
       await _firestoreService.declineRide(ride.id);
+      if (declineReason != null) {
+        unawaited(
+          CancellationService().recordDriverCancellation(ride.id, declineReason),
+        );
+      }
       _dismissRideOffer();
       
       final remainingRides = _pendingRides.where((r) => r.id != ride.id).toList();
@@ -8884,7 +9101,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
     try {
       Provider.of<FriendsRideVoiceIntegration>(context, listen: false)
           .markReturnedFromDriverSearch();
-    } catch (_) {}
+    } catch (_) { /* Mapbox op — expected on style reload or missing layer/annotation */ }
     if (value is PassengerSearchFlowResult) {
       _handlePassengerSearchFlowResult(value);
     }
@@ -9021,6 +9238,28 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
                   ),
             ),
             const SizedBox(height: 8),
+            if (ride.pickupCode != null &&
+                ride.pickupCode!.length >= 4 &&
+                (ride.status == 'driver_found' ||
+                    ride.status == 'accepted' ||
+                    ride.status == 'arrived' ||
+                    ride.status == 'in_progress')) ...[
+              Text(
+                'Cod la urcare pentru șofer',
+                style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
+              ),
+              const SizedBox(height: 4),
+              SelectableText(
+                ride.pickupCode!,
+                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: 4,
+                    ),
+              ),
+              const SizedBox(height: 12),
+            ],
             if (ride.status == 'accepted' &&
                 pickupLat != null &&
                 pickupLng != null)
@@ -9166,7 +9405,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
         FriendRequestService.instance.incomingPendingStream().listen(
       (list) {
         if (!mounted) return;
-        setState(() => _pendingIncomingFriendRequestCount = list.length);
+        _badgesCtrl.setFriendRequestCount(list.length);
       },
       onError: (Object e, StackTrace st) {
         Logger.error(
@@ -9289,6 +9528,38 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
           unawaited(_initializeScreen(useCommittedLocalRole: true));
         }
     });
+
+    if (isDriver) {
+      // În UI există doar comutatorul rolului; când intri pe șofer, te marcăm
+      // imediat disponibil pentru a primi curse de la contacte.
+      unawaited(_enableDriverAvailabilityFromRoleSwitch());
+    }
+  }
+
+  Future<void> _enableDriverAvailabilityFromRoleSwitch() async {
+    if (!_isDriverAccountVerified || _driverCategory == null) return;
+    try {
+      final ids = _resolvedPlateAndPublicName();
+      if (ids.plate == null || ids.name == null) return;
+      await _firestoreService.updateDriverAvailability(
+        true,
+        displayName: ids.name,
+        licensePlate: ids.plate,
+        category: _driverCategory!,
+      );
+      if (!mounted) return;
+      setState(() => _isDriverAvailable = true);
+      _startListeningForRides();
+      _startDriverLocationUpdates();
+      if (_currentPositionObject != null) {
+        _publishNeighborSocialMapFreshUnawaited(
+          _currentPositionObject!,
+          forceNeighborTelemetry: true,
+        );
+      }
+    } catch (e) {
+      Logger.error('Role switch availability enable failed: $e', tag: 'MAP', error: e);
+    }
   }
 
   void _freezeMapWidgetCameraIfNeeded() {
@@ -9343,7 +9614,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
         _ensureNeighborsListeningAfterPosition();
         _refreshNeighborhoodRequestBubbles();
       }
-    } catch (_) {}
+    } catch (_) { /* Mapbox op — expected on style reload or missing layer/annotation */ }
   }
 
   /// Locație pentru puck / stradă fără să mutăm camera (warmup acoperă încă harta).
@@ -9358,7 +9629,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
         unawaited(_updateUserMarker(centerCamera: false));
         unawaited(_updateCurrentStreetName());
         _refreshNeighborhoodRequestBubbles();
-      } catch (_) {}
+      } catch (_) { /* Mapbox op — expected on style reload or missing layer/annotation */ }
     }
     try {
       final lastKnown = await geolocator.Geolocator.getLastKnownPosition().timeout(
@@ -9378,7 +9649,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
         unawaited(_updateCurrentStreetName());
         _refreshNeighborhoodRequestBubbles();
       }
-    } catch (_) {}
+    } catch (_) { /* Mapbox op — expected on style reload or missing layer/annotation */ }
     await _getCurrentLocation(centerCamera: false);
   }
 
@@ -9398,10 +9669,12 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
       _cinematicIntroLock = false;
     }
 
+    bool attemptedSpaceIntro = false;
     if (!AppDrawer.lowDataMode &&
         !_mapSpaceIntroDone &&
         _mapboxMap != null &&
         (preferSpaceIntro || !_spaceIntroInFlight)) {
+      attemptedSpaceIntro = true;
       final flew = await _runSpaceIntroFlyFromGlobe();
       if (flew) {
         await _getCurrentLocation(centerCamera: false);
@@ -9422,7 +9695,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
         ));
         unawaited(_updateUserMarker(centerCamera: false));
         unawaited(_updateCurrentStreetName());
-      } catch (_) {}
+      } catch (_) { /* Mapbox op — expected on style reload or missing layer/annotation */ }
     }
 
     try {
@@ -9447,10 +9720,23 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
         unawaited(_updateUserMarker(centerCamera: false));
         unawaited(_updateCurrentStreetName());
       }
-    } catch (_) {}
+    } catch (_) { /* Mapbox op — expected on style reload or missing layer/annotation */ }
 
     // Evităm un al treilea recenter la startup (produce bucle de zoom pe unele device-uri).
     await _getCurrentLocation(centerCamera: false);
+    // Dacă warmup-ul s-a închis foarte devreme și nu aveam încă poziție, încercăm din nou fly-ul
+    // imediat ce prima locație validă devine disponibilă.
+    if (attemptedSpaceIntro &&
+        !_mapSpaceIntroDone &&
+        !AppDrawer.lowDataMode &&
+        _currentPositionObject != null &&
+        mounted &&
+        _mapboxMap != null) {
+      final flewLate = await _runSpaceIntroFlyFromGlobe();
+      if (flewLate) {
+        await _getCurrentLocation(centerCamera: false);
+      }
+    }
     _cinematicIntroLock = false;
     } finally {
       _mapReadyCenterInFlight = false;
@@ -9471,10 +9757,10 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
     geolocator.Position? pos = _currentPositionObject;
     try {
       pos ??= await geolocator.Geolocator.getLastKnownPosition();
-    } catch (_) {}
+    } catch (_) { /* Mapbox op — expected on style reload or missing layer/annotation */ }
 
     if (pos == null) {
-      setState(() => _mapSpaceIntroDone = true);
+      // Nu marcăm intro-ul ca "done": fără poziție la acest moment, retry-ul trebuie să rămână posibil.
       _spaceIntroInFlight = false;
       _cinematicIntroLock = false;
       return false;
@@ -9528,7 +9814,8 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
     });
 
     unawaited(_updateWeatherAndStyle(target.latitude, target.longitude));
-    unawaited(_updateUserMarker(centerCamera: false));
+    // Așteptăm markerul după fly — altfel reaplicarea puck 3D rămânea în cursă în spatele altor evenimente.
+    await _updateUserMarker(centerCamera: false);
     unawaited(_updateCurrentStreetName());
     _cinematicIntroLock = false;
     _spaceIntroInFlight = false;
@@ -9569,8 +9856,83 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
       _lastAutoCenterAt = now;
       _lastAutoCenterLat = lat;
       _lastAutoCenterLng = lng;
+      if (mounted) {
+        unawaited(_updateUserMarker(centerCamera: false));
+      }
     } catch (e) {
       Logger.warning('Auto-center failed: $e');
+    }
+  }
+
+  void _updateLiveSpeedFromPosition(geolocator.Position position) {
+    double kph;
+
+    // Android GPS returnează speed = -1.0 când nu are fix de viteză.
+    // În acest caz calculăm viteza din delta poziție față de poziția anterioară.
+    if (!position.speed.isNaN && position.speed >= 0) {
+      kph = position.speed * 3.6;
+    } else {
+      final prev = _previousPositionObject;
+      if (prev != null) {
+        final elapsedMs = position.timestamp
+            .difference(prev.timestamp)
+            .inMilliseconds;
+        if (elapsedMs > 300 && elapsedMs < 12000) {
+          final distM = geolocator.Geolocator.distanceBetween(
+            prev.latitude, prev.longitude,
+            position.latitude, position.longitude,
+          );
+          kph = (distM / (elapsedMs / 1000.0)) * 3.6;
+        } else {
+          return; // interval prea scurt/lung — nu actualiza
+        }
+      } else {
+        return;
+      }
+    }
+
+    if (!mounted) return;
+    if ((kph - _currentSpeedKph).abs() < 0.8) return;
+    setState(() => _currentSpeedKph = kph.clamp(0.0, 220.0));
+  }
+
+  Future<void> _maybeAutoFollowDriver(geolocator.Position position) async {
+    if (!mounted || _mapboxMap == null) return;
+    if (!(_currentRole == UserRole.driver && _isDriverAvailable)) return;
+    if (_cinematicIntroLock || _spaceIntroInFlight || _warmupBlocksCamera) return;
+    if (_isRadarMode || _rideAddressSheetVisible || _universalSearchOpen) return;
+
+    final now = DateTime.now();
+    if (_lastDriverAutoFollowAt != null &&
+        now.difference(_lastDriverAutoFollowAt!) <
+            const Duration(milliseconds: 1100)) {
+      return;
+    }
+    if (_lastDriverAutoFollowLat != null && _lastDriverAutoFollowLng != null) {
+      final movedM = geolocator.Geolocator.distanceBetween(
+        _lastDriverAutoFollowLat!,
+        _lastDriverAutoFollowLng!,
+        position.latitude,
+        position.longitude,
+      );
+      if (movedM < 7.0) return;
+    }
+
+    try {
+      await _mapboxMap!.easeTo(
+        CameraOptions(
+          center: MapboxUtils.createPoint(position.latitude, position.longitude),
+          zoom: _liveCameraZoom.isNaN
+              ? _overviewZoomForLatitude(position.latitude)
+              : _liveCameraZoom.clamp(15.2, 18.8),
+        ),
+        MapAnimationOptions(duration: 700),
+      );
+      _lastDriverAutoFollowAt = now;
+      _lastDriverAutoFollowLat = position.latitude;
+      _lastDriverAutoFollowLng = position.longitude;
+    } catch (e) {
+      Logger.debug('Driver auto-follow skipped: $e', tag: 'MAP');
     }
   }
 
@@ -9754,15 +10116,22 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
     _pushDriverLocationToBackend(position);
   }
 
-  // ✅ ÎMBUNĂTĂȚIT: Combinăm stream-ul GPS cu timer constant pentru șoferii stăționari
-  void _startDriverLocationUpdates() {
+  // ✅ ÎMBUNĂTĂȚIT: Adaptive GPS — high accuracy în mișcare, low-power la static.
+  void _startDriverLocationUpdates({bool lowPower = false}) {
     _stopLocationUpdates();
-    
-    // distanceFilter mic = puncte mai dese → mișcare mai cursivă pe hartă (cost mic extra).
-    const locationSettings = geolocator.LocationSettings(
-      accuracy: geolocator.LocationAccuracy.high,
-      distanceFilter: 4,
-    );
+    _driverGpsInLowPowerMode = lowPower;
+
+    // Low-power (static): medium accuracy + filtru 25m — GPS chipset mai relaxat.
+    // High (mișcare): high accuracy + 4m — cursiv pe hartă.
+    final locationSettings = lowPower
+        ? const geolocator.LocationSettings(
+            accuracy: geolocator.LocationAccuracy.medium,
+            distanceFilter: 25,
+          )
+        : const geolocator.LocationSettings(
+            accuracy: geolocator.LocationAccuracy.high,
+            distanceFilter: 4,
+          );
 
     // ✅ CURSOR FIX: Timer cu background execution
     _locationUpdateTimer = Timer.periodic(const Duration(seconds: 60), (timer) {
@@ -9782,53 +10151,77 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
     _positionSubscription = geolocator.Geolocator.getPositionStream(locationSettings: locationSettings)
         .listen((geolocator.Position position) {
       ContextEngineService.instance.feedSpeed(position.speed);
+      _updateLiveSpeedFromPosition(position);
       
       if (!mounted || !_isDriverAvailable || _currentRole != UserRole.driver) {
         return;
       }
-      
-      // NOU: Logica de frecvență adaptivă
+
+      final snappedPosition = _applyRoadSnapping(position);
+      LocationCacheService.instance.record(snappedPosition);
+
+      // 1) LOCAL (fluid): actualizăm starea hărții la fiecare tick GPS util.
+      _previousPositionObject = _currentPositionObject;
+      if (mounted) {
+        setState(() {
+          _currentPositionObject = snappedPosition;
+          _freezeMapWidgetCameraIfNeeded();
+        });
+      }
+      if (_shouldRunFullUserMarkerRedrawForGps(snappedPosition)) {
+        unawaited(_updateUserMarker(centerCamera: false));
+      }
+      unawaited(_maybeAutoFollowDriver(snappedPosition));
+
+      // 2) Adaptive GPS mode: comutăm între low-power și high-accuracy bazat pe viteză.
+      final speedKph = (position.speed >= 0 && !position.speed.isNaN)
+          ? position.speed * 3.6
+          : _currentSpeedKph;
+      final shouldBeLowPower = speedKph < _kDriverMoveThresholdKph - _kDriverMoveHysteresisKph;
+      final shouldBeHighPower = speedKph >= _kDriverMoveThresholdKph;
+
+      if (_driverGpsInLowPowerMode && shouldBeHighPower) {
+        // Trecem în mișcare → restart stream high-accuracy (cu debounce 3s anti-oscilație)
+        _driverAdaptiveGpsDebounce?.cancel();
+        _driverAdaptiveGpsDebounce = Timer(const Duration(seconds: 3), () {
+          if (!mounted || !_isDriverAvailable || _currentRole != UserRole.driver) return;
+          Logger.debug('Driver GPS: low-power → high-accuracy (${speedKph.toStringAsFixed(1)} km/h)', tag: 'GPS');
+          _startDriverLocationUpdates(lowPower: false);
+        });
+      } else if (!_driverGpsInLowPowerMode && shouldBeLowPower) {
+        // Stăm pe loc → coborâm la low-power (cu debounce 8s ca să nu triggere la opriri scurte)
+        _driverAdaptiveGpsDebounce?.cancel();
+        _driverAdaptiveGpsDebounce = Timer(const Duration(seconds: 8), () {
+          if (!mounted || !_isDriverAvailable || _currentRole != UserRole.driver) return;
+          Logger.debug('Driver GPS: high-accuracy → low-power (${speedKph.toStringAsFixed(1)} km/h)', tag: 'GPS');
+          _startDriverLocationUpdates(lowPower: true);
+        });
+      } else {
+        _driverAdaptiveGpsDebounce?.cancel();
+      }
+
+      // 3) CLOUD (ieftin): păstrăm publish throttled, fără creșterea frecvenței externe.
       final now = DateTime.now();
       int currentInterval;
       final speed = position.speed;
-
-      if (speed < 1.5) { // Sub ~5 km/h, considerăm că stă pe loc
+      if (speed < 1.5) {
         currentInterval = _standingInterval;
-      } else if (speed < 10) { // Sub 36 km/h, viteză de oraș
+      } else if (speed < 10) {
         currentInterval = _slowSpeedInterval;
-      } else { // Viteză mare
+      } else {
         currentInterval = _highSpeedInterval;
       }
 
-      // Verificăm dacă a trecut suficient timp de la ultima trimitere
       if (_lastUpdateTime == null || now.difference(_lastUpdateTime!).inSeconds >= currentInterval) {
-        
         Logger.debug('--> Sending location update. Speed: ${speed.toStringAsFixed(2)} m/s. Interval: $currentInterval s.');
-        
-        final snappedPosition = _applyRoadSnapping(position);
-        LocationCacheService.instance.record(snappedPosition);
-        // Bearing are sens doar in miscare — la viteza 0 GPS-ul returneaza 0.0
-        // indiferent de orientarea reala, ceea ce ar roti gresit icona soferului.
+
+        // Bearing are sens doar în mișcare.
         final movingBearing = snappedPosition.speed >= 0.5 ? snappedPosition.heading : null;
         _pushDriverLocationToBackend(snappedPosition, bearing: movingBearing);
-        
-        _previousPositionObject = _currentPositionObject;
-        if (mounted) {
-          setState(() {
-            _currentPositionObject = snappedPosition;
-            _freezeMapWidgetCameraIfNeeded();
-          });
-        }
-        
         _updateDriverRideEstimates(snappedPosition);
-        if (_shouldRunFullUserMarkerRedrawForGps(snappedPosition)) {
-          unawaited(_updateUserMarker(centerCamera: false));
-        }
         _publishNeighborSocialMapFreshUnawaited(snappedPosition);
         unawaited(_maybePollMagicEventsThrottled());
         _refreshNeighborhoodRequestBubbles();
-
-        // Resetăm cronometrul
         _lastUpdateTime = now;
       }
     }, onError: (error) {
@@ -9849,7 +10242,8 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
           geolocator.Geolocator.getPositionStream(
         locationSettings: const geolocator.LocationSettings(
           accuracy: geolocator.LocationAccuracy.medium,
-          distanceFilter: 18,
+          // Mai fluid local pentru markerul pasager, fără impact pe publish cloud.
+          distanceFilter: 8,
         ),
       ).listen(
         (geolocator.Position p) {
@@ -9884,6 +10278,11 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
 
   // ✅ ÎMBUNĂTĂȚIT: Oprește și stream-ul și timer-ul
   void _stopLocationUpdates() {
+    // Anulăm debounce-ul de tranziție adaptive GPS înainte de orice cancel stream.
+    _driverAdaptiveGpsDebounce?.cancel();
+    _driverAdaptiveGpsDebounce = null;
+    _driverGpsInLowPowerMode = false;
+
     if (_passengerWarmupSubscription != null) {
       _passengerWarmupSubscription!.cancel();
       _passengerWarmupSubscription = null;
@@ -9910,36 +10309,81 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
     }
   }
 
-  // ✅ CURSOR: Background location update method
+  /// Timer 60s: poziție pentru backend + UI. Pe mobil 5s pentru [getCurrentPosition] e prea puțin
+  /// (interior, GPS rece, throttling) → TimeoutException. Folosim ultima poziție recentă + timeout mai mare.
   Future<void> _updateDriverLocationInBackground() async {
+    geolocator.Position? position;
+
+    final last = await geolocator.Geolocator.getLastKnownPosition();
+    if (last != null) {
+      final age = DateTime.now().difference(last.timestamp);
+      if (age <= const Duration(minutes: 2)) {
+        position = last;
+      }
+    }
+
+    if (position == null) {
+      try {
+        position = await geolocator.Geolocator.getCurrentPosition(
+          locationSettings: DeprecatedAPIsFix.createLocationSettings(
+            accuracy: geolocator.LocationAccuracy.medium,
+            timeLimit: const Duration(seconds: 25),
+          ),
+        );
+      } on TimeoutException catch (e) {
+        position = await geolocator.Geolocator.getLastKnownPosition();
+        if (position == null) {
+          Logger.warning(
+            'Background location: timeout GPS (25s), fără ultima poziție — interior / permisiuni / GPS oprit.',
+            tag: 'APP',
+          );
+          return;
+        }
+        Logger.debug(
+          'Background location: după timeout folosim ultima poziție cunoscută ($e)',
+          tag: 'MAP',
+        );
+      } catch (e) {
+        position = await geolocator.Geolocator.getLastKnownPosition();
+        if (position == null) {
+          Logger.error(
+            'Background location update failed: $e',
+            error: e,
+            tag: 'MAP',
+          );
+          return;
+        }
+        Logger.debug(
+          'Background location: eroare getCurrentPosition, folosim ultima poziție: $e',
+          tag: 'MAP',
+        );
+      }
+    }
+
     try {
-      final position = await geolocator.Geolocator.getCurrentPosition(
-        locationSettings: DeprecatedAPIsFix.createLocationSettings(
-          accuracy: geolocator.LocationAccuracy.medium,
-          timeLimit: const Duration(seconds: 5),
-        ),
-      );
-      
-      // ✅ Actualizează Firestore (+ RTDB cursă activă dacă e cazul)
-      LocationCacheService.instance.record(position);
-      await _pushDriverLocationToBackendAwait(position);
-      
-      // ✅ UI update pe main thread
+      final p = position;
+      LocationCacheService.instance.record(p);
+      await _pushDriverLocationToBackendAwait(p);
+
       if (mounted) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (!mounted) return;
           setState(() {
-            _currentPositionObject = position;
+            _currentPositionObject = p;
             _freezeMapWidgetCameraIfNeeded();
           });
-          _updateDriverRideEstimates(position);
+          _updateDriverRideEstimates(p);
           _refreshNeighborhoodRequestBubbles();
         });
       }
-      
-      Logger.debug('Background location update successful');
+
+      Logger.debug('Background location update successful', tag: 'MAP');
     } catch (e) {
-      Logger.error('Background location update failed: $e', error: e);
+      Logger.error(
+        'Background location push/cache failed: $e',
+        error: e,
+        tag: 'MAP',
+      );
     }
   }
 
@@ -10194,8 +10638,8 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
     
     if (routeData == null || !mounted) {
       setState(() {
-        _currentRouteDistanceMeters = null;
-        _currentRouteDurationSeconds = null;
+        _routeCtrl.currentRouteDistanceMeters = null;
+        _routeCtrl.currentRouteDurationSeconds = null;
         _isDestinationPreviewMode = false;
         _isDraggingPin = false;
       });
@@ -10229,21 +10673,21 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
         if (meters != null && seconds != null) {
           if (mounted) {
             setState(() {
-              _currentRouteDistanceMeters = meters;
-              _currentRouteDurationSeconds = seconds;
+              _routeCtrl.currentRouteDistanceMeters = meters;
+              _routeCtrl.currentRouteDurationSeconds = seconds;
             });
           }
         }
 
         // Pickup spot quality: distanța dintre punctul de preluare și primul punct al rutei
         try {
-          if (_pickupLatitude != null && _pickupLongitude != null) {
+          if (_routeCtrl.pickupLatitude != null && _routeCtrl.pickupLongitude != null) {
             final coords = (geometry['coordinates'] as List<dynamic>);
             if (coords.isNotEmpty) {
               final first = coords.first as List<dynamic>;
               final firstLng = (first[0] as num).toDouble();
               final firstLat = (first[1] as num).toDouble();
-              final d = _calculateDirectDistance(_pickupLatitude!, _pickupLongitude!, firstLat, firstLng);
+              final d = _calculateDirectDistance(_routeCtrl.pickupLatitude!, _routeCtrl.pickupLongitude!, firstLat, firstLng);
               String label;
               Color color;
               if (d <= 10) {
@@ -10261,20 +10705,20 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
               }
               if (mounted) {
                 setState(() {
-                  _pickupQualityLabel = label;
-                  _pickupQualityColor = color;
+                  _routeCtrl.pickupQualityLabel = label;
+                  _routeCtrl.pickupQualityColor = color;
                 });
               }
             }
           } else {
             if (mounted) {
               setState(() {
-                _pickupQualityLabel = null;
-                _pickupQualityColor = null;
+                _routeCtrl.pickupQualityLabel = null;
+                _routeCtrl.pickupQualityColor = null;
               });
             }
           }
-        } catch (_) {}
+        } catch (_) { /* Mapbox op — expected on style reload or missing layer/annotation */ }
         
         // ✅ CORECTAT: Creez obiect LineString pentru Mapbox (fără cast strict)
         final List<dynamic> coordinates = geometry['coordinates'] as List<dynamic>;
@@ -10289,7 +10733,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
         
         // Delete previous active route if any (to avoid stacking)
         if (_activeRouteAnnotation != null) {
-          try { await _routeAnnotationManager?.delete(_activeRouteAnnotation!); } catch (_) {}
+          try { await _routeAnnotationManager?.delete(_activeRouteAnnotation!); } catch (_) { /* Mapbox op — expected on style reload or missing layer/annotation */ }
           _activeRouteAnnotation = null;
         }
 
@@ -10347,7 +10791,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
           MapboxUtils.createPoint((endCoord[1] as num).toDouble(), (endCoord[0] as num).toDouble()),
           'Destinație',
         );
-      } catch (_) {}
+      } catch (_) { /* Mapbox op — expected on style reload or missing layer/annotation */ }
       
       // ✅ Ajustează camera astfel încât să fie vizibil întreg traseul
       try {
@@ -10516,151 +10960,10 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
       switchInCurve: Curves.easeOutExpo,
       switchOutCurve: Curves.easeInCirc,
       child: _contextState == NabourContextState.driving
-          ? _buildDrivingHUD()
+          ? MapDrivingHud(speedKmh: _currentSpeedKph)
           : _contextState == NabourContextState.walking
-              ? _buildWalkingGlow()
+              ? const MapWalkingGlow(active: true)
               : const SizedBox.shrink(),
-    );
-  }
-
-  Widget _buildDrivingHUD() {
-    final speedInt = _currentSpeedKph.round();
-    // Neon color reacts to velocity — cyan at low speed, shifting toward magenta at high speed
-    final speedRatio = (_currentSpeedKph / 120).clamp(0.0, 1.0);
-    final neonColor = Color.lerp(Colors.cyanAccent, const Color(0xFFFF00FF), speedRatio)!;
-    return IgnorePointer(
-      child: Stack(
-        key: const ValueKey('driving_hud'),
-        children: [
-          // Top Glassmorphic Vignette
-          Positioned(
-            top: 0,
-            left: 0,
-            right: 0,
-            child: Container(
-              height: 120,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    Colors.black.withValues(alpha: 0.7),
-                    Colors.transparent,
-                  ],
-                ),
-              ),
-            ),
-          ),
-          // Driving Mode Indicator (Center Top)
-          Positioned(
-            top: 8,
-            left: 0,
-            right: 0,
-            child: Center(
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-                decoration: BoxDecoration(
-                  color: neonColor.withValues(alpha: 0.08),
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(
-                    color: neonColor.withValues(alpha: 0.25),
-                    width: 1,
-                  ),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.speed_rounded, color: neonColor, size: 16),
-                    const SizedBox(width: 8),
-                    Text(
-                      'MOD CONDUS',
-                      style: TextStyle(
-                        color: neonColor.withValues(alpha: 0.85),
-                        fontSize: 11,
-                        fontWeight: FontWeight.w900,
-                        letterSpacing: 1.2,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-          // Live Speedometer (Left Center)
-          Positioned(
-            left: 16,
-            top: MediaQuery.sizeOf(context).height * 0.32,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  '$speedInt',
-                  style: TextStyle(
-                    color: neonColor,
-                    fontSize: 64,
-                    fontWeight: FontWeight.w100,
-                    fontFamily: 'monospace',
-                    height: 1.0,
-                    shadows: [
-                      Shadow(
-                        color: neonColor.withValues(alpha: 0.4),
-                        blurRadius: 20,
-                      ),
-                    ],
-                  ),
-                ),
-                Text(
-                  'KM/H',
-                  style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.4),
-                    fontSize: 12,
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: 3,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          // Bottom Ambient Neon Glow
-          Positioned(
-            bottom: 0,
-            left: 0,
-            right: 0,
-            child: Container(
-              height: 100,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.bottomCenter,
-                  end: Alignment.topCenter,
-                  colors: [
-                    neonColor.withValues(alpha: 0.04),
-                    Colors.transparent,
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildWalkingGlow() {
-    return IgnorePointer(
-      child: Container(
-        key: const ValueKey('walking_glow'),
-        decoration: BoxDecoration(
-          gradient: RadialGradient(
-            center: Alignment.center,
-            radius: 1.2,
-            colors: [
-              Colors.transparent,
-              Colors.deepPurpleAccent.withValues(alpha: 0.08),
-            ],
-            stops: const [0.6, 1.0],
-          ),
-        ),
-      ),
     );
   }
 
@@ -10686,6 +10989,8 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
     if (_verboseBuildLogs) {
       Logger.debug('DEBUG: shouldShowPassengerUI = $shouldShowPassengerUI');
     }
+
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       extendBodyBehindAppBar: false,
@@ -10913,6 +11218,12 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
                   // Strat atmosferic
                   WeatherOverlay(type: _weatherType),
                   Positioned.fill(child: _buildContextualOverlay()),
+                  if (_currentRole == UserRole.driver && _isDriverAvailable)
+                    Positioned(
+                      left: 14,
+                      top: 126,
+                      child: MapDriverSpeedChip(speedKmh: _currentSpeedKph),
+                    ),
                   if (_magicStarShowerVisible)
                     MagicEventStarShowerOverlay(
                       onComplete: () {
@@ -11091,7 +11402,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
           
           // 📍 STRADA + scară — margini aliniate cu hamburger+POI stânga / AI+profil dreapta
           Positioned(
-            top: 68,
+            top: 78,
             left: 132,
             right: 120,
             child: Center(
@@ -11102,32 +11413,21 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
                   final mapAppearsDark = !AppDrawer.lowDataMode &&
                       Theme.of(context).brightness == Brightness.dark;
                   const strongOrangeMapHud = Color(0xFFFF6D00);
-                  final streetStyle = mapAppearsDark
-                      ? TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w900,
-                          color: strongOrangeMapHud,
-                          letterSpacing: -0.5,
-                          shadows: const [
-                            Shadow(color: Color(0xFFFF9100), blurRadius: 10),
-                            Shadow(color: Color(0xFFE65100), blurRadius: 18),
-                            Shadow(color: Color(0x66FF6D00), blurRadius: 24),
-                          ],
-                        )
-                      : const TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w900,
-                          color: Colors.black,
-                          letterSpacing: -0.5,
-                        );
-                  // Aceeași dimensiune ca textul străzii (streetStyle 14) — lățime vizibilă + °C
+                  final streetStyle = TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w900,
+                    color: mapAppearsDark ? strongOrangeMapHud : Colors.black,
+                    letterSpacing: -0.5,
+                  );
+                  // Scară + °C: același tratament ca strada — bold, fără umbre/contur.
                   final subStyle = TextStyle(
                     fontSize: 14,
-                    fontWeight: FontWeight.w700,
+                    fontWeight: FontWeight.w900,
                     color: mapAppearsDark
                         ? strongOrangeMapHud
-                        : Colors.grey.shade600,
-                    letterSpacing: -0.2,
+                        : Colors.grey.shade800,
+                    letterSpacing: -0.5,
+                    shadows: const <Shadow>[],
                   );
                   return Column(
                     mainAxisSize: MainAxisSize.min,
@@ -11256,81 +11556,48 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
                   Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Tooltip(
-                        message: 'Caută',
-                        child: GestureDetector(
-                          onTap: () =>
-                              setState(() => _universalSearchOpen = true),
-                          child: Container(
-                            width: 36,
-                            height: 36,
-                            decoration: BoxDecoration(
-                              color: Colors.black87,
-                              shape: BoxShape.circle,
-                              border: Border.all(color: Colors.white24),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withValues(alpha: 0.35),
-                                  blurRadius: 8,
-                                  offset: const Offset(0, 2),
-                                ),
-                              ],
-                            ),
-                            child: const Icon(
-                              Icons.search_rounded,
-                              color: Colors.white70,
-                              size: 20,
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Tooltip(
-                        message: 'Reîmprospătează harta',
-                        child: GestureDetector(
-                          onTap: () => unawaited(_softRefreshMapDisplay()),
-                          child: Container(
-                            width: 36,
-                            height: 36,
-                            decoration: BoxDecoration(
-                              color: Colors.black87,
-                              shape: BoxShape.circle,
-                              border: Border.all(color: Colors.white24),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withValues(alpha: 0.35),
-                                  blurRadius: 8,
-                                  offset: const Offset(0, 2),
-                                ),
-                              ],
-                            ),
-                            child: const Icon(
-                              Icons.refresh_rounded,
-                              color: Colors.white70,
-                              size: 20,
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      if (canShowVoiceAI)
-                        Consumer2<FriendsRideVoiceIntegration, AssistantStatusProvider>(
+                      if (canShowVoiceAI) ...[
+                        const SizedBox(width: 8),
+                        Consumer2<FriendsRideVoiceIntegration,
+                            AssistantStatusProvider>(
                           builder: (ctx, voiceIntegration, statusProvider, _) {
                             return _buildAiGlassButton(
-                              processingState: voiceIntegration.currentContext.processingState,
-                              isDark: Theme.of(context).brightness == Brightness.dark,
+                              processingState:
+                                  voiceIntegration.currentContext.processingState,
+                              isDark:
+                                  Theme.of(context).brightness == Brightness.dark,
                               onTap: () async {
-                                statusProvider.setStatus(AssistantWorkStatus.working);
+                                statusProvider
+                                    .setStatus(AssistantWorkStatus.working);
                                 try {
                                   await voiceIntegration.startVoiceInteraction();
                                 } catch (e) {
-                                  statusProvider.setStatus(AssistantWorkStatus.idle);
+                                  statusProvider
+                                      .setStatus(AssistantWorkStatus.idle);
                                 }
                               },
                             );
                           },
                         ),
-                      if (canShowVoiceAI) const SizedBox(width: 8),
+                      ],
+                      const SizedBox(width: 8),
+                      GestureDetector(
+                        onTap: () => unawaited(_softRefreshMapDisplay()),
+                        child: Container(
+                          width: 44,
+                          height: 44,
+                          decoration: BoxDecoration(
+                            color: Colors.black87,
+                            shape: BoxShape.circle,
+                            boxShadow: [
+                              BoxShadow(color: Colors.white.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, 4)),
+                            ],
+                            border: Border.all(color: Colors.white12, width: 1),
+                          ),
+                          child: const Icon(Icons.refresh_rounded, color: Colors.white, size: 22),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
                       GestureDetector(
                         onTap: () => Navigator.push(
                           context,
@@ -11341,8 +11608,8 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
                             final uid = FirebaseAuth.instance.currentUser?.uid;
                             if (uid == null) {
                               return Container(
-                                width: 44,
-                                height: 44,
+                                width: 48,
+                                height: 48,
                                 decoration: const BoxDecoration(
                                   color: Colors.white,
                                   shape: BoxShape.circle,
@@ -11366,8 +11633,8 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
 
                                 if (hasPhoto) {
                                   return Container(
-                                    width: 44,
-                                    height: 44,
+                                    width: 48,
+                                    height: 48,
                                     decoration: BoxDecoration(
                                       shape: BoxShape.circle,
                                       boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 10)],
@@ -11376,8 +11643,8 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
                                     child: ClipOval(
                                       child: Image.network(
                                         photoURL,
-                                        width: 44,
-                                        height: 44,
+                                        width: 48,
+                                        height: 48,
                                         fit: BoxFit.cover,
                                         errorBuilder: (_, __, ___) => Container(
                                           color: Colors.white,
@@ -11389,8 +11656,8 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
                                 }
 
                                 return Container(
-                                  width: 44,
-                                  height: 44,
+                                  width: 48,
+                                  height: 48,
                                   decoration: const BoxDecoration(
                                     color: Colors.white,
                                     shape: BoxShape.circle,
@@ -11407,97 +11674,165 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
                       ),
                     ],
                   ),
-                  const SizedBox(height: 12),
-                  // Pulse/Flashlight
-                  _buildBumpFloatingButton(
-                    icon: _flashlightOn ? Icons.flashlight_on_rounded : Icons.flashlight_off_rounded,
-                    color: _flashlightOn ? Colors.amber : Colors.black,
-                    onTap: _toggleFlashlight,
-                  ),
-                  // Radar / Spider Net Button
-                  _buildBumpFloatingButton(
-                    icon: _isRadarMode ? Icons.radar : Icons.satellite_alt_rounded,
-                    color: _isRadarMode ? const Color(0xFF7C3AED) : Colors.black,
-                    onTap: () async {
-                      if (!_isRadarMode && _mapboxMap != null) {
-                        // Centru pe GPS-ul tău, nu pe centrul camerei: altfel la hartă mutată
-                        // un prieten la ~50 m poate cădea în afara cercului deși e aproape de tine.
-                        final p = _currentPositionObject;
-                        if (p != null) {
-                          _radarCenter = MapboxUtils.createPoint(
-                            p.latitude,
-                            p.longitude,
-                          );
-                        } else {
-                          final cam = await _mapboxMap!.getCameraState();
-                          _radarCenter = cam.center;
-                        }
-                      }
-                      setState(() {
-                         _isRadarMode = !_isRadarMode;
-                      });
-                      if (_isRadarMode) {
-                        _showSafeSnackBar(
-                          'RADAR: plasa e ancorată pe locația ta. Mărește cercul dacă e nevoie.',
-                          const Color(0xFF7C3AED),
-                        );
-                      }
-                    },
-                  ),
-                  const SizedBox(height: 12),
-                  // Post Moment
-                  _buildBumpFloatingButton(
-                    icon: Icons.add_a_photo_outlined,
-                    onTap: _showPostMomentSheet,
-                  ),
-                  const SizedBox(height: 12),
-                  // GPS
-                  _buildBumpFloatingButton(
-                    icon: Icons.my_location,
-                    onTap: () => _getCurrentLocation(centerCamera: true),
-                  ),
-                  const SizedBox(height: 12),
-                  // Trimite link (distinct de „locația mea” pe hartă)
-                  _buildBumpFloatingButton(
-                    icon: Icons.ios_share_rounded,
-                    onTap: _shareCurrentLocation,
-                  ),
-                  if (_showParkingYieldMapButton) ...[
-                    const SizedBox(height: 12),
-                    _buildBumpFloatingButton(
-                      icon: Icons.local_parking_rounded,
-                      color: Colors.black,
-                      bgColor: Colors.amber,
-                      onTap: _handleLeavingParking,
-                    ),
-                  ],
-                  const SizedBox(height: 12),
-                  // Emoji pe hartă — sub Share, aceeași coloană dreapta
                   Builder(
                     builder: (context) {
                       final myUid = FirebaseAuth.instance.currentUser?.uid;
                       final hasMine = _hasMyMapEmojiPlaced(myUid);
                       final screenW = MediaQuery.sizeOf(context).width;
                       final panelMaxW = (screenW - 48).clamp(220.0, 288.0);
-                      return Column(
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          if (!_showEmojiPicker && hasMine)
-                            Padding(
-                              padding: const EdgeInsets.only(bottom: 8),
-                              child: Material(
+                      if (!_showEmojiPicker && !hasMine) {
+                        return const SizedBox.shrink();
+                      }
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 8),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            if (_showEmojiPicker)
+                              Container(
+                                margin: const EdgeInsets.only(bottom: 8),
+                                padding: const EdgeInsets.fromLTRB(10, 10, 10, 8),
+                                width: panelMaxW,
+                                constraints: BoxConstraints(
+                                  maxWidth: panelMaxW,
+                                  maxHeight:
+                                      math.min(280, MediaQuery.sizeOf(context).height * 0.42),
+                                ),
+                                decoration: BoxDecoration(
+                                  color: Colors.black.withValues(alpha: 0.88),
+                                  borderRadius: BorderRadius.circular(20),
+                                  boxShadow: const [BoxShadow(color: Colors.black26, blurRadius: 10)],
+                                ),
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.max,
+                                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                                  children: [
+                                    Expanded(
+                                      child: SingleChildScrollView(
+                                        child: Wrap(
+                                          alignment: WrapAlignment.end,
+                                          spacing: 2,
+                                          runSpacing: 4,
+                                          children: _kMapReactionEmojis.map((e) {
+                                            return Material(
+                                              color: Colors.transparent,
+                                              child: InkWell(
+                                                onTap: () async {
+                                                  if (_currentPositionObject == null) return;
+                                                  final uid = FirebaseAuth.instance.currentUser?.uid;
+                                                  if (uid == null || uid.isEmpty) {
+                                                    if (mounted) {
+                                                      _showSafeSnackBar(
+                                                        'Autentifică-te ca să plasezi emoji pe hartă',
+                                                        const Color(0xFFB71C1C),
+                                                      );
+                                                    }
+                                                    return;
+                                                  }
+                                                  try {
+                                                    final chosen = normalizeMapEmojiForEngine(e);
+                                                    final docId = await MapEmojiService().addEmoji(
+                                                      lat: _currentPositionObject!.latitude,
+                                                      lng: _currentPositionObject!.longitude,
+                                                      emoji: chosen,
+                                                      senderId: uid,
+                                                    );
+                                                    if (!mounted) return;
+                                                    HapticFeedback.lightImpact();
+                                                    if (docId != null) {
+                                                      final optimistic = MapEmoji(
+                                                        id: docId,
+                                                        lat: _currentPositionObject!.latitude,
+                                                        lng: _currentPositionObject!.longitude,
+                                                        emoji: chosen,
+                                                        timestamp: DateTime.now(),
+                                                        senderId: uid,
+                                                      );
+                                                      setState(() {
+                                                        _lastReceivedEmojis = [
+                                                          ..._lastReceivedEmojis.where((x) => x.id != docId),
+                                                          optimistic,
+                                                        ]..sort((a, b) => a.timestamp.compareTo(b.timestamp));
+                                                        _showEmojiPicker = false;
+                                                      });
+                                                      unawaited(_updateEmojiMarkers(_lastReceivedEmojis));
+                                                    } else {
+                                                      setState(() => _showEmojiPicker = false);
+                                                    }
+                                                  } catch (err) {
+                                                    if (mounted) {
+                                                      _showSafeSnackBar(
+                                                        'Nu am putut salva emoji-ul. Verifică conexiunea sau regulile Firebase.',
+                                                        const Color(0xFFB71C1C),
+                                                      );
+                                                    }
+                                                  }
+                                                },
+                                                borderRadius: BorderRadius.circular(10),
+                                                child: Padding(
+                                                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+                                                  child: Text(e, style: const TextStyle(fontSize: 26)),
+                                                ),
+                                              ),
+                                            );
+                                          }).toList(),
+                                        ),
+                                      ),
+                                    ),
+                                    if (hasMine) ...[
+                                      Divider(color: Colors.white.withValues(alpha: 0.2), height: 16),
+                                      TextButton(
+                                        style: TextButton.styleFrom(
+                                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
+                                          alignment: Alignment.centerLeft,
+                                        ),
+                                        onPressed: _removeMyMapEmoji,
+                                        child: Row(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Icon(Icons.delete_outline_rounded, color: Colors.red.shade200, size: 20),
+                                            const SizedBox(width: 8),
+                                            Expanded(
+                                              child: Text(
+                                                'Șterge emoji-ul meu de pe hartă',
+                                                style: TextStyle(
+                                                  color: Colors.red.shade100,
+                                                  fontWeight: FontWeight.w600,
+                                                  fontSize: 13,
+                                                ),
+                                                maxLines: 3,
+                                                softWrap: true,
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  ],
+                                ),
+                              ),
+                            if (!_showEmojiPicker && hasMine)
+                              Material(
                                 color: Colors.black.withValues(alpha: 0.82),
                                 borderRadius: BorderRadius.circular(20),
                                 child: InkWell(
                                   onTap: _removeMyMapEmoji,
                                   borderRadius: BorderRadius.circular(20),
                                   child: Padding(
-                                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 12,
+                                      vertical: 8,
+                                    ),
                                     child: Row(
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
-                                        Icon(Icons.layers_clear_rounded, color: Colors.red.shade200, size: 18),
+                                        Icon(
+                                          Icons.layers_clear_rounded,
+                                          color: Colors.red.shade200,
+                                          size: 18,
+                                        ),
                                         const SizedBox(width: 8),
                                         ConstrainedBox(
                                           constraints: BoxConstraints(maxWidth: panelMaxW - 56),
@@ -11517,131 +11852,40 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
                                   ),
                                 ),
                               ),
-                            ),
-                          if (_showEmojiPicker)
-                            Container(
-                              margin: const EdgeInsets.only(bottom: 8),
-                              padding: const EdgeInsets.fromLTRB(10, 10, 10, 8),
-                              width: panelMaxW,
-                              constraints: BoxConstraints(
-                                maxWidth: panelMaxW,
-                                maxHeight: math.min(280, MediaQuery.sizeOf(context).height * 0.42),
-                              ),
-                              decoration: BoxDecoration(
-                                color: Colors.black.withValues(alpha: 0.88),
-                                borderRadius: BorderRadius.circular(20),
-                                boxShadow: const [BoxShadow(color: Colors.black26, blurRadius: 10)],
-                              ),
-                              child: Column(
-                                mainAxisSize: MainAxisSize.max,
-                                crossAxisAlignment: CrossAxisAlignment.stretch,
-                                children: [
-                                  Expanded(
-                                    child: SingleChildScrollView(
-                                      child: Wrap(
-                                        alignment: WrapAlignment.end,
-                                        spacing: 2,
-                                        runSpacing: 4,
-                                        children: _kMapReactionEmojis.map((e) {
-                                          return Material(
-                                            color: Colors.transparent,
-                                            child: InkWell(
-                                              onTap: () async {
-                                                if (_currentPositionObject == null) return;
-                                                final uid = FirebaseAuth.instance.currentUser?.uid;
-                                                if (uid == null || uid.isEmpty) {
-                                                  if (mounted) {
-                                                    _showSafeSnackBar(
-                                                      'Autentifică-te ca să plasezi emoji pe hartă',
-                                                      const Color(0xFFB71C1C),
-                                                    );
-                                                  }
-                                                  return;
-                                                }
-                                                try {
-                                                  final chosen = normalizeMapEmojiForEngine(e);
-                                                  final docId = await MapEmojiService().addEmoji(
-                                                    lat: _currentPositionObject!.latitude,
-                                                    lng: _currentPositionObject!.longitude,
-                                                    emoji: chosen,
-                                                    senderId: uid,
-                                                  );
-                                                  if (!mounted) return;
-                                                  HapticFeedback.lightImpact();
-                                                  if (docId != null) {
-                                                    final optimistic = MapEmoji(
-                                                      id: docId,
-                                                      lat: _currentPositionObject!.latitude,
-                                                      lng: _currentPositionObject!.longitude,
-                                                      emoji: chosen,
-                                                      timestamp: DateTime.now(),
-                                                      senderId: uid,
-                                                    );
-                                                    setState(() {
-                                                      _lastReceivedEmojis = [
-                                                        ..._lastReceivedEmojis.where((x) => x.id != docId),
-                                                        optimistic,
-                                                      ]..sort((a, b) => a.timestamp.compareTo(b.timestamp));
-                                                      _showEmojiPicker = false;
-                                                    });
-                                                    unawaited(_updateEmojiMarkers(_lastReceivedEmojis));
-                                                  } else {
-                                                    setState(() => _showEmojiPicker = false);
-                                                  }
-                                                } catch (err) {
-                                                  if (mounted) {
-                                                    _showSafeSnackBar(
-                                                      'Nu am putut salva emoji-ul. Verifică conexiunea sau regulile Firebase.',
-                                                      const Color(0xFFB71C1C),
-                                                    );
-                                                  }
-                                                }
-                                              },
-                                              borderRadius: BorderRadius.circular(10),
-                                              child: Padding(
-                                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
-                                                child: Text(e, style: const TextStyle(fontSize: 26)),
-                                              ),
-                                            ),
-                                          );
-                                        }).toList(),
-                                      ),
-                                    ),
-                                  ),
-                                  if (hasMine) ...[
-                                    Divider(color: Colors.white.withValues(alpha: 0.2), height: 16),
-                                    TextButton(
-                                      style: TextButton.styleFrom(
-                                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
-                                        alignment: Alignment.centerLeft,
-                                      ),
-                                      onPressed: _removeMyMapEmoji,
-                                      child: Row(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          Icon(Icons.delete_outline_rounded,
-                                              color: Colors.red.shade200, size: 20),
-                                          const SizedBox(width: 8),
-                                          Expanded(
-                                            child: Text(
-                                              'Șterge emoji-ul meu de pe hartă',
-                                              style: TextStyle(
-                                                color: Colors.red.shade100,
-                                                fontWeight: FontWeight.w600,
-                                                fontSize: 13,
-                                              ),
-                                              maxLines: 3,
-                                              softWrap: true,
-                                              overflow: TextOverflow.ellipsis,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ],
-                                ],
-                              ),
-                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 10),
+                  _RightGlassFloatingPanel(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                          _buildBumpFloatingButton(
+                            icon: Icons.search_rounded,
+                            onTap: () => setState(() => _universalSearchOpen = true),
+                          ),
+                          const SizedBox(height: 12),
+                          _buildBumpFloatingButton(
+                            icon: _isVisibleToNeighbors
+                                ? Icons.visibility_rounded
+                                : Icons.visibility_off_rounded,
+                            onTap: _toggleVisibleToNeighbors,
+                          ),
+                          const SizedBox(height: 12),
+                          _buildBumpFloatingButton(
+                            icon: Icons.add_a_photo_outlined,
+                            onTap: _showPostMomentSheet,
+                          ),
+                          const SizedBox(height: 12),
+                          // Emoji pe hartă
+                  Builder(
+                    builder: (context) {
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
                           FloatingActionButton(
                             mini: true,
                             heroTag: 'emoji_picker_fab',
@@ -11652,10 +11896,92 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
                               color: _showEmojiPicker ? Colors.white : Colors.pink,
                             ),
                           ),
+                          const SizedBox(height: 12),
+                          _buildBumpFloatingButton(
+                            icon: Icons.my_location,
+                            onTap: () => _getCurrentLocation(centerCamera: true),
+                          ),
+                          const SizedBox(height: 12),
+                          _buildBumpFloatingButton(
+                            icon: _flashlightOn
+                                ? Icons.flashlight_on_rounded
+                                : Icons.flashlight_off_rounded,
+                            color: _flashlightOn ? Colors.amber : Colors.black,
+                            onTap: _toggleFlashlight,
+                          ),
+                          const SizedBox(height: 12),
+                          _buildBumpFloatingButton(
+                            icon: Icons.ios_share_rounded,
+                            onTap: _shareCurrentLocation,
+                          ),
+                          const SizedBox(height: 12),
+                          _buildBumpFloatingButton(
+                            icon: Icons.radar,
+                            color: Colors.white,
+                            bgColor: const Color(0xFF7C3AED),
+                            onTap: () {
+                              if (_currentPositionObject != null) {
+                                setState(() {
+                                  _radarCenter = Point(
+                                    coordinates: Position(
+                                      _currentPositionObject!.longitude,
+                                      _currentPositionObject!.latitude,
+                                    ),
+                                  );
+                                  _isRadarMode = true;
+                                });
+                              } else {
+                                _showSafeSnackBar(l10n.mapWaitingGpsLocation, Colors.red);
+                              }
+                            },
+                          ),
+                          const SizedBox(height: 12),
+                          _buildBumpFloatingButton(
+                            icon: Icons.add_location_alt_rounded,
+                            color: Colors.white,
+                            bgColor: Colors.indigo,
+                            onTap: () {
+                              if (_currentPositionObject != null) {
+                                NeighborhoodRequestsManager.showCreateRequestSheet(
+                                  context,
+                                  _currentPositionObject!.latitude,
+                                  _currentPositionObject!.longitude,
+                                );
+                              } else {
+                                _showSafeSnackBar(l10n.mapWaitingGpsLocation, Colors.red);
+                              }
+                            },
+                          ),
+                          const SizedBox(height: 12),
+                          _buildBumpFloatingButton(
+                            icon: Icons.notifications_rounded,
+                            color: const Color(0xFF7C3AED),
+                            onTap: _openActivityNotifications,
+                          ),
+                          if (_showParkingYieldMapButton) ...[
+                            const SizedBox(height: 12),
+                            _buildBumpFloatingButton(
+                              icon: Icons.local_parking_rounded,
+                              color: Colors.black,
+                              bgColor: Colors.amber,
+                              onTap: _handleLeavingParking,
+                            ),
+                          ],
+                          if (shouldShowPassengerUI) ...[
+                            const SizedBox(height: 12),
+                            _buildBumpFloatingButton(
+                              icon: Icons.edit_location_alt_rounded,
+                              color: const Color(0xFF0EA5E9),
+                              onTap: _onItineraryButtonPressed,
+                            ),
+                          ],
                         ],
                       );
                     },
                   ),
+                        ],
+                      ),
+                    ),
                 ],
               ),
           ),
@@ -11774,13 +12100,13 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
 
           
           // ✅ CONECTARE 1: Intermediate stops list
-          if (_intermediateStops.isNotEmpty)
+          if (_routeCtrl.intermediateStops.isNotEmpty)
             Positioned(
               top: 100,
               left: 16,
               right: 16,
               child: MapIntermediateStops(
-                stops: _intermediateStops,
+                stops: _routeCtrl.intermediateStops,
                 onRemoveStop: _removeStop,
               ),
             ),
@@ -11788,7 +12114,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
           // Camera control buttons moved to AppBar
 
           // ✅ Alt routes toggle & preview card + ETA/distance preview pentru ruta curentă
-          if (_alternativeRoutes.isNotEmpty)
+          if (_routeCtrl.alternativeRoutes.isNotEmpty)
             Positioned(
               bottom: 90 + MediaQuery.of(context).padding.bottom,
               left: 16,
@@ -11800,7 +12126,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      if (_currentRouteDistanceMeters != null && _currentRouteDurationSeconds != null)
+                      if (_routeCtrl.currentRouteDistanceMeters != null && _routeCtrl.currentRouteDurationSeconds != null)
                         Padding(
                           padding: const EdgeInsets.only(bottom: 8.0),
                           child: Row(
@@ -11809,34 +12135,34 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
                               const SizedBox(width: 8),
                               Expanded(
                                 child: Text(
-                                  '${_routingService.formatDuration(_currentRouteDurationSeconds!)} • ${_routingService.formatDistance(_currentRouteDistanceMeters!)}',
+                                  '${_routingService.formatDuration(_routeCtrl.currentRouteDurationSeconds!)} • ${_routingService.formatDistance(_routeCtrl.currentRouteDistanceMeters!)}',
                                   style: const TextStyle(fontWeight: FontWeight.w600),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
                                 ),
                               ),
-                              if (_pickupQualityLabel != null && _pickupQualityColor != null)
+                              if (_routeCtrl.pickupQualityLabel != null && _routeCtrl.pickupQualityColor != null)
                                 Padding(
                                   padding: const EdgeInsets.only(left: 8),
                                   child: Container(
                                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                                     decoration: BoxDecoration(
-                                      color: _pickupQualityColor!.withValues(alpha: 0.12),
+                                      color: _routeCtrl.pickupQualityColor!.withValues(alpha: 0.12),
                                       borderRadius: BorderRadius.circular(12),
-                                      border: Border.all(color: _pickupQualityColor!.withValues(alpha: 0.6)),
+                                      border: Border.all(color: _routeCtrl.pickupQualityColor!.withValues(alpha: 0.6)),
                                     ),
                                     child: Row(
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
-                                        Icon(Icons.flag_rounded, size: 14, color: _pickupQualityColor),
+                                        Icon(Icons.flag_rounded, size: 14, color: _routeCtrl.pickupQualityColor),
                                         const SizedBox(width: 6),
                                         ConstrainedBox(
                                           constraints: const BoxConstraints(maxWidth: 96),
                                           child: Text(
-                                            _pickupQualityLabel!,
+                                            _routeCtrl.pickupQualityLabel!,
                                             maxLines: 1,
                                             overflow: TextOverflow.ellipsis,
-                                            style: TextStyle(fontWeight: FontWeight.w600, color: _pickupQualityColor),
+                                            style: TextStyle(fontWeight: FontWeight.w600, color: _routeCtrl.pickupQualityColor),
                                           ),
                                         ),
                                       ],
@@ -11850,29 +12176,29 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
                         children: [
                           const Text('Rute alternative', style: TextStyle(fontWeight: FontWeight.bold)),
                           const Spacer(),
-                          if (_isFetchingAlternatives) const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2)),
+                          if (_routeCtrl.isFetchingAlternatives) const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2)),
                         ],
                       ),
                       const SizedBox(height: 8),
                       SingleChildScrollView(
                         scrollDirection: Axis.horizontal,
                         child: Row(
-                          children: List.generate(_alternativeRoutes.length, (i) {
-                            final r = _alternativeRoutes[i];
+                          children: List.generate(_routeCtrl.alternativeRoutes.length, (i) {
+                            final r = _routeCtrl.alternativeRoutes[i];
                             final meters = (r['distance'] as num?)?.toDouble() ?? 0.0;
                             final seconds = (r['duration'] as num?)?.toDouble() ?? 0.0;
                             final dist = _routingService.formatDistance(meters);
                             final eta = _routingService.formatDuration(seconds);
-                            final selected = i == _selectedAltRouteIndex;
+                            final selected = i == _routeCtrl.selectedAltRouteIndex;
                             return Padding(
                               padding: const EdgeInsets.only(right: 8.0),
                               child: ChoiceChip(
                                 label: Text('$eta • $dist'),
                                 selected: selected,
                                 onSelected: (val) async {
-                                  setState(() { _selectedAltRouteIndex = i; });
+                                  setState(() { _routeCtrl.selectedAltRouteIndex = i; });
                                   // Re-desenăm ruta: selectata ca principală + celelalte faint
-                                  final reordered = <Map<String, dynamic>>[r, ..._alternativeRoutes.where((e) => !identical(e, r)).cast<Map<String, dynamic>>()];
+                                  final reordered = <Map<String, dynamic>>[r, ..._routeCtrl.alternativeRoutes.where((e) => !identical(e, r)).cast<Map<String, dynamic>>()];
                                   await _onRouteCalculated({'routes': reordered});
                                 },
                               ),
@@ -11885,7 +12211,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
                 ),
               ),
             ),
-          if (_alternativeRoutes.isNotEmpty && !_tipAltRoutesSeen)
+          if (_routeCtrl.alternativeRoutes.isNotEmpty && !_routeCtrl.tipAltRoutesSeen)
             Positioned(
               bottom: 160 + MediaQuery.of(context).padding.bottom,
               left: 16,
@@ -11893,8 +12219,8 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
                 color: Colors.transparent,
                 child: InkWell(
                   onTap: () async {
-                    setState(() { _tipAltRoutesSeen = true; });
-                    try { final prefs = await SharedPreferences.getInstance(); await prefs.setBool('tip_alt_routes_seen', true); } catch (_) {}
+                    setState(() { _routeCtrl.tipAltRoutesSeen = true; });
+                    try { final prefs = await SharedPreferences.getInstance(); await prefs.setBool('tip_alt_routes_seen', true); } catch (_) { /* Mapbox op — expected on style reload or missing layer/annotation */ }
                   },
                   child: Container(
                     padding: const EdgeInsets.all(10),
@@ -11906,7 +12232,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
             ),
 
           // ✅ Pickup suggestions chips
-          if (_showPickupSuggestions && _pickupSuggestionPoints.isNotEmpty)
+          if (_routeCtrl.showPickupSuggestions && _routeCtrl.pickupSuggestionPoints.isNotEmpty)
             Positioned(
               bottom: 150 + MediaQuery.of(context).padding.bottom,
               left: 16,
@@ -11917,16 +12243,16 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
                   padding: const EdgeInsets.all(8.0),
                   child: Wrap(
                     spacing: 8,
-                    children: List.generate(_pickupSuggestionPoints.length, (i) {
+                    children: List.generate(_routeCtrl.pickupSuggestionPoints.length, (i) {
                       return ActionChip(
                         avatar: const Icon(Icons.trip_origin, size: 18),
                         label: Text(AppLocalizations.of(context)!.mapPickupIndex(i + 1)),
                         onPressed: () {
-                          final pt = _pickupSuggestionPoints[i];
+                          final pt = _routeCtrl.pickupSuggestionPoints[i];
                           setState(() {
-                            _pickupLatitude = pt.coordinates.lat.toDouble();
-                            _pickupLongitude = pt.coordinates.lng.toDouble();
-                            _showPickupSuggestions = false;
+                            _routeCtrl.pickupLatitude = pt.coordinates.lat.toDouble();
+                            _routeCtrl.pickupLongitude = pt.coordinates.lng.toDouble();
+                            _routeCtrl.showPickupSuggestions = false;
                           });
                           _updateMapWithNewPickup();
                           _showSafeSnackBar(AppLocalizations.of(context)!.mapPickupPointSelected, Colors.blue);
@@ -11939,17 +12265,17 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
             ),
           
           // ✅ CONECTARE 2: Ride info panel
-          if ((_pickupLatitude != null || _destinationLatitude != null) && !shouldShowPassengerUI)
+          if ((_routeCtrl.pickupLatitude != null || _routeCtrl.destinationLatitude != null) && !shouldShowPassengerUI)
             Positioned(
               bottom: 200 + MediaQuery.of(context).padding.bottom,
               left: 16,
               right: 16,
               child: MapRideInfoPanel(
-                pickupLatitude: _pickupLatitude,
-                destinationLatitude: _destinationLatitude,
-                pickupText: _pickupController.text,
-                destinationText: _destinationController.text,
-                stopsCount: _intermediateStops.length,
+                pickupLatitude: _routeCtrl.pickupLatitude,
+                destinationLatitude: _routeCtrl.destinationLatitude,
+                pickupText: _routeCtrl.pickupController.text,
+                destinationText: _routeCtrl.destinationController.text,
+                stopsCount: _routeCtrl.intermediateStops.length,
                 onClearPickup: _clearPickup,
                 onClearDestination: _clearDestination,
                 onStartRide: _startRideRequest,
@@ -12013,7 +12339,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
             ),
 
           // ── Navigare internă Mapbox (Text Header minimal sub POI-uri pe o singură linie) ──
-          if (_inAppNavActive)
+          if (_routeCtrl.inAppNavActive)
             Positioned(
               top: 104, // Sub chips-urile de POI (body sub SafeArea)
               left: 16,
@@ -12036,7 +12362,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
-                          _navCurrentInstruction.isEmpty ? "Navigare activă" : _navCurrentInstruction,
+                          _routeCtrl.navCurrentInstruction.isEmpty ? "Navigare activă" : _routeCtrl.navCurrentInstruction,
                           style: const TextStyle(
                             color: Colors.white,
                             fontSize: 14,
@@ -12046,10 +12372,10 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
-                      if (_navRemainDistanceM > 0 || _navRemainEta.inSeconds > 0) ...[
+                      if (_routeCtrl.navRemainDistanceM > 0 || _routeCtrl.navRemainEta.inSeconds > 0) ...[
                         const SizedBox(width: 8),
                         Text(
-                          '${_navRemainDistanceM > 0 ? (_navRemainDistanceM > 1000 ? "${(_navRemainDistanceM / 1000).toStringAsFixed(1)} km" : "${_navRemainDistanceM.toStringAsFixed(0)} m") : ""} ${_navRemainEta.inSeconds > 0 ? "• ${_navRemainEta.inMinutes} min" : ""}'.trim(),
+                          '${_routeCtrl.navRemainDistanceM > 0 ? (_routeCtrl.navRemainDistanceM > 1000 ? "${(_routeCtrl.navRemainDistanceM / 1000).toStringAsFixed(1)} km" : "${_routeCtrl.navRemainDistanceM.toStringAsFixed(0)} m") : ""} ${_routeCtrl.navRemainEta.inSeconds > 0 ? "• ${_routeCtrl.navRemainEta.inMinutes} min" : ""}'.trim(),
                           style: const TextStyle(
                             color: Color(0xFF00E676),
                             fontSize: 13,
@@ -12130,69 +12456,6 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
             },
           ),
 
-          // 🏠 Chat de cartier + Cereri de cartier — colțul dreapta jos
-          // ── BOTTOM BAR CENTRAL (3 butoane, stil Bump) ─────────────────
-          BumpBottomBar(
-            leftIcon: _isVisibleToNeighbors
-                ? Icons.visibility_rounded
-                : Icons.visibility_off_rounded,
-            centerIcon: Icons.people_alt_rounded,
-            rightIcon: Icons.notifications_rounded,
-            badge: _pendingIncomingFriendRequestCount > 0
-                ? _pendingIncomingFriendRequestCount
-                : null,
-            onLeft: _toggleVisibleToNeighbors,
-            onCenter: _openFriendSuggestions,
-            onRight: _openActivityNotifications,
-            onItinerary: shouldShowPassengerUI ? _onItineraryButtonPressed : null,
-          ),
-
-          // ── Cerere FAB (above quick actions row) ─────────────────────
-          if (_isVisibleToNeighbors && _showCerereButton)
-            Positioned(
-              bottom: 150 + MediaQuery.of(context).padding.bottom,
-              right: 16,
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  FloatingActionButton.extended(
-                    heroTag: 'cerere_fab',
-                    onPressed: () {
-                      if (_currentPositionObject != null) {
-                        NeighborhoodRequestsManager.showCreateRequestSheet(
-                          context,
-                          _currentPositionObject!.latitude,
-                          _currentPositionObject!.longitude,
-                        );
-                      } else {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(AppLocalizations.of(context)!.mapWaitingGpsLocation),
-                          ),
-                        );
-                      }
-                    },
-                    backgroundColor: Colors.indigo,
-                    icon: const Icon(Icons.add_location_alt, color: Colors.white),
-                    label: const Text('Cerere', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-                  ),
-                  const SizedBox(width: 6),
-                  SizedBox(
-                    width: 32,
-                    height: 32,
-                    child: FloatingActionButton(
-                      heroTag: 'cerere_close',
-                      mini: true,
-                      backgroundColor: Colors.white,
-                      elevation: 2,
-                      onPressed: () => setState(() => _showCerereButton = false),
-                      child: const Icon(Icons.close, size: 18, color: Color(0xFFE53935)),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
           // ── Quick actions row (above bottom bar) ─────────────────────
           Positioned(
             bottom: 90 + MediaQuery.of(context).padding.bottom,
@@ -12207,7 +12470,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
                   mainAxisSize: MainAxisSize.min,
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                _buildMiniAction(
+                    _buildMiniAction(
                   icon: Icons.auto_awesome_rounded,
                   label: 'Review',
                   color: const Color(0xFFFF007F),
@@ -12220,8 +12483,8 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
                   icon: Icons.campaign_rounded,
                   label: 'Cereri',
                   color: const Color(0xFF7C3AED),
-                  badge: _cereriQuickActionBadgeCount > 0
-                      ? _cereriQuickActionBadgeCount
+                  badge: _badgesCtrl.cereriCount > 0
+                      ? _badgesCtrl.cereriCount
                       : null,
                   onTap: () {
                     Navigator.of(context)
@@ -12235,12 +12498,110 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
                   },
                 ),
                 const SizedBox(width: 12),
+                GestureDetector(
+                  onTap: _openFriendSuggestions,
+                  child: Stack(
+                    clipBehavior: Clip.none,
+                    children: [
+                      Container(
+                        width: 44,
+                        height: 44,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.08),
+                              blurRadius: 8,
+                              offset: const Offset(0, 3),
+                            ),
+                          ],
+                          border: Border.all(
+                            color: const Color(0xFF7C3AED).withValues(alpha: 0.35),
+                            width: 1.4,
+                          ),
+                        ),
+                        child: const Icon(
+                          Icons.people_alt_rounded,
+                          size: 21,
+                          color: Color(0xFF7C3AED),
+                        ),
+                      ),
+                      if (_badgesCtrl.friendRequestCount > 0)
+                        Positioned(
+                          top: -5,
+                          right: -5,
+                          child: Container(
+                            padding: const EdgeInsets.all(4),
+                            decoration: const BoxDecoration(
+                              color: Color(0xFFEF4444),
+                              shape: BoxShape.circle,
+                            ),
+                            constraints: const BoxConstraints(
+                              minWidth: 20,
+                              minHeight: 20,
+                            ),
+                            child: Text(
+                              _badgesCtrl.friendRequestCount > 99
+                                  ? '99+'
+                                  : '$_badgesCtrl.friendRequestCount',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize:
+                                    _badgesCtrl.friendRequestCount > 9
+                                        ? 9
+                                        : 10,
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                          ),
+                        ),
+                      if (_badgesCtrl.privateChatUnreadCount > 0)
+                        Positioned(
+                          top: -6,
+                          left: 0,
+                          right: 0,
+                          child: Center(
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 5, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF7C3AED),
+                                borderRadius: BorderRadius.circular(10),
+                                border: Border.all(
+                                    color: Colors.white, width: 1.5),
+                              ),
+                              constraints: const BoxConstraints(
+                                minWidth: 20,
+                                minHeight: 18,
+                              ),
+                              child: Text(
+                                _badgesCtrl.privateChatUnreadCount > 99
+                                    ? '99+'
+                                    : '$_badgesCtrl.privateChatUnreadCount',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize:
+                                      _badgesCtrl.privateChatUnreadCount > 9 ? 9 : 11,
+                                  fontWeight: FontWeight.w800,
+                                  height: 1.1,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 12),
                 _buildMiniAction(
                   icon: Icons.forum_rounded,
                   label: 'Chat',
                   color: const Color(0xFF7C3AED),
-                  badge: _chatQuickActionBadgeCount > 0
-                      ? _chatQuickActionBadgeCount
+                  badge: _badgesCtrl.chatBadgeCount > 0
+                      ? _badgesCtrl.chatBadgeCount
                       : null,
                   onTap: () async {
                     final result = await Navigator.of(context).push<dynamic>(
@@ -12322,7 +12683,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
               },
             ),
             if (_currentPositionObject != null) ...[
-              if (_rideAddressSheetVisible || _inAppNavActive)
+              if (_rideAddressSheetVisible || _routeCtrl.inAppNavActive)
                 RideRequestPanel(
                   key: _rideRequestPanelKey,
                   draggableController: _rideSheetController,
@@ -12330,7 +12691,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
                   onRouteCalculated: _onRouteCalculated,
                   onDestinationPreview: _onDestinationPreview,
                   onStartNavigation: (pt, addr) => unawaited(_startInAppNavigation(pt.coordinates.lat.toDouble(), pt.coordinates.lng.toDouble(), addr)),
-                  isNavigating: _inAppNavActive,
+                  isNavigating: _routeCtrl.inAppNavActive,
                   onClose: _closeRideAddressSheet,
                 ),
             ] else
@@ -12439,14 +12800,16 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
       setState(() => _scaleBarText = next);
     }
 
-    // Prag 3D: dacă trecem peste 17.5 sau sub 17.5, forțăm un marker update 
-    // ca să comutăm între model 3D și sprite 2D.
-    final bool wasAbove = _mapZoomLevel >= 17.5;
-    final bool isAbove = zoom >= 17.5;
+    // Prag 3D cu histerezis (coincide cu [canShow3D] în _runUserMarkerUpdate).
+    final bool wasAbove = _is3DZoomGateOpen;
     _mapZoomLevel = zoom;
-    if (wasAbove != isAbove) {
+    final bool isAbove = _compute3DZoomGate(zoom);
+    if (wasAbove != isAbove && !_spaceIntroInFlight && _mapSpaceIntroDone) {
       _clearGpsUserMarkerThrottle();
-      unawaited(_updateUserMarker(centerCamera: false));
+      Future<void>.delayed(const Duration(milliseconds: 400), () {
+        if (!mounted) return;
+        unawaited(_updateUserMarker(centerCamera: false));
+      });
     }
 
     _auraProjectDebounce?.cancel();
@@ -12478,6 +12841,28 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
     // Track zoom for slider
     unawaited(_syncZoomLevel());
     unawaited(_projectMagicEventAuraSlots());
+    _schedule3DLocationResyncAfterMapIdle();
+  }
+
+  /// După animații cameră (ex. fly to user), straturile de locație 3D pot rămâne fără sursă de model validă.
+  void _schedule3DLocationResyncAfterMapIdle() {
+    final av = _getCurrentAvatarObject();
+    if (av == null || !av.is3D || av.modelPath == null) return;
+    _mapIdle3dResyncDebounce?.cancel();
+    _mapIdle3dResyncDebounce = Timer(const Duration(milliseconds: 2500), () {
+      _mapIdle3dResyncDebounce = null;
+      if (!mounted || _mapboxMap == null) return;
+      unawaited(() async {
+        try {
+          final cam = await _mapboxMap!.getCameraState();
+          if (!mounted) return;
+          if (!_compute3DZoomGate(cam.zoom.toDouble())) return;
+          await _enable3DUserModel(av.modelPath!);
+        } catch (e) {
+          Logger.debug('3D resync după map idle: $e', tag: 'MAP_3D');
+        }
+      }());
+    });
   }
 
   Future<void> _syncZoomLevel() async {
@@ -12488,7 +12873,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
       if ((z - _mapZoomLevel).abs() > 0.3 && mounted) {
         setState(() => _mapZoomLevel = z);
       }
-    } catch (_) {}
+    } catch (_) { /* Mapbox op — expected on style reload or missing layer/annotation */ }
   }
 
   Future<void> _updateCurrentStreetName({bool throttle = false}) async {
@@ -12520,7 +12905,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
           });
         }
       }
-    } catch (_) {}
+    } catch (_) { /* Mapbox op — expected on style reload or missing layer/annotation */ }
   }
 
   /// Dacă userul a panning-uit prea mult față de locația curentă, readuce camera
@@ -12611,7 +12996,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
       if (shouldShow != _showSearchAreaChip) {
         setState(() { _showSearchAreaChip = shouldShow; });
       }
-    } catch (_) {}
+    } catch (_) { /* Mapbox op — expected on style reload or missing layer/annotation */ }
   }
 
   /// Tap scurt: doar POI / selecții native; pinul roșu se plasează la long-press.
@@ -12671,10 +13056,10 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
 
   void _resetPinAutoHideTimer() {
     _pinAutoHideTimer?.cancel();
-    if (_isDestinationPreviewMode || _inAppNavActive || _isDraggingPin) return;
+    if (_isDestinationPreviewMode || _routeCtrl.inAppNavActive || _isDraggingPin) return;
     _pinAutoHideTimer = Timer(const Duration(seconds: 5), () {
       if (!mounted) return;
-      if (_isDraggingPin || _isDestinationPreviewMode || _inAppNavActive) return;
+      if (_isDraggingPin || _isDestinationPreviewMode || _routeCtrl.inAppNavActive) return;
       setState(() {
         _previewPinScreenPos = null;
       });
@@ -12694,7 +13079,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
     try {
       final sc = await _mapboxMap!.pixelForCoordinate(point);
       if (mounted) setState(() => _previewPinScreenPos = Offset(sc.x, sc.y));
-    } catch (_) {}
+    } catch (_) { /* Mapbox op — expected on style reload or missing layer/annotation */ }
   }
 
   /// Drag update â€” mută widget-ul pin instant pe ecran.
@@ -12883,7 +13268,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
                   ),
                 ),
                 const SizedBox(height: 4),
-                _MapTapGeocodeSheetBody(
+                MapTapGeocodeSheetBody(
                   lat: lat,
                   lng: lng,
                   sheetContext: sheetCtx,
@@ -13021,7 +13406,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
           ),
           MapAnimationOptions(duration: AppDrawer.lowDataMode ? 350 : 600),
         ));
-      } catch (_) {}
+      } catch (_) { /* Mapbox op — expected on style reload or missing layer/annotation */ }
     });
 
     // Update selected POI highlight
@@ -13134,13 +13519,13 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
       // âœ… PERFORMANCE: Quick UI update - batch all setState calls
       setState(() {
         Logger.info('Updating pickup state...');
-        _pickupController.text = poi.name;
-        _pickupLatitude = poi.location.latitude;
-        _pickupLongitude = poi.location.longitude;
+        _routeCtrl.pickupController.text = poi.name;
+        _routeCtrl.pickupLatitude = poi.location.latitude;
+        _routeCtrl.pickupLongitude = poi.location.longitude;
         // âœ… PERFORMANCE: Close POI card in same setState
         _selectedPoi = null;
         _showPoiCard = false;
-        Logger.info('Pickup state updated: lat=$_pickupLatitude, lng=$_pickupLongitude');
+        Logger.info('Pickup state updated: lat=$_routeCtrl.pickupLatitude, lng=$_routeCtrl.pickupLongitude');
       });
 
       // âœ… PERFORMANCE: Close POI card immediately - no additional navigation
@@ -13198,13 +13583,13 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
       // âœ… PERFORMANCE: Quick UI update - batch all setState calls
       setState(() {
         Logger.info('Updating destination state...');
-        _destinationController.text = poi.name;
-        _destinationLatitude = poi.location.latitude;
-        _destinationLongitude = poi.location.longitude;
+        _routeCtrl.destinationController.text = poi.name;
+        _routeCtrl.destinationLatitude = poi.location.latitude;
+        _routeCtrl.destinationLongitude = poi.location.longitude;
         // âœ… PERFORMANCE: Close POI card in same setState
         _selectedPoi = null;
         _showPoiCard = false;
-        Logger.info('Destination state updated: lat=$_destinationLatitude, lng=$_destinationLongitude');
+        Logger.info('Destination state updated: lat=$_routeCtrl.destinationLatitude, lng=$_routeCtrl.destinationLongitude');
       });
 
       // âœ… PERFORMANCE: Close POI card immediately - no additional navigation
@@ -13260,13 +13645,13 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
       _poiOperationTimer?.cancel();
       
       // Validation
-      if (_intermediateStops.length >= _maxIntermediateStops) {
-        _showSafeSnackBar(AppLocalizations.of(context)!.mapMaxIntermediateStops(_maxIntermediateStops), Colors.orange);
+      if (_routeCtrl.intermediateStops.length >= MapRouteController.maxIntermediateStops) {
+        _showSafeSnackBar(AppLocalizations.of(context)!.mapMaxIntermediateStops(MapRouteController.maxIntermediateStops), Colors.orange);
         return;
       }
 
       // Check for duplicates
-      final existingStop = _intermediateStops.any((stop) =>
+      final existingStop = _routeCtrl.intermediateStops.any((stop) =>
           stop == poi.name);
       
       if (existingStop) {
@@ -13277,11 +13662,11 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
       // âœ… PERFORMANCE: Quick UI update - batch all setState calls
       setState(() {
         Logger.debug('Adding stop to list...');
-        _intermediateStops.add(poi.name);
+        _routeCtrl.intermediateStops.add(poi.name);
         // âœ… PERFORMANCE: Close POI card in same setState
         _selectedPoi = null;
         _showPoiCard = false;
-        Logger.debug('Stop added. Total stops: ${_intermediateStops.length}');
+        Logger.debug('Stop added. Total stops: ${_routeCtrl.intermediateStops.length}');
       });
 
       // âœ… PERFORMANCE: Close POI card immediately - no additional navigation
@@ -13329,13 +13714,13 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
 
   /// Metodă helper pentru a șterge ultimul stop adăugat
   void _removeLastStop() {
-    if (_intermediateStops.isNotEmpty) {
+    if (_routeCtrl.intermediateStops.isNotEmpty) {
       setState(() {
-        _intermediateStops.removeLast();
+        _routeCtrl.intermediateStops.removeLast();
       });
       
       // Update ruta după ștergere
-      if (_pickupLatitude != null && _destinationLatitude != null) {
+      if (_routeCtrl.pickupLatitude != null && _routeCtrl.destinationLatitude != null) {
         _updateRouteWithAllPoints();
       }
     }
@@ -13344,7 +13729,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
   /// È˜terge un stop specific din listă
   void _removeStop(String stopName) {
     setState(() {
-      _intermediateStops.removeWhere((s) => s == stopName);
+      _routeCtrl.intermediateStops.removeWhere((s) => s == stopName);
     });
     
     // Feedback vizual
@@ -13358,7 +13743,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
     }
     
     // Update ruta după ștergere
-    if (_pickupLatitude != null && _destinationLatitude != null) {
+    if (_routeCtrl.pickupLatitude != null && _routeCtrl.destinationLatitude != null) {
       _updateRouteWithAllPoints();
     }
   }
@@ -13368,9 +13753,9 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
   /// Curăță pickup-ul
   void _clearPickup() {
     setState(() {
-      _pickupController.clear();
-      _pickupLatitude = null;
-      _pickupLongitude = null;
+      _routeCtrl.pickupController.clear();
+      _routeCtrl.pickupLatitude = null;
+      _routeCtrl.pickupLongitude = null;
 
 
     });
@@ -13387,9 +13772,9 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
   /// Curăță destinația
   void _clearDestination() {
     setState(() {
-      _destinationController.clear();
-      _destinationLatitude = null;
-      _destinationLongitude = null;
+      _routeCtrl.destinationController.clear();
+      _routeCtrl.destinationLatitude = null;
+      _routeCtrl.destinationLongitude = null;
 
     });
     
@@ -13406,18 +13791,18 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
 
   /// Update hartă cu noul pickup
   void _updateMapWithNewPickup() {
-    if (_pickupLatitude != null && _pickupLongitude != null) {
+    if (_routeCtrl.pickupLatitude != null && _routeCtrl.pickupLongitude != null) {
       // Center camera pe pickup
       _mapboxMap?.flyTo(
         CameraOptions(
-          center: MapboxUtils.createPoint(_pickupLatitude!, _pickupLongitude!),
+          center: MapboxUtils.createPoint(_routeCtrl.pickupLatitude!, _routeCtrl.pickupLongitude!),
           zoom: 15.0,
         ),
         MapAnimationOptions(duration: 1000)
       );
       
       // Update route dacă avem și destinația
-      if (_destinationLatitude != null && _destinationLongitude != null) {
+      if (_routeCtrl.destinationLatitude != null && _routeCtrl.destinationLongitude != null) {
         _updateRouteWithAllPoints();
       }
     }
@@ -13425,9 +13810,9 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
 
   /// Update hartă cu noua destinație
   void _updateMapWithNewDestination() {
-    if (_destinationLatitude != null && _destinationLongitude != null) {
+    if (_routeCtrl.destinationLatitude != null && _routeCtrl.destinationLongitude != null) {
       // Update route dacă avem și pickup-ul
-      if (_pickupLatitude != null && _pickupLongitude != null) {
+      if (_routeCtrl.pickupLatitude != null && _routeCtrl.pickupLongitude != null) {
         _updateRouteWithAllPoints();
       }
     }
@@ -13440,13 +13825,13 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
     List<Point> allPoints = [];
     
     // Adaugă pickup
-    if (_pickupLatitude != null && _pickupLongitude != null) {
-      allPoints.add(Point(coordinates: Position(_pickupLongitude!, _pickupLatitude!)));
+    if (_routeCtrl.pickupLatitude != null && _routeCtrl.pickupLongitude != null) {
+      allPoints.add(Point(coordinates: Position(_routeCtrl.pickupLongitude!, _routeCtrl.pickupLatitude!)));
     }
     
     // Adaugă destination
-    if (_destinationLatitude != null && _destinationLongitude != null) {
-      allPoints.add(Point(coordinates: Position(_destinationLongitude!, _destinationLatitude!)));
+    if (_routeCtrl.destinationLatitude != null && _routeCtrl.destinationLongitude != null) {
+      allPoints.add(Point(coordinates: Position(_routeCtrl.destinationLongitude!, _routeCtrl.destinationLatitude!)));
     }
     
     // Adaugă intermediate stops
@@ -13462,7 +13847,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
     }
     
     // Update route dacă avem pickup și destination
-    if (_pickupLatitude != null && _destinationLatitude != null) {
+    if (_routeCtrl.pickupLatitude != null && _routeCtrl.destinationLatitude != null) {
       _updateRouteWithAllPoints();
     }
   }
@@ -13507,7 +13892,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
   void _updateRouteWithAllPoints() async {
     Logger.debug('Starting route update...');
     
-    if (_pickupLatitude == null || _destinationLatitude == null) {
+    if (_routeCtrl.pickupLatitude == null || _routeCtrl.destinationLatitude == null) {
       Logger.debug('Missing pickup or destination - skipping route update');
       return;
     }
@@ -13557,16 +13942,16 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
     List<Point> waypoints = [];
     
     // Pickup
-    if (_pickupLatitude != null && _pickupLongitude != null) {
+    if (_routeCtrl.pickupLatitude != null && _routeCtrl.pickupLongitude != null) {
       waypoints.add(Point(
-        coordinates: Position(_pickupLongitude!, _pickupLatitude!)
+        coordinates: Position(_routeCtrl.pickupLongitude!, _routeCtrl.pickupLatitude!)
       ));
       Logger.debug('Added pickup waypoint');
     }
     
     // Stops
-    if (_intermediateStops.isNotEmpty) {
-      for (var stop in _intermediateStops) {
+    if (_routeCtrl.intermediateStops.isNotEmpty) {
+      for (var stop in _routeCtrl.intermediateStops) {
         // Implementează geocoding pentru opririle intermediare
         final coordinates = await _getCoordinatesForDestination(stop);
         if (coordinates != null) {
@@ -13574,13 +13959,13 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
           Logger.debug('Added intermediate stop: $stop');
         }
       }
-      Logger.debug('Found ${_intermediateStops.length} intermediate stops');
+      Logger.debug('Found ${_routeCtrl.intermediateStops.length} intermediate stops');
     }
     
     // Destination
-    if (_destinationLatitude != null && _destinationLongitude != null) {
+    if (_routeCtrl.destinationLatitude != null && _routeCtrl.destinationLongitude != null) {
       waypoints.add(Point(
-        coordinates: Position(_destinationLongitude!, _destinationLatitude!)
+        coordinates: Position(_routeCtrl.destinationLongitude!, _routeCtrl.destinationLatitude!)
       ));
       Logger.debug('Added destination waypoint');
     }
@@ -13591,7 +13976,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
   /// Start ride request complet
   void _startRideRequest() async {
     // Validare
-    if (_pickupLatitude == null || _destinationLatitude == null) {
+    if (_routeCtrl.pickupLatitude == null || _routeCtrl.destinationLatitude == null) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -13625,13 +14010,13 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
       final newRide = Ride(
         id: '',
         passengerId: FirebaseAuth.instance.currentUser?.uid ?? '',  // âœ… MODIFICAT: userId â†’ passengerId
-        startAddress: _pickupController.text,
-        destinationAddress: _destinationController.text,
+        startAddress: _routeCtrl.pickupController.text,
+        destinationAddress: _routeCtrl.destinationController.text,
         distance: 0, // Va fi calculat de serviciu
-        startLatitude: _pickupLatitude!,
-        startLongitude: _pickupLongitude!,
-        destinationLatitude: _destinationLatitude!,
-        destinationLongitude: _destinationLongitude!,
+        startLatitude: _routeCtrl.pickupLatitude!,
+        startLongitude: _routeCtrl.pickupLongitude!,
+        destinationLatitude: _routeCtrl.destinationLatitude!,
+        destinationLongitude: _routeCtrl.destinationLongitude!,
         durationInMinutes: 0, // Va fi calculat de serviciu
         baseFare: 0, // Va fi calculat de serviciu
         perKmRate: 0, // Va fi calculat de serviciu
@@ -13642,7 +14027,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
         timestamp: DateTime.now(),
         status: 'pending',
         category: RideCategory.standard,
-        stops: await Future.wait(_intermediateStops.map<Future<Map<String, dynamic>>>((stop) async {
+        stops: await Future.wait(_routeCtrl.intermediateStops.map<Future<Map<String, dynamic>>>((stop) async {
           // âœ… FIX: Geocoding real pentru opriri (nu coordonate default)
           final coordinates = await _getCoordinatesForDestination(stop);
           return {
@@ -14027,22 +14412,22 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
     // âœ… PERFORMANCE: Collect all updates
     final List<Future<void> Function()> updates = [];
     
-    if (_pickupLatitude != null && _pickupLongitude != null) {
+    if (_routeCtrl.pickupLatitude != null && _routeCtrl.pickupLongitude != null) {
       updates.add(() async {
         Logger.debug('Updating pickup marker...');
         await _addPickupMarker();
       });
     }
     
-    if (_destinationLatitude != null && _destinationLongitude != null) {
+    if (_routeCtrl.destinationLatitude != null && _routeCtrl.destinationLongitude != null) {
       updates.add(() async {
         Logger.debug('Updating destination marker...');
-        final coordinates = Point(coordinates: Position(_destinationLongitude!, _destinationLatitude!));
+        final coordinates = Point(coordinates: Position(_routeCtrl.destinationLongitude!, _routeCtrl.destinationLatitude!));
         await _addDestinationMarker(coordinates, 'Destinație');
       });
     }
     
-    if (_intermediateStops.isNotEmpty) {
+    if (_routeCtrl.intermediateStops.isNotEmpty) {
       updates.add(() async {
         Logger.debug('Updating stop markers...');
         await _addStopMarkers();
@@ -14083,16 +14468,16 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
 
   Future<void> _fetchAlternativeRoutes(List<Point> waypoints) async {
     if (!mounted) return;
-    setState(() { _isFetchingAlternatives = true; _alternativeRoutes = []; _selectedAltRouteIndex = 0; });
+    setState(() { _routeCtrl.isFetchingAlternatives = true; _routeCtrl.alternativeRoutes = []; _routeCtrl.selectedAltRouteIndex = 0; });
     try {
       final data = await _routingService.getAlternativeRoutes(waypoints);
       if (!mounted) return;
       final routes = (data?['routes'] as List?) ?? const [];
-      setState(() { _alternativeRoutes = routes.cast<Map<String, dynamic>>(); });
+      setState(() { _routeCtrl.alternativeRoutes = routes.cast<Map<String, dynamic>>(); });
     } catch (e) {
       Logger.error('Alternative routes fetch failed: $e', error: e);
     } finally {
-      if (mounted) setState(() { _isFetchingAlternatives = false; });
+      if (mounted) setState(() { _routeCtrl.isFetchingAlternatives = false; });
     }
   }
 
@@ -14195,8 +14580,8 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
         ));
       }
       setState(() {
-        _pickupSuggestionPoints = points;
-        _showPickupSuggestions = true;
+        _routeCtrl.pickupSuggestionPoints = points;
+        _routeCtrl.showPickupSuggestions = true;
       });
       await _pickupSuggestionsManager?.createMulti(options);
     } catch (e) {
@@ -14232,8 +14617,8 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
                 }
               });
             }
-          } catch (_) {}
-        } catch (_) {}
+          } catch (_) { /* Mapbox op — expected on style reload or missing layer/annotation */ }
+        } catch (_) { /* Mapbox op — expected on style reload or missing layer/annotation */ }
       } else {
         Logger.debug('Route calculation returned null');
         if (mounted) {
@@ -14250,7 +14635,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
 
   Future<void> _autoProgressToBooking(FriendsRideVoiceIntegration voice) async {
     try {
-      if (_pickupLatitude == null || _destinationLatitude == null) {
+      if (_routeCtrl.pickupLatitude == null || _routeCtrl.destinationLatitude == null) {
         voice.updateBookingProgress('Nu pot continua - informații de locație incomplete.');
         return;
       }
@@ -14268,14 +14653,14 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
       final newRide = Ride(
         id: '',
         passengerId: FirebaseAuth.instance.currentUser?.uid ?? '',
-        startAddress: _pickupController.text.isNotEmpty ? _pickupController.text : 'Locația curentă',
-        destinationAddress: _destinationController.text,
-        distance: (_currentRouteDistanceMeters ?? 0) / 1000,
-        startLatitude: _pickupLatitude!,
-        startLongitude: _pickupLongitude!,
-        destinationLatitude: _destinationLatitude!,
-        destinationLongitude: _destinationLongitude!,
-        durationInMinutes: (_currentRouteDurationSeconds ?? 0) / 60,
+        startAddress: _routeCtrl.pickupController.text.isNotEmpty ? _routeCtrl.pickupController.text : 'Locația curentă',
+        destinationAddress: _routeCtrl.destinationController.text,
+        distance: (_routeCtrl.currentRouteDistanceMeters ?? 0) / 1000,
+        startLatitude: _routeCtrl.pickupLatitude!,
+        startLongitude: _routeCtrl.pickupLongitude!,
+        destinationLatitude: _routeCtrl.destinationLatitude!,
+        destinationLongitude: _routeCtrl.destinationLongitude!,
+        durationInMinutes: (_routeCtrl.currentRouteDurationSeconds ?? 0) / 60,
         baseFare: 0,
         perKmRate: 0,
         perMinRate: 0,
@@ -14285,7 +14670,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
         timestamp: DateTime.now(),
         status: 'pending',
         category: RideCategory.standard,
-        stops: await Future.wait(_intermediateStops.map<Future<Map<String, dynamic>>>((stop) async {
+        stops: await Future.wait(_routeCtrl.intermediateStops.map<Future<Map<String, dynamic>>>((stop) async {
           // âœ… FIX: Geocoding real pentru opriri (nu coordonate default)
           final coordinates = await _getCoordinatesForDestination(stop);
           return {
@@ -14386,7 +14771,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
         isOn = !isOn;
         await Future.delayed(const Duration(milliseconds: 150));
       }
-    } catch (_) {}
+    } catch (_) { /* Mapbox op — expected on style reload or missing layer/annotation */ }
 
     try {
       if (wasFlashlightOn) {
@@ -14394,7 +14779,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
       } else {
         await TorchLight.disableTorch();
       }
-    } catch (_) {}
+    } catch (_) { /* Mapbox op — expected on style reload or missing layer/annotation */ }
     
     if (mounted) {
       setState(() {
@@ -14464,15 +14849,15 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
   }
   /// ✅ CONECTARE: Quick route update pentru POI changes
   Future<void> _updateRouteAfterPOI() async {
-    if (_pickupLatitude != null && _destinationLatitude != null) {
+    if (_routeCtrl.pickupLatitude != null && _routeCtrl.destinationLatitude != null) {
       try {
         final List<Point> waypoints = [];
-        waypoints.add(Point(coordinates: Position(_pickupLongitude!, _pickupLatitude!)));
-        for (final stop in _intermediateStops) {
+        waypoints.add(Point(coordinates: Position(_routeCtrl.pickupLongitude!, _routeCtrl.pickupLatitude!)));
+        for (final stop in _routeCtrl.intermediateStops) {
           final coord = await _getCoordinatesForDestination(stop);
           if (coord != null) waypoints.add(coord);
         }
-        waypoints.add(Point(coordinates: Position(_destinationLongitude!, _destinationLatitude!)));
+        waypoints.add(Point(coordinates: Position(_routeCtrl.destinationLongitude!, _routeCtrl.destinationLatitude!)));
         
         await _onRouteCalculated(await _routingService.getRoute(waypoints));
       } catch (e) {
@@ -14526,7 +14911,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
           action: action,
         ),
       );
-    } catch (_) {}
+    } catch (_) { /* Mapbox op — expected on style reload or missing layer/annotation */ }
   }
 
   Future<Uint8List> _generateParkingIcon(bool isReserved) async {
@@ -14587,7 +14972,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
     if (_parkingYieldMySpotAnnotation != null && _parkingYieldMySpotManager != null) {
       try {
         await _parkingYieldMySpotManager!.delete(_parkingYieldMySpotAnnotation!);
-      } catch (_) {}
+      } catch (_) { /* Mapbox op — expected on style reload or missing layer/annotation */ }
     }
     _parkingYieldMySpotAnnotation = null;
     if (mounted) setState(() {});
@@ -14605,7 +14990,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
     if (_parkingYieldMySpotAnnotation != null) {
       try {
         await _parkingYieldMySpotManager!.delete(_parkingYieldMySpotAnnotation!);
-      } catch (_) {}
+      } catch (_) { /* Mapbox op — expected on style reload or missing layer/annotation */ }
       _parkingYieldMySpotAnnotation = null;
     }
     _parkingIconInFlight ??= _generateParkingIcon(false);
@@ -14639,7 +15024,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
           CameraOptions(center: MapboxUtils.createPoint(lat, lng), zoom: 16.2),
           MapAnimationOptions(duration: 650),
         );
-      } catch (_) {}
+      } catch (_) { /* Mapbox op — expected on style reload or missing layer/annotation */ }
     }
   }
 
@@ -14818,7 +15203,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
-      builder: (context) => _ParkingReservationSheet(
+      builder: (context) => ParkingReservationSheet(
         spotId: firestoreSpotId,
         onReserved: () {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -14868,617 +15253,6 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver, Tick
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// CLASE AUXILIARE (PROFILE SHEETS, OVERLAYS)
-// ─────────────────────────────────────────────────────────────────────────────
-
-class _NeighborProfileSheet extends StatefulWidget {
-  final NeighborLocation neighbor;
-  final double distanceKm;
-  final String timeLabel;
-  final String? phoneNumber;
-  final VoidCallback onMessage;
-  final Function(String) onSendReaction;
-  final VoidCallback? onCall;
-  final VoidCallback onSendEta;
-  final VoidCallback onHonk;
-  /// Bulă „cerere în cartier” ancorată lângă poziția lor pe hartă.
-  final VoidCallback onNeighborhoodRequest;
-  /// Emoji vizibil pe hartă la coordonatele lor (nu în chat).
-  final void Function(String emoji) onSendMapEmoji;
-
-  const _NeighborProfileSheet({
-    required this.neighbor,
-    required this.distanceKm,
-    required this.timeLabel,
-    this.phoneNumber,
-    required this.onMessage,
-    required this.onSendReaction,
-    this.onCall,
-    required this.onHonk,
-    required this.onSendEta,
-    required this.onNeighborhoodRequest,
-    required this.onSendMapEmoji,
-  });
-
-  @override
-  State<_NeighborProfileSheet> createState() => _NeighborProfileSheetState();
-}
-
-class _NeighborProfileSheetState extends State<_NeighborProfileSheet> {
-  String _address = '';
-  bool _etaDismissed = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _fetchAddress();
-  }
-
-  Future<void> _fetchAddress() async {
-    try {
-      final placemarks = await geocoding.placemarkFromCoordinates(
-        widget.neighbor.lat,
-        widget.neighbor.lng,
-      );
-      if (placemarks.isNotEmpty) {
-        final p = placemarks.first;
-        if (mounted) {
-          setState(() {
-            _address = p.street ?? '';
-            if (_address.isEmpty) {
-              _address = (p.subLocality ?? p.locality ?? '').trim();
-            }
-            if (_address.isEmpty) _address = 'Locatie necunoscuta';
-          });
-        }
-      }
-    } catch (_) {
-      if (mounted) {
-        setState(() => _address = 'Locatie necunoscuta');
-      }
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final bgColor = isDark ? const Color(0xFF1E1E2E) : Colors.white;
-    final textColor = isDark ? Colors.white : Colors.black;
-    final subtleColor = isDark ? Colors.grey.shade600 : Colors.grey.shade300;
-    final labelColor = isDark ? Colors.grey.shade400 : Colors.blueGrey;
-
-    return Container(
-      decoration: BoxDecoration(
-        color: bgColor,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
-        boxShadow: const [
-          BoxShadow(color: Colors.black26, blurRadius: 30, spreadRadius: 0),
-        ],
-      ),
-      padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // ── Drag handle ──
-          Container(
-            width: 36, height: 4,
-            margin: const EdgeInsets.only(bottom: 14),
-            decoration: BoxDecoration(
-              color: subtleColor,
-              borderRadius: BorderRadius.circular(2),
-            ),
-          ),
-
-          // ── Header: Street name + action icons ──
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
-                child: Text(
-                  _address.isNotEmpty ? _address : '...',
-                  style: TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.w900,
-                    letterSpacing: -0.5,
-                    color: textColor,
-                  ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-              const SizedBox(width: 12),
-              _HeaderIconButton(
-                icon: Icons.campaign_rounded,
-                color: isDark ? Colors.orange.shade300 : Colors.orange.shade800,
-                bgColor: isDark ? Colors.orange.shade900.withValues(alpha: 0.3) : Colors.orange.shade50,
-                onTap: () {
-                  widget.onHonk();
-                },
-              ),
-              const SizedBox(width: 8),
-              _HeaderIconButton(
-                icon: Icons.phone_rounded,
-                color: widget.onCall != null
-                    ? (isDark ? Colors.green.shade300 : Colors.green.shade700)
-                    : (isDark ? Colors.grey.shade700 : Colors.grey.shade300),
-                bgColor: widget.onCall != null
-                    ? (isDark ? Colors.green.shade900.withValues(alpha: 0.4) : Colors.green.shade50)
-                    : (isDark ? Colors.grey.shade800 : Colors.grey.shade100),
-                onTap: widget.onCall ?? () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text(AppLocalizations.of(context)!.mapPhoneNumberUnavailable), duration: const Duration(seconds: 2)),
-                  );
-                },
-              ),
-            ],
-          ),
-
-          const SizedBox(height: 24),
-
-          // ── Time label + Avatar ──
-          Stack(
-            clipBehavior: Clip.none,
-            alignment: Alignment.center,
-            children: [
-              Container(
-                width: 100,
-                height: 100,
-                decoration: BoxDecoration(
-                  color: isDark ? Colors.grey.shade800 : Colors.grey.shade50,
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: isDark ? Colors.grey.shade700 : Colors.grey.shade200,
-                    width: 2,
-                  ),
-                ),
-                alignment: Alignment.center,
-                child: Text(
-                  widget.neighbor.avatar.isNotEmpty ? widget.neighbor.avatar : '🙂',
-                  style: const TextStyle(fontSize: 56),
-                ),
-              ),
-              Positioned(
-                top: -14,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
-                  decoration: BoxDecoration(
-                    color: bgColor,
-                    borderRadius: BorderRadius.circular(20),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.08),
-                        blurRadius: 8,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                  child: Text(
-                    widget.timeLabel,
-                    style: TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w900,
-                      color: labelColor,
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-
-          const SizedBox(height: 20),
-
-          // ── ETA banner ──
-          if (!_etaDismissed)
-            GestureDetector(
-              onTap: widget.onSendEta,
-              child: Container(
-                margin: const EdgeInsets.symmetric(horizontal: 4),
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                decoration: BoxDecoration(
-                  color: isDark ? Colors.grey.shade800 : const Color(0xFFF8FAFC),
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(
-                    color: isDark ? Colors.grey.shade700 : const Color(0xFFF1F5F9),
-                  ),
-                ),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        'Va vedeti cu cineva? Trimite-ti ETA-ul live',
-                        style: TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w700,
-                          color: labelColor,
-                        ),
-                      ),
-                    ),
-                    GestureDetector(
-                      onTap: () => setState(() => _etaDismissed = true),
-                      child: const Icon(Icons.close, size: 16, color: Color(0xFFE53935)),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-
-          if (!_etaDismissed) const SizedBox(height: 16),
-
-          Text(
-            'Contact: ${widget.neighbor.displayName}',
-            style: TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w700,
-              color: labelColor,
-            ),
-          ),
-          const SizedBox(height: 12),
-
-          // ── Message button (green pill) ──
-          Row(
-            children: [
-              // Avatar mic stanga
-              Container(
-                width: 36,
-                height: 36,
-                decoration: BoxDecoration(
-                  color: const Color(0xFF4CAF50),
-                  shape: BoxShape.circle,
-                  border: Border.all(color: Colors.white, width: 2),
-                ),
-                alignment: Alignment.center,
-                child: Text(
-                  widget.neighbor.avatar.isNotEmpty ? widget.neighbor.avatar : '🙂',
-                  style: const TextStyle(fontSize: 18),
-                ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: ElevatedButton(
-                  onPressed: widget.onMessage,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF4CAF50),
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(24),
-                    ),
-                    elevation: 0,
-                  ),
-                  child: const Text(
-                    'Mesaj privat',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: 0.3,
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 10),
-              // Distance badge dreapta
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                decoration: BoxDecoration(
-                  color: isDark ? Colors.grey.shade800 : Colors.grey.shade100,
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Text(
-                  widget.distanceKm < 1
-                      ? '${(widget.distanceKm * 1000).round()} m'
-                      : '${widget.distanceKm.toStringAsFixed(1)} km',
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w700,
-                    color: labelColor,
-                  ),
-                ),
-              ),
-            ],
-          ),
-
-          const SizedBox(height: 14),
-
-          SizedBox(
-            width: double.infinity,
-            child: OutlinedButton.icon(
-              onPressed: widget.onNeighborhoodRequest,
-              icon: Icon(Icons.water_drop_outlined, color: Colors.indigo.shade700),
-              label: Text(
-                'Cerere în cartier (bulă pe hartă)',
-                style: TextStyle(
-                  fontWeight: FontWeight.w800,
-                  color: Colors.indigo.shade800,
-                ),
-              ),
-              style: OutlinedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 12),
-                side: BorderSide(color: Colors.indigo.shade200),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
-              ),
-            ),
-          ),
-
-          const SizedBox(height: 14),
-          Align(
-            alignment: Alignment.centerLeft,
-            child: Text(
-              'Emoji pe hartă (lângă ei)',
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w800,
-                color: labelColor,
-              ),
-            ),
-          ),
-          const SizedBox(height: 8),
-          SizedBox(
-            height: 50,
-            child: ListView.separated(
-              scrollDirection: Axis.horizontal,
-              itemCount: _kNeighborQuickMapEmojis.length,
-              separatorBuilder: (_, __) => const SizedBox(width: 8),
-              itemBuilder: (context, i) {
-                final em = _kNeighborQuickMapEmojis[i];
-                return Material(
-                  color: isDark ? Colors.grey.shade800 : Colors.grey.shade100,
-                  borderRadius: BorderRadius.circular(14),
-                  child: InkWell(
-                    onTap: () => widget.onSendMapEmoji(em),
-                    borderRadius: BorderRadius.circular(14),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 12),
-                      child: Center(
-                        child: Text(em, style: const TextStyle(fontSize: 26)),
-                      ),
-                    ),
-                  ),
-                );
-              },
-            ),
-          ),
-
-          const SizedBox(height: 18),
-          Align(
-            alignment: Alignment.centerLeft,
-            child: Text(
-              'Sticker-e în chat',
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w800,
-                color: labelColor,
-              ),
-            ),
-          ),
-          const SizedBox(height: 8),
-
-          // ── Emoji reactions grid (2 rows of stickers) ──
-          SizedBox(
-            height: 180,
-            child: GridView.count(
-              crossAxisCount: 5,
-              mainAxisSpacing: 8,
-              crossAxisSpacing: 4,
-              physics: const BouncingScrollPhysics(),
-              children: _kReactions.map((r) {
-                return _ReactionItem(
-                  emoji: r['emoji']!,
-                  label: r['label']!,
-                  labelColor: labelColor,
-                  bgColor: isDark ? Colors.grey.shade800 : Colors.white,
-                  onTap: () => widget.onSendReaction(r['emoji']!),
-                );
-              }).toList(),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-/// Emoji rapide plasate pe hartă la poziția contactului (tap pe marker).
-const List<String> _kNeighborQuickMapEmojis = [
-  '\u2764\uFE0F',
-  '👋',
-  '🔥',
-  '😂',
-  '👍',
-  '🎉',
-  '📍',
-  '☕',
-];
-
-const List<Map<String, String>> _kReactions = [
-  {'emoji': '👍', 'label': 'Thumbs'},
-  {'emoji': '🔥', 'label': 'Fire'},
-  {'emoji': '😍', 'label': 'Yesssss'},
-  {'emoji': '💩', 'label': 'Poop Girl'},
-  {'emoji': '🤡', 'label': 'Actooor'},
-  {'emoji': '❤️', 'label': 'Inimoare'},
-  {'emoji': '💥', 'label': 'Stric'},
-  {'emoji': '👀', 'label': 'Ochi'},
-  {'emoji': '😭', 'label': 'Cry cry'},
-  {'emoji': '👋', 'label': 'Hello!'},
-  {'emoji': '🍺', 'label': 'Bei ceva?'},
-  {'emoji': '🎉', 'label': 'Party'},
-  {'emoji': '💀', 'label': 'Dead'},
-  {'emoji': '🤣', 'label': 'LOL'},
-  {'emoji': '🙏', 'label': 'Mersi'},
-];
-
-class _HeaderIconButton extends StatelessWidget {
-  final IconData icon;
-  final Color color;
-  final Color bgColor;
-  final VoidCallback onTap;
-
-  const _HeaderIconButton({
-    required this.icon,
-    required this.color,
-    required this.bgColor,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: 40,
-        height: 40,
-        decoration: BoxDecoration(
-          color: bgColor,
-          shape: BoxShape.circle,
-        ),
-        child: Icon(icon, size: 20, color: color),
-      ),
-    );
-  }
-}
-
-class _ReactionItem extends StatelessWidget {
-  final String emoji;
-  final String label;
-  final Color labelColor;
-  final Color bgColor;
-  final VoidCallback onTap;
-
-  const _ReactionItem({
-    required this.emoji,
-    required this.label,
-    required this.labelColor,
-    required this.bgColor,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            width: 52, // ✅ Redus de la 56 pentru a evita overflow de 8px
-            height: 52, // ✅ Redus de la 56
-            decoration: BoxDecoration(
-              color: bgColor,
-              shape: BoxShape.circle,
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.04),
-                  blurRadius: 10,
-                  offset: const Offset(0, 4),
-                ),
-              ],
-            ),
-            alignment: Alignment.center,
-            child: Text(emoji, style: const TextStyle(fontSize: 28)), // ✅ Redus font de la 32
-          ),
-          const SizedBox(height: 4),
-          SizedBox(
-            width: 60,
-            child: Text(
-              label,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 10,
-                fontWeight: FontWeight.w700,
-                color: labelColor,
-              ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-/// Geocoding o singură dată per deschidere sheet — nu re-intră în serviciu la rebuild-uri locale.
-class _MapTapGeocodeSheetBody extends StatefulWidget {
-  const _MapTapGeocodeSheetBody({
-    required this.lat,
-    required this.lng,
-    required this.sheetContext,
-    required this.mapScreenContext,
-    required this.onOpenFavorite,
-  });
-
-  final double lat;
-  final double lng;
-  final BuildContext sheetContext;
-  final BuildContext mapScreenContext;
-  final Future<void> Function(double lat, double lng, String address) onOpenFavorite;
-
-  @override
-  State<_MapTapGeocodeSheetBody> createState() => _MapTapGeocodeSheetBodyState();
-}
-
-class _MapTapGeocodeSheetBodyState extends State<_MapTapGeocodeSheetBody> {
-  late final Future<String?> _addressFuture = GeocodingService()
-      .getAddressFromCoordinates(widget.lat, widget.lng);
-
-  @override
-  Widget build(BuildContext context) {
-    return FutureBuilder<String?>(
-      future: _addressFuture,
-      builder: (context, snap) {
-        if (snap.connectionState != ConnectionState.done) {
-          return const Padding(
-            padding: EdgeInsets.symmetric(vertical: 24),
-            child: Center(child: CircularProgressIndicator()),
-          );
-        }
-        final address = snap.data != null && snap.data!.trim().isNotEmpty
-            ? snap.data!.trim()
-            : 'Locație pe hartă';
-        final lat = widget.lat;
-        final lng = widget.lng;
-        final sheetCtx = widget.sheetContext;
-        final mapCtx = widget.mapScreenContext;
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Text(
-              address,
-              style: TextStyle(
-                color: Colors.grey.shade700,
-                fontSize: 14,
-              ),
-            ),
-            const SizedBox(height: 16),
-            ListTile(
-              leading: const Icon(Icons.star_rounded, color: Colors.amber),
-              title: Text(AppLocalizations.of(context)!.mapAddToFavoriteAddresses),
-              onTap: () {
-                Navigator.pop(sheetCtx);
-                unawaited(widget.onOpenFavorite(lat, lng, address));
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.navigation_outlined, color: Colors.green),
-              title: Text(AppLocalizations.of(context)!.mapNavigateWithExternalApps),
-              onTap: () {
-                Navigator.pop(sheetCtx);
-                WidgetsBinding.instance.addPostFrameCallback((_) {
-                  if (!mapCtx.mounted) return;
-                  ExternalMapsLauncher.showNavigationChooser(mapCtx, lat, lng);
-                });
-              },
-            ),
-          ],
-        );
-      },
-    );
-  }
-}
-
 /// Overlay căutare universală (contacte + locuri), stil card alb rotunjit peste hartă semi-întunecată.
 class MapUniversalSearchOverlay extends StatefulWidget {
   const MapUniversalSearchOverlay({
@@ -15516,50 +15290,56 @@ class MapUniversalSearchOverlay extends StatefulWidget {
       _MapUniversalSearchOverlayState();
 }
 
-class _MapUniversalSearchPlaceRow {
-  const _MapUniversalSearchPlaceRow(this.suggestion, this.fromLocalBundle);
-
-  final AddressSuggestion suggestion;
-  final bool fromLocalBundle;
-}
-
 class _MapUniversalSearchOverlayState extends State<MapUniversalSearchOverlay> {
   /// Panoul este sticlă întunecată; forțăm o temă dark locală ca TextField/ListTile
   /// să nu moștenească [InputDecorationTheme] deschis din tema aplicației (light).
   ThemeData _panelTheme(BuildContext context) {
     final base = Theme.of(context);
+    
+    // Forțăm o schemă dark pentru overlay-ul "glass", dar cu culori de accent preluate din aplicație
     final scheme = ColorScheme.fromSeed(
       seedColor: base.colorScheme.primary,
       brightness: Brightness.dark,
+      surface: const Color(0xFF121212),
+      onSurface: Colors.white,
+      onSurfaceVariant: Colors.white.withValues(alpha: 0.7),
     );
+
     return base.copyWith(
       brightness: Brightness.dark,
       colorScheme: scheme,
+      textTheme: base.textTheme.apply(
+        bodyColor: Colors.white,
+        displayColor: Colors.white,
+      ),
       dividerTheme: DividerThemeData(
-        color: Colors.white.withValues(alpha: 0.12),
+        color: Colors.white.withValues(alpha: 0.15),
         space: 1,
       ),
       listTileTheme: ListTileThemeData(
-        iconColor: Colors.white.withValues(alpha: 0.88),
-        textColor: Colors.white.withValues(alpha: 0.94),
-        titleTextStyle: TextStyle(
-          color: Colors.white.withValues(alpha: 0.95),
+        iconColor: Colors.white.withValues(alpha: 0.9),
+        textColor: Colors.white.withValues(alpha: 0.95),
+        titleTextStyle: const TextStyle(
+          color: Colors.white,
           fontWeight: FontWeight.w700,
           fontSize: 15,
         ),
         subtitleTextStyle: TextStyle(
-          color: Colors.white.withValues(alpha: 0.72),
+          color: Colors.white.withValues(alpha: 0.65),
           fontSize: 12,
         ),
       ),
       inputDecorationTheme: base.inputDecorationTheme.copyWith(
         filled: true,
-        fillColor: Colors.white.withValues(alpha: 0.10),
-        border: InputBorder.none,
+        fillColor: Colors.white.withValues(alpha: 0.08),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: BorderSide.none,
+        ),
         hintStyle: TextStyle(
-          color: Colors.white.withValues(alpha: 0.55),
+          color: Colors.white.withValues(alpha: 0.5),
           fontWeight: FontWeight.w500,
-          fontSize: 16,
+          fontSize: 15,
         ),
       ),
     );
@@ -15568,7 +15348,7 @@ class _MapUniversalSearchOverlayState extends State<MapUniversalSearchOverlay> {
   final TextEditingController _controller = TextEditingController();
   final FocusNode _focus = FocusNode();
   Timer? _debounce;
-  List<_MapUniversalSearchPlaceRow> _placeRows = [];
+  List<MapUniversalSearchPlaceRow> _placeRows = [];
   bool _placesLoading = false;
   bool _peopleExpanded = false;
   Map<String, int> _friendCountByUid = {};
@@ -15649,13 +15429,13 @@ class _MapUniversalSearchOverlayState extends State<MapUniversalSearchOverlay> {
     }).toList();
   }
 
-  List<_MapUniversalSearchPlaceRow> _mergePlaceRowsWithSaved(
+  List<MapUniversalSearchPlaceRow> _mergePlaceRowsWithSaved(
     List<AddressSuggestion> orientationLm,
     List<AddressSuggestion> saved,
     List<AddressSuggestion> local,
     List<AddressSuggestion> remote,
   ) {
-    final out = <_MapUniversalSearchPlaceRow>[];
+    final out = <MapUniversalSearchPlaceRow>[];
     bool isDup(AddressSuggestion s) {
       return out.any((row) {
         final o = row.suggestion;
@@ -15672,7 +15452,7 @@ class _MapUniversalSearchOverlayState extends State<MapUniversalSearchOverlay> {
     void addAll(List<AddressSuggestion> list, bool fromLocalBundle) {
       for (final s in list) {
         if (!isDup(s)) {
-          out.add(_MapUniversalSearchPlaceRow(s, fromLocalBundle));
+          out.add(MapUniversalSearchPlaceRow(s, fromLocalBundle));
         }
       }
     }
@@ -15739,7 +15519,7 @@ class _MapUniversalSearchOverlayState extends State<MapUniversalSearchOverlay> {
     }
     setState(() => _placesLoading = true);
     _debounce = Timer(const Duration(milliseconds: 380), () async {
-      List<_MapUniversalSearchPlaceRow> rows;
+      List<MapUniversalSearchPlaceRow> rows;
       try {
         final orient = _orientationLandmarkSuggestions(trimmed, pos);
         final saved = _savedAddressSuggestions(trimmed, pos);
@@ -15900,15 +15680,6 @@ class _MapUniversalSearchOverlayState extends State<MapUniversalSearchOverlay> {
   Widget build(BuildContext context) {
     final bottomInset = MediaQuery.of(context).viewInsets.bottom;
     final bottomSafe = MediaQuery.of(context).padding.bottom;
-    final q = _controller.text;
-
-    final contactsShown = _matchingContacts(q);
-    final neighborsShown = _neighborOnlyMatches(q);
-    final peopleCap = _peopleExpanded ? 24 : 5;
-    final peopleTotal = contactsShown.length + neighborsShown.length;
-    final takeContacts = peopleCap.clamp(0, contactsShown.length);
-    final remaining = peopleCap - takeContacts;
-    final takeNeighbors = remaining.clamp(0, neighborsShown.length);
 
     return Material(
       color: Colors.black.withValues(alpha: 0.7),
@@ -15953,371 +15724,282 @@ class _MapUniversalSearchOverlayState extends State<MapUniversalSearchOverlay> {
                     ),
                     child: Theme(
                       data: _panelTheme(context),
-                      child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.fromLTRB(10, 10, 6, 8),
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Expanded(
-                                child: TextField(
-                                  controller: _controller,
-                                  focusNode: _focus,
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .bodyLarge
-                                      ?.copyWith(
+                      child: Builder(builder: (innerContext) {
+                        final theme = Theme.of(innerContext);
+                        final colorScheme = theme.colorScheme;
+                        final q = _controller.text;
+
+                        final contactsShown = _matchingContacts(q);
+                        final neighborsShown = _neighborOnlyMatches(q);
+                        final peopleCap = _peopleExpanded ? 24 : 5;
+                        final peopleTotal = contactsShown.length + neighborsShown.length;
+                        final takeContacts = peopleCap.clamp(0, contactsShown.length);
+                        final remaining = peopleCap - takeContacts;
+                        final takeNeighbors = remaining.clamp(0, neighborsShown.length);
+
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.fromLTRB(10, 10, 6, 8),
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Expanded(
+                                    child: TextField(
+                                      controller: _controller,
+                                      focusNode: _focus,
+                                      style: const TextStyle(
                                         fontSize: 16,
                                         fontWeight: FontWeight.bold,
-                                        color: Theme.of(context)
-                                            .colorScheme
-                                            .onSurface,
+                                        color: Colors.white,
                                       ),
-                                  cursorColor:
-                                      Theme.of(context).colorScheme.primary,
-                                  textInputAction: TextInputAction.search,
-                                  decoration: InputDecoration(
-                                    hintText: 'Caută prieteni și locuri...',
-                                    filled: true,
-                                    fillColor: Colors.white.withValues(alpha: 0.12),
-                                    border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(14),
-                                      borderSide: BorderSide.none,
-                                    ),
-                                    isDense: true,
-                                    contentPadding: const EdgeInsets.symmetric(
-                                      horizontal: 12,
-                                      vertical: 10,
-                                    ),
-                                    hintStyle: Theme.of(context)
-                                        .inputDecorationTheme
-                                        .hintStyle,
-                                    suffixIcon: q.isNotEmpty
-                                        ? IconButton(
-                                            icon: const Icon(
-                                              Icons.close_rounded,
-                                              color: Color(0xFFE53935),
-                                            ),
-                                            onPressed: () {
-                                              _controller.clear();
-                                              setState(() {
-                                                _placeRows = [];
-                                                _placesLoading = false;
-                                              });
-                                              _focus.requestFocus();
-                                            },
-                                          )
-                                        : Icon(
-                                            Icons.search_rounded,
-                                            color: Theme.of(context)
-                                                .colorScheme
-                                                .onSurface
-                                                .withValues(alpha: 0.45),
-                                          ),
-                                  ),
-                                  onChanged: (v) {
-                                    setState(() {});
-                                    _schedulePlacesSearch(v);
-                                  },
-                                ),
-                              ),
-                              IconButton(
-                                tooltip: AppLocalizations.of(context)!.close,
-                                visualDensity: VisualDensity.compact,
-                                onPressed: widget.onClose,
-                                icon: const Icon(
-                                  Icons.close_rounded,
-                                  color: Color(0xFFE53935),
-                                ),
-                              ),
-                            ],
-                          ),
-                    ),
-                    Divider(height: 1, color: Theme.of(context).dividerTheme.color),
-                    Expanded(
-                      child: ListView(
-                        padding: const EdgeInsets.only(bottom: 12),
-                        children: [
-                          if (q.trim().isEmpty) ...[
-                            Padding(
-                              padding: const EdgeInsets.fromLTRB(
-                                  16, 14, 16, 6),
-                              child: Text(
-                                'Sugerat',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w800,
-                                  color: Theme.of(context)
-                                      .colorScheme
-                                      .onSurfaceVariant,
-                                  letterSpacing: 0.6,
-                                ),
-                              ),
-                            ),
-                            if (widget.orientationLandmark != null) ...[
-                              Padding(
-                                padding:
-                                    const EdgeInsets.fromLTRB(16, 4, 16, 6),
-                                child: Text(
-                                  'Reper pe hartă',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w800,
-                                    color: Theme.of(context)
-                                        .colorScheme
-                                        .onSurfaceVariant,
-                                    letterSpacing: 0.6,
-                                  ),
-                                ),
-                              ),
-                              ListTile(
-                                leading: const Icon(
-                                  Icons.explore_rounded,
-                                  color: Color(0xFF16A34A),
-                                ),
-                                title: Text(widget.orientationLandmark!.label),
-                                subtitle: const Text(
-                                  'Reper salvat de tine',
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                                onTap: () {
-                                  widget.onPlaceChosen(
-                                    widget.orientationLandmark!.lat,
-                                    widget.orientationLandmark!.lng,
-                                    widget.orientationLandmark!.label,
-                                  );
-                                  widget.onClose();
-                                },
-                              ),
-                            ],
-                            if (_savedAddresses.isNotEmpty) ...[
-                              Padding(
-                                padding:
-                                    const EdgeInsets.fromLTRB(16, 4, 16, 6),
-                                child: Text(
-                                  'Locuri salvate',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w800,
-                                    color: Theme.of(context)
-                                        .colorScheme
-                                        .onSurfaceVariant,
-                                    letterSpacing: 0.6,
-                                  ),
-                                ),
-                              ),
-                              for (final addr in _savedAddresses.take(12))
-                                ListTile(
-                                  leading: const Icon(
-                                    Icons.bookmark_rounded,
-                                    color: Color(0xFF00E5FF),
-                                  ),
-                                  title: Text(addr.label),
-                                  subtitle: Text(
-                                    savedAddressDisplayLine(addr),
-                                    maxLines: 2,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                  onTap: () {
-                                    widget.onPlaceChosen(
-                                      addr.coordinates.latitude,
-                                      addr.coordinates.longitude,
-                                      savedAddressDisplayLine(addr),
-                                    );
-                                    widget.onClose();
-                                  },
-                                ),
-                            ],
-                          ] else ...[
-                            if (contactsShown.isNotEmpty ||
-                                neighborsShown.isNotEmpty)
-                              Padding(
-                                padding: const EdgeInsets.fromLTRB(
-                                    16, 12, 16, 6),
-                                child: Text(
-                                  'Utilizatori',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w800,
-                                    color: Theme.of(context)
-                                        .colorScheme
-                                        .onSurfaceVariant,
-                                    letterSpacing: 0.6,
-                                  ),
-                                ),
-                              ),
-                          ],
-                          for (final c in contactsShown.take(takeContacts))
-                            _userTile(
-                              leading:
-                                  _contactLeading(c.uid, c.displayName),
-                              title: c.displayName,
-                              subtitle: _personSubtitle(c.uid),
-                              uid: c.uid,
-                              mutualBadge:
-                                  _mutualFriendPeersByUid[c.uid] ?? 0,
-                              showAdd: !widget.friendPeerUids.contains(c.uid),
-                            ),
-                          for (final n in neighborsShown.take(takeNeighbors))
-                            _userTile(
-                              leading: n.photoURL != null &&
-                                      n.photoURL!.isNotEmpty
-                                  ? CircleAvatar(
-                                      backgroundImage:
-                                          NetworkImage(n.photoURL!),
-                                    )
-                                  : _contactLeading(n.uid, n.displayName),
-                              title: n.displayName,
-                              subtitle: _neighborRowSubtitle(n),
-                              uid: n.uid,
-                              mutualBadge:
-                                  _mutualFriendPeersByUid[n.uid] ?? 0,
-                              showAdd:
-                                  !widget.friendPeerUids.contains(n.uid),
-                            ),
-                          if (peopleTotal > peopleCap)
-                            TextButton(
-                              style: TextButton.styleFrom(
-                                foregroundColor: Theme.of(context)
-                                    .colorScheme
-                                    .primary,
-                              ),
-                              onPressed: () => setState(
-                                  () => _peopleExpanded = !_peopleExpanded),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Text(
-                                    _peopleExpanded
-                                        ? 'Mai puțini utilizatori'
-                                        : 'VEZI MAI MULȚI UTILIZATORI',
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.w800,
-                                      fontSize: 12,
+                                      cursorColor: colorScheme.primary,
+                                      textInputAction: TextInputAction.search,
+                                      decoration: InputDecoration(
+                                        hintText: 'Caută prieteni și locuri...',
+                                        hintStyle: TextStyle(
+                                          color: Colors.white.withValues(alpha: 0.5),
+                                        ),
+                                        suffixIcon: q.isNotEmpty
+                                            ? IconButton(
+                                                icon: const Icon(
+                                                  Icons.close_rounded,
+                                                  color: Color(0xFFE53935),
+                                                ),
+                                                onPressed: () {
+                                                  _controller.clear();
+                                                  setState(() {
+                                                    _placeRows = [];
+                                                    _placesLoading = false;
+                                                  });
+                                                  _focus.requestFocus();
+                                                },
+                                              )
+                                            : Icon(
+                                                Icons.search_rounded,
+                                                color: Colors.white.withValues(alpha: 0.45),
+                                              ),
+                                      ),
+                                      onChanged: (v) {
+                                        setState(() {});
+                                        _schedulePlacesSearch(v);
+                                      },
                                     ),
                                   ),
-                                  Icon(
-                                    _peopleExpanded
-                                        ? Icons.expand_less_rounded
-                                        : Icons.expand_more_rounded,
+                                  IconButton(
+                                    tooltip: AppLocalizations.of(context)!.close,
+                                    visualDensity: VisualDensity.compact,
+                                    onPressed: widget.onClose,
+                                    icon: const Icon(
+                                      Icons.close_rounded,
+                                      color: Color(0xFFE53935),
+                                    ),
                                   ),
                                 ],
                               ),
                             ),
-                          if (q.trim().length >= 2 &&
-                              widget.userPosition != null) ...[
-                            Padding(
-                              padding: const EdgeInsets.fromLTRB(
-                                  16, 8, 16, 6),
-                              child: Text(
-                                'Locuri',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w800,
-                                  color: Theme.of(context)
-                                      .colorScheme
-                                      .onSurfaceVariant,
-                                  letterSpacing: 0.6,
-                                ),
+                            Divider(height: 1, color: theme.dividerTheme.color),
+                            Expanded(
+                              child: ListView(
+                                padding: const EdgeInsets.only(bottom: 12),
+                                children: [
+                                  if (q.trim().isEmpty) ...[
+                                    _sectionTitle(theme, 'Sugerat'),
+                                    if (widget.orientationLandmark != null) ...[
+                                      _sectionTitle(theme, 'Reper pe hartă'),
+                                      ListTile(
+                                        leading: const Icon(
+                                          Icons.explore_rounded,
+                                          color: Color(0xFF16A34A),
+                                        ),
+                                        title: Text(widget.orientationLandmark!.label),
+                                        subtitle: const Text(
+                                          'Reper salvat de tine',
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                        onTap: () {
+                                          widget.onPlaceChosen(
+                                            widget.orientationLandmark!.lat,
+                                            widget.orientationLandmark!.lng,
+                                            widget.orientationLandmark!.label,
+                                          );
+                                          widget.onClose();
+                                        },
+                                      ),
+                                    ],
+                                    if (_savedAddresses.isNotEmpty) ...[
+                                      _sectionTitle(theme, 'Locuri salvate'),
+                                      for (final addr in _savedAddresses.take(12))
+                                        ListTile(
+                                          leading: const Icon(
+                                            Icons.bookmark_rounded,
+                                            color: Color(0xFF00E5FF),
+                                          ),
+                                          title: Text(addr.label),
+                                          subtitle: Text(
+                                            savedAddressDisplayLine(addr),
+                                            maxLines: 2,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                          onTap: () {
+                                            widget.onPlaceChosen(
+                                              addr.coordinates.latitude,
+                                              addr.coordinates.longitude,
+                                              savedAddressDisplayLine(addr),
+                                            );
+                                            widget.onClose();
+                                          },
+                                        ),
+                                    ],
+                                  ] else ...[
+                                    if (contactsShown.isNotEmpty || neighborsShown.isNotEmpty)
+                                      _sectionTitle(theme, 'Utilizatori'),
+                                  ],
+                                  for (final c in contactsShown.take(takeContacts))
+                                    _userTile(
+                                      leading: _contactLeading(c.uid, c.displayName),
+                                      title: c.displayName,
+                                      subtitle: _personSubtitle(c.uid),
+                                      uid: c.uid,
+                                      mutualBadge: _mutualFriendPeersByUid[c.uid] ?? 0,
+                                      showAdd: !widget.friendPeerUids.contains(c.uid),
+                                    ),
+                                  for (final n in neighborsShown.take(takeNeighbors))
+                                    _userTile(
+                                      leading: n.photoURL != null && n.photoURL!.isNotEmpty
+                                          ? CircleAvatar(
+                                              backgroundImage: NetworkImage(n.photoURL!),
+                                            )
+                                          : _contactLeading(n.uid, n.displayName),
+                                      title: n.displayName,
+                                      subtitle: _neighborRowSubtitle(n),
+                                      uid: n.uid,
+                                      mutualBadge: _mutualFriendPeersByUid[n.uid] ?? 0,
+                                      showAdd: !widget.friendPeerUids.contains(n.uid),
+                                    ),
+                                  if (peopleTotal > peopleCap)
+                                    TextButton(
+                                      style: TextButton.styleFrom(
+                                        foregroundColor: colorScheme.primary,
+                                      ),
+                                      onPressed: () => setState(() => _peopleExpanded = !_peopleExpanded),
+                                      child: Row(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        children: [
+                                          Text(
+                                            _peopleExpanded
+                                                ? 'Mai puțini utilizatori'
+                                                : 'VEZI MAI MULȚI UTILIZATORI',
+                                            style: const TextStyle(
+                                              fontWeight: FontWeight.w800,
+                                              fontSize: 12,
+                                            ),
+                                          ),
+                                          Icon(
+                                            _peopleExpanded
+                                                ? Icons.expand_less_rounded
+                                                : Icons.expand_more_rounded,
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  if (q.trim().length >= 2 && widget.userPosition != null) ...[
+                                    _sectionTitle(theme, 'Locuri'),
+                                    if (_placesLoading)
+                                      Padding(
+                                        padding: const EdgeInsets.all(20),
+                                        child: Center(
+                                          child: SizedBox(
+                                            width: 28,
+                                            height: 28,
+                                            child: CircularProgressIndicator(
+                                              strokeWidth: 2.5,
+                                              color: colorScheme.primary,
+                                            ),
+                                          ),
+                                        ),
+                                      )
+                                    else if (_placeRows.isEmpty)
+                                      Padding(
+                                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                                        child: Text(
+                                          'Nu am găsit locuri pentru „$q”.',
+                                          style: TextStyle(
+                                            color: colorScheme.onSurfaceVariant,
+                                          ),
+                                        ),
+                                      ),
+                                    for (final row in _placeRows.take(12))
+                                      ListTile(
+                                        leading: _placeLeading(
+                                          row.suggestion.description.split(',').first.trim(),
+                                          fromLocal: row.fromLocalBundle,
+                                        ),
+                                        title: Text(
+                                          row.suggestion.description.split(',').first.trim(),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: const TextStyle(
+                                            fontWeight: FontWeight.w700,
+                                            fontSize: 15,
+                                            color: Colors.white,
+                                          ),
+                                        ),
+                                        subtitle: Text(
+                                          [
+                                            _formatDistanceKm(row.suggestion.distanceMeters),
+                                            if (row.fromLocalBundle) 'În datele Nabour',
+                                            row.suggestion.description,
+                                          ].where((e) => e.isNotEmpty).join(' · '),
+                                          maxLines: 2,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            color: colorScheme.onSurfaceVariant,
+                                          ),
+                                        ),
+                                        onTap: () {
+                                          widget.onPlaceChosen(
+                                            row.suggestion.latitude,
+                                            row.suggestion.longitude,
+                                            row.suggestion.description,
+                                          );
+                                          widget.onClose();
+                                        },
+                                      ),
+                                  ],
+                                ],
                               ),
                             ),
-                            if (_placesLoading)
-                              Padding(
-                                padding: const EdgeInsets.all(20),
-                                child: Center(
-                                  child: SizedBox(
-                                    width: 28,
-                                    height: 28,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2.5,
-                                      color: Theme.of(context)
-                                          .colorScheme
-                                          .primary,
-                                    ),
-                                  ),
-                                ),
-                              )
-                            else if (_placeRows.isEmpty)
-                              Padding(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 16),
-                                child: Text(
-                                  'Nu am găsit locuri pentru „$q”.',
-                                  style: TextStyle(
-                                    color: Theme.of(context)
-                                        .colorScheme
-                                        .onSurfaceVariant,
-                                  ),
-                                ),
-                              ),
-                            for (final row in _placeRows.take(12))
-                              ListTile(
-                                leading: _placeLeading(
-                                  row.suggestion.description
-                                      .split(',')
-                                      .first
-                                      .trim(),
-                                  fromLocal: row.fromLocalBundle,
-                                ),
-                                title: Text(
-                                  row.suggestion.description
-                                      .split(',')
-                                      .first
-                                      .trim(),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.w700,
-                                    fontSize: 15,
-                                    color: Theme.of(context)
-                                        .colorScheme
-                                        .onSurface,
-                                  ),
-                                ),
-                                subtitle: Text(
-                                  [
-                                    _formatDistanceKm(
-                                        row.suggestion.distanceMeters),
-                                    if (row.fromLocalBundle)
-                                      'În datele Nabour',
-                                    row.suggestion.description,
-                                  ].where((e) => e.isNotEmpty).join(' · '),
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: Theme.of(context)
-                                        .colorScheme
-                                        .onSurfaceVariant,
-                                  ),
-                                ),
-                                onTap: () {
-                                  widget.onPlaceChosen(
-                                    row.suggestion.latitude,
-                                    row.suggestion.longitude,
-                                    row.suggestion.description,
-                                  );
-                                  widget.onClose();
-                                },
-                              ),
                           ],
-                        ],
-                      ),
+                        );
+                      }),
                     ),
-                  ],
+                  ),
                 ),
               ),
             ),
           ),
+        ],
+      ),
+    );
+  }
+
+  Widget _sectionTitle(ThemeData theme, String text) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 14, 16, 6),
+      child: Text(
+        text,
+        style: TextStyle(
+          fontSize: 12,
+          fontWeight: FontWeight.w800,
+          color: theme.colorScheme.onSurfaceVariant,
+          letterSpacing: 0.6,
         ),
       ),
-      ),
-    ],
-  ),
-);
+    );
   }
 
   Widget _userTile({
@@ -16337,10 +16019,10 @@ class _MapUniversalSearchOverlayState extends State<MapUniversalSearchOverlay> {
               title,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: TextStyle(
+              style: const TextStyle(
                 fontWeight: FontWeight.w700,
                 fontSize: 15,
-                color: Theme.of(context).colorScheme.onSurface,
+                color: Colors.white,
               ),
             ),
           ),
@@ -16371,7 +16053,7 @@ class _MapUniversalSearchOverlayState extends State<MapUniversalSearchOverlay> {
         overflow: TextOverflow.ellipsis,
         style: TextStyle(
           fontSize: 12,
-          color: Theme.of(context).colorScheme.onSurfaceVariant,
+          color: Colors.white.withValues(alpha: 0.7),
         ),
       ),
       trailing: showAdd && widget.onAddFriend != null
@@ -16397,81 +16079,5 @@ class _MapUniversalSearchOverlayState extends State<MapUniversalSearchOverlay> {
         widget.onClose();
       },
     );
-  }
-}
-
-class _ParkingReservationSheet extends StatefulWidget {
-  final String spotId;
-  final VoidCallback onReserved;
-
-  const _ParkingReservationSheet({required this.spotId, required this.onReserved});
-
-  @override
-  _ParkingReservationSheetState createState() => _ParkingReservationSheetState();
-}
-
-class _ParkingReservationSheetState extends State<_ParkingReservationSheet> {
-  bool _isReserving = false;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(24),
-      decoration: const BoxDecoration(
-        color: Color(0xFF121212),
-        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.white24, borderRadius: BorderRadius.circular(2))),
-          const SizedBox(height: 20),
-          const Icon(Icons.local_parking_rounded, color: Colors.amber, size: 48),
-          const SizedBox(height: 16),
-          const Text(
-            'LOC DE AUR DETECTAT',
-            style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold, letterSpacing: 1.5),
-          ),
-          const SizedBox(height: 8),
-          const Text(
-            'Un vecin eliberează acest loc acum.',
-            style: TextStyle(color: Colors.white70, fontSize: 14),
-          ),
-          const SizedBox(height: 24),
-          SizedBox(
-            width: double.infinity,
-            height: 54,
-            child: ElevatedButton(
-              onPressed: _isReserving ? null : _reserve,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.amber,
-                foregroundColor: Colors.black,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-              ),
-              child: _isReserving 
-                  ? const CircularProgressIndicator(color: Colors.black)
-                  : const Text('REZERVĂ LOCUL', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-            ),
-          ),
-          const SizedBox(height: 12),
-        ],
-      ),
-    );
-  }
-
-  Future<void> _reserve() async {
-    setState(() => _isReserving = true);
-    final success = await ParkingSwapService().reserveSpot(widget.spotId);
-    if (mounted) {
-      setState(() => _isReserving = false);
-      if (success) {
-        widget.onReserved();
-        Navigator.pop(context);
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(AppLocalizations.of(context)!.mapSpotAlreadyReserved)),
-        );
-      }
-    }
   }
 }

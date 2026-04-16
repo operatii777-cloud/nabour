@@ -12,13 +12,12 @@ import 'package:nabour_app/utils/firestore_error_ui.dart';
 import 'package:nabour_app/services/map_qa_badge_prefs.dart';
 import 'package:nabour_app/screens/chat_screen.dart';
 import 'package:nabour_app/utils/content_filter.dart';
-import 'package:nabour_app/services/nabour_functions.dart';
-import 'package:cloud_functions/cloud_functions.dart';
 import 'package:nabour_app/services/walkie_talkie_service.dart';
 import 'package:nabour_app/core/ui/app_feedback.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:nabour_app/l10n/app_localizations.dart';
+import 'package:nabour_app/services/nbr_telem_rtdb_service.dart';
 
 class NeighborhoodChatScreen extends StatefulWidget {
   const NeighborhoodChatScreen({super.key});
@@ -29,6 +28,7 @@ class NeighborhoodChatScreen extends StatefulWidget {
 }
 
 class _NeighborhoodChatScreenState extends State<NeighborhoodChatScreen> {
+  static const String _kLastRoomPrefKey = 'neighborhood_chat_last_room_id';
   final _firestore = FirebaseFirestore.instance;
   final _auth = FirebaseAuth.instance;
   final _textController = TextEditingController();
@@ -41,6 +41,7 @@ class _NeighborhoodChatScreenState extends State<NeighborhoodChatScreen> {
   StreamSubscription? _msgSoundSub;
   Timer? _expireTimer;
   final _walkieTalkieService = WalkieTalkieService();
+  bool _didInitDeps = false;
 
   // Profilul userului curent (cached)
   String _myAvatar = '🙂';
@@ -50,7 +51,14 @@ class _NeighborhoodChatScreenState extends State<NeighborhoodChatScreen> {
   @override
   void initState() {
     super.initState();
-    _init();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_didInitDeps) return;
+    _didInitDeps = true;
+    unawaited(_init());
   }
 
   @override
@@ -171,11 +179,14 @@ class _NeighborhoodChatScreenState extends State<NeighborhoodChatScreen> {
           _myPhotoUrl = (p != null && p.isNotEmpty) ? p : null;
         });
       }
-    } catch (_) {}
+    } catch (e) {
+      Logger.warning('NeighborhoodChat._loadUserProfile failed: $e', tag: 'NBR_CHAT');
+    }
   }
 
   Future<void> _resolveRoom() async {
     final l10n = AppLocalizations.of(context)!;
+    final prefs = await SharedPreferences.getInstance();
     try {
       final bool serviceEnabled = await geo.Geolocator.isLocationServiceEnabled();
       if (!serviceEnabled) {
@@ -202,43 +213,25 @@ class _NeighborhoodChatScreenState extends State<NeighborhoodChatScreen> {
         return;
       }
 
-      final pos = await geo.Geolocator.getCurrentPosition(
-        locationSettings: const geo.LocationSettings(
-          accuracy: geo.LocationAccuracy.reduced,
-        ),
-      ).timeout(const Duration(seconds: 8));
-
-      String? roomId;
+      geo.Position? pos;
       try {
-        final callable =
-            NabourFunctions.instance.httpsCallable('nabourSyncNeighborhoodRoom');
-        final res = await callable.call(<String, dynamic>{
-          'lat': pos.latitude,
-          'lng': pos.longitude,
-        });
-        final data = res.data as Map?;
-        roomId = data?['roomId'] as String?;
-        if (roomId == null || roomId.isEmpty) {
-          if (mounted) {
-            setState(() {
-              _locating = false;
-              _locationError = l10n.neighborhoodChatInvalidServerResponse;
-            });
-          }
-          return;
-        }
-        await _auth.currentUser?.getIdToken(true);
-      } on FirebaseFunctionsException catch (e) {
-        Logger.error('NeighborhoodChat: nabourSyncNeighborhoodRoom ${e.code} ${e.message}', error: e);
-        if (mounted) {
-          setState(() {
-            _locating = false;
-            _locationError = l10n.neighborhoodChatFunctionsUnavailable(e.code);
-          });
-        }
-        return;
-      } catch (e) {
-        Logger.error('NeighborhoodChat: sync room claim failed: $e', error: e);
+        pos = await geo.Geolocator.getCurrentPosition(
+          locationSettings: const geo.LocationSettings(
+            accuracy: geo.LocationAccuracy.reduced,
+          ),
+        ).timeout(const Duration(seconds: 8));
+      } catch (_) {
+        pos = await geo.Geolocator.getLastKnownPosition();
+      }
+
+      String? resolvedRoom;
+      if (pos != null) {
+        resolvedRoom = await NeighborTelemetryRtdbService.instance
+            .ensureNbRoomClaim(pos.latitude, pos.longitude, force: true);
+      }
+
+      resolvedRoom ??= prefs.getString(_kLastRoomPrefKey);
+      if (resolvedRoom == null || resolvedRoom.isEmpty) {
         if (mounted) {
           setState(() {
             _locating = false;
@@ -248,8 +241,16 @@ class _NeighborhoodChatScreenState extends State<NeighborhoodChatScreen> {
         return;
       }
 
-      final resolvedRoom = roomId;
-      await FirebaseMessaging.instance.subscribeToTopic('neighborhood_$resolvedRoom');
+      try {
+        await FirebaseMessaging.instance
+            .subscribeToTopic('neighborhood_$resolvedRoom');
+      } catch (e) {
+        Logger.warning(
+          'NeighborhoodChat: topic subscribe failed for $resolvedRoom: $e',
+        );
+      }
+
+      await prefs.setString(_kLastRoomPrefKey, resolvedRoom);
       if (mounted) {
         setState(() {
           _roomId = resolvedRoom;
@@ -319,7 +320,9 @@ class _NeighborhoodChatScreenState extends State<NeighborhoodChatScreen> {
         'createdAt': FieldValue.serverTimestamp(),
       });
       _scrollToBottom();
-    } catch (_) {}
+    } catch (e) {
+      Logger.warning('NeighborhoodChat._sendOmw Firestore failed: $e', tag: 'NBR_CHAT');
+    }
   }
 
   Future<void> _sendLocation() async {
@@ -349,7 +352,9 @@ class _NeighborhoodChatScreenState extends State<NeighborhoodChatScreen> {
         'createdAt': FieldValue.serverTimestamp(),
       });
       _scrollToBottom();
-    } catch (_) {}
+    } catch (e) {
+      Logger.warning('NeighborhoodChat._sendLocation Firestore failed: $e', tag: 'NBR_CHAT');
+    }
   }
 
   void _showMessageOptions(String docId, String currentText) {

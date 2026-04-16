@@ -65,7 +65,10 @@ class _SearchingForDriverScreenState extends State<SearchingForDriverScreen>
   String _statusMessage = 'Searching for nearby drivers...';
   bool _isSearching = true;
   bool _isInitializing = true; // shows skeleton for first 600ms
-  
+  // Tracks why the search ended so _buildErrorContent can show the right UI.
+  // 'expired' = timeout / no driver found; 'cancelled' = user or passenger cancelled.
+  String? _searchEndReason;
+
   // ✅ DEFENSIVE PROGRAMMING: Operation lock pentru a preveni multiple operations
   bool _isOperationInProgress = false;
   
@@ -75,6 +78,8 @@ class _SearchingForDriverScreenState extends State<SearchingForDriverScreen>
   String? _foundDriverCategory;
   double? _foundDriverRating;
   String? _foundDriverId;
+  /// Generat când șoferul apasă Accept în app; pasagerul îl arată șoferului la urcare.
+  String? _passengerPickupCode;
 
   static const double _avgDriverSpeedKmhForEta = 35.0; // UX-only, aproximare
   static const double _etaSpeedMps =
@@ -115,9 +120,19 @@ class _SearchingForDriverScreenState extends State<SearchingForDriverScreen>
       Logger.warning('SearchingScreen: Could not setup location puck: $e');
     }
 
-    // Load icons once per screen instance
+    // Load icons once per screen instance (șofer: garaj din profil dacă e deja cunoscut).
     _driverIconBytes ??= await DriverIconHelper.getDriverIconBytes();
     _pickupIconBytes ??= await _loadAssetBytes('assets/images/pin_icon.png');
+    if (_foundDriverId != null) {
+      try {
+        final snap = await _firestoreService.getProfileByIdStream(_foundDriverId!).first;
+        if (!mounted) return;
+        _driverIconBytes =
+            await DriverIconHelper.getDriverMarkerBytesForUserProfile(snap.data());
+      } catch (e) {
+        Logger.warning('SearchingScreen: driver garage icon from profile failed: $e', tag: 'SEARCHING');
+      }
+    }
 
     if (!mounted) return;
     await _upsertPickupMarker();
@@ -379,6 +394,7 @@ class _SearchingForDriverScreenState extends State<SearchingForDriverScreen>
             setState(() {
               _statusMessage = AppLocalizations.of(context)!.searchDriverSearchingNearby;
               _isSearching = true;
+              _passengerPickupCode = null;
               _foundDriverDisplayName = null;
               _foundDriverLicensePlate = null;
               _foundDriverId = null;
@@ -397,6 +413,7 @@ class _SearchingForDriverScreenState extends State<SearchingForDriverScreen>
             if (hasPickup) {
               _upsertPickupMarker();
             }
+            _driverIconBytes = await DriverIconHelper.getDriverIconBytes();
             _startSearchAnimations();
           }
           _confirmationTimeoutTimer?.cancel();
@@ -416,6 +433,7 @@ class _SearchingForDriverScreenState extends State<SearchingForDriverScreen>
             _isSearching = false;
             _statusMessage = AppLocalizations.of(context)!.searchDriverFoundWaitConfirm;
             _foundDriverId = ride.driverId;
+            _passengerPickupCode = ride.pickupCode;
 
             if (ride.startLatitude != null &&
                 ride.startLongitude != null) {
@@ -461,7 +479,10 @@ class _SearchingForDriverScreenState extends State<SearchingForDriverScreen>
                 _foundDriverRating = (driverData['averageRating'] as num?)?.toDouble();
               });
 
-              // Refresh marker text after profile is loaded.
+              _driverIconBytes =
+                  await DriverIconHelper.getDriverMarkerBytesForUserProfile(driverData);
+
+              // Refresh marker bitmap + text after profile is loaded.
               if (_lastDriverPoint != null) {
                 await _upsertDriverMarker(_lastDriverPoint!);
               }
@@ -507,7 +528,8 @@ class _SearchingForDriverScreenState extends State<SearchingForDriverScreen>
           if (mounted) {
             setState(() {
               final l10n = AppLocalizations.of(context)!;
-              _statusMessage = ride.status == 'cancelled' 
+              _searchEndReason = ride.status; // 'cancelled' or 'expired'
+              _statusMessage = ride.status == 'cancelled'
                   ? l10n.searchDriverRideCancelled
                   : l10n.searchDriverNoDriverAvailable;
               _isSearching = false;
@@ -1186,6 +1208,44 @@ class _SearchingForDriverScreenState extends State<SearchingForDriverScreen>
           ),
           
           const SizedBox(height: 32),
+          if (_passengerPickupCode != null && _passengerPickupCode!.length >= 4) ...[
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
+              decoration: BoxDecoration(
+                color: isDark ? Colors.amber.withValues(alpha: 0.12) : Colors.amber.shade50,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: isDark ? Colors.amber.shade200.withValues(alpha: 0.4) : Colors.amber.shade700,
+                ),
+              ),
+              child: Column(
+                children: [
+                  Text(
+                    'Cod la urcare (îl spui șoferului)',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: isDark ? Colors.amber.shade100 : Colors.amber.shade900,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    _passengerPickupCode!,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 32,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: 6,
+                      color: isDark ? Colors.amber.shade100 : Colors.black87,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 24),
+          ],
           _buildUberActionButtons(),
         ],
       ),
@@ -1389,27 +1449,146 @@ class _SearchingForDriverScreenState extends State<SearchingForDriverScreen>
 
   Widget _buildErrorContent() {
     final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final l10n = AppLocalizations.of(context)!;
+    final isNoDriver = _searchEndReason == 'expired';
+
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        Icon(Icons.error_outline_rounded, color: theme.colorScheme.error, size: 48),
-        const SizedBox(height: 16),
-        Text(
-            _statusMessage,
-            textAlign: TextAlign.center,
-            style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+        // Icon
+        Container(
+          width: 72,
+          height: 72,
+          decoration: BoxDecoration(
+            color: isNoDriver
+                ? Colors.orange.withAlpha(isDark ? 40 : 25)
+                : Colors.red.withAlpha(isDark ? 40 : 25),
+            shape: BoxShape.circle,
+          ),
+          child: Icon(
+            isNoDriver
+                ? Icons.person_search_rounded
+                : Icons.cancel_outlined,
+            color: isNoDriver ? Colors.orange : Colors.redAccent,
+            size: 36,
+          ),
         ),
-        const SizedBox(height: 32),
+        const SizedBox(height: 20),
+
+        // Title
+        Text(
+          isNoDriver ? l10n.searchDriverNoDriverAvailable : l10n.searchDriverRideCancelled,
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontSize: 22,
+            fontWeight: FontWeight.w800,
+            color: isDark ? Colors.white : Colors.black,
+            letterSpacing: -0.5,
+          ),
+        ),
+        const SizedBox(height: 10),
+
+        // Sub-message
+        Text(
+          isNoDriver
+              ? 'Nu am găsit un șofer disponibil în zona ta în acest moment.'
+              : 'Cursa a fost anulată.',
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontSize: 14,
+            color: isDark ? Colors.white54 : Colors.grey[600],
+            height: 1.5,
+          ),
+        ),
+
+        // Tips for no-driver case
+        if (isNoDriver) ...[
+          const SizedBox(height: 24),
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: isDark ? Colors.white.withAlpha(8) : const Color(0xFFF8F9FA),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: isDark ? Colors.white.withAlpha(15) : Colors.grey.withAlpha(30),
+              ),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Sugestii',
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                    color: isDark ? Colors.white70 : Colors.black87,
+                  ),
+                ),
+                const SizedBox(height: 10),
+                _buildTip(isDark, Icons.schedule_rounded, 'Încearcă într-un interval orar diferit (dimineața sau seara)'),
+                const SizedBox(height: 8),
+                _buildTip(isDark, Icons.location_on_rounded, 'Deplasează-te câteva minute mai aproape de o arteră principală'),
+                const SizedBox(height: 8),
+                _buildTip(isDark, Icons.refresh_rounded, 'Apasă „Încearcă din nou" — un șofer poate deveni disponibil imediat'),
+              ],
+            ),
+          ),
+        ],
+
+        const SizedBox(height: 28),
+
+        // Primary CTA
         SizedBox(
           width: double.infinity,
           height: 56,
           child: ElevatedButton(
             onPressed: _isOperationInProgress ? null : _cancelRideEarly,
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.black,
+              backgroundColor: isNoDriver ? const Color(0xFF4F46E5) : Colors.black,
               foregroundColor: Colors.white,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(50)),
+              elevation: 0,
             ),
-            child: Text(AppLocalizations.of(context)!.backToMap),
+            child: Text(
+              isNoDriver ? 'Încearcă din nou' : l10n.backToMap,
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+            ),
+          ),
+        ),
+
+        // Secondary link for no-driver case
+        if (isNoDriver) ...[
+          const SizedBox(height: 14),
+          TextButton(
+            onPressed: _isOperationInProgress ? null : _cancelRideEarly,
+            child: Text(
+              l10n.backToMap,
+              style: TextStyle(
+                fontSize: 14,
+                color: isDark ? Colors.white38 : Colors.grey[500],
+              ),
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildTip(bool isDark, IconData icon, String text) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Icon(icon, size: 16, color: isDark ? Colors.white38 : Colors.grey[500]),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Text(
+            text,
+            style: TextStyle(
+              fontSize: 13,
+              color: isDark ? Colors.white54 : Colors.grey[600],
+              height: 1.4,
+            ),
           ),
         ),
       ],

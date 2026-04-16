@@ -121,7 +121,9 @@ class WalkieTalkieService {
 
       try {
         if (file.existsSync()) await file.delete();
-      } catch (_) {}
+      } catch (e) {
+        Logger.debug('WalkieTalkie: temp file delete failed: $e', tag: 'WALKIE_TALKIE');
+      }
 
       Logger.info('WalkieTalkie: Uploaded audio: $downloadUrl');
       return downloadUrl;

@@ -340,7 +340,7 @@ class RoutingService {
       'access_token': _accessToken,
       'steps': wantSteps ? 'true' : 'false',
       'geometries': 'geojson',
-      'overview': turnByTurn ? 'full' : 'simplified',
+      'overview': (turnByTurn || useTrafficProfile) ? 'full' : 'simplified',
       'language': 'ro',
       'voice_instructions': wantSteps ? 'true' : 'false',
       'banner_instructions': wantSteps ? 'true' : 'false',

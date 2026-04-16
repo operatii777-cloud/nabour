@@ -229,7 +229,9 @@ class NeighborTelemetryRtdbService {
         if (v is! Map) continue;
         try {
           out.add(NeighborLocation.fromRtdb(uid, v));
-        } catch (_) {}
+        } catch (e) {
+          Logger.debug('NeighborLocation.fromRtdb parse error for $uid: $e', tag: 'NBR_TELEM');
+        }
       }
       return out;
     });

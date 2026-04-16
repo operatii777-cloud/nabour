@@ -66,7 +66,9 @@ class VoiceBargeInMonitor {
           } else {
             streak = 0;
           }
-        } catch (_) {}
+        } catch (e) {
+          Logger.debug('Barge-in amplitude read error: $e', tag: 'VOICE_BARGE_IN');
+        }
       });
     } catch (e) {
       Logger.warning('Barge-in monitor skipped: $e', tag: 'VOICE_BARGE_IN');
@@ -82,6 +84,8 @@ class VoiceBargeInMonitor {
       if (await _rec.isRecording()) {
         await _rec.stop();
       }
-    } catch (_) {}
+    } catch (e) {
+      Logger.debug('Barge-in recorder stop failed: $e', tag: 'VOICE_BARGE_IN');
+    }
   }
 }

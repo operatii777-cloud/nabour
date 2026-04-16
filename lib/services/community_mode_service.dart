@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:nabour_app/utils/logger.dart';
 
 /// Mod comunitate / școală (Bump-style): etichetă opțională în profil + filtre sociale viitoare.
 class CommunityModeService {
@@ -43,6 +44,8 @@ class CommunityModeService {
         'schoolLabel': schoolLabel.trim(),
         'communityUpdatedAt': FieldValue.serverTimestamp(),
       }, SetOptions(merge: true));
-    } catch (_) {}
+    } catch (e) {
+      Logger.warning('CommunityModeService.setModeAndSchool Firestore sync failed: $e', tag: 'COMMUNITY');
+    }
   }
 }

@@ -59,9 +59,10 @@ class VoiceOrchestrator {
   /// Tăcere înainte de finalizare; trebuie ≤ fereastra de ascultare ca să încheie natural înainte de timeout.
   static const int initialAddressPauseForSeconds = 3;
 
-  /// Conversație normală (după primul turn): propoziții lungi, pauze naturale.
+  /// Conversație normală (după primul turn): propoziții lungi, pauze naturale (Gemini Live style).
+  /// Reducem pauza la 2.5s pentru snappiness, dar folosim logică de stitching pentru respirație.
   static const int defaultListenMaxSeconds = 45;
-  static const int defaultPauseForSeconds = 7;
+  static const int defaultPauseForSeconds = 2; // Mai rapid decat inainte (era 7)
 
   /// Întrebări cu răspuns scurt (da/nu): mod „confirmation” + pauză mai mică.
   static const int confirmationListenMaxSeconds = 18;
@@ -218,8 +219,8 @@ class VoiceOrchestrator {
     Logger.debug('Final result: "${result.recognizedWords}"',
         tag: 'VOICE_ORCHESTRATOR');
 
-    final trimmed = result.recognizedWords.trim();
-    if (trimmed.isEmpty) {
+    final cleaned = _filterFillerWords(result.recognizedWords.trim());
+    if (cleaned.isEmpty) {
       _utteranceCarryOver = '';
       _incompleteListenChain = 0;
       _incrementFailure();
@@ -227,7 +228,7 @@ class VoiceOrchestrator {
     }
 
     final merged =
-        _utteranceCarryOver.isEmpty ? trimmed : '$_utteranceCarryOver $trimmed';
+        _utteranceCarryOver.isEmpty ? cleaned : '$_utteranceCarryOver $cleaned';
 
     final dictationIncomplete = listenMode == stt.ListenMode.dictation &&
         VoiceTurnTaking.looksGrammaticallyIncomplete(merged);
@@ -393,11 +394,13 @@ class VoiceOrchestrator {
       Logger.debug('Speaking: "$text"', tag: 'VOICE_ORCHESTRATOR');
 
       unawaited(_bargeInMonitor.start(() {
-        Logger.info('Barge-in: stopping TTS', tag: 'VOICE_ORCHESTRATOR');
+        Logger.info('Barge-in: stopping TTS and starting to listen', tag: 'VOICE_ORCHESTRATOR');
         naturalTts.stop();
         _isSpeaking = false;
         _isTtsSpeaking = false;
         _updateState(VoiceProcessingState.idle);
+        // Pornim ascultarea imediat după barge-in
+        Future.delayed(const Duration(milliseconds: 100), () => listen());
       }));
 
       await naturalTts.speakWithEmotion(text, emotion);
@@ -447,12 +450,14 @@ class VoiceOrchestrator {
       Logger.debug('Speaking: "$text"', tag: 'VOICE_ORCHESTRATOR');
 
       unawaited(_bargeInMonitor.start(() {
-        Logger.info('Barge-in: stopping TTS (natural pauses)',
+        Logger.info('Barge-in: stopping TTS (natural pauses) and starting to listen',
             tag: 'VOICE_ORCHESTRATOR');
         naturalTts.stop();
         _isSpeaking = false;
         _isTtsSpeaking = false;
         _updateState(VoiceProcessingState.idle);
+        // Pornim ascultarea imediat după barge-in
+        Future.delayed(const Duration(milliseconds: 100), () => listen());
       }));
 
       await naturalTts.speakWithNaturalPauses(text);
@@ -768,5 +773,18 @@ class VoiceOrchestrator {
     _onStateChange = null;
     _onTtsCompleted = null;
     _conversationManager = null;
+  }
+
+  /// 🧹 Filtrează cuvintele de umplutură și zgomotul semantic (ăăă, îîî, mda)
+  String _filterFillerWords(String text) {
+    if (text.isEmpty) return '';
+    
+    // Lista de filleri comuni în RO și EN
+    final fillers = RegExp(
+      r'\b(aaa+|iii+|mmm+|eee+|mda|ihi|pfff|stii|gen|stii ce zic|puna|asa)\b', 
+      caseSensitive: false
+    );
+    
+    return text.replaceAll(fillers, '').replaceAll(RegExp(r'\s+'), ' ').trim();
   }
 }

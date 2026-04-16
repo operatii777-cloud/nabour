@@ -29,6 +29,8 @@ class MysteryBoxMapManager {
   final BusinessService _businessService = BusinessService();
   final MysteryBoxService _mysteryBoxService = MysteryBoxService();
 
+  static const double _kBaseIconSize = 0.784;
+
   final Map<String, BusinessOffer> _activeOffers = {};
   final Map<String, PointAnnotation> _annotations = {};
   final Map<String, BusinessOffer> _annotationIdToOffer = {};
@@ -36,6 +38,20 @@ class MysteryBoxMapManager {
   bool _isInitialized = false;
   Uint8List? _boxIconData;
   DateTime? _lastUpdate;
+
+  /// Aplică scalare bazată pe zoom — aceeași logică ca avatarele vecinilor.
+  Future<void> applyZoomScale(double factor) async {
+    final mgr = _annotationManager;
+    if (mgr == null) return;
+    final targetSize = _kBaseIconSize * factor;
+    for (final ann in _annotations.values) {
+      if ((ann.iconSize ?? _kBaseIconSize) == targetSize) continue;
+      ann.iconSize = targetSize;
+      try {
+        await mgr.update(ann);
+      } catch (_) {}
+    }
+  }
 
   MysteryBoxMapManager({
     required this.mapboxMap,
@@ -124,7 +140,9 @@ class MysteryBoxMapManager {
         _annotationIdToOffer.remove(anno.id);
         try {
           await manager.delete(anno);
-        } catch (_) {}
+        } catch (e) {
+          Logger.debug('MysteryBoxMapManager: annotation delete failed: $e', tag: 'MYSTERY_BOX');
+        }
       }
       _activeOffers.remove(id);
     }
@@ -160,7 +178,7 @@ class MysteryBoxMapManager {
         geometry: MapboxUtils.createPoint(
             offer.businessLatitude, offer.businessLongitude),
         image: _boxIconData,
-        iconSize: 1.12,
+        iconSize: 0.784,
         symbolSortKey: 1e6,
         textField: label,
         textSize: 14,
@@ -378,132 +396,161 @@ class MysteryBoxMapManager {
     Future<void>.delayed(Duration.zero).then((_) {
       if (!context.mounted) return;
       showDialog<void>(
-      context: context,
-      useRootNavigator: true,
-      barrierDismissible: true,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: const Color(0xFF1E1B4B),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        titlePadding: const EdgeInsets.fromLTRB(20, 16, 8, 0),
-        title: Row(
-          children: [
-            const Expanded(
-              child: Text(
-                '🎉 Congratulations!',
-                style: TextStyle(color: Colors.white),
-              ),
+        context: context,
+        useRootNavigator: true,
+        barrierDismissible: true,
+        barrierColor: Colors.transparent,
+        builder: (ctx) => Dialog(
+          backgroundColor: const Color(0xFF1E1B4B),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(
+              maxWidth: 340,
+              maxHeight: 500,
             ),
-            IconButton(
-              icon: const Icon(Icons.close_rounded, color: Colors.white70),
-              tooltip: 'Close',
-              onPressed: () => Navigator.pop(ctx),
-            ),
-          ],
-        ),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(Icons.card_giftcard, size: 80, color: Colors.amber),
-              const SizedBox(height: 16),
-              Text(
-                'You opened a Mystery Box from ${offer.businessName}!',
-                style: const TextStyle(color: Colors.white),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 8),
-              const Text(
-                'You received 50 Nabour Tokens!',
-                style: TextStyle(
-                    color: Colors.amber,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 18),
-              ),
-              const SizedBox(height: 16),
-              Text(
-                offer.title,
-                style: const TextStyle(
-                    color: Colors.white70, fontStyle: FontStyle.italic),
-              ),
-              if (code != null && code.isNotEmpty) ...[
-                const SizedBox(height: 20),
-                const Text(
-                  'Store discount code',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 15,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 6),
-                const Text(
-                  'Show the code or QR to the staff. Valid for 7 days, single use.',
-                  style: TextStyle(color: Colors.white60, fontSize: 12),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 12),
-                SelectableText(
-                  code,
-                  style: const TextStyle(
-                    color: Colors.amber,
-                    fontSize: 22,
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: 1.2,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 12),
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: QrImageView(
-                    data: code,
-                    size: 160,
-                    eyeStyle: const QrEyeStyle(
-                      eyeShape: QrEyeShape.square,
-                      color: Color(0xFF1E1B4B),
-                    ),
-                    dataModuleStyle: const QrDataModuleStyle(
-                      dataModuleShape: QrDataModuleShape.square,
-                      color: Color(0xFF1E1B4B),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 8),
-                TextButton.icon(
-                  onPressed: () async {
-                    await Clipboard.setData(ClipboardData(text: code));
-                    if (ctx.mounted) {
-                      ScaffoldMessenger.of(ctx).showSnackBar(
-                        const SnackBar(
-                          content: Text('Code copied to clipboard'),
-                          behavior: SnackBarBehavior.floating,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 16, 8, 0),
+                  child: Row(
+                    children: [
+                      const Expanded(
+                        child: Text(
+                          '🎉 Congratulations!',
+                          style: TextStyle(color: Colors.white),
                         ),
-                      );
-                    }
-                  },
-                  icon: const Icon(Icons.copy_rounded, color: Colors.amber),
-                  label: const Text(
-                    'Copy code',
-                    style: TextStyle(color: Colors.amber),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.close_rounded, color: Colors.white70),
+                        tooltip: 'Close',
+                        onPressed: () => Navigator.pop(ctx),
+                      ),
+                    ],
+                  ),
+                ),
+                Flexible(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.fromLTRB(18, 6, 18, 6),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.card_giftcard, size: 56, color: Colors.amber),
+                        const SizedBox(height: 10),
+                        Text(
+                          'You opened a Mystery Box from ${offer.businessName}!',
+                          style: const TextStyle(color: Colors.white, fontSize: 13),
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 6),
+                        const Text(
+                          'You received 50 Nabour Tokens!',
+                          style: TextStyle(
+                            color: Colors.amber,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        Text(
+                          offer.title,
+                          style: const TextStyle(
+                            color: Colors.white70,
+                            fontStyle: FontStyle.italic,
+                            fontSize: 12,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                        if (code != null && code.isNotEmpty) ...[
+                          const SizedBox(height: 12),
+                          const Text(
+                            'Store discount code',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 15,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                          const SizedBox(height: 6),
+                          const Text(
+                            'Show the code or QR to the staff. Valid for 7 days, single use.',
+                            style: TextStyle(color: Colors.white60, fontSize: 12),
+                            textAlign: TextAlign.center,
+                          ),
+                          const SizedBox(height: 8),
+                          SelectableText(
+                            code,
+                            style: const TextStyle(
+                              color: Colors.amber,
+                              fontSize: 18,
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: 1.2,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                          const SizedBox(height: 8),
+                          Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: QrImageView(
+                              data: code,
+                              size: 120,
+                              eyeStyle: const QrEyeStyle(
+                                eyeShape: QrEyeShape.square,
+                                color: Color(0xFF1E1B4B),
+                              ),
+                              dataModuleStyle: const QrDataModuleStyle(
+                                dataModuleShape: QrDataModuleShape.square,
+                                color: Color(0xFF1E1B4B),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          TextButton.icon(
+                            onPressed: () async {
+                              await Clipboard.setData(ClipboardData(text: code));
+                              if (ctx.mounted) {
+                                ScaffoldMessenger.of(ctx).showSnackBar(
+                                  const SnackBar(
+                                    content: Text('Code copied to clipboard'),
+                                    behavior: SnackBarBehavior.floating,
+                                  ),
+                                );
+                              }
+                            },
+                            icon: const Icon(Icons.copy_rounded, color: Colors.amber),
+                            label: const Text(
+                              'Copy code',
+                              style: TextStyle(color: Colors.amber),
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(18, 0, 18, 10),
+                  child: Align(
+                    alignment: Alignment.centerRight,
+                    child: TextButton(
+                      onPressed: () => Navigator.pop(ctx),
+                      child: const Text(
+                        'SUPER!',
+                        style: TextStyle(color: Colors.amber),
+                      ),
+                    ),
                   ),
                 ),
               ],
-            ],
+            ),
           ),
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('SUPER!', style: TextStyle(color: Colors.amber)),
-          )
-        ],
-      ),
-    );
+      );
     });
   }
 

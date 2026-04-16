@@ -13,6 +13,7 @@ import 'package:nabour_app/services/push_notification_service.dart';
 import 'package:nabour_app/services/translation_service.dart';
 import 'package:nabour_app/services/voip_service.dart';
 import 'package:nabour_app/l10n/app_localizations.dart';
+import 'package:nabour_app/services/audio_service.dart';
 import 'package:nabour_app/utils/logger.dart';
 import 'package:nabour_app/utils/firestore_error_ui.dart';
 import 'package:nabour_app/widgets/chat/whatsapp_message_bubble.dart';
@@ -124,7 +125,9 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
         _myAvatarEmoji = _avatarEmojiFromUserData(myData);
         _otherAvatarEmoji = _avatarEmojiFromUserData(otherData);
       });
-    } catch (_) {}
+    } catch (e) {
+      Logger.warning('ChatScreen._loadProfiles failed: $e', tag: 'CHAT');
+    }
   }
 
   ChatMessage _withSenderUiFields(ChatMessage m) {
@@ -259,6 +262,15 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
       });
     }
     if (unread.docs.isNotEmpty) await batch.commit();
+
+    // Reset badge necitite chat individual
+    if (widget.collectionName == 'private_chats') {
+      _db
+          .collection('private_chat_unreads')
+          .doc(_myUid)
+          .set({'count': 0}, SetOptions(merge: true))
+          .catchError((_) {});
+    }
   }
 
   // ── Typing indicator ─────────────────────────────────────────────────────
@@ -349,6 +361,17 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
       });
       // Push notification for recipient (fire-and-forget)
       _notifyRecipientOutgoingChat(trimmed);
+      // Increment badge necitite pentru destinatar (doar chat privat)
+      if (widget.collectionName == 'private_chats') {
+        _db
+            .collection('private_chat_unreads')
+            .doc(widget.otherUserId)
+            .set(
+              {'count': FieldValue.increment(1)},
+              SetOptions(merge: true),
+            )
+            .catchError((_) {});
+      }
     } catch (e) {
       if (mounted) {
         setState(() {
@@ -651,7 +674,9 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
         }
         await doc.reference.update({'reactions': current});
       }
-    } catch (_) {}
+    } catch (e) {
+      Logger.warning('ChatScreen._toggleReaction failed: $e', tag: 'CHAT');
+    }
   }
 
   // ── Translate ────────────────────────────────────────────────────────────
@@ -668,7 +693,9 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
       for (final doc in snap.docs) {
         await doc.reference.update({'translatedText': translated});
       }
-    } catch (_) {}
+    } catch (e) {
+      Logger.warning('ChatScreen._translateMessage failed: $e', tag: 'CHAT');
+    }
   }
 
   // ── UI helpers ────────────────────────────────────────────────────────────
@@ -729,9 +756,17 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
             _scheduleMarkAllRead();
           }
 
-          // Scroll la fund doar cand soseste un mesaj nou si userul e deja aproape de fund
+          // Scroll la fund si sunet cand soseste un mesaj nou
           final newCount = msgs.length;
           if (newCount > _lastMessageCount) {
+            // Sunet doar dacă mesajul nou e de la celălalt user (nu de la noi)
+            if (_lastMessageCount > 0 &&
+                widget.collectionName == 'private_chats') {
+              final newest = msgs.last;
+              if (newest.senderId != _myUid) {
+                unawaited(AudioService().playMessageReceivedSound());
+              }
+            }
             _lastMessageCount = newCount;
             WidgetsBinding.instance.addPostFrameCallback((_) {
               if (!mounted) return;
@@ -787,12 +822,21 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
         ),
       );
     }
-    return CircleAvatar(
-      radius: 18,
-      backgroundColor: Colors.teal.shade200,
+    return Container(
+      width: 36,
+      height: 36,
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        color: const Color(0xFF7C3AED).withValues(alpha: 0.18),
+        shape: BoxShape.circle,
+        border: Border.all(
+          color: const Color(0xFF7C3AED).withValues(alpha: 0.40),
+          width: 1.5,
+        ),
+      ),
       child: Text(
         _otherAvatarEmoji,
-        style: const TextStyle(fontSize: 22),
+        style: const TextStyle(fontSize: 20),
       ),
     );
   }
@@ -1281,7 +1325,9 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
       for (final doc in snap.docs) {
         await doc.reference.update({'text': result, 'isEdited': true});
       }
-    } catch (_) {}
+    } catch (e) {
+      Logger.warning('ChatScreen._editMessage failed: $e', tag: 'CHAT');
+    }
   }
 
   Future<void> _deleteMessage(ChatMessage msg) async {
@@ -1294,7 +1340,9 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
       for (final doc in snap.docs) {
         await doc.reference.delete();
       }
-    } catch (_) {}
+    } catch (e) {
+      Logger.warning('ChatScreen._deleteMessage failed: $e', tag: 'CHAT');
+    }
   }
 
   bool _sameDay(Timestamp a, Timestamp b) {

@@ -225,7 +225,7 @@ class _DriverApplicationScreenState extends State<DriverApplicationScreen> {
                   ),
                 ),
                 child: const Text(
-                  'Înapoi',
+                  'Înapoi la comunitate',
                   style: TextStyle(
                       fontSize: 16, fontWeight: FontWeight.w800),
                 ),

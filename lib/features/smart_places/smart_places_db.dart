@@ -208,7 +208,9 @@ class SmartPlacesDb {
         where: 'id = ?',
         whereArgs: [placeId],
       );
-    } catch (_) {}
+    } catch (e) {
+      Logger.debug('SmartPlacesDb.updatePlaceKind failed for $placeId: $e', tag: 'SMART_PLACES');
+    }
   }
 
   Future<void> close() async {

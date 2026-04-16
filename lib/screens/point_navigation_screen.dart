@@ -107,7 +107,9 @@ class _PointNavigationScreenState extends State<PointNavigationScreen> {
       await t.setLanguage('ro-RO');
       await t.setSpeechRate(0.42);
       await t.awaitSpeakCompletion(true);
-    } catch (_) {}
+    } catch (e) {
+      Logger.debug('PointNav._initTts failed: $e', tag: 'POINT_NAV');
+    }
     if (mounted) _tts = t;
   }
 
@@ -167,7 +169,9 @@ class _PointNavigationScreenState extends State<PointNavigationScreen> {
       try {
         lastKnown = await geolocator.Geolocator.getLastKnownPosition()
             .timeout(const Duration(seconds: 2), onTimeout: () => null);
-      } catch (_) {}
+      } catch (e) {
+        Logger.debug('PointNav: getLastKnownPosition failed: $e', tag: 'POINT_NAV');
+      }
       final seed = LocationCacheService.pickNewer(
         mapSeed,
         LocationCacheService.pickNewer(cached, lastKnown),
@@ -534,7 +538,9 @@ class _PointNavigationScreenState extends State<PointNavigationScreen> {
       if (dist is num) {
         _routeDistanceMeters = dist.toDouble();
       }
-    } catch (_) {}
+    } catch (e) {
+      Logger.debug('PointNav._parseRouteMetadata failed: $e', tag: 'POINT_NAV');
+    }
   }
 
   Future<void> _beginDriveMode() async {
@@ -737,7 +743,9 @@ class _PointNavigationScreenState extends State<PointNavigationScreen> {
     try {
       await _tts!.stop();
       await _tts!.speak(text);
-    } catch (_) {}
+    } catch (e) {
+      Logger.warning('PointNav._speakCurrentInstruction TTS failed: $e', tag: 'POINT_NAV');
+    }
   }
 
   String _primaryInstruction() {
@@ -787,7 +795,9 @@ class _PointNavigationScreenState extends State<PointNavigationScreen> {
     try {
       await _tts?.stop();
       await _tts?.speak('Ai sosit la destinație.');
-    } catch (_) {}
+    } catch (e) {
+      Logger.debug('PointNav._onArrived TTS failed: $e', tag: 'POINT_NAV');
+    }
 
     if (!mounted) return;
 

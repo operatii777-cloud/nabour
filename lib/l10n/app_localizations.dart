@@ -803,127 +803,127 @@ abstract class AppLocalizations {
   /// No description provided for @generalProvisionsText.
   ///
   /// In ro, this message translates to:
-  /// **'Anularea unei curse după alocarea unui șofer partener poate atrage o taxă de anulare pentru a compensa timpul și distanța parcursă de către șofer. Anularea este gratuită oricând înainte de alocarea unui șofer partener.'**
+  /// **'Nabour este o platformă dedicată întrajutorării între vecini. Cursele sunt oferite voluntar, fără caracter comercial sau profit. Utilizatorii se angajează să respecte timpul și efortul voluntarilor. Intermedierea plăților pentru curse între utilizatori este strict interzisă.'**
   String get generalProvisionsText;
 
   /// No description provided for @standardWaitTime.
   ///
   /// In ro, this message translates to:
-  /// **'Timp de Așteptare Standard'**
+  /// **'Timp de Așteptare Recomandat'**
   String get standardWaitTime;
 
   /// No description provided for @standardWaitTimeText.
   ///
   /// In ro, this message translates to:
-  /// **'După sosirea la locația de preluare, șoferul partener va aștepta gratuit timp de 5 minute. După expirarea acestui interval, se pot aplica taxe suplimentare de așteptare sau cursa poate fi anulată, aplicându-se taxa de anulare corespunzătoare.'**
+  /// **'În spiritul respectului reciproc, vă recomandăm să fiți la punctul de preluare la ora stabilită. Voluntarii noștri vă pot aștepta până la 5 minute, după care, pentru a nu le ocupa timpul excesiv, cursa poate fi anulată.'**
   String get standardWaitTimeText;
 
   /// No description provided for @specificCategoryPolicies.
   ///
   /// In ro, this message translates to:
-  /// **'Politici Specifice pe Categorii'**
+  /// **'Principii de Comunitate'**
   String get specificCategoryPolicies;
 
   /// No description provided for @cancellationFee.
   ///
   /// In ro, this message translates to:
-  /// **'Taxă de Anulare:'**
+  /// **'Responsabilitate Anulare:'**
   String get cancellationFee;
 
   /// No description provided for @freeCancellation.
   ///
   /// In ro, this message translates to:
-  /// **'Anulare Gratuită (Curse Rezervate):'**
+  /// **'Respectarea Timpului:'**
   String get freeCancellation;
 
   /// No description provided for @minimumBookingTime.
   ///
   /// In ro, this message translates to:
-  /// **'Timp Minim de Rezervare:'**
+  /// **'Timp recomandat solicitare:'**
   String get minimumBookingTime;
 
   /// No description provided for @friendsRideStandard.
   ///
   /// In ro, this message translates to:
-  /// **'Nabour Standard'**
+  /// **'Standard'**
   String get friendsRideStandard;
 
   /// No description provided for @friendsRideEnergy.
   ///
   /// In ro, this message translates to:
-  /// **'Nabour Energy'**
+  /// **'Eco'**
   String get friendsRideEnergy;
 
   /// No description provided for @friendsRideBest.
   ///
   /// In ro, this message translates to:
-  /// **'Nabour Best'**
+  /// **'Premium'**
   String get friendsRideBest;
 
   /// No description provided for @friendsRideFamily.
   ///
   /// In ro, this message translates to:
-  /// **'Nabour Family'**
+  /// **'Familie'**
   String get friendsRideFamily;
 
   /// No description provided for @standardCancellationFee.
   ///
   /// In ro, this message translates to:
-  /// **'30 RON'**
+  /// **'Respect'**
   String get standardCancellationFee;
 
   /// No description provided for @energyCancellationFee.
   ///
   /// In ro, this message translates to:
-  /// **'30 RON'**
+  /// **'Respect'**
   String get energyCancellationFee;
 
   /// No description provided for @bestCancellationFee.
   ///
   /// In ro, this message translates to:
-  /// **'30 RON'**
+  /// **'Respect'**
   String get bestCancellationFee;
 
   /// No description provided for @familyCancellationFee.
   ///
   /// In ro, this message translates to:
-  /// **'30 RON'**
+  /// **'Respect'**
   String get familyCancellationFee;
 
   /// No description provided for @standardFreeCancellation.
   ///
   /// In ro, this message translates to:
-  /// **'Cu cel puțin 1 oră și 30 de minute înainte de ora programată.'**
+  /// **'Se recomandă anularea cu cel puțin 30 de minute înainte.'**
   String get standardFreeCancellation;
 
   /// No description provided for @standardMinBooking.
   ///
   /// In ro, this message translates to:
-  /// **'Cu cel puțin 2 ore în avans față de ora rezervării cursei.'**
+  /// **'Ideal cu cel puțin 1 oră înainte.'**
   String get standardMinBooking;
 
   /// No description provided for @energyMinBooking.
   ///
   /// In ro, this message translates to:
-  /// **'Cu cel puțin 2 ore în avans față de ora rezervării cursei.'**
+  /// **'Ideal cu cel puțin 1 oră înainte.'**
   String get energyMinBooking;
 
   /// No description provided for @bestMinBooking.
   ///
   /// In ro, this message translates to:
-  /// **'Cu cel puțin 2 ore în avans față de ora rezervării cursei.'**
+  /// **'Ideal cu cel puțin 1 oră înainte.'**
   String get bestMinBooking;
 
   /// No description provided for @familyMinBooking.
   ///
   /// In ro, this message translates to:
-  /// **'Cu cel puțin 2 ore în avans față de ora rezervării cursei.'**
+  /// **'Ideal cu cel puțin 1 oră înainte.'**
   String get familyMinBooking;
 
   /// No description provided for @privacyPolicyContent.
   ///
   /// In ro, this message translates to:
-  /// **'Aici va fi afișat conținutul detaliat al Politicii de Confidențialitate, conform normelor GDPR. Documentul va explica ce tipuri de date personale sunt colectate (nume, email, locație, date de plată, etc.), scopul colectării (funcționarea serviciului, marketing, siguranță), cum sunt stocate și protejate datele, perioada de retenție, și care sunt drepturile utilizatorilor (dreptul la acces, rectificare, ștergere, etc.).\n\nTextul complet va fi furnizat de un consultant juridic pentru a asigura conformitatea cu legislația în vigoare.'**
+  /// **'Nabour protejează confidențialitatea datelor dumneavoastră conform normelor GDPR. Colectăm date esențiale (nume, număr de telefon, locație) exclusiv pentru a facilita întrajutorarea între vecini și a asigura siguranța membrilor comunității. Datele legate de transferurile de tokeni și activitatea în aplicație sunt procesate pentru a menține integritatea și sustenabilitatea platformei. Nu partajăm datele dumneavoastră cu terți în scopuri comerciale. Nabour este o comunitate bazată pe respect, siguranță și încredere reciprocă.'**
   String get privacyPolicyContent;
 
   /// No description provided for @wallet.
@@ -1565,7 +1565,7 @@ abstract class AppLocalizations {
   /// No description provided for @ridesToday.
   ///
   /// In ro, this message translates to:
-  /// **'Vecini Ajutați'**
+  /// **'Curse Azi'**
   String get ridesToday;
 
   /// No description provided for @averageRating.
@@ -2327,7 +2327,7 @@ abstract class AppLocalizations {
   /// No description provided for @completedRidesToday.
   ///
   /// In ro, this message translates to:
-  /// **'Vecini ajutați azi'**
+  /// **'Curse încheiate azi'**
   String get completedRidesToday;
 
   /// No description provided for @ridesTodayShort.
@@ -6743,13 +6743,13 @@ abstract class AppLocalizations {
   /// No description provided for @drawerSectionYourCommunity.
   ///
   /// In ro, this message translates to:
-  /// **'Comunitatea ta'**
+  /// **'COMUNITATEA NABOUR'**
   String get drawerSectionYourCommunity;
 
   /// No description provided for @drawerSectionMyBusiness.
   ///
   /// In ro, this message translates to:
-  /// **'Afacerea mea'**
+  /// **'COMUNITATE LOCALĂ'**
   String get drawerSectionMyBusiness;
 
   /// No description provided for @drawerSectionGetInvolved.
@@ -6827,7 +6827,7 @@ abstract class AppLocalizations {
   /// No description provided for @businessIntroTitle.
   ///
   /// In ro, this message translates to:
-  /// **'Afacerea mea'**
+  /// **'Comunitate locală'**
   String get businessIntroTitle;
 
   /// No description provided for @businessIntroBody.
@@ -6893,31 +6893,31 @@ abstract class AppLocalizations {
   /// No description provided for @drawerGroupAccountActivity.
   ///
   /// In ro, this message translates to:
-  /// **'Cont, istoric și activitate'**
+  /// **'Profil și Activitate'**
   String get drawerGroupAccountActivity;
 
   /// No description provided for @drawerGroupMapAddresses.
   ///
   /// In ro, this message translates to:
-  /// **'Hartă și adrese'**
+  /// **'Locații și Hartă'**
   String get drawerGroupMapAddresses;
 
   /// No description provided for @drawerGroupCommunityFeed.
   ///
   /// In ro, this message translates to:
-  /// **'Comunitate și descoperiri'**
+  /// **'Interacțiune Comunitară'**
   String get drawerGroupCommunityFeed;
 
   /// No description provided for @drawerGroupSocialApp.
   ///
   /// In ro, this message translates to:
-  /// **'Vizibilitate și aplicație'**
+  /// **'Setări Sociale'**
   String get drawerGroupSocialApp;
 
   /// No description provided for @drawerGroupHelpLegal.
   ///
   /// In ro, this message translates to:
-  /// **'Ajutor și informații legale'**
+  /// **'Suport și Legal'**
   String get drawerGroupHelpLegal;
 
   /// No description provided for @drawerMenuMyGarage.

@@ -6,6 +6,7 @@
 import 'package:flutter/material.dart';
 import 'package:nabour_app/voice/integration/friends_voice_integration.dart';
 import 'package:nabour_app/voice/states/voice_interaction_states.dart';
+import 'package:nabour_app/utils/logger.dart';
 
 /// Buton pulsatoriu flotant pentru controlul asistentului vocal.
 /// Afisat in dreapta hartii, deasupra panelului de adrese.
@@ -52,7 +53,9 @@ class _MapVoiceOverlayState extends State<MapVoiceOverlay>
 
   void _onVoiceStateChanged() {
     if (!mounted) return;
-    final rideState = widget.voiceIntegration.currentContext.rideState;
+    final ctx = widget.voiceIntegration.currentContext;
+    final rideState = ctx.rideState;
+
     // Hide the greeting bubble once the AI has processed a destination and placed a pin
     final pinVisible = rideState != RideFlowState.idle &&
         rideState != RideFlowState.listeningForInitialCommand &&
@@ -60,6 +63,36 @@ class _MapVoiceOverlayState extends State<MapVoiceOverlay>
     setState(() {
       if (pinVisible) _showLastMessage = false;
     });
+
+    // Show a snackbar when the voice AI enters error state
+    if (ctx.processingState == VoiceProcessingState.error) {
+      final msg = widget.voiceIntegration.lastErrorMessage ??
+          'Asistentul vocal a întâmpinat o eroare. Încearcă din nou.';
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                const Icon(Icons.mic_off_rounded, color: Colors.white, size: 18),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    msg,
+                    style: const TextStyle(fontSize: 13, color: Colors.white),
+                  ),
+                ),
+              ],
+            ),
+            backgroundColor: const Color(0xFF1A1A2E),
+            behavior: SnackBarBehavior.floating,
+            margin: const EdgeInsets.fromLTRB(16, 0, 16, 100),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            duration: const Duration(seconds: 4),
+          ),
+        );
+      });
+    }
   }
 
   @override
@@ -186,7 +219,9 @@ class _MapVoiceOverlayState extends State<MapVoiceOverlay>
                 onTap: () async {
                   try {
                     await widget.voiceIntegration.stopVoiceInteraction();
-                  } catch (_) {}
+                  } catch (e) {
+                    Logger.debug('MapVoiceOverlay: stopVoiceInteraction failed: $e', tag: 'VOICE');
+                  }
                 },
                 child: Container(
                   width: 28,

@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:flutter/foundation.dart' show kIsWeb, defaultTargetPlatform, TargetPlatform;
+import 'package:flutter/foundation.dart' show kIsWeb, defaultTargetPlatform, TargetPlatform, debugPrint;
 import 'package:flutter_contacts/flutter_contacts.dart' as fc;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:geolocator/geolocator.dart';
@@ -856,7 +856,9 @@ class CalendarServiceImpl implements CalendarService {
         _events.clear();
         _events.addAll(list.map((e) => _eventFromMap(e as Map<String, dynamic>)));
       }
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('[ECO] CalendarServiceImpl.initialize failed: $e');
+    }
   }
 
   CalendarEvent _eventFromMap(Map<String, dynamic> m) => CalendarEvent(
@@ -999,7 +1001,9 @@ class LocationServiceImpl implements LocationService {
       if (permission == LocationPermission.denied) {
         permission = await Geolocator.requestPermission();
       }
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('[ECO] LocationServiceImpl.initialize failed: $e');
+    }
   }
 
   @override
@@ -1018,7 +1022,8 @@ class LocationServiceImpl implements LocationService {
           timeLimit: Duration(seconds: 10),
         ),
       );
-    } catch (_) {
+    } catch (e) {
+      debugPrint('[ECO] getCurrentLocation failed: $e');
       return null;
     }
   }
@@ -1038,7 +1043,9 @@ class LocationServiceImpl implements LocationService {
           return features.first['place_name'] as String?;
         }
       }
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('[ECO] getAddressFromCoordinates failed: $e');
+    }
     return null;
   }
 
@@ -1068,7 +1075,9 @@ class WeatherServiceImpl implements WeatherService {
           };
         }
       }
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('[ECO] WeatherService._geocode failed: $e');
+    }
     return null;
   }
 
@@ -1098,7 +1107,9 @@ class WeatherServiceImpl implements WeatherService {
           description: _codeToDescription(code, temp),
         );
       }
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('[ECO] getCurrentWeather failed: $e');
+    }
     return null;
   }
 
@@ -1135,7 +1146,9 @@ class WeatherServiceImpl implements WeatherService {
           description: _codeToDescription(code, avgTemp),
         );
       }
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('[ECO] getWeatherForecast failed: $e');
+    }
     return null;
   }
 

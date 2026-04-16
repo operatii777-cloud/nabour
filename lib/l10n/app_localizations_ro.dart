@@ -388,74 +388,70 @@ class AppLocalizationsRo extends AppLocalizations {
 
   @override
   String get generalProvisionsText =>
-      'Anularea unei curse după alocarea unui șofer partener poate atrage o taxă de anulare pentru a compensa timpul și distanța parcursă de către șofer. Anularea este gratuită oricând înainte de alocarea unui șofer partener.';
+      'Nabour este o platformă dedicată întrajutorării între vecini. Cursele sunt oferite voluntar, fără caracter comercial sau profit. Utilizatorii se angajează să respecte timpul și efortul voluntarilor. Intermedierea plăților pentru curse între utilizatori este strict interzisă.';
 
   @override
-  String get standardWaitTime => 'Timp de Așteptare Standard';
+  String get standardWaitTime => 'Timp de Așteptare Recomandat';
 
   @override
   String get standardWaitTimeText =>
-      'După sosirea la locația de preluare, șoferul partener va aștepta gratuit timp de 5 minute. După expirarea acestui interval, se pot aplica taxe suplimentare de așteptare sau cursa poate fi anulată, aplicându-se taxa de anulare corespunzătoare.';
+      'În spiritul respectului reciproc, vă recomandăm să fiți la punctul de preluare la ora stabilită. Voluntarii noștri vă pot aștepta până la 5 minute, după care, pentru a nu le ocupa timpul excesiv, cursa poate fi anulată.';
 
   @override
-  String get specificCategoryPolicies => 'Politici Specifice pe Categorii';
+  String get specificCategoryPolicies => 'Principii de Comunitate';
 
   @override
-  String get cancellationFee => 'Taxă de Anulare:';
+  String get cancellationFee => 'Responsabilitate Anulare:';
 
   @override
-  String get freeCancellation => 'Anulare Gratuită (Curse Rezervate):';
+  String get freeCancellation => 'Respectarea Timpului:';
 
   @override
-  String get minimumBookingTime => 'Timp Minim de Rezervare:';
+  String get minimumBookingTime => 'Timp recomandat solicitare:';
 
   @override
-  String get friendsRideStandard => 'Nabour Standard';
+  String get friendsRideStandard => 'Standard';
 
   @override
-  String get friendsRideEnergy => 'Nabour Energy';
+  String get friendsRideEnergy => 'Eco';
 
   @override
-  String get friendsRideBest => 'Nabour Best';
+  String get friendsRideBest => 'Premium';
 
   @override
-  String get friendsRideFamily => 'Nabour Family';
+  String get friendsRideFamily => 'Familie';
 
   @override
-  String get standardCancellationFee => '30 RON';
+  String get standardCancellationFee => 'Respect';
 
   @override
-  String get energyCancellationFee => '30 RON';
+  String get energyCancellationFee => 'Respect';
 
   @override
-  String get bestCancellationFee => '30 RON';
+  String get bestCancellationFee => 'Respect';
 
   @override
-  String get familyCancellationFee => '30 RON';
+  String get familyCancellationFee => 'Respect';
 
   @override
   String get standardFreeCancellation =>
-      'Cu cel puțin 1 oră și 30 de minute înainte de ora programată.';
+      'Se recomandă anularea cu cel puțin 30 de minute înainte.';
 
   @override
-  String get standardMinBooking =>
-      'Cu cel puțin 2 ore în avans față de ora rezervării cursei.';
+  String get standardMinBooking => 'Ideal cu cel puțin 1 oră înainte.';
 
   @override
-  String get energyMinBooking =>
-      'Cu cel puțin 2 ore în avans față de ora rezervării cursei.';
+  String get energyMinBooking => 'Ideal cu cel puțin 1 oră înainte.';
 
   @override
-  String get bestMinBooking =>
-      'Cu cel puțin 2 ore în avans față de ora rezervării cursei.';
+  String get bestMinBooking => 'Ideal cu cel puțin 1 oră înainte.';
 
   @override
-  String get familyMinBooking =>
-      'Cu cel puțin 2 ore în avans față de ora rezervării cursei.';
+  String get familyMinBooking => 'Ideal cu cel puțin 1 oră înainte.';
 
   @override
   String get privacyPolicyContent =>
-      'Aici va fi afișat conținutul detaliat al Politicii de Confidențialitate, conform normelor GDPR. Documentul va explica ce tipuri de date personale sunt colectate (nume, email, locație, date de plată, etc.), scopul colectării (funcționarea serviciului, marketing, siguranță), cum sunt stocate și protejate datele, perioada de retenție, și care sunt drepturile utilizatorilor (dreptul la acces, rectificare, ștergere, etc.).\n\nTextul complet va fi furnizat de un consultant juridic pentru a asigura conformitatea cu legislația în vigoare.';
+      'Nabour protejează confidențialitatea datelor dumneavoastră conform normelor GDPR. Colectăm date esențiale (nume, număr de telefon, locație) exclusiv pentru a facilita întrajutorarea între vecini și a asigura siguranța membrilor comunității. Datele legate de transferurile de tokeni și activitatea în aplicație sunt procesate pentru a menține integritatea și sustenabilitatea platformei. Nu partajăm datele dumneavoastră cu terți în scopuri comerciale. Nabour este o comunitate bazată pe respect, siguranță și încredere reciprocă.';
 
   @override
   String get wallet => 'Portofel';
@@ -810,7 +806,7 @@ class AppLocalizationsRo extends AppLocalizations {
   String get earningsToday => 'Sprijin Oferit Astăzi';
 
   @override
-  String get ridesToday => 'Vecini Ajutați';
+  String get ridesToday => 'Curse Azi';
 
   @override
   String get averageRating => 'Rating Comunitate';
@@ -1216,7 +1212,7 @@ class AppLocalizationsRo extends AppLocalizations {
   String get earningsTodayShort => 'Fapte Bune';
 
   @override
-  String get completedRidesToday => 'Vecini ajutați azi';
+  String get completedRidesToday => 'Curse încheiate azi';
 
   @override
   String get ridesTodayShort => 'Ajutor';
@@ -3787,10 +3783,10 @@ class AppLocalizationsRo extends AppLocalizations {
   String get drawerSectionActivityAccount => 'Activitate și cont';
 
   @override
-  String get drawerSectionYourCommunity => 'Comunitatea ta';
+  String get drawerSectionYourCommunity => 'COMUNITATEA NABOUR';
 
   @override
-  String get drawerSectionMyBusiness => 'Afacerea mea';
+  String get drawerSectionMyBusiness => 'COMUNITATE LOCALĂ';
 
   @override
   String get drawerSectionGetInvolved => 'Implicare';
@@ -3831,7 +3827,7 @@ class AppLocalizationsRo extends AppLocalizations {
   String get drawerBusinessRegisterTitle => 'Înregistrează-ți afacerea';
 
   @override
-  String get businessIntroTitle => 'Afacerea mea';
+  String get businessIntroTitle => 'Comunitate locală';
 
   @override
   String get businessIntroBody =>
@@ -3865,19 +3861,19 @@ class AppLocalizationsRo extends AppLocalizations {
   String get drawerMenuTokenTransfer => 'Transfer tokeni';
 
   @override
-  String get drawerGroupAccountActivity => 'Cont, istoric și activitate';
+  String get drawerGroupAccountActivity => 'Profil și Activitate';
 
   @override
-  String get drawerGroupMapAddresses => 'Hartă și adrese';
+  String get drawerGroupMapAddresses => 'Locații și Hartă';
 
   @override
-  String get drawerGroupCommunityFeed => 'Comunitate și descoperiri';
+  String get drawerGroupCommunityFeed => 'Interacțiune Comunitară';
 
   @override
-  String get drawerGroupSocialApp => 'Vizibilitate și aplicație';
+  String get drawerGroupSocialApp => 'Setări Sociale';
 
   @override
-  String get drawerGroupHelpLegal => 'Ajutor și informații legale';
+  String get drawerGroupHelpLegal => 'Suport și Legal';
 
   @override
   String get drawerMenuMyGarage => 'Garajul meu';

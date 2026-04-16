@@ -135,7 +135,9 @@ class _RideRequestScreenState extends State<RideRequestScreen> {
       final prefs = await SharedPreferences.getInstance();
       final list = prefs.getStringList('recent_destinations') ?? [];
       if (mounted) setState(() => _recentDestinations = list);
-    } catch (_) {}
+    } catch (e) {
+      Logger.debug('_loadRecentDestinations failed: $e', tag: 'RIDE_REQUEST');
+    }
   }
 
   /// Loads user ride preferences from Firestore
@@ -442,7 +444,9 @@ class _RideRequestScreenState extends State<RideRequestScreen> {
         final updated = [dest, ...raw.where((d) => d != dest)].take(10).toList();
         await prefs.setStringList('recent_destinations', updated);
       }
-    } catch (_) {}
+    } catch (e) {
+      Logger.debug('_saveRecentDestination failed: $e', tag: 'RIDE_REQUEST');
+    }
     
     // Ride sharing disabled for Nabour
 

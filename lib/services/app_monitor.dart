@@ -92,7 +92,9 @@ class AppMonitor {
       // Hook Flutter frame timings pentru FPS aproximativ
       try {
         _hookFrameTimings();
-      } catch (_) {}
+      } catch (e) {
+        Logger.warning('AppMonitor: _hookFrameTimings failed: $e', tag: 'APP_MONITOR');
+      }
       
       _isInitialized = true;
       
@@ -127,7 +129,9 @@ class AppMonitor {
           }
         }
       });
-    } catch (_) {}
+    } catch (e) {
+      Logger.warning('AppMonitor: addTimingsCallback failed: $e', tag: 'APP_MONITOR');
+    }
   }
   
   /// 🔧 Setup crash detection
@@ -317,7 +321,9 @@ class AppMonitor {
       _networkCheckTimer?.cancel();
       _networkCheckTimer = Timer.periodic(Duration(seconds: seconds), (_) => _checkNetworkHealth());
       Logger.debug('Network poll interval: ${seconds}s', tag: 'APP_MONITOR');
-    } catch (_) {}
+    } catch (e) {
+      Logger.warning('AppMonitor: _rescheduleNetworkTimer failed: $e', tag: 'APP_MONITOR');
+    }
   }
   
   /// ⚠️ Check for critical issues

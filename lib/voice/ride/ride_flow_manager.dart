@@ -24,7 +24,13 @@ import '../../utils/deprecated_apis_fix.dart';
 import '../../utils/input_validator.dart';
 import '../../services/buc_locations_db.dart';
 import '../utils/voice_translations.dart';
-import 'package:nabour_app/utils/logger.dart';
+import '../../utils/logger.dart';
+import '../../screens/help_screen.dart';
+import '../../screens/account_screen.dart';
+import '../../screens/history_screen.dart';
+import '../../screens/settings_screen.dart';
+import '../../screens/driver_dashboard_screen.dart';
+import '../../screens/wallet_screen.dart';
 
 /// ✅ Helper: Obține limba curentă din SharedPreferences
 Future<String> _getCurrentLanguageCode() async {
@@ -92,36 +98,37 @@ class RideFlowManager {
   final Function(Map<String, dynamic> rideRequest) onCreateRideRequest;
   final Function(String driverId, bool accepted) onDriverResponse;
   final Function() onCloseAI;
-  
-  // 🎯 Callback pentru navigare și acțiuni UI (păstrat pentru compatibilitate)
-  // Acest câmp este folosit în cazuri speciale de navigare
-  // Note: Special navigation will be implemented when needed
-  // Currently commented to avoid warnings
-  // Function(String, Map<String, dynamic>)? _navigationCallback;
+  final Function(String action, String? screen, Map<String, dynamic>? params) onAppAction;
+  final Function(String address, double lat, double lng)? onAddStop;
+  final Function(int stars, String? comment)? onRateDriver;
+  final Function(String message)? onSendMessageToDriver;
+  final Function(bool isDark)? onToggleTheme;
+  final Function(String languageCode)? onLanguageChange;
 
-  // void setNavigationCallback(Function(String, Map<String, dynamic>) callback) {
-  //   _navigationCallback = callback;
-  // }
-  
-      RideFlowManager({
-      required GeminiVoiceEngine geminiEngine,
-      required tts.NaturalVoiceSynthesizer tts,
-      required FirestoreService firestoreService,
-      required VoiceOrchestrator voiceOrchestrator,
-      Stream<Ride> Function(String rideId)? rideStreamProvider,
-      // ✅ Callback-uri pentru acțiuni în UI
-      required this.onFillAddressInUI,
-      required this.onSelectRideOptionInUI,
-      required this.onPressConfirmButtonInUI,
-      required this.onNavigateToScreen,
-      required this.onCreateRideRequest,
-      required this.onDriverResponse,
-      required this.onCloseAI,
-    }) : _geminiEngine = geminiEngine,
-         _tts = tts,
-         _firestoreService = firestoreService,
-         _voiceOrchestrator = voiceOrchestrator,
-         _rideStreamOverride = rideStreamProvider ?? ((rideId) => firestoreService.getRideStream(rideId));
+  RideFlowManager({
+    required GeminiVoiceEngine geminiEngine,
+    required tts.NaturalVoiceSynthesizer tts,
+    required FirestoreService firestoreService,
+    required VoiceOrchestrator voiceOrchestrator,
+    required this.onFillAddressInUI,
+    required this.onSelectRideOptionInUI,
+    required this.onPressConfirmButtonInUI,
+    required this.onNavigateToScreen,
+    required this.onCreateRideRequest,
+    required this.onDriverResponse,
+    required this.onCloseAI,
+    required this.onAppAction,
+    this.onAddStop,
+    this.onRateDriver,
+    this.onSendMessageToDriver,
+    this.onToggleTheme,
+    this.onLanguageChange,
+    Stream<Ride> Function(String rideId)? rideStreamOverride,
+  })  : _geminiEngine = geminiEngine,
+        _tts = tts,
+        _firestoreService = firestoreService,
+        _voiceOrchestrator = voiceOrchestrator,
+        _rideStreamOverride = rideStreamOverride ?? firestoreService.getRideStream;
   
   Future<void> _speakThenListen(
     String text, {
@@ -552,6 +559,13 @@ class RideFlowManager {
     try {
       Logger.debug('Handling Gemini response: ${response.type}', tag: 'RIDE_FLOW');
       
+      // ✅ NOU: Setează tipul de cursă dacă e cerut de AI
+      if (response.rideType != null) {
+        final category = _parseRideCategory(response.rideType!);
+        _currentRideCategory = category;
+        onSelectRideOptionInUI(category);
+      }
+
       switch (response.type) {
         case 'destination':
           await _handleDestinationResponse(response);
@@ -628,6 +642,12 @@ class RideFlowManager {
             _lastSpokenMessage = response.message!;
             await _speakEmotion(response.message!, VoiceEmotion.calm);
           }
+          break;
+        case 'app_action':
+          await _handleAppAction(response);
+          break;
+        case 'help_response':
+          await _handleHelpResponse(response);
           break;
         default:
           await _handleUnknownResponse(response);
@@ -3056,5 +3076,86 @@ class RideFlowManager {
     _destinationLongitude = null;
     
     Logger.info('Dispose completed - all resources cleaned up', tag: 'RIDE_FLOW');
+  }
+
+  /// 🎯 NOU: Gestionează acțiunile aplicației cerute de AI
+  Future<void> _handleAppAction(GeminiVoiceResponse response) async {
+    Logger.info('Handling App Action: ${response.appAction} for screen: ${response.appScreen}', tag: 'RIDE_FLOW');
+    
+    // Feedback vocal
+    if (response.message != null) {
+      final languageCode = await _getCurrentLanguageCode();
+      await _tts.setLanguage(languageCode);
+      await _speakEmotion(response.message!, VoiceEmotion.happy);
+    }
+    
+    // ✅ NOU: Acțiuni speciale care necesită logică imediată
+    if (response.appAction == 'get_speed') {
+      final speed = await getSpeed();
+      final languageCode = await _getCurrentLanguageCode();
+      final msg = languageCode == 'ro' 
+          ? 'În acest moment ne deplasăm cu aproximativ ${speed.toInt()} kilometri pe oră.' 
+          : 'We are currently traveling at approximately ${speed.toInt()} kilometers per hour.';
+      await _speakEmotion(msg, VoiceEmotion.bold);
+      return;
+    }
+
+    // Execută acțiunea în UI prin callback
+    if (response.appAction != null) {
+      onAppAction(response.appAction!, response.appScreen, response.params);
+    } else {
+      // Fallback la navigare de bază dacă nu avem callback specific
+      _handleNavigationOnly(response.appScreen);
+    }
+  }
+  
+  void _handleNavigationOnly(String? screen) {
+    if (screen == null) return;
+    
+    Widget? screenWidget;
+    switch (screen) {
+      case 'help': screenWidget = const HelpScreen(); break;
+      case 'profile': screenWidget = const AccountScreen(); break;
+      case 'settings': screenWidget = const SettingsScreen(); break;
+      case 'history': screenWidget = const HistoryScreen(); break;
+      case 'activity': screenWidget = const DriverDashboardScreen(); break;
+      case 'wallet': screenWidget = const WalletScreen(); break;
+    }
+    
+    if (screenWidget != null) {
+      onNavigateToScreen(screenWidget);
+    }
+  }
+
+  /// 🎯 NOU: Gestionează răspunsurile de ajutor
+  Future<void> _handleHelpResponse(GeminiVoiceResponse response) async {
+    Logger.info('Handling Help Response', tag: 'RIDE_FLOW');
+    
+    if (response.message != null) {
+      final languageCode = await _getCurrentLanguageCode();
+      await _tts.setLanguage(languageCode);
+      await _speakEmotion(response.message!, VoiceEmotion.friendly);
+    }
+    
+    if (response.needsClarification) {
+      await _startListeningForClarification();
+    }
+  }
+
+  RideCategory _parseRideCategory(String type) {
+    switch (type.toLowerCase()) {
+      case 'premium': return RideCategory.premium;
+      case 'xl': return RideCategory.xl;
+      default: return RideCategory.standard;
+    }
+  }
+
+  Future<double> getSpeed() async {
+    try {
+      final pos = await geolocator.Geolocator.getCurrentPosition();
+      return (pos.speed < 0 ? 0 : pos.speed) * 3.6; // Convert m/s to km/h
+    } catch (e) {
+      return 0.0;
+    }
   }
 }

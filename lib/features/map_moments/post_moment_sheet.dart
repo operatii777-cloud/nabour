@@ -123,7 +123,7 @@ class _PostMomentSheetState extends State<PostMomentSheet> {
               IconButton(
                 tooltip: 'Închide',
                 onPressed: _posting ? null : () => Navigator.of(context).maybePop(),
-                icon: const Icon(Icons.close_rounded),
+                icon: Icon(Icons.close_rounded, color: cs.onSurface),
                 visualDensity: VisualDensity.compact,
               ),
             ],

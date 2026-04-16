@@ -131,12 +131,27 @@ class NeighborLocationService {
     _lastPublishedCarAvatarId = null;
     try {
       await NeighborTelemetryRtdbService.instance.removeMyNode();
-    } catch (_) {}
+    } catch (e) {
+      Logger.debug('setInvisible removeMyNode failed: $e', tag: 'NBR_LOCATION');
+    }
     try {
       await _db.collection('user_visible_locations').doc(uid).set(
           {'isVisible': false}, SetOptions(merge: true));
     } catch (e) {
       Logger.error('NeighborLocationService.setInvisible: $e', error: e);
+    }
+    // Pasagerul citește `driver_locations` pentru markere — ascundem fără a opri fluxul de curse.
+    try {
+      final ref = _db.collection('driver_locations').doc(uid);
+      final snap = await ref.get();
+      if (snap.exists) {
+        await ref.set(
+          {'showOnPassengerLiveMap': false},
+          SetOptions(merge: true),
+        );
+      }
+    } catch (e) {
+      Logger.warning('setInvisible driver_locations flag: $e', tag: 'NEIGHBOR');
     }
   }
 
