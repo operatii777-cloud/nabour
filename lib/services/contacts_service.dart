@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_contacts/flutter_contacts.dart' as fc;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:nabour_app/utils/logger.dart';
+import 'package:nabour_app/utils/permission_manager.dart';
 
 /// Un contact din agendă care are și cont în aplicație.
 class ContactAppUser {
@@ -157,7 +158,7 @@ class ContactsService {
 
       bool canAccess = await fc.FlutterContacts.permissions.has(fc.PermissionType.read);
       if (!canAccess) {
-        final status = await fc.FlutterContacts.permissions.request(fc.PermissionType.read);
+        final status = await PermissionManager().requestContactsPermission();
         canAccess = status == fc.PermissionStatus.granted || status == fc.PermissionStatus.limited;
       }
       if (!canAccess) return [];
@@ -277,7 +278,7 @@ class ContactsService {
       // Check or request permission
       bool canAccess = await fc.FlutterContacts.permissions.has(fc.PermissionType.read);
       if (!canAccess) {
-        final status = await fc.FlutterContacts.permissions.request(fc.PermissionType.read);
+        final status = await PermissionManager().requestContactsPermission();
         canAccess = status == fc.PermissionStatus.granted || status == fc.PermissionStatus.limited;
       }
 

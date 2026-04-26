@@ -81,10 +81,9 @@ class MapRouteController extends ChangeNotifier {
 
   List<Map<String, dynamic>> get navSteps => _navSteps;
   int get navStepIndex => _navStepIndex;
-  int get navLastSpokenStep => _navLastSpokenStep;
+  int navLastSpokenStep = -1;
   List<Map<String, dynamic>> _navSteps = [];
   int _navStepIndex = 0;
-  int _navLastSpokenStep = -1;
 
   /// Subscripție GPS activă în timpul navigației — gestionată de [_MapScreenState].
   StreamSubscription<geolocator.Position>? navGpsSubscription;
@@ -121,7 +120,6 @@ class MapRouteController extends ChangeNotifier {
   set navHasArrived(bool v) { _navHasArrived = v; notifyListeners(); }
   set navSteps(List<Map<String, dynamic>> v) { _navSteps = v; notifyListeners(); }
   set navStepIndex(int v) { _navStepIndex = v; notifyListeners(); }
-  set navLastSpokenStep(int v) { _navLastSpokenStep = v; }
 
   // ── Setteri cu notificare (batch) ─────────────────────────────────────────
 
@@ -233,7 +231,7 @@ class MapRouteController extends ChangeNotifier {
     _navHasArrived = false;
     _navSteps = [];
     _navStepIndex = 0;
-    _navLastSpokenStep = -1;
+    navLastSpokenStep = -1;
     notifyListeners();
   }
 
@@ -258,7 +256,7 @@ class MapRouteController extends ChangeNotifier {
   }
 
   void setNavLastSpokenStep(int index) {
-    _navLastSpokenStep = index;
+    navLastSpokenStep = index;
   }
 
   void stopNavigation() {
@@ -272,7 +270,7 @@ class MapRouteController extends ChangeNotifier {
     _navHasArrived = false;
     _navSteps = [];
     _navStepIndex = 0;
-    _navLastSpokenStep = -1;
+    navLastSpokenStep = -1;
     navGpsSubscription?.cancel();
     navGpsSubscription = null;
     navEtaTimer?.cancel();

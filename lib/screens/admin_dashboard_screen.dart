@@ -111,9 +111,13 @@ class _UsersTab extends StatelessWidget {
                     leading: Text(d['avatar'] as String? ?? '🙂',
                         style: const TextStyle(fontSize: 22)),
                     title: Text(d['displayName'] as String? ?? '—',
-                        style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700)),
+                        style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 1),
                     subtitle: Text(d['email'] as String? ?? '—',
-                        style: const TextStyle(fontSize: 11)),
+                        style: const TextStyle(fontSize: 11),
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 1),
                     trailing: d['role'] == 'driver'
                         ? Container(
                             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),

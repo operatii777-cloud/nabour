@@ -16,7 +16,8 @@ class AppSoundService {
   Future<void> playMenuClick() async {
     try {
       await HapticFeedback.lightImpact();
-      await _player.play(AssetSource('sounds/menu_click.mp3'), volume: 0.5);
+      // Fallback: folosim chat_sound.wav deoarece menu_click.mp3 lipsește din bundle.
+      await _player.play(AssetSource('sounds/chat_sound.wav'), volume: 0.3);
     } catch (e) {
       Logger.debug('AppSoundService: menu_click error: $e');
     }

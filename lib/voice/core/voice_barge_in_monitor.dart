@@ -19,8 +19,8 @@ class VoiceBargeInMonitor {
   static const double dbThreshold = -2.8;
   static const int consecutiveLoudSamples = 6;
   static const Duration sampleInterval = Duration(milliseconds: 100);
-  /// Întârzie armarea ca primul impuls al difuzorului să nu oprească TTS-ul.
-  static const Duration armDelay = Duration(milliseconds: 1600);
+  /// Întârzie armarea: 2400ms — lasă AEC-ul să se stabilizeze + TTS să înceapă complet.
+  static const Duration armDelay = Duration(milliseconds: 2400);
 
   Future<void> start(void Function() onBargeIn) async {
     if (kIsWeb) return;

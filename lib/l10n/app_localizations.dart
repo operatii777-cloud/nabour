@@ -11329,6 +11329,36 @@ abstract class AppLocalizations {
   /// In ro, this message translates to:
   /// **'Destinație: {destination}'**
   String safety_destinationLabelPrefix(String destination);
+
+  /// No description provided for @drawerGroupTokensCosmetics.
+  ///
+  /// In ro, this message translates to:
+  /// **'Tokeni și Cosmetice'**
+  String get drawerGroupTokensCosmetics;
+
+  /// No description provided for @drawerMenuTokenWallet.
+  ///
+  /// In ro, this message translates to:
+  /// **'Tokenuri și Planuri'**
+  String get drawerMenuTokenWallet;
+
+  /// No description provided for @drawerMenuExplorationsSubtitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Descoperă zone noi și evenimente'**
+  String get drawerMenuExplorationsSubtitle;
+
+  /// No description provided for @drawerMenuPlacesSubtitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Vezi locurile tale salvate și POI'**
+  String get drawerMenuPlacesSubtitle;
+
+  /// No description provided for @drawerGroupLocationsMap.
+  ///
+  /// In ro, this message translates to:
+  /// **'Locații și Hartă'**
+  String get drawerGroupLocationsMap;
 }
 
 class _AppLocalizationsDelegate

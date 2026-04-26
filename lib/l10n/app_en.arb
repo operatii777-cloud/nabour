@@ -3104,6 +3104,11 @@
     "placeholders": {
       "destination": { "type": "String" }
     }
-  }
+  },
+  "drawerGroupTokensCosmetics": "Tokens & Cosmetics",
+  "drawerMenuTokenWallet": "Tokens & Plans",
+  "drawerMenuExplorationsSubtitle": "Discover new areas and events",
+  "drawerMenuPlacesSubtitle": "See your saved places and POI",
+  "drawerGroupLocationsMap": "Locations & Map"
 }
 

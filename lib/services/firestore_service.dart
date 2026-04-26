@@ -17,6 +17,7 @@ import 'package:nabour_app/models/neighborhood_request_model.dart';
 import 'package:nabour_app/models/stop_location.dart';
 import 'package:nabour_app/models/support_ticket_model.dart';
 import 'package:nabour_app/models/voice_models.dart';
+import 'package:nabour_app/models/radar_alert_model.dart';
 // (PricingService import removed - rides now cost 0.0 except for 1 token)
 import 'package:nabour_app/services/active_ride_telem_rtdb.dart';
 import 'package:nabour_app/services/contacts_service.dart';
@@ -31,6 +32,7 @@ import 'package:nabour_app/models/token_wallet_model.dart';
 import 'package:nabour_app/utils/logger.dart';
 import 'package:nabour_app/features/car_avatars/car_avatar_model.dart';
 import 'package:nabour_app/features/car_avatars/car_avatar_service.dart';
+import 'package:nabour_app/services/location_cache_service.dart';
 
 enum DateFilter { all, today, lastWeek, lastMonth, last3Months, thisYear }
 
@@ -302,8 +304,16 @@ class FirestoreService {
   Future<geolocator.Position?> _getCachedPosition() async {
     final now = DateTime.now();
     final lastUpdate = _lastLocationUpdate[_uid ?? 'anonymous'];
-    
-    // Return cached position if less than 30 seconds old
+
+    // 0. Prioritate: VerificÄƒm cache-ul global (AppInitializer / Map fix recent)
+    final globalCache = LocationCacheService.instance.peekRecent(maxAge: const Duration(seconds: 45));
+    if (globalCache != null) {
+      _lastKnownPosition = globalCache;
+      _lastLocationUpdate[_uid ?? 'anonymous'] = now;
+      return globalCache;
+    }
+
+    // 1. Return cached position if less than 30 seconds old
     if (_lastKnownPosition != null && 
         lastUpdate != null && 
         now.difference(lastUpdate).inSeconds < 30) {
@@ -4129,6 +4139,26 @@ _pendingUpdates.addAll(updates.map((e) => e as Map<String, dynamic>));
             .map((d) => Ride.fromFirestore(d as DocumentSnapshot<Map<String, dynamic>>))
             .toList());
   }
+
+  // ── RADAR ALERTS ──
+  Future<void> saveRadarAlert(RadarAlert alert) async {
+    try {
+      await _db.collection('radar_alerts').add(alert.toFirestore());
+      Logger.info('Radar alert saved to Firestore: ${alert.message}', tag: 'RADAR');
+    } catch (e) {
+      Logger.error('saveRadarAlert error: $e', error: e, tag: 'FIRESTORE');
+    }
+  }
+
+  Stream<List<RadarAlert>> getRecentRadarAlerts({Duration maxAge = const Duration(hours: 1)}) {
+    final threshold = DateTime.now().subtract(maxAge);
+    return _db.collection('radar_alerts')
+        .where('timestamp', isGreaterThan: Timestamp.fromDate(threshold))
+        .orderBy('timestamp', descending: true)
+        .limit(30)
+        .snapshots()
+        .map((snap) => snap.docs.map((doc) => RadarAlert.fromFirestore(doc)).toList());
+  }
 }
 
 /// DATABASE OPTIMIZATION: Query cache entry with custom TTL
@@ -4330,5 +4360,4 @@ class SafeFirestoreOperations {
     
     return result;
   }
-  
 }

@@ -198,6 +198,9 @@ class MapRideInfoPanel extends StatelessWidget {
             fontSize: 16.0,
             fontWeight: FontWeight.bold,
           ),
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+          textAlign: TextAlign.center,
         ),
       ),
     );

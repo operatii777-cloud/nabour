@@ -98,7 +98,11 @@ class _TokenShopScreenState extends State<TokenShopScreen>
           children: TokenPlan.values
               .map(
                 (p) => ListTile(
-                  title: Text(_tokenPlanDisplayName(p, l10n)),
+                  title: Text(
+                    _tokenPlanDisplayName(p, l10n),
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 2,
+                  ),
                   onTap: () => Navigator.pop(ctx, p),
                 ),
               )
@@ -778,8 +782,62 @@ class _TopupCard extends StatelessWidget {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Tab 3: Istoric tranzacții
+// Tab 3: Istoric tranzacții — cu categorii și buton ștergere
 // ─────────────────────────────────────────────────────────────────────────────
+
+enum _TxCategory { all, purchases, ai, routes, posts, bonuses, admin }
+
+extension _TxCategoryExt on _TxCategory {
+  String get displayLabel => switch (this) {
+    _TxCategory.all       => 'Toate',
+    _TxCategory.purchases => 'Cumpărări',
+    _TxCategory.ai        => 'AI',
+    _TxCategory.routes    => 'Rute',
+    _TxCategory.posts     => 'Postări',
+    _TxCategory.bonuses   => 'Bonusuri',
+    _TxCategory.admin     => 'Admin',
+  };
+
+  IconData get icon => switch (this) {
+    _TxCategory.all       => Icons.list_rounded,
+    _TxCategory.purchases => Icons.shopping_cart_rounded,
+    _TxCategory.ai        => Icons.auto_awesome_rounded,
+    _TxCategory.routes    => Icons.map_rounded,
+    _TxCategory.posts     => Icons.campaign_rounded,
+    _TxCategory.bonuses   => Icons.card_giftcard_rounded,
+    _TxCategory.admin     => Icons.admin_panel_settings_rounded,
+  };
+
+  Color get color => switch (this) {
+    _TxCategory.all       => Colors.blueGrey,
+    _TxCategory.purchases => Colors.green,
+    _TxCategory.ai        => Colors.purple,
+    _TxCategory.routes    => Colors.blue,
+    _TxCategory.posts     => Colors.orange,
+    _TxCategory.bonuses   => Colors.teal,
+    _TxCategory.admin     => Colors.redAccent,
+  };
+
+  bool matches(TokenTransactionType type) => switch (this) {
+    _TxCategory.all       => true,
+    _TxCategory.purchases => type == TokenTransactionType.purchase,
+    _TxCategory.ai        => type == TokenTransactionType.aiQuery,
+    _TxCategory.routes    => type == TokenTransactionType.routeCalc ||
+                             type == TokenTransactionType.geocoding,
+    _TxCategory.posts     => type == TokenTransactionType.broadcastPost ||
+                             type == TokenTransactionType.businessOffer,
+    _TxCategory.bonuses   => type == TokenTransactionType.bonus ||
+                             type == TokenTransactionType.monthlyReset,
+    _TxCategory.admin     => type == TokenTransactionType.adminAdjust,
+  };
+}
+
+_TxCategory _categoryForType(TokenTransactionType type) {
+  for (final cat in _TxCategory.values) {
+    if (cat != _TxCategory.all && cat.matches(type)) return cat;
+  }
+  return _TxCategory.admin;
+}
 
 class _HistoryTab extends StatefulWidget {
   const _HistoryTab();
@@ -790,6 +848,8 @@ class _HistoryTab extends StatefulWidget {
 
 class _HistoryTabState extends State<_HistoryTab> {
   List<TokenTransaction>? _transactions;
+  _TxCategory _filter = _TxCategory.all;
+  bool _deleting = false;
 
   @override
   void initState() {
@@ -798,29 +858,254 @@ class _HistoryTabState extends State<_HistoryTab> {
   }
 
   Future<void> _load() async {
-    final txs = await TokenService().getTransactionHistory(limit: 50);
+    final txs = await TokenService().getTransactionHistory(limit: 100);
     if (mounted) setState(() => _transactions = txs);
+  }
+
+  List<TokenTransaction> get _filtered {
+    if (_transactions == null) return [];
+    if (_filter == _TxCategory.all) return _transactions!;
+    return _transactions!.where((t) => _filter.matches(t.type)).toList();
+  }
+
+  Future<void> _confirmClear() async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Șterge istoricul'),
+        content: const Text(
+          'Toate tranzacțiile vor fi șterse permanent.\nSoldul și planul curent rămân neafectate.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Anulează'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Șterge', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+    if (confirm != true || !mounted) return;
+    setState(() => _deleting = true);
+    try {
+      await TokenService().clearTransactionHistory();
+      if (mounted) {
+        setState(() {
+          _transactions = [];
+          _deleting = false;
+          _filter = _TxCategory.all;
+        });
+        AppFeedback.success(context, 'Istoricul a fost șters.');
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _deleting = false);
+        AppFeedback.error(context, 'Eroare: ${e.toString()}');
+      }
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-    final muted = Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.45);
+    final theme = Theme.of(context);
+    final muted = theme.colorScheme.onSurface.withValues(alpha: 0.45);
+
     if (_transactions == null) {
       return const Center(child: CircularProgressIndicator());
     }
-    if (_transactions!.isEmpty) {
-      return Center(
-        child: Text(
-          l10n.tokenShopNoTransactions,
-          style: TextStyle(color: muted),
+
+    return Column(
+      children: [
+        // ── Filtru categorii ────────────────────────────────────────────
+        SizedBox(
+          height: 52,
+          child: ListView(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            children: _TxCategory.values.map((cat) {
+              final active = _filter == cat;
+              return Padding(
+                padding: const EdgeInsets.only(right: 8),
+                child: FilterChip(
+                  selected: active,
+                  label: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(cat.icon, size: 13,
+                          color: active ? Colors.white : cat.color),
+                      const SizedBox(width: 4),
+                      Text(cat.displayLabel),
+                    ],
+                  ),
+                  onSelected: (_) => setState(() => _filter = cat),
+                  selectedColor: cat.color,
+                  checkmarkColor: Colors.transparent,
+                  showCheckmark: false,
+                  labelStyle: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: active
+                        ? Colors.white
+                        : theme.colorScheme.onSurface,
+                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 4),
+                ),
+              );
+            }).toList(),
+          ),
         ),
-      );
+
+        // ── Header contor + buton ștergere ──────────────────────────────
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 2, 8, 2),
+          child: Row(
+            children: [
+              Text(
+                '${_filtered.length} tranzacții',
+                style: TextStyle(fontSize: 12, color: muted),
+              ),
+              const Spacer(),
+              if (_transactions!.isNotEmpty)
+                _deleting
+                    ? const Padding(
+                        padding: EdgeInsets.all(12),
+                        child: SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        ),
+                      )
+                    : TextButton.icon(
+                        onPressed: _confirmClear,
+                        icon: const Icon(Icons.delete_sweep_rounded,
+                            size: 16, color: Colors.red),
+                        label: const Text(
+                          'Șterge tot',
+                          style: TextStyle(fontSize: 12, color: Colors.red),
+                        ),
+                        style: TextButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 4),
+                          minimumSize: Size.zero,
+                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        ),
+                      ),
+            ],
+          ),
+        ),
+
+        const Divider(height: 1),
+
+        // ── Lista ───────────────────────────────────────────────────────
+        Expanded(
+          child: _filtered.isEmpty
+              ? Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(32),
+                    child: Text(
+                      _transactions!.isEmpty
+                          ? 'Nu există tranzacții înregistrate.'
+                          : 'Nicio tranzacție în categoria selectată.',
+                      style: TextStyle(color: muted),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                )
+              : _filter == _TxCategory.all
+                  ? _buildGroupedList()
+                  : _buildFlatList(_filtered),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildGroupedList() {
+    final grouped = <_TxCategory, List<TokenTransaction>>{};
+    for (final tx in _transactions!) {
+      grouped.putIfAbsent(_categoryForType(tx.type), () => []).add(tx);
     }
+    final orderedCats = _TxCategory.values
+        .where((c) => c != _TxCategory.all && grouped.containsKey(c))
+        .toList();
+
+    final items = <Widget>[];
+    for (final cat in orderedCats) {
+      final txList = grouped[cat]!;
+      items.add(_CategoryHeader(category: cat, count: txList.length));
+      items.addAll(txList.map((tx) => _TxTile(tx: tx)));
+    }
+    return ListView(
+      padding: const EdgeInsets.only(bottom: 24),
+      children: items,
+    );
+  }
+
+  Widget _buildFlatList(List<TokenTransaction> items) {
     return ListView.builder(
-      padding: const EdgeInsets.all(12),
-      itemCount: _transactions!.length,
-      itemBuilder: (_, i) => _TxTile(tx: _transactions![i]),
+      padding: const EdgeInsets.only(bottom: 24),
+      itemCount: items.length,
+      itemBuilder: (_, i) => _TxTile(tx: items[i]),
+    );
+  }
+}
+
+class _CategoryHeader extends StatelessWidget {
+  final _TxCategory category;
+  final int count;
+  const _CategoryHeader({required this.category, required this.count});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 4),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(6),
+            decoration: BoxDecoration(
+              color: category.color.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Icon(category.icon, size: 14, color: category.color),
+          ),
+          const SizedBox(width: 10),
+          Text(
+            category.displayLabel,
+            style: TextStyle(
+              fontWeight: FontWeight.w800,
+              fontSize: 13,
+              color: category.color,
+            ),
+          ),
+          const SizedBox(width: 8),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+            decoration: BoxDecoration(
+              color: category.color.withValues(alpha: 0.10),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Text(
+              '$count',
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w700,
+                color: category.color,
+              ),
+            ),
+          ),
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.only(left: 12),
+              child: Divider(
+                  height: 1,
+                  color: category.color.withValues(alpha: 0.2)),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -832,22 +1117,25 @@ class _TxTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isPositive = tx.amount > 0;
+    final cat = _categoryForType(tx.type);
     return ListTile(
       dense: true,
       leading: CircleAvatar(
         radius: 18,
         backgroundColor: isPositive
             ? Colors.green.shade50
-            : Colors.red.shade50,
+            : cat.color.withValues(alpha: 0.10),
         child: Icon(
-          isPositive ? Icons.add_rounded : Icons.remove_rounded,
-          color: isPositive ? Colors.green.shade600 : Colors.red.shade500,
+          isPositive ? Icons.add_rounded : cat.icon,
+          color: isPositive ? Colors.green.shade600 : cat.color,
           size: 16,
         ),
       ),
       title: Text(
         tx.description,
         style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+        maxLines: 2,
+        overflow: TextOverflow.ellipsis,
       ),
       subtitle: Text(
         _formatDate(tx.createdAt),

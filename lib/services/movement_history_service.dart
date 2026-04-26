@@ -211,28 +211,46 @@ class MovementHistoryService {
     final user = _auth.currentUser;
     if (user == null) return const <DailyMovementSummary>[];
 
+    final min = _dayStart(from);
+    final max = _dayStart(to);
+
     final local = await _loadLocalCacheForCurrentUser();
     if (refreshFromFirebase) {
-      final remoteSamples = await _loadRemoteSamplesFromFirebase(from: from, to: to);
+      Logger.info('MovementHistory: Refreshing range ${min.toIso8601String()} to ${max.toIso8601String()} from Firebase', tag: 'MOVEMENT_HISTORY');
+      
+      // Fetch full days from Firebase to ensure we don't miss anything due to time components in 'from'/'to'
+      final fetchTo = DateTime(max.year, max.month, max.day, 23, 59, 59);
+      final remoteSamples = await _loadRemoteSamplesFromFirebase(from: min, to: fetchTo);
+      
       if (remoteSamples.isNotEmpty) {
         final remoteDaily = _buildDailySummaries(remoteSamples);
+        bool modified = false;
         for (final entry in remoteDaily.entries) {
-          local[entry.key] = entry.value;
+          final existing = local[entry.key];
+          if (existing == null || entry.value.path.length > existing.path.length) {
+            // Simplu merge: dacă remote are mai multe puncte sau e nou, îl preferăm.
+            // Într-un sistem ideal am face un set-based merge pe timestamp, dar pentru timeline e suficient.
+            local[entry.key] = entry.value;
+            modified = true;
+          }
         }
-        _pruneByRetention(local, retentionDays);
-        await _saveLocalCacheForCurrentUser(local);
+        if (modified) {
+          _pruneByRetention(local, retentionDays);
+          await _saveLocalCacheForCurrentUser(local);
+        }
       }
     }
 
-    final min = _dayStart(from);
-    final max = _dayStart(to);
-    return local.values
+    final results = local.values
         .where((d) {
           final day = _parseDayKey(d.dayKey);
           return !day.isBefore(min) && !day.isAfter(max);
         })
         .toList()
       ..sort((a, b) => a.dayKey.compareTo(b.dayKey));
+
+    Logger.info('MovementHistory: loadRange found ${results.length} days with data', tag: 'MOVEMENT_HISTORY');
+    return results;
   }
 
   Future<void> pruneLocalRetention({int retentionDays = _defaultRetentionDays}) async {

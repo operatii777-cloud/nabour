@@ -30,7 +30,11 @@ class _ManageAddressesScreenState extends State<ManageAddressesScreen> {
       builder: (BuildContext context) {
         return AlertDialog(
           title: const Text('Confirmare Ștergere'),
-          content: Text('Sunteți sigur că doriți să ștergeți adresa "${address.label}"?'),
+          content: Text(
+            'Sunteți sigur că doriți să ștergeți adresa "${address.label}"?',
+            maxLines: 4,
+            overflow: TextOverflow.ellipsis,
+          ),
           actions: <Widget>[
             TextButton(
               child: const Text('Anulează'),

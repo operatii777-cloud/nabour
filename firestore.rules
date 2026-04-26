@@ -172,23 +172,6 @@ service cloud.firestore {
         get(/databases/$(database)/documents/users/$(driverId)).data.isTestAccount == true;
     }
 
-    function isRestaurantOwner(restaurantId) {
-      return isAuthenticated() &&
-        get(/databases/$(database)/documents/restaurants/$(restaurantId)).data.ownerId == request.auth.uid;
-    }
-
-    function isDeliveryParticipant() {
-      return isAuthenticated() &&
-        (request.auth.uid == resource.data.customerId ||
-         request.auth.uid == resource.data.courierId ||
-         request.auth.uid == resource.data.restaurantOwnerId);
-    }
-
-    function isCourier(courierId) {
-      return isAuthenticated() &&
-        request.auth.uid == courierId;
-    }
-
     // Proprietarul anunțului = userId din business_profiles pentru businessId-ul ofertei.
     function isBusinessOfferOwner() {
       return isAuthenticated()
@@ -645,24 +628,6 @@ service cloud.firestore {
       allow delete: if false;
     }
 
-    // ── Payment methods (colecție globală — delivery/merchant) ─────────────
-    // Dacă documentul nu are câmpul userId, regula de mai jos va nega accesul.
-    // Mutați datele în /users/{userId}/payment_methods dacă este posibil.
-    match /payment_methods/{methodId} {
-      allow read, update, delete: if isAuthenticated() &&
-        resource.data.userId == request.auth.uid;
-      allow create: if isAuthenticated() &&
-        request.resource.data.userId == request.auth.uid;
-    }
-
-    // ── Vouchers (colecție globală — delivery/merchant) ────────────────────
-    match /vouchers/{voucherId} {
-      allow read, update, delete: if isAuthenticated() &&
-        resource.data.userId == request.auth.uid;
-      allow create: if isAuthenticated() &&
-        request.resource.data.userId == request.auth.uid;
-    }
-
     // ── Business profile requests ──────────────────────────────────────────
     match /business_profile_requests/{requestId} {
       allow read:   if isAuthenticated() && isOwner(resource.data.userId);
@@ -761,6 +726,35 @@ service cloud.firestore {
         allow read, write: if isAuthenticated()
           && (request.auth.uid in chatId.split('_'));
       }
+    }
+
+    // ── Map Chat (speech bubbles pe hartă) ────────────────────────────────────
+    // chatId = uid1_uid2 (sortat lexicografic), deci ambii participanți au acces.
+    match /map_chat_sessions/{chatId} {
+      allow read: if isAuthenticated()
+        && (request.auth.uid in chatId.split('_'));
+
+      match /messages/{messageId} {
+        allow read: if isAuthenticated()
+          && (request.auth.uid in chatId.split('_'));
+        allow create: if isAuthenticated()
+          && (request.auth.uid in chatId.split('_'))
+          && request.resource.data.senderId == request.auth.uid
+          && request.resource.data.text is string
+          && request.resource.data.text.size() > 0
+          && request.resource.data.text.size() <= 500;
+        allow delete: if isAuthenticated()
+          && (request.auth.uid in chatId.split('_'));
+      }
+    }
+
+    // ── Map Chat typing indicators ────────────────────────────────────────────
+    // docId = chatId_userId; doar proprietarul poate scrie.
+    match /map_chat_typing/{docId} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated()
+        && request.auth.uid == resource.data.userId
+        || (isAuthenticated() && request.resource.data.userId == request.auth.uid);
     }
 
     // ── Rides (tracking / comunicări) — nu folosi ride_requests ca părinte pentru sub-colecții.
@@ -912,71 +906,6 @@ service cloud.firestore {
       allow delete: if isAuthenticated() && isOwner(userId);
     }
 
-    // ── DELIVERY ───────────────────────────────────────────────────────────
-
-    match /restaurants/{restaurantId} {
-      allow read:   if isAuthenticated();
-      allow create: if isAuthenticated() &&
-        (request.resource.data.ownerId == request.auth.uid ||
-         request.resource.data.ownerId == null);
-      // Update: doar owner-ul restaurantului
-      allow update: if isAuthenticated() &&
-        resource.data.ownerId == request.auth.uid;
-      allow delete: if false;
-    }
-
-    match /products/{productId} {
-      allow read:          if isAuthenticated();
-      allow create:        if isAuthenticated() &&
-        isRestaurantOwner(request.resource.data.restaurantId);
-      allow update:        if isAuthenticated() &&
-        isRestaurantOwner(resource.data.restaurantId);
-      allow delete:        if isAuthenticated() &&
-        isRestaurantOwner(resource.data.restaurantId);
-    }
-
-    match /delivery_orders/{orderId} {
-      allow read:   if isAuthenticated() && isDeliveryParticipant();
-      allow create: if isAuthenticated();
-      allow update: if isAuthenticated() && (
-        isOwner(resource.data.customerId) ||
-        isCourier(resource.data.courierId) ||
-        isRestaurantOwner(resource.data.restaurantId)
-      );
-      allow delete: if false;
-    }
-
-    match /couriers/{courierId} {
-      allow read:   if isAuthenticated();
-      allow create: if isAuthenticated() && isCourier(courierId);
-      allow update: if isAuthenticated() && isCourier(courierId);
-      allow delete: if false;
-    }
-
-    match /restaurant_couriers/{courierId} {
-      allow read:   if isAuthenticated();
-      allow create: if isAuthenticated();
-      allow update: if isAuthenticated() && (
-        isCourier(resource.data.courierId) ||
-        resource.data.restaurantId != null &&
-          isRestaurantOwner(resource.data.restaurantId)
-      );
-      allow delete: if false;
-    }
-
-    // API keys: niciodată citibile din client; create/update doar prin backend.
-    match /restaurant_api_keys/{keyId} {
-      allow read:                  if false;
-      allow create, update, delete: if false;
-    }
-
-    match /restaurant_onboarding/{requestId} {
-      allow read:   if isAuthenticated() && isOwner(resource.data.ownerId);
-      allow create: if isAuthenticated();
-      allow update: if isAuthenticated() && isOwner(resource.data.ownerId);
-      allow delete: if false;
-    }
-
     // ── Map moments (stări efemere pe hartă, ex. 24h) ─────────────────────
     match /map_moments/{momentId} {
       allow read: if isAuthenticated();
@@ -1118,6 +1047,13 @@ service cloud.firestore {
           || request.resource.data.count > resource.data.count
         );
       allow delete: if false;
+    }
+    // ── Radar Alerts (Road reports from users) ─────────────────────────────
+    match /radar_alerts/{alertId} {
+      allow read:   if isAuthenticated();
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      allow update: if false; // Reports are immutable for now
+      allow delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
     }
   }
 }

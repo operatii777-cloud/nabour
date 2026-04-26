@@ -30,7 +30,7 @@ import '../../screens/account_screen.dart';
 import '../../screens/history_screen.dart';
 import '../../screens/settings_screen.dart';
 import '../../screens/driver_dashboard_screen.dart';
-import '../../screens/wallet_screen.dart';
+import '../../screens/token_shop_screen.dart';
 
 /// ✅ Helper: Obține limba curentă din SharedPreferences
 Future<String> _getCurrentLanguageCode() async {
@@ -3096,7 +3096,7 @@ class RideFlowManager {
       final msg = languageCode == 'ro' 
           ? 'În acest moment ne deplasăm cu aproximativ ${speed.toInt()} kilometri pe oră.' 
           : 'We are currently traveling at approximately ${speed.toInt()} kilometers per hour.';
-      await _speakEmotion(msg, VoiceEmotion.bold);
+      await _speakEmotion(msg, VoiceEmotion.confident);
       return;
     }
 
@@ -3119,7 +3119,7 @@ class RideFlowManager {
       case 'settings': screenWidget = const SettingsScreen(); break;
       case 'history': screenWidget = const HistoryScreen(); break;
       case 'activity': screenWidget = const DriverDashboardScreen(); break;
-      case 'wallet': screenWidget = const WalletScreen(); break;
+      case 'wallet': screenWidget = const TokenShopScreen(); break;
     }
     
     if (screenWidget != null) {
@@ -3144,8 +3144,8 @@ class RideFlowManager {
 
   RideCategory _parseRideCategory(String type) {
     switch (type.toLowerCase()) {
-      case 'premium': return RideCategory.premium;
-      case 'xl': return RideCategory.xl;
+      case 'premium': return RideCategory.best;
+      case 'xl': return RideCategory.family;
       default: return RideCategory.standard;
     }
   }

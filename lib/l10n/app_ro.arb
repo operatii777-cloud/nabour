@@ -3100,6 +3100,11 @@
     "placeholders": {
       "destination": { "type": "String" }
     }
-  }
+  },
+  "drawerGroupTokensCosmetics": "Tokeni și Cosmetice",
+  "drawerMenuTokenWallet": "Tokenuri și Planuri",
+  "drawerMenuExplorationsSubtitle": "Descoperă zone noi și evenimente",
+  "drawerMenuPlacesSubtitle": "Vezi locurile tale salvate și POI",
+  "drawerGroupLocationsMap": "Locații și Hartă"
 }
 

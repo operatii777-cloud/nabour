@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -462,9 +461,19 @@ class MainVoiceIntegration extends ChangeNotifier {
         // --- GENERIC DISPATCHER (Playwright/DOM style) ---
         default:
           Logger.info('Action $action not in static list, checking VoiceUIAutomationRegistry...', tag: 'MAIN_VOICE');
-          final success = VoiceUIAutomationRegistry().executeAction(action, params: params);
+          // 1) Lookup exact după ID
+          var success = VoiceUIAutomationRegistry().executeAction(action, params: params);
+          // 2) Fallback: keyword search bilingv (când AI returnează text liber, nu un ID)
           if (!success) {
-            Logger.warning('Action $action could not be executed by any system.', tag: 'MAIN_VOICE');
+            final lang = params?['lang'] as String? ?? 'ro';
+            final match = VoiceUIAutomationRegistry().findByKeyword(action, lang);
+            if (match != null) {
+              Logger.info('Keyword fallback: "$action" → ${match.actionId} (score=${match.score.toStringAsFixed(2)})', tag: 'MAIN_VOICE');
+              success = VoiceUIAutomationRegistry().executeAction(match.actionId, params: params);
+            }
+          }
+          if (!success) {
+            Logger.warning('Action "$action" could not be executed by any system.', tag: 'MAIN_VOICE');
           }
           break;
       }

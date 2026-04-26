@@ -4,6 +4,7 @@ import 'package:nabour_app/features/car_avatars/car_avatar_model.dart';
 import 'package:nabour_app/features/car_avatars/car_avatar_service.dart';
 import 'package:nabour_app/services/token_service.dart';
 import 'package:nabour_app/utils/logger.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 /// După garaj: [appliedIdsBySlot] — sloturile tocmai salvate (optimistic pe hartă pentru slotul activ).
 /// [selected] + [editedSlot] pentru fluxul vechi (ex. cumpărare imediată).
@@ -66,6 +67,7 @@ class _CarAvatarShopSheetState extends State<CarAvatarShopSheet> {
   CarCategory _selectedCategory = CarCategory.transport;
   /// Profil șofer complet (nr. înmatriculare, marcă, etc.) — pentru OZN gratuit la volan.
   bool _registeredDriver = false;
+  bool _useProfilePhotoOnMap = false;
 
   String get _activeSlotDraftId =>
       _mapSlot == CarAvatarMapSlot.driver ? _draftDriverId : _draftPassengerId;
@@ -107,12 +109,15 @@ class _CarAvatarShopSheetState extends State<CarAvatarShopSheet> {
       final tokens = await _tokenService.getTokenBalance();
       final registeredDriver =
           await _avatarService.loadRegisteredDriverProfileFlag();
+      final prefs = await SharedPreferences.getInstance();
+      final usePhoto = prefs.getBool('use_profile_photo_on_map') ?? false;
 
       if (mounted) {
         setState(() {
           _avatars = avatars;
           _purchasedIds = purchased;
           _registeredDriver = registeredDriver;
+          _useProfilePhotoOnMap = usePhoto;
           if (driverSel != 'default_car') _purchasedIds.add(driverSel);
           if (passengerSel != 'default_car') _purchasedIds.add(passengerSel);
           _selectedDriverId = driverSel;
@@ -363,7 +368,7 @@ class _CarAvatarShopSheetState extends State<CarAvatarShopSheet> {
     }
 
     return Container(
-      height: MediaQuery.of(context).size.height * 0.75,
+      height: MediaQuery.of(context).size.height * 0.90,
       decoration: BoxDecoration(
         color: const Color(0xFF0F172A).withValues(alpha: 0.85),
         borderRadius: const BorderRadius.vertical(top: Radius.circular(30)),
@@ -418,7 +423,9 @@ class _CarAvatarShopSheetState extends State<CarAvatarShopSheet> {
                     _buildMapSlotSelector(),
                     const SizedBox(height: 20),
                     _buildSelectedPreview(),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 12),
+                    _buildProfilePhotoToggle(),
+                    const SizedBox(height: 12),
                     _buildCategorySelector(),
                     const SizedBox(height: 20),
                     Expanded(child: _buildAvatarGrid()),
@@ -433,6 +440,40 @@ class _CarAvatarShopSheetState extends State<CarAvatarShopSheet> {
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildProfilePhotoToggle() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.06),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.account_circle_rounded, color: Colors.white70, size: 22),
+          const SizedBox(width: 10),
+          const Expanded(
+            child: Text(
+              'Folosește poza de profil pe hartă',
+              style: TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w600),
+            ),
+          ),
+          Switch.adaptive(
+            value: _useProfilePhotoOnMap,
+            activeThumbColor: Colors.amber,
+            activeTrackColor: Colors.amber.withValues(alpha: 0.5),
+            onChanged: (val) async {
+              setState(() => _useProfilePhotoOnMap = val);
+              final prefs = await SharedPreferences.getInstance();
+              await prefs.setBool('use_profile_photo_on_map', val);
+              widget.onInventoryChanged?.call();
+            },
+          ),
+        ],
       ),
     );
   }
@@ -667,6 +708,7 @@ class _CarAvatarShopSheetState extends State<CarAvatarShopSheet> {
                   ] : [],
                 ),
                 child: Row(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     Icon(icon, size: 18, color: isSelected ? Colors.amber : Colors.white38),
                     const SizedBox(width: 8),
@@ -793,6 +835,8 @@ class _CarAvatarShopSheetState extends State<CarAvatarShopSheet> {
                   ? 'Only transport vehicles are available for driver slot. Animals and characters are passenger-only.'
                   : 'Coming soon in the garage...',
               textAlign: TextAlign.center,
+              maxLines: 4,
+              overflow: TextOverflow.ellipsis,
               style: TextStyle(
                 color: Colors.white24,
                 fontStyle: driverNoVehicles ? FontStyle.normal : FontStyle.italic,
@@ -805,7 +849,7 @@ class _CarAvatarShopSheetState extends State<CarAvatarShopSheet> {
     }
 
     return SizedBox(
-      height: 190,
+      height: 240,
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.only(bottom: 20),
@@ -936,20 +980,28 @@ class _CarAvatarShopSheetState extends State<CarAvatarShopSheet> {
                   padding: const EdgeInsets.symmetric(horizontal: 6),
                   child: Text(
                     avatar.name,
-                    style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w600),
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: -0.2,
+                    ),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                     textAlign: TextAlign.center,
                   ),
                 ),
-                const SizedBox(height: 6),
+                const SizedBox(height: 4),
                 if (avatar.comingSoon)
-                  Text(
-                    'Artwork in progress',
-                    style: TextStyle(
-                      color: Colors.cyanAccent.withValues(alpha: 0.85),
-                      fontSize: 10,
-                      fontWeight: FontWeight.bold,
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: Text(
+                      'Artwork in progress',
+                      style: TextStyle(
+                        color: Colors.cyanAccent.withValues(alpha: 0.85),
+                        fontSize: 9,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   )
                 else if (unlocked) ...[

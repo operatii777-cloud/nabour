@@ -16,6 +16,7 @@ import '../../screens/searching_for_driver_screen.dart';
 import 'package:nabour_app/utils/logger.dart';
 import 'package:nabour_app/services/pax_allowed_drv_uids.dart';
 import 'package:nabour_app/services/passenger_ride_session_bus.dart';
+import '../testing/nabour_ghost_orchestrator.dart';
 
 /// ✅ Helper: Obține limba curentă din SharedPreferences
 Future<String> _getCurrentLanguageCode() async {
@@ -132,6 +133,9 @@ class PassengerVoiceController extends ChangeNotifier {
       // VoiceOrchestrator can always observe the TTS speaking state.
       await _voiceOrchestrator.initialize();
       _tts = _voiceOrchestrator.naturalTts;
+
+      // ✅ NOU: Inițializează orchestratorul fantomă pentru testare autonomă
+      NabourGhostOrchestrator().initialize(this);
 
       // Wire STT callbacks to route results into the AI flow and reflect state to UI
       _voiceOrchestrator.setSpeechResultCallback((result) async {
@@ -294,6 +298,12 @@ class PassengerVoiceController extends ChangeNotifier {
           // ✅ Închide AI-ul și resetează stările
           _resetVoiceStates();
           notifyListeners();
+        },
+        
+        onAppAction: (action, screen, params) {
+          Logger.debug('AI requested generic App Action: $action on screen: $screen', tag: 'VOICE_CONTROLLER');
+          // Dispatch to anyone interested via the registry or local logic
+          // (MainVoiceIntegration usually handles this, but we bridge it here if needed)
         },
       );
       

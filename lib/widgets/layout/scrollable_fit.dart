@@ -62,3 +62,76 @@ class OverflowSafeRow extends StatelessWidget {
     );
   }
 }
+
+/// Wrapper pentru bottom sheet-uri și dialogs care trebuie să se adapteze la
+/// înălțimea ecranului și tastatura virtuală.
+class AdaptiveSheetBody extends StatelessWidget {
+  final Widget child;
+  final EdgeInsetsGeometry? padding;
+  /// Fracțiune maximă din înălțimea ecranului (default 0.92).
+  final double maxHeightFactor;
+
+  const AdaptiveSheetBody({
+    super.key,
+    required this.child,
+    this.padding,
+    this.maxHeightFactor = 0.92,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final mq = MediaQuery.of(context);
+    final maxH = mq.size.height * maxHeightFactor - mq.viewInsets.bottom;
+
+    return ConstrainedBox(
+      constraints: BoxConstraints(maxHeight: maxH.clamp(100, double.infinity)),
+      child: SingleChildScrollView(
+        keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+        padding: padding,
+        child: child,
+      ),
+    );
+  }
+}
+
+/// Column care nu dă overflow: dacă conținutul e prea mare, devine scrollabil.
+class SafeColumn extends StatelessWidget {
+  final List<Widget> children;
+  final MainAxisAlignment mainAxisAlignment;
+  final CrossAxisAlignment crossAxisAlignment;
+  final MainAxisSize mainAxisSize;
+  final EdgeInsetsGeometry? padding;
+
+  const SafeColumn({
+    super.key,
+    required this.children,
+    this.mainAxisAlignment = MainAxisAlignment.start,
+    this.crossAxisAlignment = CrossAxisAlignment.center,
+    this.mainAxisSize = MainAxisSize.min,
+    this.padding,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final col = Column(
+          mainAxisAlignment: mainAxisAlignment,
+          crossAxisAlignment: crossAxisAlignment,
+          mainAxisSize: mainAxisSize,
+          children: children,
+        );
+        if (constraints.maxHeight == double.infinity) return col;
+
+        return SingleChildScrollView(
+          keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+          padding: padding,
+          child: ConstrainedBox(
+            constraints: BoxConstraints(minHeight: constraints.maxHeight),
+            child: col,
+          ),
+        );
+      },
+    );
+  }
+}

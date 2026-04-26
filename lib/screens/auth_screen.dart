@@ -202,8 +202,8 @@ if (mounted) {
         email: _email.trim(),
         actionCodeSettings: ActionCodeSettings(
           url: 'https://friendsride-app.firebaseapp.com/__/auth/action',
-          androidPackageName: 'com.friendsride.app',
-          iOSBundleId: 'com.friendsride.app',
+          androidPackageName: 'com.florin.nabour',
+          iOSBundleId: 'com.florin.nabour',
         ),
       );
       

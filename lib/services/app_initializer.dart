@@ -20,6 +20,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:nabour_app/services/contacts_service.dart';
 import 'package:nabour_app/utils/nametag_helper.dart';
 import 'package:nabour_app/services/trial_config_service.dart';
+import 'package:nabour_app/services/presence_service.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:nabour_app/services/location_cache_service.dart';
 
 enum AppStatus { initializing, ready, backendReady, error }
 
@@ -30,6 +33,10 @@ class AppInitializer extends ChangeNotifier {
   bool _started = false;
   Completer<void>? _backendReadyCompleter;
   StreamSubscription<User?>? _authSubscription;
+  Position? _prefetchedPosition;
+
+  /// Poziția GPS obținută în timpul startup-ului (prefetch).
+  Position? get prefetchedPosition => _prefetchedPosition;
 
   /// Se rezolvă când inițializările "heavy" din fundal s-au terminat.
   Future<void> get backendReadyFuture => _backendReadyCompleter?.future ?? Future.value();
@@ -40,7 +47,7 @@ class AppInitializer extends ChangeNotifier {
         Logger.info('User authenticated: ${user.uid}. Ensuring token wallet & phone sync...', tag: 'INITIALIZER');
         unawaited(TrialConfigService.instance.ensureTrialAnchorFromServer());
         unawaited(_ensureWalletAfterBackendReady(user.uid));
-
+        unawaited(PresenceService().initialize(user.uid));
         unawaited(_syncUserProfile(user));
       }
     });
@@ -106,7 +113,6 @@ class AppInitializer extends ChangeNotifier {
         updates['phoneNumber'] = fields['phoneNumber']!;
         updates['phoneE164'] = fields['phoneE164']!;
       }
-
       // Ensure UID is present
       if (data == null || data['uid'] == null) {
         updates['uid'] = user.uid;
@@ -150,11 +156,18 @@ class AppInitializer extends ChangeNotifier {
     try {
       Logger.info('🚀 Starting AppInitializer...', tag: 'INITIALIZER');
       StartupTimer.instance.mark('initializer.start');
+
+      // Phase 0: GPS Prefetch (Absolute priority)
+      // Începem să căutăm sateliții în prima secundă a aplicației.
+      unawaited(_prefetchLocation());
       
       // Phase 1: Environment (fast)
+      // dotenv este deja încărcat din main() — doar validăm, evităm I/O redundant.
       try {
-        await dotenv.load().timeout(const Duration(seconds: 5));
-        StartupTimer.instance.mark('env.loaded');
+        if (!dotenv.isInitialized) {
+          await dotenv.load().timeout(const Duration(seconds: 5));
+          StartupTimer.instance.mark('env.loaded');
+        }
         Environment.validateTokens();
         StartupTimer.instance.mark('env.validated');
         if (kDebugMode) {
@@ -314,6 +327,37 @@ class AppInitializer extends ChangeNotifier {
     }
   }
 
+  /// 🛰️ GPS PREFETCH: Obține locația în fundal în timp ce restul serviciilor se încarcă.
+  Future<void> _prefetchLocation() async {
+    try {
+      Logger.debug('🛰️ Starting GPS prefetch...', tag: 'INITIALIZER');
+      
+      // 1. Încercăm Last Known (instant)
+      final lastKnown = await Geolocator.getLastKnownPosition();
+      if (lastKnown != null) {
+        _prefetchedPosition = lastKnown;
+        LocationCacheService.instance.record(lastKnown);
+        Logger.info('🛰️ GPS Prefetch: Last known position cached.', tag: 'INITIALIZER');
+      }
+
+      // 2. Cerem fix proaspăt (poate dura câteva secunde, rulează în paralel)
+      try {
+        final fresh = await Geolocator.getCurrentPosition(
+          locationSettings: const LocationSettings(
+            accuracy: LocationAccuracy.high,
+            timeLimit: Duration(seconds: 10),
+          ),
+        );
+        _prefetchedPosition = fresh;
+        LocationCacheService.instance.record(fresh);
+        Logger.info('🛰️ GPS Prefetch: Fresh high-accuracy fix obtained.', tag: 'INITIALIZER');
+      } catch (e) {
+        Logger.warning('🛰️ GPS Prefetch high-accuracy failed: $e', tag: 'INITIALIZER');
+      }
+    } catch (e) {
+      Logger.warning('🛰️ GPS Prefetch error: $e', tag: 'INITIALIZER');
+    }
+  }
 }
 
 

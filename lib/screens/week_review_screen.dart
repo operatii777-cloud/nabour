@@ -485,51 +485,59 @@ class _WeekReviewScreenState extends State<WeekReviewScreen> with SingleTickerPr
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Row(
-                        children: [
-                          Container(
-                            width: 36,
-                            height: 36,
-                            decoration: const BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: Color(0xFF7C3AED), // Nabour Purple
-                            ),
-                            child: Center(
-                              child: Text(
-                                _userInitial,
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
+                      Expanded(
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 36,
+                              height: 36,
+                              decoration: const BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: Color(0xFF7C3AED),
+                              ),
+                              child: Center(
+                                child: Text(
+                                  _userInitial,
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                  ),
                                 ),
                               ),
                             ),
-                          ),
-                          const SizedBox(width: 12),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text(
-                                'Nabour Review',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.w800,
-                                  fontSize: 16,
-                                  shadows: [Shadow(color: Colors.black45, blurRadius: 4)],
-                                ),
+                            const SizedBox(width: 12),
+                            Flexible(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const Text(
+                                    'Nabour Review',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w800,
+                                      fontSize: 16,
+                                      shadows: [Shadow(color: Colors.black45, blurRadius: 4)],
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  Text(
+                                    _formatDateRange(),
+                                    style: const TextStyle(
+                                      color: Colors.white70,
+                                      fontSize: 12,
+                                      shadows: [Shadow(color: Colors.black45, blurRadius: 4)],
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ],
                               ),
-                              Text(
-                                _formatDateRange(),
-                                style: const TextStyle(
-                                  color: Colors.white70,
-                                  fontSize: 12,
-                                  shadows: [Shadow(color: Colors.black45, blurRadius: 4)],
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
+                            ),
+                          ],
+                        ),
                       ),
-                      const SizedBox(width: 12),
                       IconButton(
                         icon: Icon(
                           _isPaused ? Icons.play_circle_fill_rounded : Icons.pause_circle_filled_rounded, 
@@ -674,16 +682,36 @@ class _WeekReviewScreenState extends State<WeekReviewScreen> with SingleTickerPr
       lastDate: DateTime.now(),
       initialDateRange: DateTimeRange(start: _rangeFrom, end: _rangeTo),
       helpText: 'Selectează perioada pentru review',
-      cancelText: 'Anulează',
-      confirmText: 'Generează',
+      cancelText: 'ANULEAZĂ',
+      confirmText: 'OK',
       builder: (context, child) {
         return Theme(
-          data: Theme.of(context).copyWith(
+          data: ThemeData.dark().copyWith(
             colorScheme: const ColorScheme.dark(
               primary: Color(0xFF7C3AED),
               onPrimary: Colors.white,
               surface: Color(0xFF1A1A2E),
               onSurface: Colors.white,
+              secondary: Color(0xFF7C3AED),
+            ),
+            dialogTheme: const DialogThemeData(
+              backgroundColor: Color(0xFF1A1A2E),
+            ),
+            scaffoldBackgroundColor: const Color(0xFF1A1A2E),
+            appBarTheme: const AppBarTheme(
+              backgroundColor: Color(0xFF1A1A2E),
+              foregroundColor: Colors.white,
+              elevation: 0,
+            ),
+            textButtonTheme: TextButtonThemeData(
+              style: TextButton.styleFrom(
+                foregroundColor: Colors.white,
+                textStyle: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                  letterSpacing: 0.8,
+                ),
+              ),
             ),
           ),
           child: child!,

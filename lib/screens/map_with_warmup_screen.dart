@@ -31,7 +31,15 @@ class _MapWithWarmupScreenState extends State<MapWithWarmupScreen> {
   void initState() {
     super.initState();
     _warmupOverlayVisible = ValueNotifier<bool>(true);
-    WidgetsBinding.instance.addPostFrameCallback((_) => _maybeShowDisclaimer());
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _maybeShowDisclaimer();
+      _setupAutoDismiss();
+    });
+  }
+
+  void _setupAutoDismiss() {
+    // ✋ DEACTIVATED: User wants the warmup screen to be a manual "presentation"
+    // that stays until they decide to open the map.
   }
 
   @override

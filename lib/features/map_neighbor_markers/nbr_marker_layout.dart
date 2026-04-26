@@ -16,8 +16,8 @@ class NeighborMarkerDisplayLayout {
   /// în "trepte" (stack de carduri), astfel încât să nu se suprapună.
   /// GPS-ul poate împrăștia puncte „aceeași locație” pe zeci de metri —
   /// prag mai mare = grupare mai sigură.
-  static const double mergeDistanceM = 95.0;
-  static const double stairStepM = 18.0;
+  static const double mergeDistanceM = 110.0;
+  static const double stairStepM = 24.0;
 
   static Map<String, NeighborDisplayCoords> compute(
     List<NeighborLocation> neighbors,
@@ -81,7 +81,7 @@ class NeighborMarkerDisplayLayout {
         // "Pachet de cărți": fiecare următor marker este deplasat
         // puțin mai jos și spre dreapta (trepte diagonale).
         final downM = k * stepM;
-        final rightM = k * stepM * 0.58;
+        final rightM = k * stepM * 1.0;
         final dLat = (-downM) / 111320.0;
         final dLng = rightM / (111320.0 * cosLat);
         result[neighbors[idx].uid] =
@@ -89,6 +89,36 @@ class NeighborMarkerDisplayLayout {
       }
     }
 
+    return result;
+  }
+
+  /// Returnează grupele de vecini co-localizați (≥2 membri) cu centroidul fiecăruia.
+  static List<({List<NeighborLocation> members, double centerLat, double centerLng})>
+      computeGroups(List<NeighborLocation> neighbors) {
+    if (neighbors.length < 2) return [];
+    final n = neighbors.length;
+    final dsu = _DisjointSet(n);
+    for (var i = 0; i < n; i++) {
+      for (var j = i + 1; j < n; j++) {
+        final d = geo.Geolocator.distanceBetween(
+          neighbors[i].lat, neighbors[i].lng,
+          neighbors[j].lat, neighbors[j].lng,
+        );
+        if (d <= mergeDistanceM) dsu.union(i, j);
+      }
+    }
+    final groupsMap = <int, List<int>>{};
+    for (var i = 0; i < n; i++) {
+      groupsMap.putIfAbsent(dsu.find(i), () => []).add(i);
+    }
+    final result = <({List<NeighborLocation> members, double centerLat, double centerLng})>[];
+    for (final indices in groupsMap.values) {
+      if (indices.length < 2) continue;
+      final members = indices.map((i) => neighbors[i]).toList();
+      final clat = members.map((m) => m.lat).reduce((a, b) => a + b) / members.length;
+      final clng = members.map((m) => m.lng).reduce((a, b) => a + b) / members.length;
+      result.add((members: members, centerLat: clat, centerLng: clng));
+    }
     return result;
   }
 }

@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
-import 'package:flutter/material.dart';
 
 // Existing FriendsRide services
 import '../../services/firestore_service.dart';
@@ -11,6 +10,7 @@ import '../../models/voice_models.dart';
 // New Voice AI System
 import '../states/voice_interaction_states.dart';
 import '../passenger/passenger_voice_controller.dart';
+import '../testing/nabour_ghost_orchestrator.dart';
 import 'package:nabour_app/utils/logger.dart';
 
 
@@ -24,6 +24,7 @@ import 'package:nabour_app/utils/logger.dart';
 class FriendsRideVoiceIntegration extends ChangeNotifier {
   // 🧠 Componentele AI vocale (lazy init)
   PassengerVoiceController? _voiceController;
+  PassengerVoiceController? get passengerController => _voiceController;
   
   // 🚗 Serviciile FriendsRide existente
   final FirestoreService _firestoreService = FirestoreService();
@@ -103,6 +104,15 @@ class FriendsRideVoiceIntegration extends ChangeNotifier {
       _isInitializing = false;
       
       Logger.info('All components initialized successfully', tag: 'FRIENDSRIDE_VOICE');
+      
+      // 👻 Ghost Mode: Link the orchestrator if in debug mode
+      if (kDebugMode) {
+        try {
+          NabourGhostOrchestrator().initialize(_voiceController!);
+        } catch (e) {
+          Logger.warning('Ghost Orchestrator failed to link: $e', tag: 'VOICE');
+        }
+      }
       
     } catch (e) {
       Logger.error('Initialization error: $e', tag: 'FRIENDSRIDE_VOICE', error: e);

@@ -125,11 +125,23 @@ class NaturalVoiceSynthesizer {
       
       Logger.info('Speech completed', tag: 'NATURAL_TTS');
       
+      // ✅ NOU: Notifică orchestratorul fantomă pentru auto-testare
+      try {
+        // Import circular evitat prin întârziere sau tip dinamic dacă e cazul, 
+        // dar aici folosim un callback dacă e setat.
+        onCompletion?.call(text);
+      } catch (e) {
+        Logger.error('Error in TTS completion callback: $e', tag: 'NATURAL_TTS');
+      }
+      
     } catch (e) {
       Logger.error('Speech error: $e', tag: 'NATURAL_TTS', error: e);
       _isSpeaking = false;
     }
   }
+
+  /// ✅ NOU: Callback pentru finalizarea vorbirii (folosit de GhostOrchestrator)
+  Function(String text)? onCompletion;
   
   /// 🗣️ Vorbește textul cu prioritate înaltă (pentru confirmări)
   Future<void> speakPriority(String text) async {

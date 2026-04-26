@@ -63,7 +63,11 @@ class _HistoryScreenState extends State<HistoryScreen> with SingleTickerProvider
       context: context,
       builder: (ctx) => AlertDialog(
         title: Text(l10n.deleteConfirmation),
-        content: Text(l10n.deleteRideConfirmation(destination)),
+        content: Text(
+          l10n.deleteRideConfirmation(destination),
+          maxLines: 6,
+          overflow: TextOverflow.ellipsis,
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(),

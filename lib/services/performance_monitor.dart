@@ -61,7 +61,7 @@ class PerformanceMonitor {
     );
     
     _addMetric(name, metric);
-    _metricController.add(metric);
+    if (!_metricController.isClosed) _metricController.add(metric);
     
     // Check for performance thresholds
     _checkPerformanceThresholds(name, value, metadata);
@@ -101,8 +101,8 @@ class PerformanceMonitor {
     );
     
     _addAlert(alert);
-    _alertController.add(alert);
-    
+    if (!_alertController.isClosed) _alertController.add(alert);
+
     // Record as metric for tracking
     recordMetric('error_count', 1, metadata: {
       'error_type': errorType,
@@ -129,9 +129,9 @@ class PerformanceMonitor {
     );
     
     _addAlert(alert);
-    _alertController.add(alert);
+    if (!_alertController.isClosed) _alertController.add(alert);
   }
-  
+
   /// Record a performance info message
   void recordInfo(String infoType, String message, {
     Map<String, dynamic>? context,
@@ -150,9 +150,9 @@ class PerformanceMonitor {
     );
     
     _addAlert(alert);
-    _alertController.add(alert);
+    if (!_alertController.isClosed) _alertController.add(alert);
   }
-  
+
   /// Start a performance timer
   void startTimer(String operationName, {
     Map<String, dynamic>? metadata,

@@ -5,12 +5,16 @@ class NeighborActivityRow {
   final String id;
   final String text;
   final String avatar;
+  final String? photoURL;
+  final String displayName;
   final DateTime sortKey;
 
   NeighborActivityRow({
     required this.id,
     required this.text,
     this.avatar = '🙂',
+    this.photoURL,
+    required this.displayName,
     required this.sortKey,
   });
 }
@@ -44,6 +48,7 @@ class NeighborActivityDeriver {
           uid: n.uid,
           name: n.displayName,
           avatar: n.avatar,
+          photoURL: n.photoURL,
           from: prev.placeKind,
           to: n.placeKind,
           at: now,
@@ -62,8 +67,10 @@ class NeighborActivityDeriver {
             _firedTransitions.add(id);
             rows.add(NeighborActivityRow(
               id: id,
-              text: '${n.displayName} s-a deplasat',
+              text: 's-a deplasat',
               avatar: n.avatar,
+              photoURL: n.photoURL,
+              displayName: n.displayName,
               sortKey: n.lastUpdate,
             ));
           }
@@ -80,6 +87,8 @@ class NeighborActivityDeriver {
         id: 'st_${n.uid}',
         text: _statusLine(n),
         avatar: n.avatar,
+        photoURL: n.photoURL,
+        displayName: n.displayName,
         sortKey: n.lastUpdate,
       ));
     }
@@ -99,6 +108,7 @@ class NeighborActivityDeriver {
     required String uid,
     required String name,
     String avatar = '🙂',
+    String? photoURL,
     required String? from,
     required String? to,
     required DateTime at,
@@ -106,24 +116,31 @@ class NeighborActivityDeriver {
     if (from == to) return;
     String? text;
     if (from == 'home' && to != 'home') {
-      text = '$name a plecat de acasă';
+      text = 'a plecat de acasă';
     } else if (from != 'home' && to == 'home') {
-      text = '$name a ajuns acasă';
+      text = 'a ajuns acasă';
     } else if (from == 'work' && to != 'work') {
-      text = '$name a plecat de la serviciu';
+      text = 'a plecat de la serviciu';
     } else if (from != 'work' && to == 'work') {
-      text = '$name a ajuns la serviciu';
+      text = 'a ajuns la serviciu';
     } else if (from == 'school' && to != 'school') {
-      text = '$name a plecat de la școală';
+      text = 'a plecat de la școală';
     } else if (from != 'school' && to == 'school') {
-      text = '$name a ajuns la școală / facultate';
+      text = 'a ajuns la școală / facultate';
     }
     if (text == null) return;
     final id =
         '${uid}_${from}_${to}_${at.millisecondsSinceEpoch ~/ 15000}';
     if (_firedTransitions.contains(id)) return;
     _firedTransitions.add(id);
-    rows.add(NeighborActivityRow(id: id, text: text, avatar: avatar, sortKey: at));
+    rows.add(NeighborActivityRow(
+      id: id,
+      text: text,
+      avatar: avatar,
+      photoURL: photoURL,
+      displayName: name,
+      sortKey: at,
+    ));
   }
 
   static String _statusLine(NeighborLocation n) {
@@ -135,27 +152,27 @@ class NeighborActivityDeriver {
           )
           .inMinutes;
       if (mins >= 12) {
-        return '${n.displayName} — staționează de ${_formatMinutes(mins)}';
+        return 'staționează de ${_formatMinutes(mins)}';
       }
     }
     switch (n.placeKind) {
       case 'home':
-        return '${n.displayName} — e acasă';
+        return 'e acasă';
       case 'work':
-        return '${n.displayName} — e la serviciu';
+        return 'e la serviciu';
       case 'school':
-        return '${n.displayName} — e la școală / facultate';
+        return 'e la școală / facultate';
       default:
         break;
     }
     if (n.isDriver || n.activityStatus == 'driving') {
-      return '${n.displayName} — conduce acum';
+      return 'conduce acum';
     }
     final ago = DateTime.now().difference(n.lastUpdate).inMinutes;
     if (ago <= 0) {
-      return '${n.displayName} — activ acum';
+      return 'online acum';
     }
-    return '${n.displayName} — văzut acum $ago min';
+    return 'văzut acum $ago min';
   }
 
   static String _formatMinutes(int m) {

@@ -9,7 +9,7 @@ class SpiderNetRadarSelector extends StatefulWidget {
   final double radius;
   final Function(Point center, double radius) onUpdate;
   final VoidCallback onConfirm;
-  final MapboxMap? mapboxMap;
+  final Future<Offset?> Function(Point) projection;
 
   const SpiderNetRadarSelector({
     super.key,
@@ -17,7 +17,7 @@ class SpiderNetRadarSelector extends StatefulWidget {
     required this.radius,
     required this.onUpdate,
     required this.onConfirm,
-    this.mapboxMap,
+    required this.projection,
   });
 
   @override
@@ -26,7 +26,7 @@ class SpiderNetRadarSelector extends StatefulWidget {
 
 class _SpiderNetRadarSelectorState extends State<SpiderNetRadarSelector> with SingleTickerProviderStateMixin {
   late AnimationController _pulseController;
-  ScreenCoordinate? _centerScreenPos;
+  Offset? _centerScreenPos;
   Timer? _scanTimer;
   /// Câte secunde mai durează scanarea (0 = nu rulează).
   int _scanSecondsRemaining = 0;
@@ -50,8 +50,8 @@ class _SpiderNetRadarSelectorState extends State<SpiderNetRadarSelector> with Si
   }
 
   Future<void> _updateScreenPos() async {
-    if (widget.center == null || widget.mapboxMap == null) return;
-    final pos = await widget.mapboxMap!.pixelForCoordinate(widget.center!);
+    if (widget.center == null) return;
+    final pos = await widget.projection(widget.center!);
     if (mounted) {
       setState(() {
         _centerScreenPos = pos;
@@ -103,8 +103,8 @@ class _SpiderNetRadarSelectorState extends State<SpiderNetRadarSelector> with Si
     return Stack(
       children: [
         Positioned(
-          left: _centerScreenPos!.x - pixelRadius,
-          top: _centerScreenPos!.y - pixelRadius,
+          left: _centerScreenPos!.dx - pixelRadius,
+          top: _centerScreenPos!.dy - pixelRadius,
           child: AnimatedBuilder(
             animation: _pulseController,
             builder: (context, child) {
@@ -131,8 +131,8 @@ class _SpiderNetRadarSelectorState extends State<SpiderNetRadarSelector> with Si
         ),
         
         Positioned(
-          left: _centerScreenPos!.x - 75, // Centrat aproximativ (lățime ~150px)
-          top: _centerScreenPos!.y + 30, // Mutat în interiorul cercului
+          left: _centerScreenPos!.dx - 75, // Centrat aproximativ (lățime ~150px)
+          top: _centerScreenPos!.dy + 30, // Mutat în interiorul cercului
           child: ElevatedButton.icon(
             onPressed: _scanSecondsRemaining > 0 ? null : _startTimedScan,
             style: ElevatedButton.styleFrom(

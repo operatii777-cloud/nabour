@@ -191,7 +191,7 @@ class OfflineManager {
       final centerDescriptor = mapbox.TilesetDescriptorOptions(
         styleURI: NabourMapStyles.streets,
         minZoom: 11,
-        maxZoom: 14,
+        maxZoom: 15,
         pixelRatio: 1.0,
       );
       try {

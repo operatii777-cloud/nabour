@@ -19,7 +19,7 @@ class MysteryBoxMapManager {
   /// să nu fie interceptat de markerele create ulterior (vecini, emoji).
   static const String _kAnnotationLayerId = 'mystery-box-layer';
 
-  final MapboxMap mapboxMap;
+  final MapboxMap? mapboxMap;
   final BuildContext context;
   /// Poziția deja folosită de hartă (stream GPS / Mapbox) — evită eșecul lui
   /// [getCurrentPosition] când serviciul e lent dar aplicația știe deja locul.
@@ -39,12 +39,15 @@ class MysteryBoxMapManager {
   Uint8List? _boxIconData;
   DateTime? _lastUpdate;
 
+  Map<String, BusinessOffer> get activeOffers => _activeOffers;
+  Uint8List? get boxIconData => _boxIconData;
+
   /// Aplică scalare bazată pe zoom — aceeași logică ca avatarele vecinilor.
   Future<void> applyZoomScale(double factor) async {
     final mgr = _annotationManager;
     if (mgr == null) return;
     final targetSize = _kBaseIconSize * factor;
-    for (final ann in _annotations.values) {
+    for (final ann in _annotations.values.toList()) {
       if ((ann.iconSize ?? _kBaseIconSize) == targetSize) continue;
       ann.iconSize = targetSize;
       try {
@@ -54,7 +57,7 @@ class MysteryBoxMapManager {
   }
 
   MysteryBoxMapManager({
-    required this.mapboxMap,
+    this.mapboxMap,
     required this.context,
     this.getUserLatLng,
   });
@@ -62,20 +65,24 @@ class MysteryBoxMapManager {
   Future<void> initialize() async {
     if (_isInitialized) return;
 
-    _annotationManager = await mapboxMap.annotations
-        .createPointAnnotationManager(id: _kAnnotationLayerId);
+    if (mapboxMap != null) {
+      _annotationManager = await mapboxMap!.annotations
+          .createPointAnnotationManager(id: _kAnnotationLayerId);
+      _annotationManager?.tapEvents(onTap: _handleAnnotationTap);
+    }
     _boxIconData = await MysteryBoxMarkerPainter.generateBoxIcon();
 
-    _annotationManager?.tapEvents(onTap: _handleAnnotationTap);
-
     _isInitialized = true;
-    await _bringMysteryBoxLayerToFront();
-    Logger.info('MysteryBoxMapManager initialized', tag: 'MYSTERY_BOX');
+    if (mapboxMap != null) {
+      await _bringMysteryBoxLayerToFront();
+    }
+    Logger.info('MysteryBoxMapManager initialized (OSM compatible)', tag: 'MYSTERY_BOX');
   }
 
   Future<void> _bringMysteryBoxLayerToFront() async {
+    if (mapboxMap == null) return;
     try {
-      await mapboxMap.style.moveStyleLayer(_kAnnotationLayerId, null);
+      await mapboxMap!.style.moveStyleLayer(_kAnnotationLayerId, null);
     } catch (e) {
       Logger.debug('Mystery box layer moveStyleLayer: $e', tag: 'MYSTERY_BOX');
     }
@@ -289,7 +296,10 @@ class MysteryBoxMapManager {
 
   Future<void> _handleAnnotationTap(PointAnnotation annotation) async {
     final offer = _annotationIdToOffer[annotation.id];
-    if (offer == null) return;
+    if (offer != null) await onOfferTap(offer);
+  }
+
+  Future<void> onOfferTap(BusinessOffer offer) async {
 
     final userLL = await _resolveUserLatLng();
     if (userLL == null) {

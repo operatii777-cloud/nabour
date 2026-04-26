@@ -5,7 +5,7 @@ class MapDrivingHud extends StatelessWidget {
   final String? currentInstruction;
   final String? distanceLabel;
   final String? etaLabel;
-  final VoidCallback onStop;
+  final VoidCallback? onStop;
 
   const MapDrivingHud({
     super.key,
@@ -13,13 +13,13 @@ class MapDrivingHud extends StatelessWidget {
     this.currentInstruction,
     this.distanceLabel,
     this.etaLabel,
-    required this.onStop,
+    this.onStop,
   });
 
   @override
   Widget build(BuildContext context) {
     final curSpeed = speedKmh ?? 0.0;
-    final speedInt = curSpeed.round();
+
     // Neon color reacts to velocity — cyan at low speed, shifting toward magenta at high speed
     final speedRatio = (curSpeed / 120).clamp(0.0, 1.0);
     final neonColor = Color.lerp(Colors.cyanAccent, const Color(0xFFFF00FF), speedRatio)!;
@@ -89,21 +89,28 @@ class MapDrivingHud extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  '$speedInt',
-                  style: TextStyle(
-                    color: neonColor,
-                    fontSize: 64,
-                    fontWeight: FontWeight.w100,
-                    fontFamily: 'monospace',
-                    height: 1.0,
-                    shadows: [
-                      Shadow(
-                        color: neonColor.withValues(alpha: 0.4),
-                        blurRadius: 20,
+                TweenAnimationBuilder<double>(
+                  tween: Tween<double>(begin: 0, end: curSpeed),
+                  duration: const Duration(milliseconds: 600),
+                  curve: Curves.easeOut,
+                  builder: (context, value, child) {
+                    return Text(
+                      '${value.round()}',
+                      style: TextStyle(
+                        color: neonColor,
+                        fontSize: 64,
+                        fontWeight: FontWeight.w100,
+                        fontFamily: 'monospace',
+                        height: 1.0,
+                        shadows: [
+                          Shadow(
+                            color: neonColor.withValues(alpha: 0.4),
+                            blurRadius: 20,
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
+                    );
+                  },
                 ),
                 Text(
                   'KM/H',

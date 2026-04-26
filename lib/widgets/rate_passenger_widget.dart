@@ -88,7 +88,7 @@ class _RatePassengerDialogState extends State<_RatePassengerDialog> {
         children: [
           Icon(Icons.star_rate, color: Colors.amber),
           SizedBox(width: 8),
-          Text('Evaluează pasagerul'),
+          Flexible(child: Text('Evaluează pasagerul', overflow: TextOverflow.ellipsis)),
         ],
       ),
       content: SingleChildScrollView(

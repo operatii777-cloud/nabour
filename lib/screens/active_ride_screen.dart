@@ -212,6 +212,8 @@ class _ActiveRideScreenState extends State<ActiveRideScreen> {
                           color: Colors.white.withValues(alpha: 0.9),
                           fontSize: 16),
                       textAlign: TextAlign.center,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                     ),
                     const SizedBox(height: 24),
                     Text(

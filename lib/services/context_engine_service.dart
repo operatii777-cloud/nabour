@@ -69,11 +69,13 @@ class ContextEngineService {
   }
 
   /// Praguri cu histerezis — evită oscilații la graniță (GPS zgomotos).
+  /// _enterDriveKph ridicat la 22 km/h: unele chipseturi (ex. Lenovo) raportează
+  /// 15-18 km/h zgomot Doppler staționar; pragul anterior (16) declanșa fals HUD-ul.
   static const double _enterWalkKph = 4.0;
   static const double _exitWalkToStatKph = 2.5;
-  static const double _enterDriveKph = 16.0;
-  static const double _exitDriveToWalkKph = 12.0;
-  static const double _jumpToDriveKph = 18.0;
+  static const double _enterDriveKph = 22.0;
+  static const double _exitDriveToWalkKph = 15.0;
+  static const double _jumpToDriveKph = 28.0;
 
   void _updateStateFromSpeed(double speedMps) {
     final speedKph = speedMps * 3.6;

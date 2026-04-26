@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:nabour_app/models/neighbor_location_model.dart';
+import 'package:nabour_app/models/radar_alert_model.dart';
+import 'package:nabour_app/services/firestore_service.dart';
+import 'package:nabour_app/services/location_cache_service.dart';
 import 'package:nabour_app/services/radar_group_message_service.dart';
+import 'package:nabour_app/utils/logger.dart';
 
 class RadarGroupBroadcastSheet extends StatefulWidget {
   const RadarGroupBroadcastSheet({super.key, required this.neighbors});
@@ -25,16 +30,47 @@ class _RadarGroupBroadcastSheetState extends State<RadarGroupBroadcastSheet> {
 
   Future<void> _submit() async {
     if (_sending) return;
+    final messageText = _controller.text.trim();
+    if (messageText.isEmpty) return;
+
     setState(() => _sending = true);
     final messenger = ScaffoldMessenger.maybeOf(context);
     final nav = Navigator.of(context);
+
+    // 1. Trimitem Broadcast-ul (FCM)
     final result = await _service.send(
       recipientUids: widget.neighbors.map((n) => n.uid).toList(),
-      message: _controller.text,
+      message: messageText,
     );
+
+    if (result.success) {
+      // 2. ✅ NOU: Salvăm în Firestore pentru persistență (Hartă / Feed)
+      try {
+        final user = FirebaseAuth.instance.currentUser;
+        final pos = LocationCacheService.instance.peekRecent();
+        
+        if (user != null && pos != null) {
+          final alert = RadarAlert(
+            id: '', // Firestore will generate
+            senderUid: user.uid,
+            senderName: user.displayName ?? 'Vecin',
+            message: messageText,
+            latitude: pos.latitude,
+            longitude: pos.longitude,
+            timestamp: DateTime.now(),
+            type: RadarAlertType.radar,
+          );
+          await FirestoreService().saveRadarAlert(alert);
+        }
+      } catch (e) {
+        Logger.error('Failed to persist radar alert: $e', tag: 'RADAR');
+      }
+    }
+
     if (!mounted) return;
     setState(() => _sending = false);
     nav.pop();
+
     if (result.success) {
       final n = result.sent;
       final a = result.attempted;

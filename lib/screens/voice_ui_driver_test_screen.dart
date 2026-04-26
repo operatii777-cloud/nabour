@@ -2,9 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:nabour_app/voice/ai/ai_provider_router.dart';
 import 'package:nabour_app/voice/ai/gemini_voice_engine.dart';
 import 'package:nabour_app/voice/core/voice_ui_automation_registry.dart';
-import 'package:nabour_app/voice/main_voice_integration.dart';
-import 'package:provider/provider.dart';
-import 'package:nabour_app/utils/logger.dart';
+import 'package:nabour_app/voice/testing/nabour_ghost_orchestrator.dart';
 
 class VoiceUIDriverTestScreen extends StatefulWidget {
   const VoiceUIDriverTestScreen({super.key});
@@ -62,7 +60,10 @@ class _VoiceUIDriverTestScreenState extends State<VoiceUIDriverTestScreen> {
 
     try {
       // 1. Apelăm motorul AI (via Router pentru a simula fluxul real)
-      final response = await AIProviderRouter().processVoiceInput(input);
+      final response = await AIProviderRouter().route(
+        input, 
+        VoiceContext(conversationState: 'idle', conversationHistory: [])
+      );
       
       _addLog('🧠 AI Response Type: ${response.type}');
       _addLog('💬 AI Message: "${response.message}"');
@@ -119,9 +120,9 @@ class _VoiceUIDriverTestScreenState extends State<VoiceUIDriverTestScreen> {
               margin: const EdgeInsets.all(16),
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.1),
+                color: Colors.white.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: Colors.white.withOpacity(0.2)),
+                border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
               ),
               child: Column(
                 children: [
@@ -146,9 +147,9 @@ class _VoiceUIDriverTestScreenState extends State<VoiceUIDriverTestScreen> {
                       style: const TextStyle(color: Colors.white),
                       decoration: InputDecoration(
                         hintText: 'Simulează comandă vocală (ex: crește counterul)',
-                        hintStyle: TextStyle(color: Colors.white.withOpacity(0.5)),
+                        hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.5)),
                         filled: true,
-                        fillColor: Colors.white.withOpacity(0.05),
+                        fillColor: Colors.white.withValues(alpha: 0.05),
                         border: OutlineInputBorder(borderRadius: BorderRadius.circular(15)),
                       ),
                       onSubmitted: (_) => _simulateVoiceCommand(),
@@ -163,6 +164,82 @@ class _VoiceUIDriverTestScreenState extends State<VoiceUIDriverTestScreen> {
                     style: IconButton.styleFrom(backgroundColor: Colors.blueAccent),
                   )
                 ],
+              ),
+            ),
+
+            // 🔥 GHOST MODE SECTION
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: ListenableBuilder(
+                listenable: NabourGhostOrchestrator(),
+                builder: (context, _) {
+                  final ghost = NabourGhostOrchestrator();
+                  if (ghost.isActive) {
+                    return Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.red.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(15),
+                        border: Border.all(color: Colors.red.withValues(alpha: 0.3)),
+                      ),
+                      child: Column(
+                        children: [
+                          Text('GHOST ACTIVE: ${ghost.activeRole.name}', style: const TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold)),
+                          const SizedBox(height: 8),
+                          ElevatedButton.icon(
+                            onPressed: () => ghost.stopTest(),
+                            icon: const Icon(Icons.stop),
+                            label: const Text('STOP ALL SIMULATIONS'),
+                            style: ElevatedButton.styleFrom(backgroundColor: Colors.red, foregroundColor: Colors.white),
+                          ),
+                        ],
+                      ),
+                    );
+                  }
+
+                  return Column(
+                    children: [
+                      const Text('MODALITĂȚI TESTARE AUTONOMĂ (GHOST)', style: TextStyle(color: Colors.purpleAccent, fontSize: 10, fontWeight: FontWeight.bold)),
+                      const SizedBox(height: 8),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _GhostActionCard(
+                              title: 'PASAGER (AI)',
+                              icon: Icons.person_search_rounded,
+                              color: Colors.blueAccent,
+                              onTap: () => ghost.startSimulation(GhostRole.passengerOnly),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: _GhostActionCard(
+                              title: 'ȘOFER (AUTO)',
+                              icon: Icons.local_taxi_rounded,
+                              color: Colors.greenAccent,
+                              onTap: () => ghost.startSimulation(GhostRole.driverOnly),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton.icon(
+                          onPressed: () => ghost.startSimulation(GhostRole.singleDevice),
+                          icon: const Icon(Icons.auto_awesome),
+                          label: const Text('FULL E2E (SINGLE DEVICE)'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.purpleAccent,
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          ),
+                        ),
+                      ),
+                    ],
+                  );
+                }
               ),
             ),
 
@@ -192,6 +269,43 @@ class _VoiceUIDriverTestScreenState extends State<VoiceUIDriverTestScreen> {
                 },
               ),
             ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _GhostActionCard extends StatelessWidget {
+  final String title;
+  final IconData icon;
+  final Color color;
+  final VoidCallback onTap;
+
+  const _GhostActionCard({
+    required this.title,
+    required this.icon,
+    required this.color,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(15),
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 16),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.15),
+          borderRadius: BorderRadius.circular(15),
+          border: Border.all(color: color.withValues(alpha: 0.4), width: 1.5),
+        ),
+        child: Column(
+          children: [
+            Icon(icon, color: color, size: 28),
+            const SizedBox(height: 8),
+            Text(title, style: TextStyle(color: color, fontSize: 11, fontWeight: FontWeight.bold)),
           ],
         ),
       ),

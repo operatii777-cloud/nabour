@@ -254,7 +254,11 @@ class _SavedAddressesScreenState extends State<SavedAddressesScreen> {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Confirmare Ștergere'),
-        content: Text('Sigur doriți să ștergeți adresa "${address.label}"?'),
+        content: Text(
+          'Sigur doriți să ștergeți adresa "${address.label}"?',
+          maxLines: 4,
+          overflow: TextOverflow.ellipsis,
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),

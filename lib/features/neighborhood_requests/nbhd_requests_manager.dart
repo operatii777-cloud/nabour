@@ -37,6 +37,7 @@ class NeighborhoodRequestsManager {
   Timer? _evaporationTimer;
 
   final Map<String, NeighborhoodRequest> _activeRequests = {};
+  Map<String, NeighborhoodRequest> get activeRequests => _activeRequests;
   final Map<String, String> _annotationIdToRequestId = {};
 
   NeighborhoodRequestsManager({
@@ -379,6 +380,11 @@ class NeighborhoodRequestsManager {
         _showMicroBiddingSheet(request);
       }
     }
+  }
+
+  /// OSM-specific tap handler
+  void onAnnotationTappedOsm(NeighborhoodRequest request) {
+    _showMicroBiddingSheet(request);
   }
 
   /// Pin după fly-to (căutare universală pe hartă, locație din chat).

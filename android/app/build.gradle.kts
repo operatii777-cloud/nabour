@@ -67,5 +67,6 @@ flutter {
 dependencies {
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")
     // Same major line as flutter_facebook_auth (facebook-login) so NabourApplication can call FacebookSdk early.
+    implementation(kotlin("stdlib"))
     implementation("com.facebook.android:facebook-core:18.1.3")
 }

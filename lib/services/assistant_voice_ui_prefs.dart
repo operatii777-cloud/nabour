@@ -7,11 +7,11 @@ class AssistantVoiceUiPrefs {
 
   static const String _prefKey = 'assistant_voice_ui_visible';
 
-  final ValueNotifier<bool> visibilityNotifier = ValueNotifier<bool>(false);
+  final ValueNotifier<bool> visibilityNotifier = ValueNotifier<bool>(true);
 
   Future<void> load() async {
     final p = await SharedPreferences.getInstance();
-    final v = p.getBool(_prefKey) ?? false;
+    final v = p.getBool(_prefKey) ?? true;
     if (visibilityNotifier.value != v) {
       visibilityNotifier.value = v;
     }

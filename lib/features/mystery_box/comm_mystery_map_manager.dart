@@ -15,7 +15,7 @@ import 'package:nabour_app/utils/mapbox_utils.dart';
 class CommunityMysteryBoxMapManager {
   static const String _layerId = 'community-mystery-layer';
 
-  final MapboxMap mapboxMap;
+  final MapboxMap? mapboxMap;
   final BuildContext context;
   final ({double lat, double lng})? Function()? getUserLatLng;
 
@@ -31,12 +31,15 @@ class CommunityMysteryBoxMapManager {
   Uint8List? _icon;
   DateTime? _lastFetch;
 
+  Map<String, CommunityMysteryBoxPin> get pins => _pins;
+  Uint8List? get icon => _icon;
+
   /// Aplică scalare bazată pe zoom — aceeași logică ca avatarele vecinilor.
   Future<void> applyZoomScale(double factor) async {
     final mgr = _mgr;
     if (mgr == null) return;
     final targetSize = _kBaseIconSize * factor;
-    for (final ann in _ann.values) {
+    for (final ann in _ann.values.toList()) {
       if ((ann.iconSize ?? _kBaseIconSize) == targetSize) continue;
       ann.iconSize = targetSize;
       try {
@@ -46,24 +49,29 @@ class CommunityMysteryBoxMapManager {
   }
 
   CommunityMysteryBoxMapManager({
-    required this.mapboxMap,
+    this.mapboxMap,
     required this.context,
     this.getUserLatLng,
   });
 
   Future<void> initialize() async {
     if (_ready) return;
-    _mgr = await mapboxMap.annotations.createPointAnnotationManager(id: _layerId);
+    if (mapboxMap != null) {
+      _mgr = await mapboxMap!.annotations.createPointAnnotationManager(id: _layerId);
+      _mgr?.tapEvents(onTap: _onTap);
+    }
     _icon = await MysteryBoxMarkerPainter.generateCommunityBoxIcon();
-    _mgr?.tapEvents(onTap: _onTap);
     _ready = true;
-    await _moveLayerFront();
-    Logger.info('CommunityMysteryMapManager ready', tag: 'COMM_MB');
+    if (mapboxMap != null) {
+      await _moveLayerFront();
+    }
+    Logger.info('CommunityMysteryMapManager ready (OSM compatible)', tag: 'COMM_MB');
   }
 
   Future<void> _moveLayerFront() async {
+    if (mapboxMap == null) return;
     try {
-      await mapboxMap.style.moveStyleLayer(_layerId, null);
+      await mapboxMap!.style.moveStyleLayer(_layerId, null);
     } catch (e) {
       Logger.debug('community layer move: $e', tag: 'COMM_MB');
     }
@@ -160,10 +168,13 @@ class CommunityMysteryBoxMapManager {
     for (final e in _ann.entries) {
       if (e.value.id == a.id) pinId = e.key;
     }
-    if (pinId == null) return;
-    final pin = _pins[pinId];
-    if (pin == null) return;
+    if (pinId != null) {
+      final pin = _pins[pinId];
+      if (pin != null) await onPinTap(pin);
+    }
+  }
 
+  Future<void> onPinTap(CommunityMysteryBoxPin pin) async {
     final curUid = FirebaseAuth.instance.currentUser?.uid;
     if (curUid != null && pin.placerUid == curUid) {
       if (context.mounted) {

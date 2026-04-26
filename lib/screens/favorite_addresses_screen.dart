@@ -36,7 +36,11 @@ class _FavoriteAddressesScreenState extends State<FavoriteAddressesScreen> {
       builder: (BuildContext context) {
         return AlertDialog(
           title: const Text('Confirmare ștergere'),
-          content: Text('Ștergi adresa „${address.label}”?'),
+          content: Text(
+            'Ștergi adresa „${address.label}”?',
+            maxLines: 4,
+            overflow: TextOverflow.ellipsis,
+          ),
           actions: <Widget>[
             TextButton(
               onPressed: () => Navigator.of(context).pop(false),

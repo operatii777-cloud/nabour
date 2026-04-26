@@ -160,7 +160,9 @@ class NeighborTelemetryRtdbService {
         }
       }
       if (_onDisconnectRegisteredKey != key) {
-        await ref.onDisconnect().remove();
+        // Nu mai ștergem nodul la onDisconnect(). 
+        // Lăsăm background publish (45s) să mențină locația, 
+        // iar dacă aplicația e închisă, va expira prin stale-filter (5 min).
         _onDisconnectRegisteredKey = key;
       }
 

@@ -29,29 +29,38 @@ class _CancellationDialogState extends State<CancellationDialog> {
         'De ce anulezi cursa?',
         style: TextStyle(fontWeight: FontWeight.w800),
       ),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const Text(
-            'Selectarea unui motiv ne ajută să îmbunătățim experiența.',
-            style: TextStyle(fontSize: 13, color: Colors.grey),
-          ),
-          const SizedBox(height: 12),
-          RadioGroup<CancellationReason>(
-            groupValue: _selected,
-            onChanged: (v) => setState(() => _selected = v),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: CancellationReason.values.map(
-                (reason) => RadioListTile<CancellationReason>(
-                  title: Text(reason.label, style: const TextStyle(fontSize: 14)),
-                  value: reason,
-                  contentPadding: EdgeInsets.zero,
-                ),
-              ).toList(),
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text(
+              'Selectarea unui motiv ne ajută să îmbunătățim experiența.',
+              style: TextStyle(fontSize: 13, color: Colors.grey),
+              maxLines: 3,
+              overflow: TextOverflow.ellipsis,
             ),
-          ),
-        ],
+            const SizedBox(height: 12),
+            RadioGroup<CancellationReason>(
+              groupValue: _selected,
+              onChanged: (v) => setState(() => _selected = v),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: CancellationReason.values.map(
+                  (reason) => RadioListTile<CancellationReason>(
+                    title: Text(
+                      reason.label,
+                      style: const TextStyle(fontSize: 14),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    value: reason,
+                    contentPadding: EdgeInsets.zero,
+                  ),
+                ).toList(),
+              ),
+            ),
+          ],
+        ),
       ),
       actions: [
         TextButton(

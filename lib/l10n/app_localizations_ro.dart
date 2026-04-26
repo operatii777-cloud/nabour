@@ -6509,4 +6509,20 @@ class AppLocalizationsRo extends AppLocalizations {
   String safety_destinationLabelPrefix(String destination) {
     return 'Destinație: $destination';
   }
+
+  @override
+  String get drawerGroupTokensCosmetics => 'Tokeni și Cosmetice';
+
+  @override
+  String get drawerMenuTokenWallet => 'Tokenuri și Planuri';
+
+  @override
+  String get drawerMenuExplorationsSubtitle =>
+      'Descoperă zone noi și evenimente';
+
+  @override
+  String get drawerMenuPlacesSubtitle => 'Vezi locurile tale salvate și POI';
+
+  @override
+  String get drawerGroupLocationsMap => 'Locații și Hartă';
 }

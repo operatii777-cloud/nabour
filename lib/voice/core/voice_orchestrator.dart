@@ -48,25 +48,26 @@ class VoiceOrchestrator {
   bool _isTtsSpeaking = false;
 
   /// Pauză după oprirea TTS înainte de a deschide microfonul (ecou, ultima silabă).
-  static const int micSettleDelayAfterTtsMs = 400;
+  /// Mărită la 1200ms: AEC-ul Android rămâne în modul supresie ~800ms după TTS.
+  static const int micSettleDelayAfterTtsMs = 1200;
 
   /// Alias pentru cod existent — același interval ca [micSettleDelayAfterTtsMs].
   static const int postTtsBufferMs = micSettleDelayAfterTtsMs;
 
-  /// După salut („unde doriți să mergeți?”): fereastră scurtă pentru destinație (max. câteva secunde).
-  static const int initialAddressListenSeconds = 5;
+  /// După salut („unde doriți să mergeți?"): fereastră extinsă pentru destinație.
+  static const int initialAddressListenSeconds = 12;
 
-  /// Tăcere înainte de finalizare; trebuie ≤ fereastra de ascultare ca să încheie natural înainte de timeout.
-  static const int initialAddressPauseForSeconds = 3;
+  /// Tăcere după ultima silabă înainte de finalizare — 2s suficient după adresă rostită.
+  static const int initialAddressPauseForSeconds = 4;
 
   /// Conversație normală (după primul turn): propoziții lungi, pauze naturale (Gemini Live style).
   /// Reducem pauza la 2.5s pentru snappiness, dar folosim logică de stitching pentru respirație.
   static const int defaultListenMaxSeconds = 45;
-  static const int defaultPauseForSeconds = 2; // Mai rapid decat inainte (era 7)
+  static const int defaultPauseForSeconds = 4; // Mai rapid decat inainte (era 7)
 
   /// Întrebări cu răspuns scurt (da/nu): mod „confirmation” + pauză mai mică.
   static const int confirmationListenMaxSeconds = 18;
-  static const int confirmationPauseForSeconds = 4;
+  static const int confirmationPauseForSeconds = 3;
 
   // 🔢 Failure tracking for consecutive STT errors / empty results
   int _consecutiveFailures = 0;

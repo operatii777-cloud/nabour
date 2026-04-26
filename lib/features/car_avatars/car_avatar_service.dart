@@ -37,7 +37,7 @@ class CarAvatarService {
     CarAvatar(id: 'limo', name: 'Limuzina Lux', assetPath: 'assets/images/avatars/limo.png', price: 850, category: CarCategory.transport),
     CarAvatar(id: 'pickup', name: 'Camioneta Marfa', assetPath: 'assets/images/avatars/pickup.png', price: 400, category: CarCategory.transport),
     /// Gratuit la volan pentru șoferi cu profil complet (inclus în [getPurchasedAvatarIds]).
-    CarAvatar(id: 'barbie', name: 'Masina Barbie', assetPath: 'assets/images/avatars/barbie.png', price: 0, category: CarCategory.transport),
+    CarAvatar(id: 'barbie', name: 'Candy car', assetPath: 'assets/images/avatars/barbie.png', price: 0, category: CarCategory.transport),
     CarAvatar(id: 'electric', name: 'Masina E-Tech', assetPath: 'assets/images/avatars/electric.png', price: 550, category: CarCategory.transport),
     CarAvatar(id: 'scooter', name: 'Trotineta Urbana', assetPath: 'assets/images/avatars/scooter.png', price: 150, category: CarCategory.transport),
     CarAvatar(id: 'moto', name: 'Motocicleta Sport', assetPath: 'assets/images/avatars/moto.png', price: 450, category: CarCategory.transport),
@@ -54,12 +54,22 @@ class CarAvatarService {
     /// Gratuit pentru orice utilizator ca pasager (inclus în [getPurchasedAvatarIds]).
     CarAvatar(id: 'robo', name: 'ROBO', assetPath: 'assets/images/avatars/ROBO.png', price: 0, category: CarCategory.characters),
     CarAvatar(id: 'robo_3d', name: 'ROBO (Unitatea 3D)', assetPath: 'assets/images/avatars/ROBO.png', price: 0, category: CarCategory.characters),
-    CarAvatar(id: 'inspire_v4', name: 'Cyber Predator', assetPath: 'assets/images/avatars/rhino.png', price: 2500, category: CarCategory.animals),
+    CarAvatar(id: 'inspire_v4', name: 'Cyber Predator 2', assetPath: 'assets/images/avatars/cyber_predator_2.png', price: 2500, category: CarCategory.characters),
     CarAvatar(id: 'protector', name: 'Protector', assetPath: 'assets/images/avatars/protector.png', price: 3000, category: CarCategory.characters),
     CarAvatar(id: 'zen_guardian', name: 'Zen Guardian', assetPath: 'assets/images/avatars/mythic.png', price: 3500, category: CarCategory.characters),
     CarAvatar(id: 'cyber_sentinel', name: 'Cyber Sentinel', assetPath: 'assets/images/avatars/ufo.png', price: 2800, category: CarCategory.transport),
     CarAvatar(id: 'unicorn', name: 'Unicorn Magic', assetPath: 'assets/images/avatars/unicorn.png', price: 5000, category: CarCategory.characters),
     CarAvatar(id: 'mythic', name: 'Erou Mitic', assetPath: 'assets/images/avatars/mythic.png', price: 3500, category: CarCategory.characters),
+    CarAvatar(id: 'void_purple', name: 'Void Classic', assetPath: 'assets/images/avatars/void_purple.png', price: 4000, category: CarCategory.characters),
+    CarAvatar(id: 'void_beardless', name: 'Void Sentinel', assetPath: 'assets/images/avatars/void_beardless.png', price: 4200, category: CarCategory.characters),
+    CarAvatar(id: 'void_god', name: 'Void God', assetPath: 'assets/images/avatars/void_god.png', price: 4500, category: CarCategory.characters),
+    CarAvatar(id: 'celestial_empress', name: 'Celestial Empress', assetPath: 'assets/images/avatars/celestial_empress.png', price: 5500, category: CarCategory.characters),
+    CarAvatar(id: 'astral_weaver', name: 'Astral Weaver', assetPath: 'assets/images/avatars/astral_weaver.png', price: 5800, category: CarCategory.characters),
+    CarAvatar(id: 'emerald_druidess', name: 'Emerald Druidess', assetPath: 'assets/images/avatars/emerald_druidess.png', price: 5200, category: CarCategory.characters),
+    CarAvatar(id: 'solar_prince', name: 'Solar Prince', assetPath: 'assets/images/avatars/solar_prince.png', price: 6000, category: CarCategory.characters),
+    CarAvatar(id: 'celestial_guardian_sublime', name: 'Celestial Sublime', assetPath: 'assets/images/avatars/celestial_guardian_sublime.png', price: 7000, category: CarCategory.characters),
+    CarAvatar(id: 'celestial_guardian', name: 'Celestial Guardian', assetPath: 'assets/images/avatars/celestial_guardian.png', price: 6500, category: CarCategory.characters),
+    CarAvatar(id: 'princess_cristina', name: 'Princess Cristina', assetPath: 'assets/images/avatars/princess_cristina.png', price: 0, category: CarCategory.characters),
   ];
 
   List<CarAvatar> getAvailableAvatars() => _allAvatars;
@@ -163,6 +173,7 @@ class CarAvatarService {
     // Galaxy Garage — gratuite prin politică (fără tokeni / fără document achiziție).
     ids.add('robo');
     ids.add('robo_3d');
+    ids.add('princess_cristina');
     if (isRegisteredDriverProfile(userSnap.data())) {
       ids.add('ufo');
       ids.add('barbie');
@@ -335,5 +346,23 @@ class CarAvatarService {
   static String coercePassengerAvatarIdForMap(String rawId) {
     final av = CarAvatarService().getAvatarById(rawId);
     return av.allowsPassengerMapSlot ? rawId : 'default_car';
+  }
+
+  /// Returnează true dacă avatar-ul (după ID sau asset path) este din categoria [CarCategory.characters].
+  /// Folosit pentru a aplica un iconSize / maxSize mai mare pe hartă.
+  static bool isCharacterAvatarId(String? id) {
+    if (id == null || id.isEmpty) return false;
+    final av = CarAvatarService()._allAvatars.firstWhere(
+      (a) => a.id == id,
+      orElse: () => CarAvatar.defaultCar(),
+    );
+    return av.category == CarCategory.characters;
+  }
+
+  static bool isCharacterAssetPath(String? assetPath) {
+    if (assetPath == null || assetPath.isEmpty) return false;
+    return CarAvatarService()._allAvatars.any(
+      (a) => a.assetPath == assetPath && a.category == CarCategory.characters,
+    );
   }
 }

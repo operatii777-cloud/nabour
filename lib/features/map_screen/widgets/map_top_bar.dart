@@ -94,7 +94,6 @@ class MapTopBar extends StatelessWidget {
 
 class _TopButton extends StatelessWidget {
   final IconData icon;
-  final double size;
   final double iconSize;
   final Color iconColor;
   final Color? glowColor;
@@ -103,7 +102,6 @@ class _TopButton extends StatelessWidget {
 
   const _TopButton({
     required this.icon,
-    this.size = 44,
     this.iconSize = 24,
     this.iconColor = Colors.white,
     this.glowColor,
@@ -116,8 +114,8 @@ class _TopButton extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        width: size,
-        height: size,
+        width: 44,
+        height: 44,
         decoration: BoxDecoration(
           color: Colors.black87,
           shape: BoxShape.circle,

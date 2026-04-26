@@ -25,6 +25,10 @@ class NeighborLocationService {
   /// La schimbare avatar garaj — forțăm scriere Firestore ca vecinii să vadă noul marker.
   String? _lastPublishedCarAvatarId;
 
+  /// Ultimul set de allowedUids publicat — la schimbare sărăm throttle-ul Firestore
+  /// ca vecinii să fie vizibili imediat după încărcarea contactelor (nu după 60s).
+  Set<String>? _lastPublishedAllowedUids;
+
   // Firestore rămâne throttled; RTDB folosește throttling intern în [NeighborTelemetryRtdbService].
   static const Duration _firestoreVisibleMinGap = Duration(seconds: 60);
 
@@ -62,7 +66,11 @@ class NeighborLocationService {
           ? 'default_car'
           : carAvatarId;
       final carAvatarChanged = _lastPublishedCarAvatarId != cid;
-      if (allowFs || driverFlagChanged || carAvatarChanged) {
+      final newAllowedSet = allowedUids.toSet();
+      final allowedUidsChanged = _lastPublishedAllowedUids == null ||
+          _lastPublishedAllowedUids!.length != newAllowedSet.length ||
+          !_lastPublishedAllowedUids!.containsAll(newAllowedSet);
+      if (allowFs || driverFlagChanged || carAvatarChanged || allowedUidsChanged) {
         final payload = <String, dynamic>{
           'lat': lat,
           'lng': lng,
@@ -95,6 +103,7 @@ class NeighborLocationService {
         _lastFirestoreVisibleWrite = now;
         _lastPublishedIsDriver = isDriver;
         _lastPublishedCarAvatarId = cid;
+        _lastPublishedAllowedUids = newAllowedSet;
       }
 
       unawaited(
@@ -129,6 +138,7 @@ class NeighborLocationService {
     _lastFirestoreVisibleWrite = null;
     _lastPublishedIsDriver = null;
     _lastPublishedCarAvatarId = null;
+    _lastPublishedAllowedUids = null;
     try {
       await NeighborTelemetryRtdbService.instance.removeMyNode();
     } catch (e) {

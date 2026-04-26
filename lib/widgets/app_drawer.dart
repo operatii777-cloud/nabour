@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+// import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:nabour_app/l10n/app_localizations.dart';
@@ -16,6 +17,7 @@ import 'package:nabour_app/services/firestore_service.dart';
 import 'package:nabour_app/screens/driver_dashboard_screen.dart';
 import 'package:nabour_app/screens/personal_info_screen.dart';
 import 'package:nabour_app/theme/app_text_styles.dart';
+import 'package:nabour_app/theme/theme_provider.dart';
 
 // --- MODIFICAT: Am adăugat importurile necesare ---
 import 'package:nabour_app/screens/history_screen.dart';
@@ -40,9 +42,10 @@ import 'package:nabour_app/screens/mystery_box_activity_screen.dart';
 import 'package:nabour_app/screens/token_transfer_screen.dart';
 import 'package:nabour_app/features/car_avatars/car_avatar_model.dart';
 import 'package:nabour_app/features/car_avatars/car_avatar_shop_sheet.dart';
+// import 'package:nabour_app/screens/voice_ui_driver_test_screen.dart';
 import 'package:provider/provider.dart';
-import 'package:nabour_app/theme/theme_provider.dart';
 import 'package:nabour_app/core/ui/app_feedback.dart';
+import 'package:nabour_app/providers/map_settings_provider.dart';
 import 'package:nabour_app/services/app_sound_service.dart';
 import 'package:nabour_app/services/assistant_voice_ui_prefs.dart';
 
@@ -82,7 +85,12 @@ class AppDrawer extends StatelessWidget {
     this.onHideSavedHomePinOnMap,
     this.onRemoveOrientationReperFromMap,
     this.onEnableSavedHomePinOnMap,
+    this.isHomePinVisible = false,
+    this.isOrientationReperVisible = false,
   });
+
+  final bool isHomePinVisible;
+  final bool isOrientationReperVisible;
 
   /// Long-press pe hartă plasează reperul (vezi ecranul hartă).
   final VoidCallback? onPlaceMapOrientationPin;
@@ -227,51 +235,153 @@ class AppDrawer extends StatelessWidget {
               ),
             ),
 
-            // ── Tema Dark / Light ───────────────────────────────────────
+            // ── Tema Light | Dark ────────────────────────────────────────
             Consumer<ThemeProvider>(
               builder: (context, themeProvider, _) {
                 final isDark = themeProvider.isDarkMode;
                 return Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: GestureDetector(
-                    onTap: () => themeProvider.toggleTheme(),
-                    child: Container(
-                      height: 42,
-                      decoration: BoxDecoration(
-                        color: isDark ? Colors.grey.shade800 : Colors.grey.shade200,
-                        borderRadius: BorderRadius.circular(21),
-                      ),
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      child: Row(
-                        children: [
-                          Icon(
-                            isDark ? Icons.dark_mode_rounded : Icons.light_mode_rounded,
-                            size: 20,
-                            color: isDark ? Colors.amber.shade300 : Colors.orange.shade600,
-                          ),
-                          const SizedBox(width: 10),
-                          Text(
-                            isDark ? l10n.drawerThemeDarkLabel : l10n.drawerThemeLightLabel,
-                            style: TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w700,
-                              color: isDark ? Colors.white70 : Colors.grey.shade700,
+                  child: Container(
+                    height: 42,
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade200,
+                      borderRadius: BorderRadius.circular(21),
+                    ),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: GestureDetector(
+                            onTap: () { if (isDark) themeProvider.toggleTheme(); },
+                            child: AnimatedContainer(
+                              duration: const Duration(milliseconds: 250),
+                              curve: Curves.easeInOut,
+                              decoration: BoxDecoration(
+                                color: !isDark ? Colors.orange.shade400 : Colors.transparent,
+                                borderRadius: BorderRadius.circular(21),
+                              ),
+                              alignment: Alignment.center,
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(Icons.wb_sunny_rounded, size: 18,
+                                      color: !isDark ? Colors.white : Colors.grey.shade600),
+                                  const SizedBox(width: 6),
+                                  Flexible(
+                                    child: Text(l10n.drawerThemeLightLabel,
+                                        overflow: TextOverflow.ellipsis,
+                                        maxLines: 1,
+                                        style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700,
+                                            color: !isDark ? Colors.white : Colors.grey.shade600)),
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
-                          const Spacer(),
-                          AnimatedSwitcher(
-                            duration: const Duration(milliseconds: 300),
-                            transitionBuilder: (child, animation) =>
-                                RotationTransition(turns: animation, child: child),
-                            child: Icon(
-                              isDark ? Icons.nights_stay_rounded : Icons.wb_sunny_rounded,
-                              key: ValueKey(isDark),
-                              size: 20,
-                              color: isDark ? Colors.blue.shade200 : Colors.amber.shade700,
+                        ),
+                        Expanded(
+                          child: GestureDetector(
+                            onTap: () { if (!isDark) themeProvider.toggleTheme(); },
+                            child: AnimatedContainer(
+                              duration: const Duration(milliseconds: 250),
+                              curve: Curves.easeInOut,
+                              decoration: BoxDecoration(
+                                color: isDark ? Colors.blueGrey.shade700 : Colors.transparent,
+                                borderRadius: BorderRadius.circular(21),
+                              ),
+                              alignment: Alignment.center,
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(Icons.nights_stay_rounded, size: 18,
+                                      color: isDark ? Colors.blue.shade200 : Colors.grey.shade600),
+                                  const SizedBox(width: 6),
+                                  Flexible(
+                                    child: Text(l10n.drawerThemeDarkLabel,
+                                        overflow: TextOverflow.ellipsis,
+                                        maxLines: 1,
+                                        style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700,
+                                            color: isDark ? Colors.blue.shade200 : Colors.grey.shade600)),
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
-                        ],
-                      ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
+            const SizedBox(height: 8),
+
+            // ── Motor Hartă: Mapbox | OSM ─────────────────────────────────
+            Consumer<MapSettingsProvider>(
+              builder: (context, mapProvider, _) {
+                final isMapbox = mapProvider.isMapbox;
+                return Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Container(
+                    height: 42,
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade200,
+                      borderRadius: BorderRadius.circular(21),
+                    ),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: GestureDetector(
+                            onTap: () { if (!isMapbox) mapProvider.toggleMapProvider(); },
+                            child: AnimatedContainer(
+                              duration: const Duration(milliseconds: 250),
+                              curve: Curves.easeInOut,
+                              decoration: BoxDecoration(
+                                color: isMapbox ? const Color(0xFF1E3A5F) : Colors.transparent,
+                                borderRadius: BorderRadius.circular(21),
+                              ),
+                              alignment: Alignment.center,
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(Icons.map_rounded, size: 18,
+                                      color: isMapbox ? Colors.blue.shade300 : Colors.grey.shade600),
+                                  const SizedBox(width: 6),
+                                  Text('Mapbox',
+                                      style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700,
+                                          color: isMapbox ? Colors.blue.shade200 : Colors.grey.shade600)),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                        Expanded(
+                          child: GestureDetector(
+                            onTap: () { if (isMapbox) mapProvider.toggleMapProvider(); },
+                            child: AnimatedContainer(
+                              duration: const Duration(milliseconds: 250),
+                              curve: Curves.easeInOut,
+                              decoration: BoxDecoration(
+                                color: !isMapbox ? const Color(0xFF166534) : Colors.transparent,
+                                borderRadius: BorderRadius.circular(21),
+                              ),
+                              alignment: Alignment.center,
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(Icons.explore_rounded, size: 18,
+                                      color: !isMapbox ? Colors.green.shade300 : Colors.grey.shade600),
+                                  const SizedBox(width: 6),
+                                  Text('OSM',
+                                      style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700,
+                                          color: !isMapbox ? Colors.green.shade200 : Colors.grey.shade600)),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 );
@@ -280,13 +390,13 @@ class AppDrawer extends StatelessWidget {
             const SizedBox(height: 8),
 
             // ==========================================
-            // 1. ACTIVITATE ȘI CONT
+            // 1. CONT
             // ==========================================
-            _buildSectionHeader(l10n.drawerSectionActivityAccount),
+            _buildSectionHeader(l10n.account),
             _buildDrawerGroup(
               context,
-              title: l10n.drawerGroupAccountActivity,
-              icon: Icons.person_pin_circle_outlined,
+              title: l10n.account,
+              icon: Icons.person_outline_rounded,
               accentColor: Colors.blue.shade600,
               children: [
                 _buildMenuItem(
@@ -297,6 +407,37 @@ class AppDrawer extends StatelessWidget {
                   onTap: () => _navigateTo(context, const PersonalInfoScreen()),
                   isSubItem: true,
                 ),
+                if (currentRole == UserRole.passenger)
+                  _buildMenuItem(
+                    context,
+                    icon: Icons.drive_eta_rounded,
+                    color: const Color(0xFF00E676),
+                    title: l10n.applyForDriver,
+                    onTap: () => _navigateTo(context, const DriverApplicationScreen()),
+                    isSubItem: true,
+                  ),
+                if (currentRole == UserRole.driver)
+                  _buildMenuItem(
+                    context,
+                    icon: Icons.dashboard_rounded,
+                    color: const Color(0xFF00E676),
+                    title: l10n.driverDashboard,
+                    onTap: () => _navigateTo(context, const DriverDashboardScreen()),
+                    isSubItem: true,
+                  ),
+              ],
+            ),
+
+            // ==========================================
+            // 2. ACTIVITATE
+            // ==========================================
+            _buildSectionHeader(l10n.receipts),
+            _buildDrawerGroup(
+              context,
+              title: l10n.receipts,
+              icon: Icons.history_edu_rounded,
+              accentColor: const Color(0xFF00C6FF),
+              children: [
                 _buildMenuItem(
                   context,
                   icon: Icons.history_rounded,
@@ -313,12 +454,25 @@ class AppDrawer extends StatelessWidget {
                   onTap: () => _navigateTo(context, const WeekReviewScreen()),
                   isSubItem: true,
                 ),
+              ],
+            ),
+
+            // ==========================================
+            // 3. TOKENI ȘI COSMETICE
+            // ==========================================
+            _buildSectionHeader(l10n.drawerGroupTokensCosmetics.toUpperCase()),
+            _buildDrawerGroup(
+              context,
+              title: l10n.drawerGroupTokensCosmetics,
+              icon: Icons.toll_rounded,
+              accentColor: const Color(0xFF0D9488),
+              children: [
                 _buildMenuItem(
                   context,
-                  icon: Icons.inventory_2_rounded,
-                  color: const Color(0xFF0D9488),
-                  title: l10n.drawerMenuMysteryBoxActivity,
-                  onTap: () => _navigateTo(context, const MysteryBoxActivityScreen()),
+                  icon: Icons.shopping_cart_rounded,
+                  color: const Color(0xFF7C3AED),
+                  title: l10n.drawerMenuTokenWallet,
+                  onTap: () => Navigator.of(context).pushNamed('/token-shop'),
                   isSubItem: true,
                 ),
                 _buildMenuItem(
@@ -329,15 +483,6 @@ class AppDrawer extends StatelessWidget {
                   onTap: () => _navigateTo(context, const TokenTransferScreen()),
                   isSubItem: true,
                 ),
-                if (currentRole == UserRole.passenger)
-                  _buildMenuItem(
-                    context,
-                    icon: Icons.drive_eta_rounded,
-                    color: const Color(0xFF00E676),
-                    title: l10n.applyForDriver,
-                    onTap: () => _navigateTo(context, const DriverApplicationScreen()),
-                    isSubItem: true,
-                  ),
                 _buildMenuItem(
                   context,
                   icon: Icons.auto_awesome_motion_rounded,
@@ -348,21 +493,26 @@ class AppDrawer extends StatelessWidget {
                   }),
                   isSubItem: true,
                 ),
-                if (currentRole == UserRole.driver)
-                  _buildMenuItem(
-                    context,
-                    icon: Icons.dashboard_rounded,
-                    color: const Color(0xFF00E676),
-                    title: l10n.driverDashboard,
-                    onTap: () => _navigateTo(context, const DriverDashboardScreen()),
-                    isSubItem: true,
-                  ),
+                _buildMenuItem(
+                  context,
+                  icon: Icons.inventory_2_rounded,
+                  color: const Color(0xFF0D9488),
+                  title: l10n.drawerMenuMysteryBoxActivity,
+                  onTap: () => _navigateTo(context, const MysteryBoxActivityScreen()),
+                  isSubItem: true,
+                ),
               ],
             ),
+
+            // ==========================================
+            // 4. LOCAȚII ȘI HARTĂ
+            // ==========================================
+            const SizedBox(height: 8),
+            _buildSectionHeader(l10n.drawerGroupLocationsMap.toUpperCase()),
             _buildDrawerGroup(
               context,
-              title: l10n.drawerGroupMapAddresses,
-              icon: Icons.layers_outlined,
+              title: l10n.drawerGroupLocationsMap,
+              icon: Icons.map_outlined,
               accentColor: Colors.teal.shade700,
               children: [
                 _buildMenuItem(
@@ -373,123 +523,39 @@ class AppDrawer extends StatelessWidget {
                   onTap: () => _navigateTo(context, const FavoriteAddressesScreen()),
                   isSubItem: true,
                 ),
+                // Toggle Acasă
                 _buildMenuItem(
                   context,
-                  icon: Icons.home_filled,
-                  color: const Color(0xFF22C55E),
-                  title: l10n.drawerShowHomeOnMap,
+                  icon: isHomePinVisible ? Icons.visibility_off_outlined : Icons.home_filled,
+                  color: isHomePinVisible ? Colors.orange.shade700 : const Color(0xFF22C55E),
+                  title: isHomePinVisible ? l10n.drawerHideHomeOnMap : l10n.drawerShowHomeOnMap,
                   onTap: () {
                     Navigator.pop(context);
-                    onEnableSavedHomePinOnMap?.call();
+                    if (isHomePinVisible) {
+                      onHideSavedHomePinOnMap?.call();
+                    } else {
+                      onEnableSavedHomePinOnMap?.call();
+                    }
                   },
                   isSubItem: true,
                 ),
+                // Toggle Reper
                 _buildMenuItem(
                   context,
-                  icon: Icons.home_work_rounded,
-                  color: const Color(0xFF38BDF8),
-                  title: l10n.drawerOrientationMarkerOnMap,
+                  icon: isOrientationReperVisible ? Icons.pin_drop_outlined : Icons.home_work_rounded,
+                  color: isOrientationReperVisible ? const Color(0xFF15803D) : const Color(0xFF38BDF8),
+                  title: isOrientationReperVisible ? l10n.drawerHideOrientationMarker : l10n.drawerOrientationMarkerOnMap,
                   onTap: () {
                     Navigator.pop(context);
-                    onPlaceMapOrientationPin?.call();
+                    if (isOrientationReperVisible) {
+                      onRemoveOrientationReperFromMap?.call();
+                    } else {
+                      onPlaceMapOrientationPin?.call();
+                    }
                   },
                   isSubItem: true,
                 ),
-                _buildMenuItem(
-                  context,
-                  icon: Icons.visibility_off_outlined,
-                  color: Colors.orange.shade700,
-                  title: l10n.drawerHideHomeOnMap,
-                  onTap: () {
-                    Navigator.pop(context);
-                    onHideSavedHomePinOnMap?.call();
-                  },
-                  isSubItem: true,
-                ),
-                _buildMenuItem(
-                  context,
-                  icon: Icons.pin_drop_outlined,
-                  color: const Color(0xFF15803D),
-                  title: l10n.drawerHideOrientationMarker,
-                  onTap: () {
-                    Navigator.pop(context);
-                    onRemoveOrientationReperFromMap?.call();
-                  },
-                  isSubItem: true,
-                ),
-              ],
-            ),
-
-            // ==========================================
-            // 2. COMUNITATEA NABOUR
-            // ==========================================
-            const SizedBox(height: 8),
-            _buildSectionHeader(l10n.drawerSectionYourCommunity),
-            _buildDrawerGroup(
-              context,
-              title: l10n.drawerGroupCommunityFeed,
-              icon: Icons.groups_2_outlined,
-              accentColor: const Color(0xFF7C3AED),
-              children: [
-                _buildMenuItem(
-                  context,
-                  icon: Icons.campaign_rounded,
-                  color: const Color(0xFF7C3AED),
-                  title: l10n.neighborhoodRequests,
-                  onTap: () => _navigateTo(context, const RideBroadcastFeedScreen()),
-                  isSubItem: true,
-                ),
-                _buildMenuItem(
-                  context,
-                  icon: Icons.forum_rounded,
-                  color: const Color(0xFF7C3AED),
-                  title: l10n.neighborhoodChat,
-                  onTap: () => _navigateTo(context, const NeighborhoodChatScreen()),
-                  isSubItem: true,
-                ),
-                _buildMenuItem(
-                  context,
-                  icon: Icons.contact_phone_outlined,
-                  color: const Color(0xFF7C3AED),
-                  title: l10n.drawerActiveContactsOnMap,
-                  onTap: () => _navigateTo(
-                    context,
-                    const AgendaVisibleContactsScreen(),
-                  ),
-                  isSubItem: true,
-                ),
-                _buildMenuItem(
-                  context,
-                  icon: Icons.map_rounded,
-                  color: const Color(0xFF00B894),
-                  title: l10n.drawerMenuPlaces,
-                  onTap: () => _navigateTo(context, const PlacesHubScreen()),
-                  isSubItem: true,
-                ),
-                _buildMenuItem(
-                  context,
-                  icon: Icons.grid_goldenratio_rounded,
-                  color: const Color(0xFFFF6B9D),
-                  title: l10n.drawerMenuExplorations,
-                  onTap: () => _navigateTo(context, const ExplorariScreen()),
-                  isSubItem: true,
-                ),
-                _buildMenuItem(
-                  context,
-                  icon: Icons.storefront_rounded,
-                  color: const Color(0xFFFF6B35),
-                  title: l10n.drawerBusinessOffersTitle,
-                  onTap: () => _navigateTo(context, const BusinessOffersScreen()),
-                  isSubItem: true,
-                ),
-              ],
-            ),
-            _buildDrawerGroup(
-              context,
-              title: l10n.drawerGroupSocialApp,
-              icon: Icons.tune_rounded,
-              accentColor: Colors.blueGrey.shade600,
-              children: [
+                // Vizibilitate socială
                 _buildMenuItem(
                   context,
                   leadingWidget: AnimatedSwitcher(
@@ -527,22 +593,77 @@ class AppDrawer extends StatelessWidget {
                   onTap: onToggleVisibility ?? () {},
                   isSubItem: true,
                 ),
+                // Contacte active
                 _buildMenuItem(
                   context,
-                  icon: Icons.settings_rounded,
-                  color: Colors.blueGrey,
-                  title: l10n.settings,
+                  icon: Icons.contact_phone_outlined,
+                  color: const Color(0xFF7C3AED),
+                  title: l10n.drawerActiveContactsOnMap,
                   onTap: () => _navigateTo(
                     context,
-                    SettingsScreen(
-                      onManageExclusions: onManageExclusions,
-                      onRefreshContacts: onRefreshContacts,
-                    ),
+                    const AgendaVisibleContactsScreen(),
                   ),
                   isSubItem: true,
                 ),
               ],
             ),
+
+            // ==========================================
+            // 2. COMUNITATEA NABOUR
+            // ==========================================
+            const SizedBox(height: 8),
+            _buildSectionHeader(l10n.drawerSectionYourCommunity),
+            _buildDrawerGroup(
+              context,
+              title: l10n.drawerGroupCommunityFeed,
+              icon: Icons.groups_2_outlined,
+              accentColor: const Color(0xFF7C3AED),
+              children: [
+                _buildMenuItem(
+                  context,
+                  icon: Icons.campaign_rounded,
+                  color: const Color(0xFF7C3AED),
+                  title: l10n.neighborhoodRequests,
+                  onTap: () => _navigateTo(context, const RideBroadcastFeedScreen()),
+                  isSubItem: true,
+                ),
+                _buildMenuItem(
+                  context,
+                  icon: Icons.forum_rounded,
+                  color: const Color(0xFF7C3AED),
+                  title: l10n.neighborhoodChat,
+                  onTap: () => _navigateTo(context, const NeighborhoodChatScreen()),
+                  isSubItem: true,
+                ),
+                _buildMenuItem(
+                  context,
+                  icon: Icons.map_rounded,
+                  color: const Color(0xFF00B894),
+                  title: l10n.drawerMenuPlaces,
+                  subtitle: l10n.drawerMenuPlacesSubtitle,
+                  onTap: () => _navigateTo(context, const PlacesHubScreen()),
+                  isSubItem: true,
+                ),
+                _buildMenuItem(
+                  context,
+                  icon: Icons.grid_goldenratio_rounded,
+                  color: const Color(0xFFFF6B9D),
+                  title: l10n.drawerMenuExplorations,
+                  subtitle: l10n.drawerMenuExplorationsSubtitle,
+                  onTap: () => _navigateTo(context, const ExplorariScreen()),
+                  isSubItem: true,
+                ),
+                _buildMenuItem(
+                  context,
+                  icon: Icons.storefront_rounded,
+                  color: const Color(0xFFFF6B35),
+                  title: l10n.drawerBusinessOffersTitle,
+                  onTap: () => _navigateTo(context, const BusinessOffersScreen()),
+                  isSubItem: true,
+                ),
+              ],
+            ),
+            // Mutat în Locații și Hartă
 
             // ==========================================
             // 3. AFACEREA MEA
@@ -636,14 +757,6 @@ class AppDrawer extends StatelessWidget {
               children: [
                 _buildMenuItem(
                   context,
-                  icon: Icons.security_rounded,
-                  color: Colors.amber.shade600,
-                  title: l10n.safety,
-                  onTap: () => _navigateTo(context, const SafetyScreen()),
-                  isSubItem: true,
-                ),
-                _buildMenuItem(
-                  context,
                   icon: Icons.help_outline_rounded,
                   color: Colors.grey.shade500,
                   title: l10n.help,
@@ -673,6 +786,45 @@ class AppDrawer extends StatelessWidget {
                   isSubItem: true,
                 ),
               ],
+            ),
+
+            // ==========================================
+            // 6. SIGURANȚĂ (PROMINENT)
+            // ==========================================
+            const SizedBox(height: 12),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: _buildMenuItem(
+                context,
+                icon: Icons.security_rounded,
+                color: Colors.amber.shade700,
+                title: l10n.safety,
+                onTap: () => _navigateTo(context, const SafetyScreen()),
+                backgroundColor: Colors.amber.shade700.withValues(alpha: 0.1),
+                titleStyle: const TextStyle(fontWeight: FontWeight.w900, color: Color(0xFFB45309)),
+              ),
+            ),
+
+            // ==========================================
+            // 7. SETĂRI
+            // ==========================================
+            const SizedBox(height: 12),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: _buildMenuItem(
+                context,
+                icon: Icons.settings_rounded,
+                color: Colors.blueGrey.shade700,
+                title: l10n.settings,
+                onTap: () => _navigateTo(
+                  context,
+                  SettingsScreen(
+                    onManageExclusions: onManageExclusions,
+                    onRefreshContacts: onRefreshContacts,
+                  ),
+                ),
+                backgroundColor: Colors.blueGrey.shade700.withValues(alpha: 0.1),
+              ),
             ),
 
             // ==========================================
@@ -779,20 +931,24 @@ class AppDrawer extends StatelessWidget {
     );
   }
 
-  Widget _buildMenuItem(BuildContext context, {
+  Widget _buildMenuItem(
+    BuildContext context, {
     IconData? icon,
     Widget? leadingWidget,
     required Color color,
     required String title,
+    String? subtitle,
     Widget? trailing,
     required VoidCallback onTap,
     bool isSubItem = false,
+    Color? backgroundColor,
+    TextStyle? titleStyle,
   }) {
     final onSurface = Theme.of(context).colorScheme.onSurface;
     return Container(
       margin: EdgeInsets.symmetric(horizontal: 16, vertical: isSubItem ? 2 : 4),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.05),
+        color: backgroundColor ?? color.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(16),
       ),
       child: Material(
@@ -816,25 +972,51 @@ class AppDrawer extends StatelessWidget {
                     color: color.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(isSubItem ? 10 : 14),
                   ),
-                  child: leadingWidget ?? Icon(icon, color: color, size: isSubItem ? 18 : 22),
+                  child: leadingWidget ??
+                      Icon(icon, color: color, size: isSubItem ? 18 : 22),
                 ),
                 const SizedBox(width: 14),
                 Expanded(
-                  child: Text(
-                    title,
-                    style: TextStyle(
-                      fontSize: isSubItem ? 13 : 15,
-                      fontWeight: isSubItem ? FontWeight.w600 : FontWeight.w700,
-                      color: onSurface.withValues(alpha: isSubItem ? 0.75 : 1.0),
-                      letterSpacing: -0.2,
-                    ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    softWrap: true,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        title,
+                        style: titleStyle ??
+                            TextStyle(
+                              fontSize: isSubItem ? 13 : 15,
+                              fontWeight:
+                                  isSubItem ? FontWeight.w600 : FontWeight.w700,
+                              color: onSurface
+                                  .withValues(alpha: isSubItem ? 0.75 : 1.0),
+                              letterSpacing: -0.2,
+                            ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        softWrap: true,
+                      ),
+                      if (subtitle != null) ...[
+                        const SizedBox(height: 1),
+                        Text(
+                          subtitle,
+                          style: TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w500,
+                            color: onSurface.withValues(alpha: 0.45),
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ],
                   ),
                 ),
-                if (trailing != null) trailing
-                else Icon(Icons.chevron_right_rounded, color: onSurface.withValues(alpha: 0.3), size: 20),
+                if (trailing != null)
+                  trailing
+                else
+                  Icon(Icons.chevron_right_rounded,
+                      color: onSurface.withValues(alpha: 0.3), size: 20),
               ],
             ),
           ),
@@ -896,9 +1078,12 @@ class _DrawerBusinessProfileSlot extends StatefulWidget {
     Widget? leadingWidget,
     required Color color,
     required String title,
+    String? subtitle,
     Widget? trailing,
     required VoidCallback onTap,
     bool isSubItem,
+    Color? backgroundColor,
+    TextStyle? titleStyle,
   }) buildMenuItem;
 
   @override

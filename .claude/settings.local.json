@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(wc -l \"/e/variante app friends/03.07.2025 MAP BOX/nabour_app/lib/features/map_neighbor_markers\"/*.dart)",
+      "Bash(find \"/e/variante app friends/03.07.2025 MAP BOX/nabour_app/lib/features/map_neighbor_markers\" -name \"*.dart\" -exec wc -l {} +)"
+    ]
+  }
+}

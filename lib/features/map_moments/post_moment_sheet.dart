@@ -93,114 +93,117 @@ class _PostMomentSheetState extends State<PostMomentSheet> {
         top: 16,
         bottom: MediaQuery.of(context).viewInsets.bottom + 24,
       ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Center(
-            child: Container(
-              width: 40,
-              height: 4,
-              margin: const EdgeInsets.only(bottom: 12),
-              decoration: BoxDecoration(
-                color: cs.outlineVariant,
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-          ),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
-                child: Text(
-                  'Postează un Moment',
-                  style: theme.textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.w800,
-                    color: cs.onSurface,
-                  ),
+      child: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Center(
+              child: Container(
+                width: 40,
+                height: 4,
+                margin: const EdgeInsets.only(bottom: 12),
+                decoration: BoxDecoration(
+                  color: cs.outlineVariant,
+                  borderRadius: BorderRadius.circular(2),
                 ),
               ),
-              IconButton(
-                tooltip: 'Închide',
-                onPressed: _posting ? null : () => Navigator.of(context).maybePop(),
-                icon: Icon(Icons.close_rounded, color: cs.onSurface),
-                visualDensity: VisualDensity.compact,
-              ),
-            ],
-          ),
-          const SizedBox(height: 6),
-          Text(
-            'Vizibil pe hartă ~30 minute. O poți șterge oricând din tap pe marcaj. '
-            'Alege 🅿️ dacă poți oferi loc de parcare în zonă.',
-            style: theme.textTheme.bodySmall?.copyWith(
-              color: cs.onSurfaceVariant,
-              fontSize: 12,
             ),
-          ),
-          const SizedBox(height: 16),
-          Wrap(
-            spacing: 10,
-            children: _quickEmojis.map((e) {
-              final selected = _selectedEmoji == e;
-              return GestureDetector(
-                onTap: () => setState(() =>
-                    _selectedEmoji = selected ? null : e),
-                child: Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: selected
-                        ? cs.primary.withValues(alpha: 0.18)
-                        : cs.surfaceContainerHighest,
-                    borderRadius: BorderRadius.circular(12),
-                    border: selected
-                        ? Border.all(color: cs.primary, width: 2)
-                        : Border.all(color: cs.outlineVariant),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: Text(
+                    'Postează un Moment',
+                    style: theme.textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.w800,
+                      color: cs.onSurface,
+                    ),
                   ),
-                  child: Text(e, style: const TextStyle(fontSize: 26)),
                 ),
-              );
-            }).toList(),
-          ),
-          const SizedBox(height: 16),
-          TextField(
-            controller: _captionCtl,
-            maxLength: 120,
-            autofocus: true,
-            style: TextStyle(color: cs.onSurface),
-            cursorColor: cs.primary,
-            decoration: InputDecoration(
-              hintText: 'Ce se întâmplă aici?',
-              hintStyle: TextStyle(color: cs.onSurface.withValues(alpha: 0.45)),
-              filled: true,
-              fillColor: cs.surfaceContainerHigh,
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(16),
-                borderSide: BorderSide.none,
+                IconButton(
+                  tooltip: 'Închide',
+                  onPressed: _posting ? null : () => Navigator.of(context).maybePop(),
+                  icon: Icon(Icons.close_rounded, color: cs.onSurface),
+                  visualDensity: VisualDensity.compact,
+                ),
+              ],
+            ),
+            const SizedBox(height: 6),
+            Text(
+              'Vizibil pe hartă ~30 minute. O poți șterge oricând din tap pe marcaj. '
+              'Alege 🅿️ dacă poți oferi loc de parcare în zonă.',
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: cs.onSurfaceVariant,
+                fontSize: 12,
               ),
             ),
-          ),
-          const SizedBox(height: 12),
-          ElevatedButton(
-            onPressed: _posting ? null : _post,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF7C3AED),
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(vertical: 14),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
+            const SizedBox(height: 16),
+            Wrap(
+              spacing: 10,
+              runSpacing: 10,
+              children: _quickEmojis.map((e) {
+                final selected = _selectedEmoji == e;
+                return GestureDetector(
+                  onTap: () => setState(() =>
+                      _selectedEmoji = selected ? null : e),
+                  child: Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: selected
+                          ? cs.primary.withValues(alpha: 0.18)
+                          : cs.surfaceContainerHighest,
+                      borderRadius: BorderRadius.circular(12),
+                      border: selected
+                          ? Border.all(color: cs.primary, width: 2)
+                          : Border.all(color: cs.outlineVariant),
+                    ),
+                    child: Text(e, style: const TextStyle(fontSize: 26)),
+                  ),
+                );
+              }).toList(),
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: _captionCtl,
+              maxLength: 120,
+              autofocus: true,
+              style: TextStyle(color: cs.onSurface),
+              cursorColor: cs.primary,
+              decoration: InputDecoration(
+                hintText: 'Ce se întâmplă aici?',
+                hintStyle: TextStyle(color: cs.onSurface.withValues(alpha: 0.45)),
+                filled: true,
+                fillColor: cs.surfaceContainerHigh,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(16),
+                  borderSide: BorderSide.none,
+                ),
               ),
             ),
-            child: _posting
-                ? const SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(
-                        strokeWidth: 2, color: Colors.white))
-                : const Text('Postează',
-                    style:
-                        TextStyle(fontWeight: FontWeight.w700, fontSize: 16)),
-          ),
-        ],
+            const SizedBox(height: 12),
+            ElevatedButton(
+              onPressed: _posting ? null : _post,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF7C3AED),
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+              ),
+              child: _posting
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                          strokeWidth: 2, color: Colors.white))
+                  : const Text('Postează',
+                      style:
+                          TextStyle(fontWeight: FontWeight.w700, fontSize: 16)),
+            ),
+          ],
+        ),
       ),
     );
   }

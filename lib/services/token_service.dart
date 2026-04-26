@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:flutter/foundation.dart' show kDebugMode;
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
@@ -383,11 +384,14 @@ class TokenService {
       final signedInAt = _auth.currentUser?.metadata.lastSignInTime;
       if (signedInAt != null) {
         final sinceSignIn = DateTime.now().difference(signedInAt);
+        // Pe Android, lansarea GMS / App Check imediat după boot poate fi instabilă.
         if (sinceSignIn < const Duration(seconds: 45)) {
-          await Future<void>.delayed(const Duration(seconds: 18));
+          Logger.info('TokenService: Waiting for stable auth session (signed in ${sinceSignIn.inSeconds}s ago)...', tag: 'TokenService');
+          await Future<void>.delayed(const Duration(seconds: 15));
         }
       }
       await _waitForStableAuthSession();
+      
       for (var attempt = 0; attempt < maxAttempts; attempt++) {
         try {
           final user = _auth.currentUser;
@@ -395,57 +399,75 @@ class TokenService {
             Logger.debug('nabourMaintainTokenWallet: skip — no user', tag: 'TokenService');
             return;
           }
+
+          // Force fresh token to ensure App Check token is attached
           final token = await user.getIdToken(true);
           if (token == null || token.isEmpty) {
             if (attempt < maxAttempts - 1) {
-              await Future<void>.delayed(Duration(milliseconds: 550 * (attempt + 1)));
+              await Future<void>.delayed(Duration(milliseconds: 1000 * (attempt + 1)));
               continue;
             }
-            Logger.debug(
-              'nabourMaintainTokenWallet: empty token after refresh',
-              tag: 'TokenService',
-            );
+            Logger.warning('nabourMaintainTokenWallet: empty token after refresh', tag: 'TokenService');
             unawaited(_scheduleDeferredMaintainRetry());
             return;
           }
-          if (attempt == 0) {
-            await Future<void>.delayed(const Duration(milliseconds: 450));
+
+          if (attempt > 0) {
+            await Future<void>.delayed(const Duration(milliseconds: 500));
           }
 
+          Logger.info('TokenService: Attempting nabourMaintainTokenWallet (attempt ${attempt + 1})...', tag: 'TokenService');
           await NabourFunctions.instance
               .httpsCallable('nabourMaintainTokenWallet')
               .call();
+          
+          Logger.info('TokenService: nabourMaintainTokenWallet successful.', tag: 'TokenService');
           return;
         } on FirebaseFunctionsException catch (e) {
           final code = e.code.toLowerCase();
+          final message = e.message?.toLowerCase() ?? '';
+          
+          // Debug mode resilience: handle App Check attestation failures gracefully.
+          // In debug, `unauthenticated` almost always means App Check token not registered
+          // in Firebase Console — retrying immediately won't help.
+          final isAppCheckError = message.contains('app-check') || message.contains('attestation');
+
+          if (isAppCheckError && kDebugMode) {
+            Logger.warning('TokenService: App Check failure in DEBUG mode. Monthly reset may be delayed.', tag: 'TokenService');
+            unawaited(_scheduleDeferredMaintainRetry());
+            return;
+          }
+
+          if (kDebugMode && code == 'unauthenticated') {
+            Logger.warning('TokenService: unauthenticated in debug — likely App Check not configured. Scheduling deferred retry.', tag: 'TokenService');
+            unawaited(_scheduleDeferredMaintainRetry());
+            return;
+          }
+
           final transient = code == 'unauthenticated' ||
               code == 'unavailable' ||
               code == 'deadline-exceeded';
+
           if (transient && attempt < maxAttempts - 1) {
-            final step = (1 << attempt).clamp(1, 8);
-            await Future<void>.delayed(Duration(milliseconds: 450 * step));
+            final step = (1 << attempt).clamp(1, 10);
+            Logger.info('TokenService: Transient error ($code), retrying in ${step * 0.5}s...', tag: 'TokenService');
+            await Future<void>.delayed(Duration(milliseconds: 500 * step));
             continue;
           }
+          
           if (code == 'unauthenticated') {
-            Logger.debug(
-              'nabourMaintainTokenWallet: unauthenticated after $maxAttempts attempts '
-              '(sometimes token/GMS at cold start; monthly reset may resume on next app open).',
-              tag: 'TokenService',
-            );
+            Logger.warning('TokenService: nabourMaintainTokenWallet returning 401 Unauthenticated. Scheduling deferred retry.', tag: 'TokenService');
             unawaited(_scheduleDeferredMaintainRetry());
           } else {
-            Logger.warning(
-              'nabourMaintainTokenWallet: ${e.code} ${e.message}',
-              tag: 'TokenService',
-            );
+            Logger.warning('TokenService: nabourMaintainTokenWallet error: ${e.code} ${e.message}', tag: 'TokenService');
           }
           return;
         } catch (e) {
           if (attempt < maxAttempts - 1) {
-            await Future<void>.delayed(Duration(milliseconds: 500 * (attempt + 1)));
+            await Future<void>.delayed(Duration(milliseconds: 1000 * (attempt + 1)));
             continue;
           }
-          Logger.warning('nabourMaintainTokenWallet: $e', tag: 'TokenService');
+          Logger.warning('TokenService: nabourMaintainTokenWallet unexpected error: $e', tag: 'TokenService');
           return;
         }
       }
@@ -457,6 +479,14 @@ class TokenService {
   Future<void> maintainWalletOnStartupOnce() async {
     if (_startupMaintainExecuted) return;
     _startupMaintainExecuted = true;
+    // Respect the same throttle as ensureWalletExists to prevent a second
+    // call chain when autonomous_app_coordinator already ran maintain.
+    final last = _lastAutoMaintainAttemptAt;
+    if (last != null && DateTime.now().difference(last) < _autoMaintainMinInterval) {
+      Logger.debug('maintainWalletOnStartupOnce: skip — throttled (${DateTime.now().difference(last).inSeconds}s since last attempt)', tag: 'TokenService');
+      return;
+    }
+    _lastAutoMaintainAttemptAt = DateTime.now();
     await _invokeMaintainTokenWallet();
   }
 
@@ -587,6 +617,24 @@ class TokenService {
     } catch (e) {
       Logger.error('Error in getTransactionHistory', error: e, tag: 'TokenService');
       return [];
+    }
+  }
+
+  /// Șterge toate tranzacțiile din istoricul utilizatorului (max 500 per batch).
+  Future<void> clearTransactionHistory({String? uid}) async {
+    final id = uid ?? _currentUid;
+    if (id == null) return;
+    try {
+      final snap = await _txRef(id).limit(500).get();
+      if (snap.docs.isEmpty) return;
+      final batch = _db.batch();
+      for (final doc in snap.docs) {
+        batch.delete(doc.reference);
+      }
+      await batch.commit();
+    } catch (e) {
+      Logger.error('Error clearing transaction history', error: e, tag: 'TokenService');
+      rethrow;
     }
   }
 

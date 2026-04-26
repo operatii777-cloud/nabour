@@ -6449,4 +6449,19 @@ class AppLocalizationsEn extends AppLocalizations {
   String safety_destinationLabelPrefix(String destination) {
     return 'Destination: $destination';
   }
+
+  @override
+  String get drawerGroupTokensCosmetics => 'Tokens & Cosmetics';
+
+  @override
+  String get drawerMenuTokenWallet => 'Tokens & Plans';
+
+  @override
+  String get drawerMenuExplorationsSubtitle => 'Discover new areas and events';
+
+  @override
+  String get drawerMenuPlacesSubtitle => 'See your saved places and POI';
+
+  @override
+  String get drawerGroupLocationsMap => 'Locations & Map';
 }

@@ -342,7 +342,7 @@ class ProductionConfig {
       
       // Set deployment info
       _deploymentInfo['app_name'] = 'Nabour';
-      _deploymentInfo['package_name'] = 'com.friendsride.app';
+      _deploymentInfo['package_name'] = 'com.florin.nabour';
       _deploymentInfo['version'] = '1.0.0';
       _deploymentInfo['build_number'] = '1';
       _deploymentInfo['deployment_timestamp'] = DateTime.now().toIso8601String();

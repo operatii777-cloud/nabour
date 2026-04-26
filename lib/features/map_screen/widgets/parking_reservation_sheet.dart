@@ -1,10 +1,7 @@
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:nabour_app/l10n/app_localizations.dart';
 import 'package:nabour_app/features/parking_swap/parking_swap_service.dart';
-import 'package:nabour_app/services/audio_service.dart';
 
 class ParkingReservationSheet extends StatefulWidget {
   final String spotId;
